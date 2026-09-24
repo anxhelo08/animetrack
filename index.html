@@ -1131,7 +1131,7 @@ function v81EnhanceEpisodeRows(){
   const seasonId=row.dataset.seasonEp,n=Number(row.dataset.ep);const seen=row.classList.contains('watched');
   const wrapper=document.createElement('div');wrapper.className='ep-article'+(seen?' seen':'');
   const info=document.createElement('button');info.type='button';info.className='ep-info-btn';info.dataset.episodeDetail=a.id;info.dataset.episodeSeason=seasonId;info.dataset.episodeNumber=String(n);info.setAttribute('aria-label',`Shiko informacionet e episodit ${n}`);
-  info.innerHTML=row.querySelector('.ep-num').outerHTML+row.querySelector('.ep-text').outerHTML+'<span class="ep-info-arrow" aria-hidden="true">›</span>';
+  const item=a.seasons.find(s=>s.id===seasonId)?.episodes.find(e=>e.number===n),still=validPoster(item?.image||'');info.innerHTML=(still?`<img class="v98-mini-still" src="${escapeHTML(still)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:'')+row.querySelector('.ep-num').outerHTML+row.querySelector('.ep-text').outerHTML+(item?.personalRating?`<span class="v98-episode-chips">★ ${item.personalRating}/10</span>`:'')+'<span class="ep-info-arrow" aria-hidden="true">›</span>';
   const toggle=document.createElement('button');toggle.type='button';toggle.className='ep-toggle-btn';toggle.dataset.seasonEp=seasonId;toggle.dataset.id=a.id;toggle.dataset.ep=String(n);toggle.setAttribute('aria-pressed',String(seen));toggle.textContent=seen?'✓ I parë':'+ Shëno';
   wrapper.append(info,toggle);row.replaceWith(wrapper);
  }
@@ -1311,7 +1311,7 @@ function v96RenderReleases(){
  $('v96-refresh-airing').disabled=upcomingBusy;
  $('v96-release-grid').innerHTML=list.length?list.map(x=>{
   const a=x.anime,image=validPoster(a?.cover||x.cover),when=formatStamp(x.when),s=x.localSeason,index=s?a.seasons.indexOf(s)+1:0;
-  return `<article class="v96-release-card ${x.seen?'v96-seen':'v96-unseen'}"><div class="v96-release-cover">${image?`<img src="${escapeHTML(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}</div><div class="v96-release-copy"><div class="v96-release-line"><span class="v96-release-tag">${x.seen?'✓ I PARË':'● I RI'} · ${index?'S'+index+' · ':''}EP ${x.localEpisode}</span><span class="v96-release-source">${escapeHTML(x.source)}</span></div><h4 title="${escapeHTML(a?.title||x.title)}">${escapeHTML(a?.title||x.title)}</h4><small>${escapeHTML(when)}${a?' · '+escapeHTML(STATUS[a.status]):''}</small><div class="v96-release-actions"><button class="ghost" data-detail="${escapeHTML(x.animeId)}">Hap</button>${!x.seen&&s?`<button class="primary" data-v96-watch="${escapeHTML(x.animeId)}" data-v96-season="${escapeHTML(s.id)}" data-v96-episode="${x.localEpisode}">✓ Shëno si parë</button>`:''}</div></div></article>`
+  return `<article class="v96-release-card ${x.seen?'v96-seen':'v96-unseen'}"><div class="v96-release-cover">${image?`<img src="${escapeHTML(image)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:''}</div><div class="v96-release-copy"><div class="v96-release-line"><span class="v96-release-tag">${x.seen?'✓ I PARË':'● I RI'} · ${index?'S'+index+' · ':''}EP ${x.localEpisode}</span><span class="v96-release-source">${escapeHTML(x.source)}</span></div><h4 title="${escapeHTML(a?.title||x.title)}">${escapeHTML(a?.title||x.title)}</h4><small>${escapeHTML(when)}${a?' · '+escapeHTML(STATUS[a.status]):''}</small><div class="v96-release-actions"><button class="ghost" ${s?`data-episode-detail="${escapeHTML(x.animeId)}" data-episode-season="${escapeHTML(s.id)}" data-episode-number="${x.localEpisode}"`:`data-detail="${escapeHTML(x.animeId)}"`}>Detajet e episodit</button>${!x.seen&&s?`<button class="primary" data-v96-watch="${escapeHTML(x.animeId)}" data-v96-season="${escapeHTML(s.id)}" data-v96-episode="${x.localEpisode}">✓ Shëno si parë</button>`:''}</div></div></article>`
  }).join(''):'<div class="v96-empty">Ende nuk ka episode me datë transmetimi të verifikuar gjatë 7 ditëve të fundit. Rifresko orarin ose kontrollo përsëri kur të dalë episodi i radhës.</div>';
  $('v96-next-grid').innerHTML=future.length?future.map(x=>`<button class="v96-next-card" data-detail="${escapeHTML(x.animeId)}"><span>◷</span><div><strong>${escapeHTML(x.title)} · EP ${escapeHTML(x.episode)}</strong><small>${escapeHTML(formatStamp(x.when))} · Shqipëri</small></div></button>`).join(''):'<div class="v96-empty">Nuk ka data të tjera të njoftuara për 30 ditët e ardhshme.</div>';
 }
@@ -1435,12 +1435,12 @@ async function v98ReportComment(id){
  if(reason==null)return;const value=reason.trim().slice(0,250);if(value.length<3){notify('Shkruaj të paktën 3 karaktere.');return}
  const {error}=await accountInitClient().from('episode_comment_reports').insert({comment_id:Number(id),reporter_id:accountUser.id,reason:value});
  if(error){notify(error.code==='23505'?'E ke raportuar më parë këtë koment.':'Raportimi nuk u ruajt.');return}
- notify('Raportimi u regjistrua ✓');
+ notify('Raportimi u regjistrua për shqyrtim. Komenti nuk hiqet automatikisht.');
 }
 function v98SavePrivate(){
  const {a,s,n}=v81EpisodeParts();if(!a||!s)return;
  const ep=episodePersonalRow(s,n),note=String($('v98-personal-note')?.value||'').trim(),rating=Number($('v98-rating')?.value||0);
- ep.myNote=note.slice(0,1500);ep.personalRating=rating>=1&&rating<=10?rating:null;a.updatedAt=now();save();v81RenderEpisode('Shënimi dhe nota u ruajtën; sinkronizimi cloud kryhet automatikisht.');
+ ep.myNote=note.slice(0,1500);ep.personalRating=rating>=1&&rating<=10?rating:null;a.updatedAt=now();save();if(detailId===a.id)renderDetail(a.id);v81RenderEpisode('Shënimi dhe nota u ruajtën; sinkronizimi cloud kryhet automatikisht.');
 }
 function v98EpisodeActionHandlers(){
  const baseRender=v81RenderEpisode;
