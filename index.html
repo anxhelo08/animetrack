@@ -1150,7 +1150,7 @@ function v96OrganizeDashboard(){
  quick.className='v96-quicklinks';quick.innerHTML=`<button class="v96-quicklink" data-v96-view="upcoming"><span class="v96-icon">◷</span><span><strong>Episode të reja</strong><small>Transmetimet dhe datat</small></span></button><button class="v96-quicklink" data-v96-filter="waiting"><span class="v96-icon">✦</span><span><strong>Në pritje sezoni</strong><small>Vazhdimet zyrtare</small></span></button><button class="v96-quicklink" data-v96-view="statistics"><span class="v96-icon">▥</span><span><strong>Statistikat e mia</strong><small>Java dhe muaji yt</small></span></button><button class="v96-quicklink" data-v96-filter="genres"><span class="v96-icon">◈</span><span><strong>Zhanret</strong><small>Zbulo sipas shijes</small></span></button>`;
  stats.after(quick);
  const recent=$('home-recent-watched'),recentHead=$('home-history-title'),releases=$('home-release-section'),wait=$('home-new-seasons'),waitHead=wait.previousElementSibling,teaser=$('home-season-teaser'),teaserHead=$('home-seasonal-heading'),next=$('home-watch-next'),nextHead=next.previousElementSibling,cols=home.querySelector('.home-columns');
- const oldPremiere=cols?.querySelector('.home-panel:has(#home-premieres)');if(oldPremiere)oldPremiere.remove();if(cols)cols.classList.add('v96-home-activity');
+ const oldPremiere=cols?.querySelector('.home-panel:has(#home-premieres)');if(oldPremiere)oldPremiere.classList.add('hidden');if(cols)cols.classList.add('v96-home-activity');
  const keep=[hero,stats,quick,recentHead,recent,releases,waitHead,wait,teaserHead,teaser,nextHead,next,cols];
  for(const el of keep)if(el)home.appendChild(el);
  const status=$('home-status-grid');if(status){const label=status.previousElementSibling;home.append(label,status)}
