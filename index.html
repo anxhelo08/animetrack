@@ -1377,7 +1377,7 @@ function v98DiscussionHTML(key){
  const active=accountMode==='cloud'&&accountUser;
  const cards=rows.map(x=>{
   const own=accountUser?.id===x.user_id,concealed=x.is_spoiler&&!episodeRevealed.has(x.id),date=Number.isFinite(Date.parse(x.created_at))?new Date(x.created_at).toLocaleString('sq-AL',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
-  return `<article class="v98-comment"><div class="v98-comment-head"><strong>${escapeHTML(x.author_name||'Anime fan')}</strong><small>${escapeHTML(date)}</small><span class="v98-spoiler-badge">${x.is_spoiler?'⚠ Spoiler':'Pa spoiler'}</span></div>${concealed?`<button class="v98-reveal" data-v98-reveal="${x.id}">⚠ Komenti përmban spoiler · Kliko për ta zbuluar</button>`:`<p class="v98-comment-body">${escapeHTML(x.body)}</p>`}<div class="v98-comment-actions">${own?`<button data-v98-delete="${x.id}">Fshi komentin tim</button>`:`<button data-v98-report="${x.id}">Raporto</button>`}</div></article>`
+  return `<article class="v98-comment"><div class="v98-comment-head"><strong>${escapeHTML(x.author_name||'Anime fan')}</strong><small>${escapeHTML(date)}</small><span class="v98-spoiler-badge">${x.is_spoiler?'⚠ Spoiler':'Pa spoiler'}</span></div>${concealed?`<button class="v98-reveal" data-v98-reveal="${x.id}">⚠ Komenti përmban spoiler · Kliko për ta zbuluar</button>`:`<p class="v98-comment-body">${escapeHTML(x.body)}</p>`}<div class="v98-comment-actions">${own?`<button data-v98-edit="${x.id}">Ndrysho</button><button data-v98-delete="${x.id}">Fshi komentin tim</button>`:`<button data-v98-report="${x.id}">Raporto</button>`}</div></article>`
  }).join('');
  return `<section class="v98-discussion" id="v98-discussion"><div class="v98-section-head"><div><span class="eyebrow">BASHKËBISEDIMI I FANSAVE</span><h3>💬 Komentet e episodit <span class="v98-comment-count">${rows.length}</span></h3></div><button type="button" class="ghost" data-v98-refresh="${escapeHTML(key)}" ${episodeDiscussion.loading?'disabled':''}>↻ Rifresko</button></div><p class="v98-discussion-info">Diskutim publik mes përdoruesve të regjistruar. Mos zbulo informacione personale. Komentet me spoiler mbulohen derisa t’i hapësh.</p>${key?`<div class="v98-comment-form"><label for="v98-comment-body">Komenti yt</label><textarea id="v98-comment-body" maxlength="1200" rows="3" placeholder="Çfarë mendove për këtë episod?">${escapeHTML(episodeDiscussion.draft)}</textarea><div class="v98-comment-controls"><label><input type="checkbox" id="v98-spoiler-check" ${episodeDiscussion.isSpoiler?'checked':''}> Përmban spoiler</label><span id="v98-char-count">${episodeDiscussion.draft.length}/1200</span><button class="primary" type="button" data-v98-send="1" ${episodeDiscussion.sending||!active?'disabled':''}>${episodeDiscussion.sending?'Po dërgohet…':'Publiko komentin'}</button></div></div><div class="v98-discussion-tools"><label>Rendit <select id="v98-comment-sort"><option value="newest" ${episodeDiscussion.sort==='newest'?'selected':''}>Më të rejat</option><option value="oldest" ${episodeDiscussion.sort==='oldest'?'selected':''}>Më të vjetrat</option></select></label><small>${episodeDiscussion.loading?'Po merren komentet…':episodeDiscussion.error?escapeHTML(episodeDiscussion.error):''}</small></div><div class="v98-comments-list">${cards||(!episodeDiscussion.loading?'<p class="v98-empty">Ende nuk ka komente. Nise ti diskutimin!</p>':'')}</div>`:`<p class="v98-empty">Komentet publike hapen për anime të lidhura me ID zyrtare AniList, MyAnimeList ose TVmaze. Shënimet personale funksionojnë për çdo anime.</p>`}</section>`;
 }
@@ -1398,7 +1398,7 @@ async function v98LoadComments(){
  const {a,s,n,ep}=v81EpisodeParts();if(!a||!s)return;
  const key=episodePublicKey(a,s,n,ep);
  if(key!==episodeDiscussion.key){episodeDiscussion={key,rows:[],loading:false,error:'',draft:'',isSpoiler:true,sort:'newest',sending:false}}
- if(!key||accountMode!=='cloud'||!accountUser){v81RenderEpisode();return}
+ if(!key||accountMode!=='cloud'||!accountUser){episodeDiscussion.rows=[];episodeDiscussion.error=!key?'ID e episodit nuk është verifikuar ende.':'Hyr në llogari për të komentuar.';v81RenderEpisode();return}
  if(episodeDiscussion.loading)return;
  episodeDiscussion.loading=true;episodeDiscussion.error='';v81RenderEpisode();
  try{
@@ -1415,13 +1415,22 @@ async function v98PublishComment(){
  const area=$('v98-comment-body'),body=String(area?.value||episodeDiscussion.draft).trim(),spoiler=!!$('v98-spoiler-check')?.checked;
  if(body.length<3||body.length>1200){notify('Komenti duhet të ketë 3–1200 karaktere.');return}
  if(Date.now()-episodeLastPost<15000){notify('Mund të publikosh komentin tjetër pas pak sekondash.');return}
- episodeDiscussion.draft=body;episodeDiscussion.sending=true;v81RenderEpisode();
+ episodeDiscussion.draft=body;episodeDiscussion.isSpoiler=spoiler;episodeDiscussion.sending=true;v81RenderEpisode();
  try{
   const name=String(accountUser.user_metadata?.display_name||'Anime fan').trim().slice(0,40)||'Anime fan';
   const {error}=await accountInitClient().from('episode_comments').insert({user_id:accountUser.id,episode_key:key,author_name:name,body,is_spoiler:spoiler});
   if(error)throw error;
   episodeLastPost=Date.now();episodeDiscussion.draft='';episodeDiscussion.isSpoiler=true;notify('Komenti u publikua ✓');episodeDiscussion.sending=false;await v98LoadComments();
  }catch(e){episodeDiscussion.error='Dërgimi dështoi: '+String(e.message||e).slice(0,160);episodeDiscussion.sending=false;v81RenderEpisode()}
+}
+async function v98EditComment(id){
+ const record=episodeDiscussion.rows.find(x=>String(x.id)===String(id));if(!record||record.user_id!==accountUser?.id)return;
+ const draft=prompt('Ndrysho komentin tënd (3–1200 karaktere):',record.body);
+ if(draft===null)return;const body=draft.trim();
+ if(body.length<3||body.length>1200){notify('Komenti duhet të ketë 3–1200 karaktere.');return}
+ const {error}=await accountInitClient().from('episode_comments').update({body}).eq('id',id).eq('user_id',accountUser.id);
+ if(error){notify('Ndryshimi dështoi: '+error.message);return}
+ notify('Komenti u përditësua ✓');await v98LoadComments();
 }
 async function v98DeleteComment(id){
  const record=episodeDiscussion.rows.find(x=>String(x.id)===String(id));if(!record||record.user_id!==accountUser?.id)return;
@@ -1460,6 +1469,7 @@ function v98EpisodeActionHandlers(){
   if(b.dataset.v98Refresh){void v98LoadComments();return}
   if(b.dataset.v98Reveal){episodeRevealed.add(Number(b.dataset.v98Reveal));v81RenderEpisode();return}
   if(b.dataset.v98Synopsis){episodeSynopsisRevealed.add(b.dataset.v98Synopsis);v81RenderEpisode();return}
+  if(b.dataset.v98Edit){void v98EditComment(b.dataset.v98Edit);return}
   if(b.dataset.v98Delete){void v98DeleteComment(b.dataset.v98Delete);return}
   if(b.dataset.v98Report){void v98ReportComment(b.dataset.v98Report);return}
   if(b.dataset.v98Move){const {a,s,n}=v81EpisodeParts(),newN=n+Number(b.dataset.v98Move);if(a&&s&&newN>=1&&newN<=releasedCount(s))v81OpenEpisode(a.id,s.id,newN)}
