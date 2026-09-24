@@ -15,3 +15,5 @@ Përdoruesit identifikohen me Supabase Auth. Bibliotekat personale ruhen në dat
 Asnjë çelës sekret serveri apo fjalëkalim nuk duhet shtuar në këtë depo.
 
 Përditësimet e kodit nuk duhet të ndryshojnë apo fshijnë bibliotekat personale.
+
+Kontroll publikimi: versioni 9.3 publikohet nga dega `main` në projektin ekzistues Vercel.
