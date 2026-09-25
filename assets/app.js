@@ -1056,6 +1056,20 @@ const proContext={
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
+ openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
+ markEpisode:(id,seasonId,n)=>requestEpisodeToggle(id,seasonId,n),
+ refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
+ openDiscussion:key=>{
+  const m=/^(mal|al|tv):(\d+):(\d+)$/.exec(String(key||''));if(!m)return false;
+  for(const a of state.anime)for(const ss of a.seasons||[]){
+   let n=0;
+   if(m[1]==='mal'&&String(ss.malId)===m[2])n=Number(m[3])-(Number(ss.globalStart)||1)+1;
+   else if(m[1]==='al'&&ss.source==='AniList'&&String(ss.sourceId)===m[2])n=Number(m[3]);
+   else if(m[1]==='tv'&&String(a.tvmazeId)===m[2])n=Number((ss.episodes||[]).find(e=>String(e.tvmazeEpisodeId)===m[3])?.number)||0;
+   if(n>0&&Number.isInteger(n)&&(!ss.total||n<=ss.total)){v81OpenEpisode(a.id,ss.id,n);return true}
+  }
+  return false;
+ },
  refreshDetail:id=>renderDetail(id),navigate:page=>setView(page),setLocalView:page=>{view=page},
  previewItem:item=>{v8PrepareCatalog(item);openCatalogPreview(item.key)},
  addItem:async item=>{v8PrepareCatalog(item);const id=await addCatalogItem(item.key,'planning');if(id)openDetail(id)}
