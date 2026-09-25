@@ -1,7 +1,7 @@
 /* AnimeTrack 10.2 — action-oriented home. Legacy home nodes remain mounted for compatibility. */
 window.ATHome=function ATHome(ctx){
  const esc=ctx.esc,anime=()=>ctx.state().anime||[],DAY=86400000;
- let sort='recent',selection='',cycle=-1,owner='';
+ let sort='recent',selection='',cycle=-1,owner='',searchTerm='',expanded=false,lastMarked=null;
  const prefs=()=>{const s=ctx.state();s.preferences=s.preferences||{};return s.preferences};
  const qids=()=>Array.isArray(prefs().homeQueue)?prefs().homeQueue.filter(x=>typeof x==='string').slice(0,6):[];
  const poster=a=>ctx.poster(a?.cover||'');
@@ -10,7 +10,7 @@ window.ATHome=function ATHome(ctx){
  const byId=id=>anime().find(x=>x.id===id);
  const dateTime=ms=>new Date(ms).toLocaleDateString('sq-AL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
  const stamp=a=>Date.parse(a?.updatedAt||a?.createdAt||'')||0;
- function syncOwner(){const id=String(ctx.user()?.id||'guest');if(owner!==id){owner=id;selection='';cycle=-1;sort='recent'}}
+ function syncOwner(){const id=String(ctx.user()?.id||'guest');if(owner!==id){owner=id;selection='';cycle=-1;sort='recent';searchTerm='';expanded=false;lastMarked=null}}
  function candidates(){return anime().filter(a=>a.status==='watching'&&ready(a)>0&&next(a))}
  function ordered(){
   const xs=candidates().slice();
@@ -38,19 +38,39 @@ window.ATHome=function ATHome(ctx){
   const h=new Date().getHours(),greeting=h<11?'Mirëmëngjes':h<18?'Mirëdita':'Mirëmbrëma',candidate=focus(),nx=candidate&&next(candidate),count=candidates().length;
   return `<div class="at-h2-hero"><div class="at-h2-hero-copy"><span class="at-h2-kicker"><span class="at-h2-live"></span> MY ANIME SPACE</span><h2>${greeting}! <span>Çfarë do të shikosh sot?</span></h2><p>Vazhdo aty ku e le, organizo sesionin tënd dhe zbulo episodet që të presin — gjithçka në një vend.</p><div class="at-h2-hero-actions"><button type="button" class="at-h2-btn primary" data-home-action="continue">▶ Vazhdo shikimin</button><button type="button" class="at-h2-btn" data-pro-page="recommendations">✦ Zbulo anime</button><button type="button" class="at-h2-btn subtle" data-pro-page="calendar">📅 Kalendari</button></div></div><div class="at-h2-hero-aside"><div class="at-h2-mini-label">RADHA JOTE</div><strong>${candidate?esc(candidate.title):'Fillo historinë tënde'}</strong><span>${nx?'S'+(candidate.seasons.indexOf(nx.season)+1)+' · Episodi '+nx.n:count?count+' anime me episode gati':'Zgjidh një anime nga biblioteka'}</span><div class="at-h2-hero-aside-foot"><span>✦ Personalizuar për ty</span><button data-home-action="continue" type="button">Hap →</button></div></div></div>`;
  }
- function feature(){
-  const a=focus();if(!a)return `<div class="at-h2-feature at-h2-feature-empty"><span class="at-h2-kicker">YOUR NEXT EPISODE</span><h3>Historia jote nis këtu ✦</h3><p>Kërko një anime dhe vendose te “Po shikoj”. Pastaj do të shfaqet këtu episodi i radhës.</p><button type="button" class="at-h2-btn primary" data-home-action="find">⌕ Kërko një anime</button></div>`;
-  const nx=next(a),seas=nx?a.seasons.indexOf(nx.season)+1:null,pct=ctx.percent(a),n=ctx.count(a),total=ctx.releasedTotal(a),hasNext=!!nx;
-  return `<article class="at-h2-feature"><div class="at-h2-feature-art">${img(a)}<span class="at-h2-art-shade"></span><span class="at-h2-feature-kind">${a.favorite?'♥ E preferuar':'▶ WATCH NEXT'}</span></div><div class="at-h2-feature-body"><span class="at-h2-kicker">${hasNext?'VAZHDO NGA KU E LE':'NË LISTËN TËNDE'}</span><h3>${esc(a.title)}</h3><p>${hasNext?`Episodi i radhës: <b>Sezoni ${seas} · Episodi ${nx.n}</b>`:'Hap animen për të parë sezonet dhe episodet.'}</p><div class="at-h2-progress-text"><span>${n}/${total||'?'} episode të shënuara</span><b>${total?pct+'%':'—'}</b></div><div class="at-h2-meter"><span style="width:${Math.max(0,Math.min(100,pct))}%"></span></div><div class="at-h2-feature-actions">${hasNext?`<button type="button" class="at-h2-btn primary" data-home-action="open-next" data-id="${esc(a.id)}">▶ Hap episodin</button><button type="button" class="at-h2-btn" data-home-action="mark-next" data-id="${esc(a.id)}">✓ Shëno si parë</button>`:`<button type="button" class="at-h2-btn primary" data-home-action="open-anime" data-id="${esc(a.id)}">Hap animen →</button>`}<button type="button" class="at-h2-icon-btn" data-home-action="queue-toggle" data-id="${esc(a.id)}" title="${qids().includes(a.id)?'Hiqe nga sesioni':'Shto në sesion'}" aria-label="${qids().includes(a.id)?'Hiqe nga sesioni':'Shto në sesion'}">${qids().includes(a.id)?'✓':'+'}</button></div></div></article>`;
+ function lastWatched(a){
+ const hist=ctx.state().history||[];
+ for(let i=hist.length-1;i>=0;i--){
+  const h=hist[i];if(h.id!==a.id||!['watched','season-watched'].includes(h.action))continue;
+  const s=a.seasons.find(s=>s.id===h.seasonId);if(!s)continue;
+  const n=h.action==='season-watched'?Math.max(0,...s.watched):Number(h.episode);
+  if(Number.isInteger(n)&&n>0&&s.watched?.includes(n))return `S${String(a.seasons.indexOf(s)+1).padStart(2,'0')} · E${String(n).padStart(2,'0')}`;
  }
+ for(let i=a.seasons.length-1;i>=0;i--){const s=a.seasons[i],n=Math.max(0,...(s.watched||[]));if(n)return `S${String(i+1).padStart(2,'0')} · E${String(n).padStart(2,'0')}`}
+ return '';
+}
+ function feature(){
+ const a=focus();
+ if(!a)return `<div class="at-h2-feature at-h2-feature-empty"><span class="at-h2-kicker">YOUR NEXT EPISODE</span><h3>Historia jote nis këtu ✦</h3><p>Kërko një anime dhe vendose te “Po shikoj”. Pastaj do të shfaqet këtu episodi i radhës.</p><button type="button" class="at-h2-btn primary" data-home-action="find">⌕ Kërko një anime</button></div>`;
+ const nx=next(a),seas=nx?a.seasons.indexOf(nx.season)+1:null,pct=ctx.percent(a),n=ctx.count(a),total=ctx.releasedTotal(a),hasNext=!!nx,history=lastWatched(a);
+ const epTitle=nx?.season?.episodes?.find(e=>Number(e.number)===nx.n)?.title||'';
+ const marker=hasNext?`<div class="at-h3-now" aria-label="Episodi i radhës, sezoni ${seas}, episodi ${nx.n}"><span>EPISODI I RADHËS</span><strong><b>S${String(seas).padStart(2,'0')}</b><i>·</i><b>E${String(nx.n).padStart(2,'0')}</b></strong>${epTitle?`<small>${esc(epTitle)}</small>`:''}</div>`:`<div class="at-h3-now"><span>NË LISTËN TËNDE</span><strong><b>Gati për fillim</b></strong></div>`;
+ const undo=lastMarked?.id===a.id&&lastMarked.seasonId&&lastMarked.n&&a.seasons.find(s=>s.id===lastMarked.seasonId)?.watched?.includes(lastMarked.n);
+ return `<article class="at-h2-feature at-h3-feature"><div class="at-h2-feature-art">${img(a)}<span class="at-h2-art-shade"></span><span class="at-h2-feature-kind">${a.favorite?'♥ E preferuar':'▶ WATCH NEXT'}</span></div><div class="at-h2-feature-body"><span class="at-h2-kicker">VAZHDO NGA KU E LE</span><h3>${esc(a.title)}</h3>${marker}<div class="at-h3-watch-summary"><span>${history?'✓ I fundit i parë: <b>'+esc(history)+'</b>':'✦ Ende pa episod të shënuar'}</span><span>◷ <b>${ready(a)}</b> episode gati</span></div><div class="at-h2-progress-text"><span>${n}/${total||'?'} episode të shënuara</span><b>${total?pct+'%':'—'}</b></div><div class="at-h2-meter"><span style="width:${Math.max(0,Math.min(100,pct))}%"></span></div><div class="at-h2-feature-actions">${hasNext?`<button type="button" class="at-h2-btn primary" data-home-action="open-next" data-id="${esc(a.id)}">▶ Hap episodin</button><button type="button" class="at-h2-btn" data-home-action="mark-next" data-id="${esc(a.id)}">✓ E pashë</button>`:`<button type="button" class="at-h2-btn primary" data-home-action="open-anime" data-id="${esc(a.id)}">Hap animen →</button>`}<button type="button" class="at-h2-icon-btn" data-home-action="queue-toggle" data-id="${esc(a.id)}" title="${qids().includes(a.id)?'Hiqe nga sesioni':'Shto në sesion'}" aria-label="${qids().includes(a.id)?'Hiqe nga sesioni':'Shto në sesion'}">${qids().includes(a.id)?'✓':'+'}</button>${undo?`<button type="button" class="at-h3-undo" data-home-action="undo-mark" data-id="${esc(a.id)}">↶ Zhbëj shënimin</button>`:''}</div></div></article>`;
+}
  function session(){
   const queued=qids().map(byId).filter(Boolean),eligible=ordered();
   return `<div class="at-h2-session"><div class="at-h2-section-title"><div><span class="at-h2-kicker">YOUR WATCH SESSION</span><h3>🎬 Sesioni im</h3><p>Zgjidh deri në 6 anime për t’i pasur gati.</p></div><button type="button" class="at-h2-plain" data-home-action="surprise" ${eligible.length?'':'disabled'}>🎲 Më surprizo</button></div><div class="at-h2-session-list">${queued.length?queued.map((a,i)=>`<div class="at-h2-session-row"><span class="at-h2-session-num">${String(i+1).padStart(2,'0')}</span><button type="button" class="at-h2-session-cover" data-home-action="choose" data-id="${esc(a.id)}">${img(a)}</button><button type="button" class="at-h2-session-name" data-home-action="choose" data-id="${esc(a.id)}"><strong>${esc(a.title)}</strong><small>${next(a)?`S${a.seasons.indexOf(next(a).season)+1} · E${next(a).n}`:ready(a)?ready(a)+' episode gati':'Hap sezonet'}</small></button><button type="button" class="at-h2-row-remove" data-home-action="queue-toggle" data-id="${esc(a.id)}" aria-label="Hiqe ${esc(a.title)} nga sesioni">×</button></div>`).join(''):`<div class="at-h2-session-empty"><span>✦</span><strong>Sesioni yt është bosh</strong><p>Shto anime nga “Gati për t’u parë” për të krijuar listën e mbrëmjes.</p></div>`}</div><div class="at-h2-session-foot"><span>${queued.length}/6 anime</span>${queued.length?'<button data-home-action="queue-clear" type="button">Pastro listën</button>':'<button data-home-action="lineup-scroll" type="button">Zgjidh nga Watching ↓</button>'}</div></div>`;
  }
+ function lineupResults(){
+ const list=ordered().filter(a=>a.title.toLocaleLowerCase().includes(searchTerm.toLocaleLowerCase()));
+ if(!list.length)return `<div class="at-h2-inline-empty">${searchTerm?'Nuk u gjet asnjë anime për këtë kërkim.':'Nuk ke episode të tjera të transmetuara te “Po shikoj”. Kontrollo kalendarin ose zbulo një anime të re.'} <button type="button" data-home-action="${searchTerm?'search-clear':'find'}">${searchTerm?'Pastro kërkimin':'Zbulo anime →'}</button></div>`;
+ return `<div class="at-h2-lineup-grid">${list.slice(0,expanded?list.length:6).map(a=>{const nx=next(a),season=a.seasons.indexOf(nx.season)+1,seen=lastWatched(a),isQueued=qids().includes(a.id);return `<article class="at-h2-lineup-card at-h3-lineup-card"><button type="button" class="at-h2-lineup-poster" data-home-action="open-next" data-id="${esc(a.id)}" aria-label="Hap episodin e radhës për ${esc(a.title)}">${img(a)}<span>${ready(a)} gati</span></button><div class="at-h2-lineup-info"><button type="button" class="at-h2-lineup-name" data-home-action="open-anime" data-id="${esc(a.id)}">${esc(a.title)}</button><div class="at-h3-ep-row"><span class="at-h3-ep-number" aria-label="Sezoni ${season}, episodi ${nx.n}">S${String(season).padStart(2,'0')} <i>·</i> E${String(nx.n).padStart(2,'0')}</span><span class="at-h3-remaining">${ready(a)} episode gati</span></div><small class="at-h3-last-seen">${seen?'I fundit i parë: '+esc(seen):'Nis episodin e parë'}</small><div class="at-h3-mini-progress"><span style="width:${Math.max(0,Math.min(100,ctx.percent(a)))}%"></span></div><div class="at-h2-lineup-actions"><button type="button" data-home-action="open-next" data-id="${esc(a.id)}">▶ Hap episodin</button><button type="button" data-home-action="mark-next" data-id="${esc(a.id)}" aria-label="Shëno si të parë episodin ${nx.n} të ${esc(a.title)}">✓ E pashë</button><button type="button" data-home-action="queue-toggle" data-id="${esc(a.id)}" aria-label="${isQueued?'Hiqe nga sesioni':'Shto në sesion'}">${isQueued?'✓':'+'}</button></div></div></article>`}).join('')}</div>${list.length>6?`<div class="at-h3-show-all"><button type="button" data-home-action="show-all">${expanded?'Shfaq më pak ↑':'Shfaq të gjitha '+list.length+' animet ↓'}</button></div>`:''}`;
+}
  function lineup(){
-  const list=ordered(),filters=[['recent','Së fundmi'],['few','Pak episode'],['finish','Afër përfundimit'],['favorites','♥ Favorites']];
-  return `<div class="at-h2-section-head" id="at-h2-lineup-anchor"><div><span class="at-h2-kicker">READY TO WATCH</span><h3>Vazhdo shikimin <span>${list.length} anime</span></h3><p>Zgjidh çfarë të shikosh ose shëno episodin pas përfundimit.</p></div><button class="at-h2-plain" type="button" data-home-action="watching">Të gjitha te Watching ↗</button></div><div class="at-h2-filter-row" role="group" aria-label="Rendit anime">${filters.map(([id,label])=>`<button class="${sort===id?'active':''}" type="button" data-home-action="sort" data-id="${id}" aria-pressed="${sort===id}">${label}</button>`).join('')}</div>${list.length?`<div class="at-h2-lineup-grid">${list.slice(0,6).map(a=>{const nx=next(a);return `<article class="at-h2-lineup-card"><button type="button" class="at-h2-lineup-poster" data-home-action="open-next" data-id="${esc(a.id)}">${img(a)}<span>${ready(a)} gati</span></button><div class="at-h2-lineup-info"><button type="button" class="at-h2-lineup-name" data-home-action="open-anime" data-id="${esc(a.id)}">${esc(a.title)}</button><small>S${a.seasons.indexOf(nx.season)+1} · E${nx.n} · ${ctx.percent(a)}%</small><div class="at-h2-lineup-actions"><button type="button" data-home-action="open-next" data-id="${esc(a.id)}">▶ Vazhdo</button><button type="button" data-home-action="queue-toggle" data-id="${esc(a.id)}" aria-label="${qids().includes(a.id)?'Hiqe nga sesioni':'Shto në sesion'}">${qids().includes(a.id)?'✓':'+'}</button></div></div></article>`}).join('')}</div>`:'<div class="at-h2-inline-empty">Nuk ke episode të tjera të transmetuara te “Po shikoj”. Kontrollo kalendarin ose zbulo një anime të re. <button type="button" data-pro-page="recommendations">Zbulo anime →</button></div>'}`;
- }
+ const list=candidates(),filters=[['recent','Së fundmi'],['few','Pak episode'],['finish','Afër përfundimit'],['favorites','♥ Favorites']];
+ return `<div class="at-h2-section-head" id="at-h2-lineup-anchor"><div><span class="at-h2-kicker">READY TO WATCH</span><h3>Vazhdo shikimin <span>${list.length} anime</span></h3><p>Numri i madh tregon episodin që duhet të shikosh tani.</p></div><button class="at-h2-plain" type="button" data-home-action="watching">Të gjitha te Watching ↗</button></div><div class="at-h3-list-controls"><label class="at-h3-search">⌕ <input id="at-h3-anime-search" type="search" value="${esc(searchTerm)}" placeholder="Gjej anime në listë..." aria-label="Kërko në animet që po ndjek" autocomplete="off"></label><div class="at-h2-filter-row" role="group" aria-label="Rendit anime">${filters.map(([id,label])=>`<button class="${sort===id?'active':''}" type="button" data-home-action="sort" data-id="${id}" aria-pressed="${sort===id}">${label}</button>`).join('')}</div></div><div id="at-h3-lineup-results" aria-live="polite">${lineupResults()}</div>`;
+}
  function releases(){
   const now=Date.now(),byKey=new Map();
   for(const x of ctx.recentAiring?.()||[]){
@@ -76,6 +96,19 @@ window.ATHome=function ATHome(ctx){
  }
  function render(){return {hero:hero(),feature:feature(),session:session(),lineup:lineup(),releases:releases(),seasons:seasons()}}
  function scrollLineup(){ctx.el('at-h2-lineup-anchor')?.scrollIntoView({behavior:'smooth',block:'start'})}
+ function markHome(a){
+ if(!a)return;
+ const n=next(a);if(!n)return;
+ const before=!!n.season.watched.includes(n.n);
+ ctx.markNext(a.id);
+ if(!before&&n.season.watched.includes(n.n)){lastMarked={id:a.id,seasonId:n.season.id,n:n.n};ctx.rerender()}
+}
+ function undoHome(a){
+ if(!a||lastMarked?.id!==a.id)return;
+ const {seasonId,n}=lastMarked,s=a.seasons.find(x=>x.id===seasonId),h=(ctx.state().history||[]).at(-1);
+ if(!s?.watched.includes(n)||h?.id!==a.id||h.seasonId!==seasonId||h.episode!==n||h.action!=='watched'){lastMarked=null;ctx.toast('Ka ndryshuar progresi; hap episodet për ta korrigjuar.');ctx.rerender();return}
+ lastMarked=null;ctx.unmarkEpisode?.(a.id,seasonId,n);ctx.rerender();
+}
  function action(op,id,b){
   syncOwner();const a=byId(id);
   if(op==='find'){ctx.navigate('explore');return}
@@ -84,7 +117,11 @@ window.ATHome=function ATHome(ctx){
   if(op==='continue'){const x=focus();if(x){selection=x.id;const n=next(x);if(n)ctx.openEpisode(x.id,n.season.id,n.n);else ctx.openAnime(x.id)}else ctx.navigate('explore');return}
   if(op==='open-anime'){if(a)ctx.openAnime(a.id);return}
   if(op==='open-next'){const n=a&&next(a);if(n)ctx.openEpisode(a.id,n.season.id,n.n);else if(a)ctx.openAnime(a.id);return}
-  if(op==='mark-next'){if(a&&next(a))ctx.markNext(a.id);return}
+  if(op==='mark-next'){markHome(a);return}
+  if(op==='undo-mark'){undoHome(a);return}
+  if(op==='show-all'){expanded=!expanded;ctx.rerender();return}
+  if(op==='search-clear'){searchTerm='';ctx.rerender();return}
+  if(op==='search'){searchTerm=String(b||'').slice(0,90);const target=ctx.el('at-h3-lineup-results');if(target)target.innerHTML=lineupResults();return}
   if(op==='sort'){if(['recent','few','finish','favorites'].includes(id)){sort=id;ctx.rerender()}return}
   if(op==='choose'){if(a){selection=a.id;ctx.rerender()}return}
   if(op==='surprise'){const list=candidates();if(!list.length)return;cycle=(cycle+1)%list.length;selection=list[cycle].id;ctx.rerender();ctx.el('at-home-focus')?.scrollIntoView({behavior:'smooth',block:'center'});return}
