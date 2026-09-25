@@ -140,7 +140,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  function switchOwner(){
   const id=String(ctx.user()?.id||'guest');
   if(owner===id)return;
-  owner=id;candidates=[];items=[];fetchedAt=0;error='';hidden=new Set();mood='all';length='all';tab='personal';limit=12;requestId++;
+  owner=id;candidates=[];items=[];loading=false;fetchedAt=0;error='';hidden=new Set();mood='all';length='all';tab='personal';limit=12;requestId++;
   const prefs=getStore(preferencesKey());
   if(prefs){hidden=new Set((Array.isArray(prefs.hidden)?prefs.hidden:[]).slice(0,250));mood=MOODS.some(m=>m[0]===prefs.mood)?prefs.mood:'all';length=LENGTHS.some(l=>l[0]===prefs.length)?prefs.length:'all'}
  }
