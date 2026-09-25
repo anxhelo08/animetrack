@@ -23,5 +23,6 @@ window.ATRecommendations=function ATRecommendations(ctx){
   finally{loading=false;ctx.rerender()}
  }
  async function add(key){const item=items.find(x=>x.key===key);if(item)await ctx.addItem(item)}
- return {render,home,refresh,add};
+ function reset(){items=[];loading=false;ctx.rerender()}
+ return {render,home,refresh,add,reset};
 };
