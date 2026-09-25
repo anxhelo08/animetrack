@@ -1426,9 +1426,9 @@ async function v98PublishComment(){
  episodeDiscussion.draft=body;episodeDiscussion.isSpoiler=spoiler;episodeDiscussion.sending=true;v81RenderEpisode();
  try{
   const name=String(accountUser.user_metadata?.display_name||'Anime fan').trim().slice(0,40)||'Anime fan';
-  const {error}=await accountInitClient().from('episode_comments').insert({user_id:accountUser.id,episode_key:key,author_name:name,body,is_spoiler:spoiler});
+  const {error}=await accountInitClient().from('episode_comments').insert({user_id:accountUser.id,episode_key:key,author_name:name,body,is_spoiler:spoiler,parent_id:episodeDiscussion.replyTo||null});
   if(error)throw error;
-  episodeLastPost=Date.now();episodeDiscussion.draft='';episodeDiscussion.isSpoiler=true;notify('Komenti u publikua ✓');episodeDiscussion.sending=false;await v98LoadComments();
+  episodeLastPost=Date.now();episodeDiscussion.draft='';episodeDiscussion.replyTo=null;episodeDiscussion.isSpoiler=true;notify('Komenti u publikua ✓');episodeDiscussion.sending=false;await v98LoadComments();
  }catch(e){episodeDiscussion.error='Dërgimi dështoi: '+String(e.message||e).slice(0,160);episodeDiscussion.sending=false;v81RenderEpisode()}
 }
 async function v98EditComment(id){
@@ -1473,6 +1473,8 @@ function v98EpisodeActionHandlers(){
  document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.v98SaveNote){v98SavePrivate();return}
+  if(b.dataset.v98Reply){episodeDiscussion.replyTo=Number(b.dataset.v98Reply);v81RenderEpisode();$('v98-comment-body')?.focus();return}
+  if(b.dataset.v98CancelReply){episodeDiscussion.replyTo=null;v81RenderEpisode();return}
   if(b.dataset.v98Send){void v98PublishComment();return}
   if(b.dataset.v98Refresh){void v98LoadComments();return}
   if(b.dataset.v98Reveal){episodeRevealed.add(Number(b.dataset.v98Reveal));v81RenderEpisode();return}
