@@ -28,9 +28,10 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm install --no-save --no-package-lock playwright@1.55.0
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - name: Start local site
         run: |
           python -m http.server 8765 --bind 127.0.0.1 >/tmp/animetrack-http.log 2>&1 &
           echo $! > /tmp/animetrack-http.pid
       - run: node tests/iphone-browser.cjs
+      - run: BROWSER=webkit node tests/iphone-browser.cjs
