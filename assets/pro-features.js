@@ -27,8 +27,10 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/sw.js').catch(console.warn);
   document.addEventListener('click',handleClick);
+  document.addEventListener('change',e=>{if(e.target?.id==='pro-rec-length')modules.recommendations.setLength(e.target.value)});
   setInterval(()=>{if(ctx.user())modules.notifications.refresh()},5*60000);
   renderHome();
+  void modules.recommendations.refresh(false);
  }
  function open(name){
   if(!proPages.includes(name))return false;
@@ -36,15 +38,15 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
   $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️'})[name];
-  render();window.scrollTo({top:0,behavior:'smooth'});return true;
+  render();if(name==='recommendations')void modules.recommendations.refresh(false);window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  async function onAccount(){
-  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();if(ctx.user())await modules.recommendations.refresh(false);renderHome();
+  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
- function onStateChange(){modules.profiles.scheduleSnapshot();modules.notifications.badge();renderHome()}
+ function onStateChange(){modules.profiles.scheduleSnapshot();modules.notifications.badge();modules.recommendations.onLibraryChange();renderHome()}
  function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';element.innerHTML=modules.rewatch.render(id);root.append(element)}
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
@@ -54,6 +56,14 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op==='install'){if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Share → Add to Home Screen.');return}
    if(op==='recommendations'){ctx.navigate('recommendations');return}
    if(op==='add-recommendation')return await modules.recommendations.add(b.dataset.key);
+   if(op==='preview-recommendation')return modules.recommendations.preview(b.dataset.key);
+   if(op==='hide-recommendation')return modules.recommendations.hide(b.dataset.key);
+   if(op==='restore-recommendations')return modules.recommendations.restore();
+   if(op==='rec-mood')return modules.recommendations.setMood(id);
+   if(op==='rec-tab')return modules.recommendations.setTab(id);
+   if(op==='rec-surprise')return modules.recommendations.surprise();
+   if(op==='more-recommendations')return modules.recommendations.more();
+   if(op==='reset-recommendation-filters')return modules.recommendations.resetFilters();
    if(op==='refresh-recommendations')return await modules.recommendations.refresh(true);
    if(op.startsWith('notification-'))return await modules.notifications.action(op,id);
    if(op.startsWith('week-')||op.startsWith('calendar-')||op.startsWith('wrapped-'))return modules.calendar.action(op,id);
