@@ -1101,6 +1101,26 @@ function v98EpisodeActionHandlers(){
 }
 v98EpisodeActionHandlers();
 
+/* 10.8: augment existing season/episode views; never merge user records on view. */
+const atJourney=window.ATJourney({
+ el:$,esc:escapeHTML,state:()=>state,root:seriesRootTitle,seriesFormat:isSeriesFormat,
+ released:releasedCount,activeSeason:()=>activeSeasonId,episodeParts:v81EpisodeParts,
+ closeEpisode:()=>{if($('episode-detail-modal').classList.contains('show'))closeModal('episode-detail-modal')},
+ openEpisode:(id,sid,n)=>{if($('detail-modal').classList.contains('show'))closeModal('detail-modal');v81OpenEpisode(id,sid,n)},
+ openSeason:(id,sid)=>{
+  const a=state.anime.find(x=>x.id===id),season=a?.seasons.find(x=>x.id===sid);if(!season)return;
+  if($('episode-detail-modal').classList.contains('show'))closeModal('episode-detail-modal');
+  activeSeasonId=sid;episodePage=0;renderDetail(id);showModal('detail-modal');loadSeasonEpisodes(id,sid,0);
+ }
+});
+const priorJourneyDetail=renderDetail;
+renderDetail=function(id){priorJourneyDetail(id);atJourney.renderDetail(state.anime.find(a=>a.id===id))};
+const priorJourneyEpisode=v81RenderEpisode;
+v81RenderEpisode=function(message=''){priorJourneyEpisode(message);atJourney.renderEpisode(v81EpisodeParts())};
+const priorJourneyOpen=v81OpenEpisode;
+v81OpenEpisode=function(id,seasonId,n){atJourney.onOpen();return priorJourneyOpen(id,seasonId,n)};
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-journey-action]');if(b)atJourney.action(b)});
+
 
 /* AnimeTrack 9.9 — composed feature modules. Core user library remains unchanged. */
 const proContext={
