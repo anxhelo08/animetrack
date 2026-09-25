@@ -1410,7 +1410,7 @@ async function v98LoadComments(){
  if(episodeDiscussion.loading)return;
  episodeDiscussion.loading=true;episodeDiscussion.error='';v81RenderEpisode();
  try{
-  const {data,error}=await accountInitClient().from('episode_comments').select('id,user_id,author_name,body,is_spoiler,created_at').eq('episode_key',key).order('created_at',{ascending:false}).limit(80);
+  const {data,error}=await accountInitClient().from('episode_comments').select('id,user_id,author_name,body,is_spoiler,parent_id,created_at').eq('episode_key',key).order('created_at',{ascending:false}).limit(80);
   if(error)throw error;if(episodeDiscussion.key!==key)return;
   episodeDiscussion.rows=data||[];
  }catch(e){if(episodeDiscussion.key===key)episodeDiscussion.error='Komentet nuk u ngarkuan: '+String(e.message||e).slice(0,130)}
