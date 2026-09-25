@@ -96,5 +96,9 @@ window.ATCalendarWrapped=function ATCalendarWrapped(ctx){
  if(op==='wrapped-copy'){copy();return}
  if(op==='wrapped-image'){image();return}
 }
- return{calendar,wrapped,action};
+ function home(){
+ const now=Date.now(),next=ctx.upcoming().filter(e=>e.animeId&&e.when>=now&&e.when<=now+7*86400000).sort((a,b)=>a.when-b.when).slice(0,3);
+ return `<div class="at-home-widget-head"><div><span class="pro-eyebrow">THIS WEEK</span><h3>📅 Kjo javë</h3><p>Premierat e animeve që ndjek</p></div><button class="pro-btn" data-pro-page="calendar">Kalendari ↗</button></div><div class="at-home-widget-list">${next.map(x=>{const key=[x.animeId,x.seasonId||'',x.episode,x.when].join(':');return `<button class="at-home-week-row" data-pro-action="calendar-open" data-id="${esc(key)}"><span class="at-home-week-date"><b>${new Date(x.when).toLocaleDateString('sq-AL',{day:'2-digit'})}</b><small>${esc(new Date(x.when).toLocaleDateString('sq-AL',{month:'short'}))}</small></span><span><strong>${esc(x.title)}</strong><small>EP ${esc(x.episode)} · ${esc(new Date(x.when).toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit'}))}</small></span><span aria-hidden="true">↗</span></button>`}).join('')||'<p class="at-home-widget-empty">Nuk ka ende premiera të konfirmuara këtë javë.</p>'}</div>`;
+}
+ return{calendar,wrapped,action,home};
 };
