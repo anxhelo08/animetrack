@@ -1,4 +1,4 @@
-# AnimeTrack 10.8 — Anime Universe Pro
+# AnimeTrack 10.9 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -15,7 +15,7 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Panel moderimi vetëm për llogarinë e autorizuar.
 - PWA e instalueshme kur shfletuesi e mbështet. Funksionet cloud kërkojnë lidhje interneti.
 
-**Njoftimet janë in-app**, jo push në sfond kur faqja është e mbyllur. Orari i një episodi tregon transmetimin e njoftuar, jo garanci për disponueshmërinë në një platformë streaming.
+**Kujtesat in-app janë funksionale.** Web Push jashtë aplikacionit është i përgatitur në kod, por nuk aktivizohet derisa migrimi, funksionet dhe çelësat VAPID të publikohen në mënyrë të sigurt. Orari i një episodi tregon transmetimin e njoftuar, jo garanci për disponueshmërinë në një platformë streaming.
 
 ## Kryefaqja 10.4
 - Watch-first Home: karta e madhe “ku e le” me backlog, episodin e radhës dhe episode të shpejta; sesion personal deri në 6 anime, filtrat Watching, episode të sapotransmetuara, rekomandime, kalendar dhe inbox.
@@ -53,6 +53,15 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Episode Hub ruan përshkrimin/foton e verifikuar, shënimet private dhe komentet ekzistuese me mbulim spoiler; shton tab-e Episodi/Diskutimi dhe kalim të qartë te episodi para/pas edhe në sezonin tjetër kur është transmetuar.
 - I njëjti progres për PC/iPhone, pa ndryshuar skemën Supabase apo krijuar databazë të re.
 
+## Kalendari inteligjent 10.9
+- “Kjo javë për ty” në PC dhe iPhone: episode të ardhshme nga anime që ndjek, pa ato tashmë të shënuara. Kufiri 7 ditë dhe zona kohore e pajisjes.
+- Për çdo episod: pa kujtesë, në transmetim, 10/30/60 minuta ose 1 ditë përpara. Koha e zgjedhur ruhet në cloud dhe përfshihet në alarmet e eksportit .ics.
+- Inbox-i llogarit fillimin e kujtesës sipas zgjedhjes reale, përfshirë 0 minuta. Aktivizimi është individual.
+- Web Push për Home Screen iPhone është opt-in dhe i kushtëzuar nga serveri. Kodet SQL me RLS, Edge Functions dhe cron gjenden te `supabase/`, por **nuk janë aplikuar në projektin live**. Asnjë çelës privat nuk është në frontend.
+- Për t’u publikuar: vendos në Supabase `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` dhe `ANIMETRACK_CRON_SECRET` (32+ karaktere); apliko migrimin; deploy `anime-push-config` me JWT dhe `anime-push-dispatch` pa JWT vetëm sepse kontrollon sekretin cron në kod; aktivizo cron sipas skedarit `supabase/cron/anime-push-109.sql`; kontrollo me një abonim test para ndezjes te përdoruesit.
+- Deri në konfigurimin e serverit, UI shfaq saktësisht që Web Push nuk është aktiv dhe nuk kërkon leje njoftimesh.
+- 10.8 Episode/Franchise, 10.7 ruajtja e sigurt dhe 10.6 PC ruhen të gjitha.
+
 ## Arkitektura
 `index.html`: struktura e faqes dhe ngarkimi i moduleve.  
 `assets/app.js` / `assets/app.css`: aplikacioni ekzistues, i nxjerrë nga skedari monolitik pa ndryshuar përmbajtjen.  
@@ -67,11 +76,11 @@ Supabase Auth dhe RLS ndajnë bibliotekat personale. Profili nis privat; lista e
 
 Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodikisht kopje rezervë.
 
-<!-- Production deployment sync: AnimeTrack 10.8 iPhone PWA release. -->
+<!-- Production deployment sync: AnimeTrack 10.9 iPhone PWA release. -->
 
 ## Korrigjimi 10.5.1 në iPhone
 - Feed-i i episodeve nuk fshihet më nga rregullat e vjetra të dashboard-it; vetëm pamja desktop fshihet në mobile.
 - Test real shfletuesi për hapjen e feed-it, kalimin +1 episod dhe pesë tab-et në Chromium dhe Safari WebKit.
 - Një rekord i paplotë episodi nuk e bllokon tërë aplikacionin; shfaqet veprim rikuperimi.
 
-<!-- Production redeploy: AnimeTrack 10.8 iPhone blank-feed hotfix. -->
+<!-- Production redeploy: AnimeTrack 10.9 iPhone blank-feed hotfix. -->

@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-const names=['pro-recommendations','pro-calendar-wrapped','pro-profiles','pro-friends','pro-moderation','pro-notifications','pro-rewatch','pro-home','pro-iphone','pro-journey-108','pro-features'];
+const names=['pro-recommendations','pro-calendar-wrapped','pro-profiles','pro-friends','pro-moderation','pro-notifications','pro-rewatch','pro-home','pro-iphone','pro-journey-108','pro-smart-airing-109','pro-push-109','pro-features'];
 function load(extra={}){
  const sandbox={window:{},console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
@@ -12,9 +12,9 @@ function load(extra={}){
  return sandbox.window;
 }
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
-test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
+test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.8/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','assets/pro-airing-109.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.9/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -68,7 +68,7 @@ test('calendar week/month/timeline, opt-in reminder and notification categories'
  const state={anime:[{id:'a1',title:'Calendar Test',genre:'Drama',status:'watching',favorite:true,seasons:[{id:'s1',watched:[],total:12}]}],history:[],preferences:{notificationRead:[]}};
  const c=context();c.state=()=>state;c.upcoming=()=>[e];c.released=x=>x.total;c.rerender=()=>{};c.poster=()=>'';c.save=()=>true;
  let opened=false;c.openEpisode=()=>{opened=true};
- const calendar=w.ATCalendarWrapped(c);
+ const calendar=w.ATCalendarWrapped(c);c.setCalendarReminder=(key,value)=>w.ATSmartAiring(c).setReminder(key,value);
  assert.match(calendar.calendar(),/at-cal-grid/);
  calendar.action('calendar-view','month');assert.match(calendar.calendar(),/at-cal-day-open/);
  calendar.action('calendar-view','agenda');assert.match(calendar.calendar(),/at-cal-agenda/);
@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v108-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v109-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -303,4 +303,44 @@ test('10.8 Episode Hub tab/next navigation hooks preserve existing spoiler comme
  assert.match(css,/data-at108-tab="discussion"/);
  assert.match(html,/pro-journey-108\.js/);assert.match(sw,/pro-journey-108\.css/);
  assert.match(app,/v98-spoiler-reveal/);assert.match(app,/v98DiscussionHTML\(currentKey\)/);
+});
+
+test('10.9 personal airing keeps watched episodes out and supports exact per-event lead times',async()=>{
+ const w=load(),c=context(),now=Date.now(),
+ anime={id:'a',title:'New Galaxy',status:'watching',favorite:false,seasons:[{id:'s',watched:[1],total:12}]},
+ seen={animeId:'a',seasonId:'s',episode:1,seasonEpisode:1,when:now+15*60000,title:'New Galaxy'},
+ next={animeId:'a',seasonId:'s',episode:2,seasonEpisode:2,when:now+15*60000,title:'New Galaxy'},
+ untracked={animeId:'outsider',seasonId:'none',episode:1,when:now+15*60000,title:'Other'};
+ const data={anime:[anime],history:[],preferences:{calendarReminders:{}}};
+ let saves=0;c.state=()=>data;c.upcoming=()=>[seen,next,untracked];c.save=()=>{saves++;return true};
+ const smart=w.ATSmartAiring(c),key=smart.eventKey(next);
+ assert.equal(smart.summary().total,1);assert.equal(smart.upcomingPersonal(7)[0].episode,2);
+ assert.match(smart.panel(),/New Galaxy/);assert.doesNotMatch(smart.panel(),/Other/);
+ assert.equal(smart.setReminder(key,'10'),true);assert.equal(data.preferences.calendarReminders[key],10);
+ let inbox=w.ATNotifications(c);await inbox.refresh();
+ assert.equal(inbox.get().some(n=>n.key==='reminder:'+key),false,'10 min reminder should not fire early');
+ assert.equal(smart.setReminder(key,'30'),true);inbox=w.ATNotifications(c);await inbox.refresh();
+ assert.equal(inbox.get().some(n=>n.key==='reminder:'+key),true,'30 min reminder is due');
+ assert.equal(smart.setReminder(key,'0'),true);assert.equal(data.preferences.calendarReminders[key],0);
+ assert.equal(smart.setDefault('60'),true);assert.equal(data.preferences.reminderLead,60);
+ assert.equal(smart.setReminder(key,'off'),true);assert.equal(Object.prototype.hasOwnProperty.call(data.preferences.calendarReminders,key),false);
+ assert.equal(saves,5);
+});
+test('10.9 push is explicitly opt-in and staged server secrets never ship in the browser',()=>{
+ const w=load(),c=context(),push=w.ATPush109(c),html=push.banner(),
+ sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),
+ src=fs.readFileSync(path.join(root,'assets/pro-push-109.js'),'utf8'),
+ backend=fs.readFileSync(path.join(root,'supabase/functions/anime-push-dispatch/index.ts'),'utf8'),
+ sql=fs.readFileSync(path.join(root,'supabase/migrations/20260925235000_anime_push_reminders.sql'),'utf8'),
+ index=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ assert.match(html,/Njoftimet jashtë aplikacionit/);
+ assert.doesNotMatch(src,/VAPID_PRIVATE_KEY|SUPABASE_SERVICE_ROLE_KEY|ANIMETRACK_CRON_SECRET/);
+ assert.match(src,/Notification\.requestPermission\(\)/);
+ assert.match(backend,/X-Cron-Secret/);assert.match(backend,/stillWanted\(job, library\?\.payload\)/);
+ assert.match(sql,/enable row level security/);assert.match(sql,/with check \(user_id=\(select auth\.uid\(\)\)\)/);
+ assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
+ assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
+ assert.match(index,/pro-airing-109\.css/);
+ assert.match(sw,/animetrack-shell-v109-1/);
+ assert.doesNotThrow(()=>new vm.Script(sw));
 });
