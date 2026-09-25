@@ -77,6 +77,7 @@ window.ATCollections110=function ATCollections110(ctx){
   const root=ctx.el('library-view'),head=root?.querySelector('.home-section-head');
   if(!head||ctx.el('at110-open-lists'))return;
   head.insertAdjacentHTML('beforeend','<button id="at110-open-lists" class="at110-library-link" type="button" data-pro-action="collection-open">▤ Listat e mia ↗</button>');
+  head.insertAdjacentHTML('afterend','<button id="at110-mobile-lists" class="at110-library-link at110-mobile-link" type="button" data-pro-action="collection-open">▤ Listat e mia ↗</button>');
  }
  function render(){
   syncOwner();const rows=lists(),chosen=current(),items=library(),matched=items.filter(a=>String(a.title||'').toLocaleLowerCase().includes(query.toLocaleLowerCase())),ids=new Set(chosen?.animeIds||[]),assigned=(chosen?.animeIds||[]).map(id=>items.find(a=>a.id===id)).filter(Boolean),planned=pending&&items.find(a=>a.id===pending);
