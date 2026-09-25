@@ -14,8 +14,9 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   rewatch:window.ATRewatch(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
+ ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
- function renderHome(){const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home()}
+ function renderHome(){const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home();const week=$('pro-home-week');if(week)week.innerHTML=modules.calendar.home();const inbox=$('pro-home-inbox');if(inbox)inbox.innerHTML=modules.notifications.home()}
  ctx.rerender=()=>{render();renderHome()};
  function init(){
   const nav=$('side-nav');
@@ -23,6 +24,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   document.querySelector('.top-actions')?.insertAdjacentHTML('afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
   document.querySelector('main.main').insertAdjacentHTML('beforeend','<section class="pro-view hidden" id="pro-view" aria-label="AnimeTrack Pro"><div id="pro-content"></div></section>');
   const home=$('home-view'),recommend=document.createElement('section');recommend.id='pro-home-recs';recommend.className='pro-panel';const sync=home.querySelector('.sync-panel');if(sync)sync.before(recommend);else home.append(recommend);
+  const dash=document.createElement('div');dash.className='at-home-dashboard';dash.innerHTML='<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>';recommend.after(dash);
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/sw.js').catch(console.warn);
@@ -38,7 +40,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
   $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️'})[name];
-  render();if(name==='recommendations')void modules.recommendations.refresh(false);window.scrollTo({top:0,behavior:'smooth'});return true;
+  render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  async function onAccount(){
@@ -67,6 +69,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op==='refresh-recommendations')return await modules.recommendations.refresh(true);
    if(op.startsWith('notification-'))return await modules.notifications.action(op,id);
    if(op.startsWith('week-')||op.startsWith('calendar-')||op.startsWith('wrapped-'))return modules.calendar.action(op,id);
+   if(op==='profile-tab')return modules.profiles.setTab(id);
    if(op==='profile-save')return await modules.profiles.save();
    if(op==='profile-share')return await modules.profiles.share();
    if(op.startsWith('friend-'))return await modules.friends.action(op,id);

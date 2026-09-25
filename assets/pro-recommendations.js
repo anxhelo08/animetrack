@@ -133,9 +133,14 @@ window.ATRecommendations=function ATRecommendations(ctx){
   <p class="pro-muted pro-rec-source">Burimi: ${esc(source)}. Përshkrimet dhe notat janë nga katalogu; lista personale dhe anime të fshehura mbeten të ndara për çdo llogari në këtë shfletues.</p>`;
  }
  function home(){
-  const p=profile(),featured=items.filter(x=>!ctx.inLibrary(x)).slice(0,3);
-  return `<div class="pro-row"><div><span class="pro-eyebrow">YOUR NEXT WATCH</span><h3>✨ Rekomandime për ty</h3><p class="pro-muted">${p.personal?'Bazuar në vlerësimet dhe zhanret e tua.':'Zbulime të zgjedhura për fillim.'}</p></div><button class="pro-btn" data-pro-page="recommendations">Zbulo më shumë →</button></div>${featured.length?'<div class="pro-rec-grid pro-rec-home">'+featured.map(card).join('')+'</div>':'<div class="pro-empty">Zbulo tituj të rinj për bibliotekën tënde. <button class="pro-btn" data-pro-page="recommendations">Hap rekomandimet →</button></div>'}`;
- }
+ const p=profile(),featured=items.filter(x=>!ctx.inLibrary(x)).slice(0,4);
+ const short=x=>String(x.synopsis||'').replace(/\s+/g,' ').slice(0,88);
+ const tile=x=>{
+  const src=ctx.poster(x.cover);
+  return `<article class="at-home-pick"><button class="at-home-pick-art" type="button" data-pro-action="preview-recommendation" data-key="${esc(x.key)}" aria-label="Hap ${esc(x.title)}">${src?`<img src="${esc(src)}" alt="Posteri i ${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<span>✦</span>'}</button><div class="at-home-pick-info"><div class="at-home-pick-kicker"><span>${x.match==null?'ZBULIM I RI':'✦ '+x.match+'% PËRPUTHJE'}</span><b>★ ${x.score==null?'—':(Number(x.score)/10).toFixed(1)}</b></div><button class="at-home-pick-title" type="button" data-pro-action="preview-recommendation" data-key="${esc(x.key)}">${esc(x.title)}</button><p class="at-home-pick-description">${esc(short(x))}</p><small>${esc(x.year||'')} · ${esc(x.format==='MOVIE'?'Film':x.total?x.total+' episode':'Anime')} · ${esc(x.why.slice(0,1).join(''))}</small><div class="at-home-pick-actions"><button type="button" class="pro-btn primary" data-pro-action="add-recommendation" data-key="${esc(x.key)}">+ Në listë</button><button type="button" class="at-home-pick-more" data-pro-action="preview-recommendation" data-key="${esc(x.key)}">Detajet ↗</button></div></div></article>`;
+ };
+ return `<div class="at-home-rec-header"><div><span class="pro-eyebrow">CURATED FOR YOU</span><h3>✨ Rekomandime për ty</h3><p>${p.personal?'Zgjedhje nga zhanret dhe vlerësimet e tua.':'Zbulo diçka të re nga katalogu anime.'}</p></div><button class="pro-btn at-home-rec-discover" data-pro-page="recommendations">Eksploro të gjitha ↗</button></div>${featured.length?`<div class="at-home-rec-grid">${featured.map(tile).join('')}</div>`:'<div class="at-home-rec-empty"><span>✦</span><p>Rekomandimet po përgatiten sipas bibliotekës tënde.</p><button class="pro-btn" data-pro-page="recommendations">Hap zbulimet →</button></div>'}`;
+}
  function rerank(){items=uniqueRanked(candidates,profile());ctx.rerender()}
  function switchOwner(){
   const id=String(ctx.user()?.id||'guest');

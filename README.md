@@ -1,4 +1,4 @@
-# AnimeTrack 10.0 — Anime Universe Pro
+# AnimeTrack 10.1 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -8,10 +8,10 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 ## Funksionet
 - Bibliotekë për çdo përdorues, sezone të grupuara, progres sipas episodeve të transmetuara dhe rewatch i ndarë.
 - AniList / Jikan / TVmaze për metadata, përshkrime dhe foto episodeve kur burimet i ofrojnë.
-- Njoftime brenda aplikacionit për episode, sezone, përgjigje komentesh dhe kërkesa miqësie.
+- Inbox i organizuar sipas kategorive, lexo/fsheh/çaktivizo llojin, kujtesa kalendari, episode, sezone, komente dhe miq.
 - Discovery 10.0: rekomandime nga notat/zhanret/favorites, filtra sipas humorit dhe gjatësisë, perla nën radar, filma, surpriza, arsyetim i sugjerimit dhe fshehje për çdo llogari.
-- Kalendar javor me eksport .ics; statistika dhe Wrapped me eksport të kartës PNG.
-- Profile private ose publike me miratim të përdoruesit, kërkesa miqësie dhe krahasim bibliotekash.
+- Kalendar javë/muaj/timeline, filtra personalë, episode të paregjistruara, kujtesa in-app dhe eksport .ics; Wrapped me eksport PNG.
+- Profile me header personal, 12-javë heatmap, top anime, zhanre, rewatch dhe badges; privatesi me zgjedhje te përdoruesit, kërkesa miqësie dhe krahasim bibliotekash.
 - Panel moderimi vetëm për llogarinë e autorizuar.
 - PWA e instalueshme kur shfletuesi e mbështet. Funksionet cloud kërkojnë lidhje interneti.
 
@@ -20,7 +20,7 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 ## Arkitektura
 `index.html`: struktura e faqes dhe ngarkimi i moduleve.  
 `assets/app.js` / `assets/app.css`: aplikacioni ekzistues, i nxjerrë nga skedari monolitik pa ndryshuar përmbajtjen.  
-`assets/pro-*.js` / `assets/pro-features.css`: funksionet e reja si module të pavarura.  
+`assets/pro-*.js` / `assets/pro-features.css` / `assets/pro-visual-101.css`: funksionet e reja si module të pavarura.  
 `manifest.webmanifest`, `sw.js`, `icon.svg`: instalimi dhe cache-i i skeletit të faqes.  
 `tests/pro-smoke.test.cjs`: prova të moduleve, strukturës dhe sintaksës.
 
