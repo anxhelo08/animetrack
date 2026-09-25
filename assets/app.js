@@ -1136,7 +1136,7 @@ const atJourney=window.ATJourney({
 const priorJourneyEpisode=v81RenderEpisode;
 v81RenderEpisode=function(message=''){priorJourneyEpisode(message);atJourney.renderEpisode(v81EpisodeParts())};
 const priorJourneyOpen=v81OpenEpisode;
-v81OpenEpisode=function(id,seasonId,n){atJourney.onOpen();return priorJourneyOpen(id,seasonId,n)};
+v81OpenEpisode=function(id,seasonId,n){if($('detail-modal').classList.contains('show'))closeModal('detail-modal');atJourney.onOpen();return priorJourneyOpen(id,seasonId,n)};
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-journey-action]');if(b)atJourney.action(b)});
 
 
