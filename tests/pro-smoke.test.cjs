@@ -97,7 +97,7 @@ test('watch-first home replaces duplicate stats without removing legacy render n
  let opened=null,marked=null;c.openEpisode=(id,s,n)=>{opened=[id,s,n]};c.markNext=id=>{marked=id};c.save=()=>true;
  const home=w.ATHome(c),parts=home.render();
  assert.match(parts.hero,/Çfarë do të shikosh sot/);
- assert.match(parts.feature,/Mystery Voyage/);assert.match(parts.feature,/2 për t’u parë/);assert.match(parts.feature,/Episodi 3/);
+ assert.match(parts.feature,/Mystery Voyage/);assert.match(parts.feature,/10 për t’u parë/);assert.match(parts.feature,/Episodi 3/);
  assert.match(parts.lineup,/E3/);
  assert.doesNotMatch(parts.hero,/Anime gjithsej/);
  home.action('queue-toggle','a1');assert.equal(JSON.stringify(data.preferences.homeQueue),'["a1"]');
