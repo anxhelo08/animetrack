@@ -1,5 +1,6 @@
 /* AnimeTrack 11.0 — clean series view and private My Lists */
 .at110-library-link{min-height:41px;margin-left:auto;padding:9px 14px;border:1px solid #8167af;border-radius:11px;background:#39304e;color:#f5eaff;font-weight:850;font-size:12px;cursor:pointer}
+.at110-mobile-link{display:none}
 .at110-page{padding:12px 0 32px;max-width:1340px;margin:auto}
 .at110-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:19px;padding:23px;border:1px solid #594874;border-radius:18px;background:linear-gradient(125deg,#302541,#1e2839)}
 .at110-kicker{font-size:9px;color:#bca0f4;letter-spacing:1.15px;font-weight:900}
@@ -49,6 +50,7 @@
 .at110-private-note{margin:16px 0;color:#a8a0b9;font-size:10px}
 .at110-page button:focus-visible,.at110-page input:focus-visible,.at110-library-link:focus-visible{outline:2px solid #d4baff;outline-offset:2px}
 @media(max-width:760px){
+ .at110-mobile-link{display:block;width:100%;margin:0 0 12px;min-height:44px;text-align:center}
  .at110-library-link{min-height:38px;padding:8px 10px;font-size:11px}
  .at110-page{padding-top:6px;padding-bottom:calc(110px + env(safe-area-inset-bottom))}
  .at110-heading{padding:15px;border-radius:14px}
