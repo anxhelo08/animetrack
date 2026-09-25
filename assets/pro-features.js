@@ -40,7 +40,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  async function onAccount(){
-  try{await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();if(ctx.user())await modules.recommendations.refresh(false);renderHome();
+  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();if(ctx.user())await modules.recommendations.refresh(false);renderHome();
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
