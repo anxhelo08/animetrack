@@ -1,0 +1,1 @@
+{"name":"animetrack","version":"9.9.0","private":true,"scripts":{"test":"node --test tests/pro-smoke.test.cjs"}}
