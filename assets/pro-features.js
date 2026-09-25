@@ -78,6 +78,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op.startsWith('notification-'))return await modules.notifications.action(op,id);
    if(op.startsWith('week-')||op.startsWith('calendar-')||op.startsWith('wrapped-'))return modules.calendar.action(op,id);
    if(op==='profile-tab')return modules.profiles.setTab(id);
+   if(op==='profile-goal-save')return modules.profiles.goalSave();
    if(op==='profile-save')return await modules.profiles.save();
    if(op==='profile-share')return await modules.profiles.share();
    if(op.startsWith('friend-'))return await modules.friends.action(op,id);
