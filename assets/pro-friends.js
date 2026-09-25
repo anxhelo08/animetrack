@@ -2,14 +2,14 @@ window.ATFriends=function ATFriends(ctx,profiles){
  let friends=[],people=[],comparison=null;
  const esc=ctx.esc,client=()=>ctx.client(),user=()=>ctx.user();
  const display=p=>p?.display_name||p?.handle||'Anime fan';
- const row=(p,actions='')=>`<div class="pro-item"><span class="pro-profile-icon">${esc(p.avatar_emoji||'🎌')}</span><div><strong>${esc(display(p))}</strong><small>@${esc(p.handle||'privat')} · ${p.is_public?'Publik':'Privat'}</small></div><div class="pro-actions">${actions}</div></div>`;
+ const row=(p,actions='')=>`<div class="pro-item"><span class="pro-profile-icon">${ctx.poster(p.avatar_url)?`<img src="${esc(ctx.poster(p.avatar_url))}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:16px">`:esc(p.avatar_emoji||'🎌')}</span><div><strong>${esc(display(p))}</strong><small>@${esc(p.handle||'privat')} · ${p.is_public?'Publik':'Privat'}</small></div><div class="pro-actions">${actions}</div></div>`;
  async function load(){
   if(!user()){friends=[];people=[];return}
   const u=user().id;
   const f=await client().from('anime_friendships').select('id,requester_id,recipient_id,status,created_at').or('requester_id.eq.'+u+',recipient_id.eq.'+u);
   if(f.error)throw f.error;friends=f.data||[];
   const ids=[...new Set(friends.map(x=>x.requester_id===u?x.recipient_id:x.requester_id))];
-  people=[];if(ids.length){const p=await client().from('anime_profiles').select('user_id,handle,display_name,bio,avatar_emoji,is_public,snapshot').in('user_id',ids);if(p.error)throw p.error;people=p.data||[]}
+  people=[];if(ids.length){const p=await client().from('anime_profiles').select('user_id,handle,display_name,bio,avatar_emoji,avatar_url,is_public,snapshot').in('user_id',ids);if(p.error)throw p.error;people=p.data||[]}
  }
  function findName(id){return people.find(p=>p.user_id===id)||{user_id:id,display_name:'Profil i paarritshëm'}}
  function render(){
@@ -20,7 +20,7 @@ window.ATFriends=function ATFriends(ctx,profiles){
  async function find(){
   const q=String(ctx.el('pro-friend-query')?.value||'').trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
   if(q.length<2){ctx.toast('Shkruaj të paktën 2 karaktere.');return}
-  const r=await client().from('anime_profiles').select('user_id,handle,display_name,avatar_emoji,is_public').eq('is_public',true).ilike('handle',q+'%').limit(12);
+  const r=await client().from('anime_profiles').select('user_id,handle,display_name,avatar_emoji,avatar_url,is_public').eq('is_public',true).ilike('handle',q+'%').limit(12);
   if(r.error)throw r.error;const list=(r.data||[]).filter(p=>p.user_id!==user().id),slot=ctx.el('pro-find-results');
   slot.innerHTML=list.map(p=>row(p,`<button class="pro-btn primary" data-pro-action="friend-add" data-id="${p.user_id}">Shto mik</button>`)).join('')||'<div class="pro-empty">Nuk u gjet profil publik.</div>';
  }
