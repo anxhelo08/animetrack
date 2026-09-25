@@ -1071,13 +1071,16 @@ function v98EpisodeActionHandlers(){
 v98EpisodeActionHandlers();
 
 
+/* Live updates use owner-scoped Supabase Realtime with a safe polling fallback. */
+let liveChannel=null,liveChannelOwner='',liveRealtime=false,liveCloudBusy=false,liveCloudCheckedAt=0,liveAiringAttemptAt=0,liveNotificationAttemptAt=0;
+function liveStamp(){return {checkedAt:upcomingCheckedAt,realtime:liveRealtime,online:navigator.onLine!==false}}
 /* AnimeTrack 9.9 — composed feature modules. Core user library remains unchanged. */
 const proContext={
  el:$,esc:escapeHTML,state:()=>state,user:()=>accountUser,client:()=>accountInitClient(),
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
- nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,lastWatched:quickLastWatched,undoLast:quickUndoLast,recentAiring:()=>v96RecentEpisodes(),
+ nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,lastWatched:quickLastWatched,undoLast:quickUndoLast,recentAiring:()=>v96RecentEpisodes(),syncInfo:liveStamp,refreshLive:()=>liveRefresh(true),
  openFilter:code=>setFilter(code),
  
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
@@ -1103,9 +1106,68 @@ proApp.init();
 const proPriorHome=renderHome;renderHome=function(){proPriorHome();proApp.renderHome()};
 const proPriorView=setView;setView=function(which){if(proApp.open(which))return;proApp.hide();return proPriorView(which)};
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id)};
-const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);await proApp.onAccount()};
-const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
+const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);await proApp.onAccount();liveAttach()};
+const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();if(!accountUser){liveDetach();cloudRevision='';proApp.hide();await proApp.onAccount()}};
 const proPriorSave=save;save=function(){const result=proPriorSave();if(result)proApp.onStateChange();return result};
+
+
+/* 10.4: do not reset the current page when another device updates the library. */
+async function liveCheckCloud(force=false){
+ if(accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||liveCloudBusy||navigator.onLine===false)return false;
+ if(!force&&Date.now()-liveCloudCheckedAt<15000)return false;
+ const uid=accountUser.id;liveCloudBusy=true;liveCloudCheckedAt=Date.now();
+ try{
+  const client=accountInitClient(),meta=await client.from('anime_libraries').select('updated_at').eq('user_id',uid).maybeSingle();
+  if(meta.error)throw meta.error;
+  const newStamp=meta.data?.updated_at||'',previous=Date.parse(cloudRevision)||0,remote=Date.parse(newStamp)||0;
+  if(!newStamp||remote<=previous||cloudDirty||cloudSaving||accountUser?.id!==uid)return false;
+  const response=await client.from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();
+  if(response.error)throw response.error;
+  if(!response.data?.payload||cloudDirty||cloudSaving||accountUser?.id!==uid)return false;
+  const fresh=Date.parse(response.data.updated_at)||0;
+  if(fresh<=(Date.parse(cloudRevision)||0))return false;
+  const updated=accountNormalizePayload(response.data.payload);
+  state=updated;cloudRevision=response.data.updated_at;cloudLastPullAt=Date.now();cloudLastSync=new Date(response.data.updated_at).toLocaleString('sq-AL');cloudConnected=true;
+  localStorage.setItem(KEY,JSON.stringify(state));
+  render();renderHome();renderUpcoming();proApp.onStateChange();proApp.render();accountUI();
+  return true;
+ }catch(err){console.warn('Live cloud sync',err);return false}
+ finally{liveCloudBusy=false}
+}
+function liveDetach(){
+ if(liveChannel){try{accountInitClient().removeChannel(liveChannel)}catch(err){console.warn('Realtime disconnect',err)}}
+ liveChannel=null;liveChannelOwner='';liveRealtime=false;
+}
+function liveAttach(){
+ if(accountMode!=='cloud'||!accountUser)return;
+ const uid=accountUser.id;if(liveChannel&&liveChannelOwner===uid)return;
+ liveDetach();liveChannelOwner=uid;
+ try{liveChannel=accountInitClient().channel('animetrack-private-library-'+uid)
+ .on('postgres_changes',{event:'*',schema:'public',table:'anime_libraries',filter:'user_id=eq.'+uid},()=>{
+  if(accountUser?.id!==uid||cloudDirty||cloudSaving)return;
+  void liveCheckCloud(true);
+ }).subscribe(status=>{liveRealtime=status==='SUBSCRIBED';if(status==='SUBSCRIBED')void liveCheckCloud(true)});
+ }catch(err){liveRealtime=false;console.warn('Realtime fallback to polling',err)}
+}
+async function liveRefresh(manual=false){
+ if(document.hidden||navigator.onLine===false){if(manual)notify('Je offline. Do të kontrollohet kur të kthehet interneti.');return}
+ if(accountMode!=='cloud'||!accountUser)return;
+ const time=Date.now();
+ if(manual||time-liveCloudCheckedAt>60000)await liveCheckCloud(manual);
+ if(state.anime.length&&!upcomingBusy&&!catalogSyncBusy&&(manual||!upcomingCheckedAt||time-upcomingCheckedAt>=15*60*1000)&&time-liveAiringAttemptAt>= (manual?0:5*60*1000)){
+  liveAiringAttemptAt=time;
+  try{await refreshUpcoming(true);proApp.render()}catch(err){console.warn('Airing refresh',err)}
+ }
+ if(manual||time-liveNotificationAttemptAt>=2*60*1000){
+  liveNotificationAttemptAt=time;
+  try{await proApp.modules.notifications.refresh()}catch(err){console.warn('Inbox refresh',err)}
+ }
+ if(manual){renderHome();proApp.render();notify('Kontrolli i përditësimeve përfundoi ✓')}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)void liveRefresh(false)});
+window.addEventListener('online',()=>void liveRefresh(false));
+setInterval(()=>{if(!document.hidden)void liveRefresh(false)},60000);
+setTimeout(()=>void liveRefresh(false),9000);
 
 render();renderUpcoming();renderHome();setView('home');v8LoadSeason(1);accountBoot();
 })();
