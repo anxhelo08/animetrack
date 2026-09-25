@@ -1,4 +1,4 @@
-# AnimeTrack 10.6 — Anime Universe Pro
+# AnimeTrack 10.7 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -40,6 +40,13 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Këto kontrolle janë vetëm në desktop: struktura e iPhone është e izoluar dhe ruan feed-in e episodeve.
 - Nuk ka ndryshim të skemës së Supabase, migrim të bibliotekës apo ndryshim të statusit automatik pa veprim të përdoruesit.
 
+## Quality 10.7
+- Markimi i një episodi ruhet atomikisht në bibliotekën lokale: nëse ruajtja dështon, rikthehen progresi dhe historiku pa shfaqur sukses të rremë.
+- Zhbërje e shpejtë edhe në iPhone, me kontroll të llogarisë, sezonit dhe episodit dhe pa prekur hyrje të tjera.
+- Kalendar, profil, Home dhe inbox përditësohen pas shënimit; mosfunksionimi i një widget-i në Home nuk bllokon pjesët e tjera dhe ka buton Riprovo.
+- Status i qartë ruajtjeje dhe rifreskimi; humbja e internetit raportohet si e tillë. Cloud provon sërish ruajtjen e ndryshimeve në pritje kur rikthehet lidhja; ato nuk mbishkruhen nga pull automatik.
+- Njoftimet vazhdojnë të jenë brenda aplikacionit, jo Web Push në sfond.
+
 ## Arkitektura
 `index.html`: struktura e faqes dhe ngarkimi i moduleve.  
 `assets/app.js` / `assets/app.css`: aplikacioni ekzistues, i nxjerrë nga skedari monolitik pa ndryshuar përmbajtjen.  
@@ -54,11 +61,11 @@ Supabase Auth dhe RLS ndajnë bibliotekat personale. Profili nis privat; lista e
 
 Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodikisht kopje rezervë.
 
-<!-- Production deployment sync: AnimeTrack 10.6 iPhone PWA release. -->
+<!-- Production deployment sync: AnimeTrack 10.7 iPhone PWA release. -->
 
 ## Korrigjimi 10.5.1 në iPhone
 - Feed-i i episodeve nuk fshihet më nga rregullat e vjetra të dashboard-it; vetëm pamja desktop fshihet në mobile.
 - Test real shfletuesi për hapjen e feed-it, kalimin +1 episod dhe pesë tab-et në Chromium dhe Safari WebKit.
 - Një rekord i paplotë episodi nuk e bllokon tërë aplikacionin; shfaqet veprim rikuperimi.
 
-<!-- Production redeploy: AnimeTrack 10.6 iPhone blank-feed hotfix. -->
+<!-- Production redeploy: AnimeTrack 10.7 iPhone blank-feed hotfix. -->
