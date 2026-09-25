@@ -1,0 +1,27 @@
+name: Package iPhone production hotfix
+on:
+  push:
+    branches: [ops/deploy-iphone-hotfix]
+    paths:
+      - 'scripts/build-deploy-payload.py'
+      - '.github/workflows/package-iphone-hotfix.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python scripts/build-deploy-payload.py
+      - name: Commit bundle for deployment
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .deploy/payload.json
+          git diff --cached --quiet || (git commit -m "ops: package tested iPhone production hotfix" && git push)
