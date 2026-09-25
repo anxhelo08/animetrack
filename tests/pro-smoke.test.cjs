@@ -31,7 +31,7 @@ test('personal discovery filters duplicates, opens preview and remembers hidden 
  c.poster=x=>x;
  c.state=()=>({anime:[{title:'My Fantasy',genre:'Fantasy, Action',rating:9,favorite:true,status:'completed',source:'AniList',sourceId:'90',seasons:[]}],history:[],preferences:{}});
  c.genres=a=>String(a.genre||'').split(',').map(x=>x.trim());
- c.seriesRoot=x=>x.toLowerCase().replace(/ season \\d+$/,'');
+ c.seriesRoot=x=>x.toLowerCase().replace(/ season \d+$/,'');
  c.mapAniList=m=>({key:'al-'+m.id,source:'AniList',sourceId:String(m.id),malId:String(m.idMal),title:m.title.romaji,genre:m.genres.join(', '),score:m.averageScore,cover:m.coverImage.large,total:m.episodes,format:m.format,year:m.seasonYear,synopsis:'A fantasy story'});
  c.inLibrary=()=>null;
  c.previewItem=x=>{opened=x.key};
