@@ -116,7 +116,8 @@ function normalizePreferences(raw){
   notificationRead:Array.isArray(p.notificationRead)?p.notificationRead.filter(x=>typeof x==='string'&&x.length<=180).slice(-250):[],
   notificationMuted:Array.isArray(p.notificationMuted)?[...new Set(p.notificationMuted.filter(x=>allowed.has(x)))]:[],
   notificationDismissed:Array.isArray(p.notificationDismissed)?p.notificationDismissed.filter(x=>typeof x==='string'&&x.length<=180).slice(-250):[],
-  calendarReminders:Object.fromEntries(reminderEntries)
+  calendarReminders:Object.fromEntries(reminderEntries),
+  homeQueue:Array.isArray(p.homeQueue)?[...new Set(p.homeQueue.filter(x=>typeof x==='string'&&x.length<=90))].slice(0,6):[]
  };
 }
 function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.anime))return {anime:s.anime.map(normalized).filter(Boolean),history:Array.isArray(s.history)?s.history.filter(h=>h&&typeof h==='object').slice(-2000):[],preferences:normalizePreferences(s.preferences)}}catch(e){console.warn('Nuk u lexuan të dhënat:',e)}return{anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}}
@@ -1069,6 +1070,9 @@ const proContext={
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
+ nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(),
+ openFilter:code=>setFilter(code),
+ 
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
  markEpisode:(id,seasonId,n)=>requestEpisodeToggle(id,seasonId,n),
  refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
