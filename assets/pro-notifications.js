@@ -83,5 +83,9 @@ window.ATNotifications=function ATNotifications(ctx){
   if(op==='notification-mute')return mute(id);
   if(op==='notification-restore'){preferences().notificationDismissed=[];ctx.save();ctx.rerender()}
  }
- return {refresh,render,action,badge,get:()=>notices};
+ function home(){
+ const rows=visible().filter(x=>!read.has(x.key)).slice(0,3),count=visible().filter(x=>!read.has(x.key)).length;
+ return `<div class="at-home-widget-head"><div><span class="pro-eyebrow">INBOX</span><h3>🔔 Njoftimet <span class="at-widget-count">${count}</span></h3><p>Aktiviteti që kërkon vëmendje</p></div><button class="pro-btn" data-pro-page="notifications">Hap inbox ↗</button></div><div class="at-home-widget-list">${rows.map(x=>`<button class="at-home-alert-row" data-pro-action="notification-open" data-id="${esc(x.key)}"><span>${iconOf(x)}</span><span><strong>${esc(x.title)}</strong><small>${esc(x.body)}</small></span><span aria-hidden="true">↗</span></button>`).join('')||'<p class="at-home-widget-empty">Je i përditësuar. S’ka njoftime të palexuara.</p>'}</div>`;
+}
+ return {refresh,render,action,badge,home,get:()=>notices};
 };
