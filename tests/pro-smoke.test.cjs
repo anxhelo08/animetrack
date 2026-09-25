@@ -11,10 +11,10 @@ function load(extra={}){
  for(const name of names)vm.runInContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),sandbox,{filename:name+'.js'});
  return sandbox.window;
 }
-function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},released:()=>0,isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
+function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.0/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.1/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -51,4 +51,41 @@ test('personal discovery filters duplicates, opens preview and remembers hidden 
  rec.setTab('movies');assert.match(rec.render(),/Nuk ka sugjerime/);
  rec.setTab('personal');rec.setLength('short');assert.match(rec.render(),/Astral Journey/);
  assert.ok([...store.keys()].some(k=>k.includes('animetrack_rec_prefs_v10')));
+});
+
+test('compact home cards and redesigned profile render on empty library',()=>{
+ const w=load(),c=context(),p=w.ATProfiles(c);
+ assert.match(w.ATRecommendations(c).home(),/at-home-rec-grid|at-home-rec-empty/);
+ assert.match(p.render(),/at-profile-header/);
+ assert.match(p.render(),/12 javëve/);
+ p.setTab('settings');
+ assert.match(p.render(),/pro-public/);
+ assert.match(w.ATNotifications(c).render(),/at-notice-hero/);
+});
+test('calendar week/month/timeline, opt-in reminder and notification categories',async()=>{
+ const w=load();
+ const now=Date.now(),e={animeId:'a1',title:'Calendar Test',episode:3,seasonEpisode:3,seasonId:'s1',season:'Sezoni 1',when:now+10*60000,source:'AniList',cover:''};
+ const state={anime:[{id:'a1',title:'Calendar Test',genre:'Drama',status:'watching',favorite:true,seasons:[{id:'s1',watched:[],total:12}]}],history:[],preferences:{notificationRead:[]}};
+ const c=context();c.state=()=>state;c.upcoming=()=>[e];c.released=x=>x.total;c.rerender=()=>{};c.poster=()=>'';c.save=()=>true;
+ let opened=false;c.openEpisode=()=>{opened=true};
+ const calendar=w.ATCalendarWrapped(c);
+ assert.match(calendar.calendar(),/at-cal-grid/);
+ calendar.action('calendar-view','month');assert.match(calendar.calendar(),/at-cal-day-open/);
+ calendar.action('calendar-view','agenda');assert.match(calendar.calendar(),/at-cal-agenda/);
+ const key=[e.animeId,e.seasonId,e.episode,e.when].join(':');
+ calendar.action('calendar-remind',key);assert.equal(state.preferences.calendarReminders[key],30);
+ calendar.action('calendar-open',key);assert.equal(opened,true);
+ const inbox=w.ATNotifications(c);
+ await inbox.refresh();assert.match(inbox.render(),/Kujtesa e episodit/);
+ await inbox.action('notification-unread');assert.match(inbox.render(),/Vetëm të palexuara/);
+ await inbox.action('notification-filter','episodes');assert.match(inbox.render(),/at-notice-filters/);
+ await inbox.action('notification-read-all');assert.equal(state.preferences.notificationRead.length,1);
+});
+test('profile show-and-edit does not change library state',()=>{
+ const w=load(),c=context(),s={anime:[{id:'one',title:'Example',status:'completed',favorite:true,rating:9,genre:'Fantasy',cover:'',seasons:[]}],history:[],preferences:{}};
+ c.state=()=>s;c.genres=a=>a.genre.split(',');c.count=()=>12;c.activity=()=>[];c.isMovie=()=>false;c.rerender=()=>{};
+ const p=w.ATProfiles(c);
+ assert.match(p.render(),/at-profile-stats/);assert.match(p.render(),/Example/);
+ p.setTab('settings');assert.match(p.render(),/Ndrysho profilin/);
+ assert.equal(s.anime.length,1);
 });
