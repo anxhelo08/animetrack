@@ -1117,7 +1117,7 @@ const proContext={
 const proApp=window.AnimeTrackPro(proContext);
 proApp.init();
 const proPriorHome=renderHome;renderHome=function(){proPriorHome();proApp.renderHome()};
-const proPriorView=setView;setView=function(which){if(proApp.open(which))return;proApp.hide();return proPriorView(which)};
+const proPriorView=setView;setView=function(which){if(proApp.open(which))return;proApp.hide();proApp.syncMobile(which);return proPriorView(which)};
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id)};
 const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);await proApp.onAccount()};
 const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
