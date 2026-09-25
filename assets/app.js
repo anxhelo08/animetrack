@@ -1070,7 +1070,7 @@ const proContext={
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
- nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,
+ nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(),
  openFilter:code=>setFilter(code),
  
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
