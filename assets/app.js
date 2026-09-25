@@ -1057,6 +1057,7 @@ const proContext={
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
  refreshDetail:id=>renderDetail(id),navigate:page=>setView(page),setLocalView:page=>{view=page},
+ previewItem:item=>{v8PrepareCatalog(item);openCatalogPreview(item.key)},
  addItem:async item=>{v8PrepareCatalog(item);const id=await addCatalogItem(item.key,'planning');if(id)openDetail(id)}
 };
 const proApp=window.AnimeTrackPro(proContext);
