@@ -28,6 +28,7 @@ test('personal discovery filters duplicates, opens preview and remembers hidden 
  const storage={getItem:k=>store.get(k)||null,setItem:(k,v)=>store.set(k,v)};
  const w=load({fetch:remote,localStorage:storage}),c=context();
  let opened=null,added=null;
+ c.rerender=()=>{};
  c.poster=x=>x;
  c.state=()=>({anime:[{title:'My Fantasy',genre:'Fantasy, Action',rating:9,favorite:true,status:'completed',source:'AniList',sourceId:'90',seasons:[]}],history:[],preferences:{}});
  c.genres=a=>String(a.genre||'').split(',').map(x=>x.trim());
