@@ -100,7 +100,7 @@ test('watch-first home replaces duplicate stats without removing legacy render n
  assert.match(parts.feature,/Mystery Voyage/);
  assert.match(parts.lineup,/E3/);
  assert.doesNotMatch(parts.hero,/Anime gjithsej/);
- home.action('queue-toggle','a1');assert.deepEqual(data.preferences.homeQueue,['a1']);
+ home.action('queue-toggle','a1');assert.equal(JSON.stringify(data.preferences.homeQueue),'["a1"]');
  assert.match(home.render().session,/Mystery Voyage/);
  home.action('continue');assert.deepEqual(opened,['a1','s1',3]);
  home.action('mark-next','a1');assert.equal(marked,'a1');
