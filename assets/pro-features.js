@@ -24,6 +24,10 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   const inbox=$('pro-home-inbox');if(inbox)inbox.innerHTML=modules.notifications.home();
  }
  ctx.rerender=()=>{render();renderHome()};
+ function syncMobileNav(){
+  const activeKey=active==='profile'?'profile':active==='calendar'?'calendar':active==='recommendations'?'discover':active==='notifications'?'profile':active==='wrapped'?'profile':active==='friends'?'profile':!$('home-view')?.classList.contains('hidden')?'home':!$('explore-view')?.classList.contains('hidden')||!$('seasons-view')?.classList.contains('hidden')?'discover':'watching';
+  document.querySelectorAll('#at-mobile-nav [data-mobile-go]').forEach(node=>{const selected=node.dataset.mobileGo===activeKey;node.classList.toggle('active',selected);if(selected)node.setAttribute('aria-current','page');else node.removeAttribute('aria-current')});
+ }
  function init(){
   const nav=$('side-nav');
   nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
@@ -32,11 +36,15 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   const home=$('home-view'),recommend=document.createElement('section');recommend.id='pro-home-recs';recommend.className='pro-panel';const sync=home.querySelector('.sync-panel');if(sync)sync.before(recommend);else home.append(recommend);
   const dash=document.createElement('div');dash.className='at-home-dashboard';dash.innerHTML='<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>';recommend.after(dash);
   modules.home.mount(home,recommend,dash);
+  document.body.insertAdjacentHTML('beforeend','<nav id="at-mobile-nav" class="at-mobile-nav" aria-label="Navigimi kryesor në telefon">'+[['home','⌂','Kreu'],['watching','▶','Watching'],['discover','✦','Zbulo'],['calendar','▦','Kalendari'],['profile','◉','Profili']].map(([key,icon,label])=>`<button type="button" data-mobile-go="${key}" aria-label="${label}"><span class="at-mobile-icon">${icon}</span><span>${label}</span></button>`).join('')+'</nav>');
+  syncMobileNav();
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/sw.js').catch(console.warn);
   document.addEventListener('click',handleClick);
   document.addEventListener('change',e=>{if(e.target?.id==='pro-rec-length')modules.recommendations.setLength(e.target.value)});
+  document.addEventListener('input',e=>{if(e.target?.id==='at-h3-anime-search')modules.home.action('search','',e.target.value)});
+
   setInterval(()=>{if(ctx.user())modules.notifications.refresh()},5*60000);
   renderHome();
   void modules.recommendations.refresh(false);
@@ -47,9 +55,9 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
   $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️'})[name];
-  render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
+  render();syncMobileNav();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
  }
- function hide(){active='';$('pro-view')?.classList.add('hidden')}
+ function hide(){active='';$('pro-view')?.classList.add('hidden');requestAnimationFrame(syncMobileNav)}
  async function onAccount(){
   try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
@@ -59,6 +67,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';element.innerHTML=modules.rewatch.render(id);root.append(element)}
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.mobileGo){const page=b.dataset.mobileGo;if(page==='watching')ctx.openFilter('watching');else if(page==='discover')ctx.navigate('explore');else ctx.navigate(page);requestAnimationFrame(syncMobileNav);return}
   if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}
   if(b.dataset.homeAction){try{return await modules.home.action(b.dataset.homeAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120));return}}
   const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
