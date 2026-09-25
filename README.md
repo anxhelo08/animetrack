@@ -1,4 +1,4 @@
-# AnimeTrack 10.4 — Anime Universe Pro
+# AnimeTrack 10.4.1 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -23,10 +23,12 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Statistikat e mëdha dhe objektivi javor janë te Profili im → Statistikat e mia. Elementet e vjetra të Home ruhen të montuara për pajtueshmëri me funksionet ekzistuese, por janë të fshehura vizualisht.
 - Sesioni ruhet në preferencat e bibliotekës personale dhe mbijeton rikthimin nga cloud. Veprimet mbi episode kërkojnë klikim të përdoruesit.
 
-## Përditësimet 10.4
+## Përditësimet 10.4.1
 - Karta kryesore është kompakte në desktop; kartat “Vazhdo shikimin” tregojnë me madhësi të qartë S/EP dhe veprimin e drejtpërdrejtë `✓ +1 episod` (veçmas nga hapja e detajeve).
 - Ndryshimet e bëra nga përdoruesi përditësojnë menjëherë Home, kalendarin, profilin dhe njoftimet. Orari publik kontrollohet çdo 30 minuta kur aplikacioni është aktiv dhe përsëri kur rikthehesh; katalogu i gjerë mbetet me cikël ditor. Kjo është *near-live polling*, jo push nga AniList.
 - Sinkronizimi i heshtur nga cloud nuk mbishkruan ndryshime lokale të paruajtura dhe nuk e nxjerr përdoruesin nga faqja aktuale. Preferencat e sesionit/kujtesave ruhen gjatë cloud reload. Statusi i orarit shfaqet në Home.
+
+- Kur publikohet një version i ri PWA, shfaqet një banner “Përditëso tani”. Rifreskimi bëhet nga përdoruesi dhe nuk lejohet gjatë sinkronizimit të ndryshimeve lokale të paruajtura.
 
 ## Arkitektura
 `index.html`: struktura e faqes dhe ngarkimi i moduleve.  
