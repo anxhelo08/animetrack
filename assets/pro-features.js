@@ -16,6 +16,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   iphone:window.ATiPhone(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
+ ctx.unreadCount=()=>modules.notifications.get().filter(n=>!((ctx.state().preferences?.notificationRead)||[]).includes(n.key)&&!((ctx.state().preferences?.notificationMuted)||[]).includes(n.category)&&!((ctx.state().preferences?.notificationDismissed)||[]).includes(n.key)).length;
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
  function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
@@ -83,6 +84,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
+ function syncMobile(name){setMobileActive(name)}
  async function onAccount(){
   try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
@@ -105,7 +107,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   try{
    if(op==='dismiss-update'){$('at-pwa-update')?.remove();return}
    if(op==='reload-update'){if(ctx.canReload&&!ctx.canReload()){ctx.toast('Ruajtja në cloud është ende në proces. Provo përsëri pas sinkronizimit.');return}location.reload();return}
-   if(op==='install'){if(/iPhone|iPad|iPod/.test(navigator.userAgent)){$('at-ios-install-guide')?.showModal?.();return}if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Safari → Share → Add to Home Screen.');return}
+   if(op==='install'){if(/iPhone|iPad|iPod/.test(navigator.userAgent)){const d=$('at-ios-install-guide');if(d){d.hidden=false;d.showModal?.()}return}if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Safari → Share → Add to Home Screen.');return}
    if(op==='recommendations'){ctx.navigate('recommendations');return}
    if(op==='add-recommendation')return await modules.recommendations.add(b.dataset.key);
    if(op==='preview-recommendation')return modules.recommendations.preview(b.dataset.key);
@@ -128,5 +130,5 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op.startsWith('rewatch-'))return modules.rewatch.action(op,id);
   }catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120))}
  }
- return{init,open,hide,onAccount,onStateChange,renderRewatch,renderHome,render,modules};
+ return{init,open,hide,syncMobile,onAccount,onStateChange,renderRewatch,renderHome,render,modules};
 };
