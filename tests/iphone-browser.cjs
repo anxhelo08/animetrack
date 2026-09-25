@@ -1,7 +1,9 @@
-const {chromium}=require('playwright');
+const {chromium,webkit}=require('playwright');
 const assert=require('node:assert/strict');
 (async()=>{
- const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const engine=process.env.BROWSER==='webkit'?webkit:chromium;
+ const browser=await engine.launch(process.env.BROWSER==='webkit'?{headless:true}:{headless:true,args:['--no-sandbox']});
+ console.log('BROWSER_ENGINE',engine===webkit?'WebKit':'Chromium');
  const context=await browser.newContext({viewport:{width:390,height:844},deviceScaleFactor:3,isMobile:true,hasTouch:true,userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_6 like Mac OS X) AppleWebKit/605.1.15 Version/17.6 Mobile/15E148 Safari/604.1'});
  const page=await context.newPage(),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
@@ -37,6 +39,6 @@ const assert=require('node:assert/strict');
    console.log('NAV_OK',tab);
  }
  if(errors.length)throw Error('Browser JavaScript errors: '+errors.join(' | '));
- console.log('IPHONE_BROWSER_PASS');
+ console.log('IPHONE_BROWSER_PASS',engine===webkit?'WebKit':'Chromium');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
