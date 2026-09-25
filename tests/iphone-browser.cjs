@@ -35,6 +35,14 @@ const assert=require('node:assert/strict');
  await page.locator('[data-ios-action="undo"]').click();
  assert.match(await page.locator('#at-iphone-feed').innerText(),/EP 3/,'Undo must restore exact episode');
  assert.equal(await page.locator('[data-ios-action="undo"]').count(),0,'Undo should disappear after use');
+ await page.locator('[data-ios-action="episode"][data-id="demo1"]').click();
+ assert(await page.locator('#episode-detail-modal').isVisible(),'iPhone Episode Hub should open');
+ assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible(),'Episode Hub should render mobile');
+ await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="discussion"]').click();
+ assert.equal(await page.locator('#ep-detail-body').getAttribute('data-at108-tab'),'discussion');
+ await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="episode"]').click();
+ assert.equal(await page.locator('#ep-detail-body').getAttribute('data-at108-tab'),'episode');
+ await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
  for(const [tab,selector] of [['calendar','#pro-view'],['explore','#explore-view'],['library','#library-view'],['profile','#pro-view'],['home','#at-iphone-feed']]){
    await page.locator('[data-mobile-nav="'+tab+'"]').click();
    await page.waitForTimeout(70);
