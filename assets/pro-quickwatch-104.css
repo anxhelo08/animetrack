@@ -1,0 +1,71 @@
+/* AnimeTrack 10.4 — compact desktop, episode-first Continue cards */
+@media(min-width:1101px){
+ .at-h2-top-grid{grid-template-columns:minmax(0,1.58fr) minmax(260px,.66fr);align-items:start}
+ .at-h3-feature{min-height:0;height:286px;grid-template-columns:minmax(180px,31%) minmax(0,1fr)}
+ .at-h3-feature-visual{height:286px}
+ .at-h3-feature-panel{padding:16px 22px;gap:9px}
+ .at-h3-feature-over h3{font-size:clamp(22px,2.15vw,30px)}
+ .at-h3-nextline strong{font-size:18px}
+ .at-h3-nextline>b{font-size:19px}
+ .at-h3-progress-copy span{padding:6px}
+ .at-h3-episode-strip{gap:6px;padding:0}
+ .at-h3-ep-pill{flex-basis:46px;height:44px;border-radius:9px}
+ .at-h3-ep-pill b{font-size:15px}
+ .at-h3-ep-pill span{font-size:7px}
+ .at-h3-ep-pill small{font-size:6px}
+ .at-h3-feature-actions button{min-height:37px;font-size:10px}
+ .at-h2-session{height:286px;min-height:0;overflow:auto;padding:15px}
+ .at-h2-session-list{margin-top:11px}
+ .at-h2-session-empty{padding:12px 8px}
+ .at-h2-session-empty>span{font-size:22px}
+}
+.at-h4-lineup-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.at-h4-continue-card{display:grid;grid-template-columns:103px minmax(0,1fr);min-width:0;min-height:194px;background:linear-gradient(140deg,#232438,#1b2030);border:1px solid #4c475e;border-radius:15px;overflow:hidden;transition:border-color .16s,transform .16s}
+.at-h4-continue-card:hover{border-color:#9379bd;transform:translateY(-2px)}
+.at-h4-cover{position:relative;padding:0;border:0;background:#332b42;color:#cbb6e7;overflow:hidden;display:grid;place-items:center;cursor:pointer}
+.at-h4-cover img{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.at-h4-ready{position:absolute;bottom:7px;left:5px;right:5px;z-index:1;border-radius:7px;padding:5px 3px;background:#171626dc;border:1px solid #ffffff42;font-size:9px;font-weight:850;text-align:center;color:#f4eaff}
+.at-h4-card-content{min-width:0;display:flex;flex-direction:column;gap:7px;padding:12px}
+.at-h4-topline{display:flex;align-items:flex-start;gap:5px;justify-content:space-between}
+.at-h4-title{padding:0;background:none;border:0;text-align:left;color:#f3effa;font-size:13px;font-weight:850;line-height:1.3;min-width:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.at-h4-heart{color:#cea7ee;font-size:12px}
+.at-h4-episode{display:flex;align-items:center;justify-content:space-between;gap:6px;border-radius:9px;border:1px solid #5d477d;background:#322844;padding:7px 9px}
+.at-h4-episode>span{font-size:8px;letter-spacing:.7px;color:#d2bbf1;font-weight:900}
+.at-h4-episode strong{font-size:clamp(16px,1.5vw,21px);color:#fff;white-space:nowrap;letter-spacing:-.3px}
+.at-h4-episode i{color:#a78bc6;font-style:normal}
+.at-h4-progress{height:4px;background:#413a55;border-radius:99px;overflow:hidden}
+.at-h4-progress span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ac82ed,#79d1dc)}
+.at-h4-minor{display:flex;align-items:center;justify-content:space-between;color:#a9a2bd;font-size:9px}
+.at-h4-actions{display:grid;grid-template-columns:minmax(0,1fr) 34px 30px;gap:5px;margin-top:auto}
+.at-h4-actions button{min-height:34px;border-radius:8px;font-size:10px;font-weight:800}
+.at-h4-plus{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;padding:4px 6px;color:#fff;border:1px solid #9a7acd;background:linear-gradient(120deg,#7557b5,#584582)}
+.at-h4-plus span{color:#e9d8ff;white-space:nowrap;font-size:9px}
+.at-h4-details,.at-h4-queue{border:1px solid #5c516f;background:#302c43;color:#ddd2eb}
+.at-h4-queue.selected{background:#31544d;border-color:#558e7b}
+.at-h4-undo{align-self:flex-start;border:0;background:none;text-align:left;color:#a9a0c1;padding:1px 0;font-size:9px;cursor:pointer}
+.at-h4-undo:hover{color:#e1d1fa;text-decoration:underline}
+.at-h4-showall{text-align:center;padding:14px 0 2px}
+.at-h4-showall button{padding:11px 19px;border:1px solid #766096;border-radius:10px;background:#2b2942;color:#eee3ff;font-weight:850;font-size:12px}
+.at-h4-actions button:focus-visible,.at-h4-undo:focus-visible{outline:2px solid #d0b5ff;outline-offset:2px}
+@media(max-width:1220px){
+ .at-h4-lineup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .at-h4-lineup-grid{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:10px;padding:2px 1px 9px;margin-right:-12px}
+ .at-h4-lineup-grid::-webkit-scrollbar{display:none}
+ .at-h4-continue-card{flex:0 0 min(86vw,405px);min-height:205px;scroll-snap-align:start}
+ .at-h4-episode strong{font-size:21px}
+ .at-h4-actions button{min-height:41px}
+ .at-h4-lineup-grid.expanded{display:grid;grid-template-columns:1fr;margin-right:0;overflow:visible}
+ .at-h4-lineup-grid.expanded .at-h4-continue-card{min-height:195px}
+ .at-h3-feature{min-height:0}
+ .at-h3-feature-panel{gap:11px}
+}
+@media(max-width:400px){
+ .at-h4-continue-card{grid-template-columns:95px minmax(0,1fr);flex-basis:91vw}
+ .at-h4-card-content{padding:10px;gap:6px}
+ .at-h4-episode{padding:6px}
+ .at-h4-episode>span{font-size:7px}
+ .at-h4-plus span{display:none}
+}
+@media(prefers-reduced-motion:reduce){.at-h4-continue-card{transition:none}.at-h4-continue-card:hover{transform:none}}
