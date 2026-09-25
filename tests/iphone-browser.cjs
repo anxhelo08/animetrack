@@ -51,8 +51,8 @@ const assert=require('node:assert/strict');
    const el=page.locator(selector);
    assert(await el.isVisible(),tab+' destination should display');
    if(tab==='library'){
-    assert(await page.locator('#at110-open-lists').isVisible(),'My Lists shortcut should appear in library');
-    await page.locator('#at110-open-lists').click();
+    assert(await page.locator('#at110-mobile-lists').isVisible(),'My Lists shortcut should appear in iPhone library');
+    await page.locator('#at110-mobile-lists').click();
     assert(await page.locator('#pro-content .at110-page').isVisible(),'Lists page should open on iPhone');
     await page.locator('#at110-new-list').fill('For Sunday');
     await page.locator('#at110-create-form button[type="submit"]').click();
