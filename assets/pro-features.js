@@ -14,6 +14,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   rewatch:window.ATRewatch(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
+ ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
  function renderHome(){const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home();const week=$('pro-home-week');if(week)week.innerHTML=modules.calendar.home();const inbox=$('pro-home-inbox');if(inbox)inbox.innerHTML=modules.notifications.home()}
  ctx.rerender=()=>{render();renderHome()};
