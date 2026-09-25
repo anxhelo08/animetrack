@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "AnimeTrack – Your Anime Universe",
+  "short_name": "AnimeTrack",
+  "description": "Biblioteka personale anime, episode, statistika dhe komunitet.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#171626",
+  "background_color": "#10101a",
+  "lang": "sq",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
