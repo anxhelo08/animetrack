@@ -57,7 +57,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
- function onStateChange(){modules.profiles.scheduleSnapshot();modules.notifications.badge();modules.recommendations.onLibraryChange();renderHome()}
+ function onStateChange(){modules.profiles.scheduleSnapshot();modules.notifications.syncLocal();modules.recommendations.onLibraryChange();render();renderHome()}
  function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';element.innerHTML=modules.rewatch.render(id);root.append(element)}
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
