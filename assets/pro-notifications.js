@@ -49,6 +49,11 @@ window.ATNotifications=function ATNotifications(ctx){
   return notices.filter(x=>!muted.has(x.category)&&!dismissed.has(x.key));
  }
  function filtered(){return visible().filter(x=>(filter==='all'||x.category===filter)&&(!onlyUnread||!read.has(x.key)))}
+ function syncLocal(){
+  const cloud=notices.filter(x=>x.category==='friends'||x.category==='comments'||x.category==='system');
+  notices=[...new Map([...collect(),...cloud].map(x=>[x.key,x])).values()].sort((a,b)=>b.at-a.at).slice(0,100);
+  read=new Set(preferences().notificationRead);badge();
+ }
  function badge(){const n=visible().filter(x=>!read.has(x.key)).length,el=ctx.el('pro-badge');if(el){el.textContent=String(Math.min(99,n));el.classList.toggle('has',n>0)}}
  function persistRead(){const p=preferences();p.notificationRead=[...read].slice(-250);ctx.save();badge();ctx.rerender()}
  function readOne(key){if(!key||read.has(key))return;read.add(key);persistRead()}
@@ -89,5 +94,5 @@ window.ATNotifications=function ATNotifications(ctx){
  const rows=visible().filter(x=>!read.has(x.key)).slice(0,3),count=visible().filter(x=>!read.has(x.key)).length;
  return `<div class="at-home-widget-head"><div><span class="pro-eyebrow">INBOX</span><h3>🔔 Njoftimet <span class="at-widget-count">${count}</span></h3><p>Aktiviteti që kërkon vëmendje</p></div><button class="pro-btn" data-pro-page="notifications">Hap inbox ↗</button></div><div class="at-home-widget-list">${rows.map(x=>`<button class="at-home-alert-row" data-pro-action="notification-open" data-id="${esc(x.key)}"><span>${iconOf(x)}</span><span><strong>${esc(x.title)}</strong><small>${esc(x.body)}</small></span><span aria-hidden="true">↗</span></button>`).join('')||'<p class="at-home-widget-empty">Je i përditësuar. S’ka njoftime të palexuara.</p>'}</div>`;
 }
- return {refresh,render,action,badge,home,get:()=>notices};
+ return {refresh,syncLocal,render,action,badge,home,get:()=>notices};
 };
