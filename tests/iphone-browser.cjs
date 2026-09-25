@@ -50,6 +50,18 @@ const assert=require('node:assert/strict');
    await page.waitForTimeout(70);
    const el=page.locator(selector);
    assert(await el.isVisible(),tab+' destination should display');
+   if(tab==='library'){
+    assert(await page.locator('#at110-open-lists').isVisible(),'My Lists shortcut should appear in library');
+    await page.locator('#at110-open-lists').click();
+    assert(await page.locator('#pro-content .at110-page').isVisible(),'Lists page should open on iPhone');
+    await page.locator('#at110-new-list').fill('For Sunday');
+    await page.locator('#at110-create-form button[type="submit"]').click();
+    assert.match(await page.locator('.at110-list-top').innerText(),/For Sunday/);
+    await page.locator('[data-pro-action="collection-toggle"][data-id="demo1"]').first().click();
+    assert.match(await page.locator('.at110-list-top').innerText(),/1 anime/);
+    await page.locator('[data-pro-action="collection-back"]').click();
+    assert(await page.locator('#library-view').isVisible(),'Back to library should work on iPhone');
+   }
    if(tab==='calendar'){
     assert(await page.locator('.at109-settings').isVisible(),'Notification settings should render');
     await page.locator('#at109-default-lead').selectOption('60');
