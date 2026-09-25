@@ -35,6 +35,8 @@ jobs:
           echo $! > /tmp/animetrack-http.pid
       - run: node tests/iphone-browser.cjs
       - run: BROWSER=webkit node tests/iphone-browser.cjs
+      - name: Desktop browser regressions
+        run: node tests/desktop-browser.cjs
 
   desktop-browser:
     runs-on: ubuntu-latest
