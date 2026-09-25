@@ -294,7 +294,7 @@ test('10.8 Episode Hub tab/next navigation hooks preserve existing spoiler comme
  assert.match(app,/atJourney\.renderEpisode\(v81EpisodeParts\(\)\)/);
  assert.match(app,/hydrateSingleCard\(entry,remote\)/);
  assert.doesNotMatch(app,/setTimeout\(\(\)=>\{if\(accountUser\?\.id===user\.id\)scanAndMergeSeries\(true\)\}/);
- assert.match(journey,/data-journey-action="tab"/);assert.match(journey,/data-journey-action="open-episode"/);
+ assert.match(journey,/data-journey-action="tab"/);assert.match(journey,/data-journey-action="prev"/);assert.match(journey,/data-journey-action="next"/);
  assert.match(css,/data-at108-tab="discussion"/);
  assert.match(html,/pro-journey-108\.js/);assert.match(sw,/pro-journey-108\.css/);
  assert.match(app,/v98-spoiler-reveal/);assert.match(app,/v98DiscussionHTML\(currentKey\)/);
