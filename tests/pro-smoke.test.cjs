@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v105-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v105-2/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -174,6 +174,12 @@ test('iPhone app shell replaces mobile home and supports install instructions',(
  assert.match(core,/Add to Home Screen/);assert.match(html,/viewport-fit=cover/);assert.match(html,/apple-mobile-web-app-title/);
  assert.match(html,/pro-iphone-105\.css/);assert.match(sw,/pro-iphone\.js/);
  assert.equal(manifest.display,'standalone');
+ assert.match(html,/apple-touch-icon\.png/);
+ assert.ok(manifest.icons.some(x=>x.src==='/icon-192.png'&&x.type==='image/png'));
+ for(const file of ['apple-touch-icon.png','icon-192.png','icon-512.png']){
+  const bytes=fs.readFileSync(path.join(root,file));
+  assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+ }
 });
 test('iPhone feed uses same watch data and quick marking without duplicating library',()=>{
  const w=load({navigator:{userAgent:'iPhone'},window:{matchMedia:()=>({matches:false})},localStorage:{getItem:()=>null,setItem:()=>{}}}),c=context(),season={id:'s1',watched:[1,2],total:12},a={id:'a1',title:'Anime Alpha',status:'watching',cover:'',seasons:[season],updatedAt:'2026-09-24T10:00:00Z'};
