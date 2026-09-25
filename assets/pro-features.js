@@ -12,7 +12,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   friends:null,
   moderation:window.ATModeration(ctx),
   rewatch:window.ATRewatch(ctx),
-  home:window.ATHome(ctx)
+  home:window.ATHome(ctx),
+  iphone:window.ATiPhone(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
@@ -27,6 +28,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  }
  function renderHome(){
   if($('at-home-main')){const parts=modules.home.render();for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}}
+  modules.iphone.refresh();
   const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home();
   const week=$('pro-home-week');if(week)week.innerHTML=modules.calendar.home();
   const inbox=$('pro-home-inbox');if(inbox)inbox.innerHTML=modules.notifications.home();
@@ -37,10 +39,12 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
   document.querySelector('.top-actions')?.insertAdjacentHTML('afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
   document.querySelector('main.main').insertAdjacentHTML('beforeend','<section class="pro-view hidden" id="pro-view" aria-label="AnimeTrack Pro"><div id="pro-content"></div></section>');
-  document.body.insertAdjacentHTML('beforeend','<nav class="at-mobile-nav" aria-label="Navigimi kryesor në telefon"><button type="button" data-mobile-nav="home" class="active"><span>⌂</span><small>Home</small></button><button type="button" data-mobile-nav="library"><span>▦</span><small>Biblioteka</small></button><button type="button" data-mobile-nav="calendar"><span>◷</span><small>Kalendari</small></button><button type="button" data-mobile-nav="explore"><span>⌕</span><small>Zbulo</small></button><button type="button" data-mobile-nav="profile"><span>◉</span><small>Profili</small></button></nav>');
+  document.body.insertAdjacentHTML('beforeend','<nav class="at-mobile-nav" aria-label="Navigimi i aplikacionit"><button type="button" data-mobile-nav="home" class="active"><span>▶</span><small>Episodet</small></button><button type="button" data-mobile-nav="calendar"><span>▦</span><small>Kalendari</small></button><button type="button" data-mobile-nav="explore"><span>⌕</span><small>Zbulo</small></button><button type="button" data-mobile-nav="library"><span>▤</span><small>Biblioteka</small></button><button type="button" data-mobile-nav="profile"><span>◉</span><small>Unë</small></button></nav>');
   const home=$('home-view'),recommend=document.createElement('section');recommend.id='pro-home-recs';recommend.className='pro-panel';const sync=home.querySelector('.sync-panel');if(sync)sync.before(recommend);else home.append(recommend);
   const dash=document.createElement('div');dash.className='at-home-dashboard';dash.innerHTML='<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>';recommend.after(dash);
   modules.home.mount(home,recommend,dash);
+  modules.iphone.mount();
+  document.body.insertAdjacentHTML('beforeend','<dialog id="at-ios-install-guide" class="at-ios-install-dialog" aria-labelledby="at-ios-install-title"><button type="button" class="at-ios-dialog-close" data-ios-action="close-install" aria-label="Mbyll">×</button><div class="at-ios-install-mark">✦</div><h2 id="at-ios-install-title">Instalo AnimeTrack</h2><p>Hape në Safari dhe shtoje si aplikacion në ekranin e iPhone.</p><ol><li>Hap <strong>Safari</strong> në iPhone.</li><li>Prek butonin <strong>Share</strong> (katrori me shigjetë).</li><li>Zgjidh <strong>Add to Home Screen</strong>.</li><li>Aktivizo <strong>Open as Web App</strong>, pastaj prek <strong>Add</strong>.</li></ol><button type="button" class="at-ios-install-ok" data-ios-action="close-install">E kuptova ✓</button></dialog>');
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
   if('serviceWorker' in navigator&&location.protocol==='https:'){
@@ -93,6 +97,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
+  if(b.dataset.iosAction){if(b.dataset.iosAction==='close-install'){const d=$('at-ios-install-guide');d?.close?.();if(d)d.hidden=true;return}try{return await modules.iphone.action(b.dataset.iosAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
   if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}
   if(b.dataset.homeAction==='sync-now'){await refreshLive(true);ctx.toast('Kontrolli i përditësimeve përfundoi.');return}
   if(b.dataset.homeAction){try{return await modules.home.action(b.dataset.homeAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120));return}}
@@ -100,7 +105,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   try{
    if(op==='dismiss-update'){$('at-pwa-update')?.remove();return}
    if(op==='reload-update'){if(ctx.canReload&&!ctx.canReload()){ctx.toast('Ruajtja në cloud është ende në proces. Provo përsëri pas sinkronizimit.');return}location.reload();return}
-   if(op==='install'){if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Share → Add to Home Screen.');return}
+   if(op==='install'){if(/iPhone|iPad|iPod/.test(navigator.userAgent)){$('at-ios-install-guide')?.showModal?.();return}if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Safari → Share → Add to Home Screen.');return}
    if(op==='recommendations'){ctx.navigate('recommendations');return}
    if(op==='add-recommendation')return await modules.recommendations.add(b.dataset.key);
    if(op==='preview-recommendation')return modules.recommendations.preview(b.dataset.key);
