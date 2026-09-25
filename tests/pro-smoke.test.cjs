@@ -14,7 +14,7 @@ function load(extra={}){
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.2/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.3/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -97,7 +97,7 @@ test('watch-first home replaces duplicate stats without removing legacy render n
  let opened=null,marked=null;c.openEpisode=(id,s,n)=>{opened=[id,s,n]};c.markNext=id=>{marked=id};c.save=()=>true;
  const home=w.ATHome(c),parts=home.render();
  assert.match(parts.hero,/Çfarë do të shikosh sot/);
- assert.match(parts.feature,/Mystery Voyage/);
+ assert.match(parts.feature,/Mystery Voyage/);assert.match(parts.feature,/10 për t’u parë/);assert.match(parts.feature,/Episodi 3/);
  assert.match(parts.lineup,/E3/);
  assert.doesNotMatch(parts.hero,/Anime gjithsej/);
  home.action('queue-toggle','a1');assert.equal(JSON.stringify(data.preferences.homeQueue),'["a1"]');
@@ -119,4 +119,22 @@ test('home module is included ahead of pro app, styles and service worker cache 
  assert.ok(html.indexOf('/assets/pro-home.js')<html.indexOf('/assets/pro-features.js'));
  assert.match(html,/pro-home-102\.css/);assert.match(sw,/pro-home\.js/);
  assert.match(css,/#home-view\.at-home-rebuilt > :not\(#at-home-main\)/);
+});
+
+test('mobile-first shell includes bottom navigation and swipe-friendly home CSS',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-mobile-103.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+ assert.match(html,/pro-mobile-103\.css/);
+ assert.match(css,/\.at-mobile-nav/);
+ assert.match(css,/scroll-snap-type:x mandatory/);
+ assert.match(css,/\.at-h3-feature/);
+ assert.match(sw,/pro-mobile-103\.css/);
+});
+test('up-next exposes backlog, quick episode strip and one-click watched action',()=>{
+ const w=load(),c=context(),season={id:'s1',title:'Season 1',total:12,watched:[1,2]};
+ const a={id:'a1',title:'Episode Focus',cover:'',status:'watching',favorite:true,updatedAt:'2026-09-25T10:00:00Z',seasons:[season]};
+ c.state=()=>({anime:[a],history:[],preferences:{}});c.nextEpisode=()=>({season,n:3});c.releasedTotal=()=>6;c.count=()=>2;c.percent=()=>33;c.released=()=>6;c.poster=()=>'';c.rerender=()=>{};
+ const h=w.ATHome(c).render().feature;
+ assert.match(h,/4 episode gati/);
+ assert.match(h,/data-ep="3"/);assert.match(h,/data-ep="6"/);
+ assert.match(h,/E pashë/);
 });
