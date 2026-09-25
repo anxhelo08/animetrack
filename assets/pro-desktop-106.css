@@ -1,0 +1,29 @@
+/* AnimeTrack 10.6 — desktop-only viewing workflow; iPhone layout remains isolated. */
+@media (min-width:761px){
+ #at-home-lineup{min-width:0}
+ .at-pc-watch-tools{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:13px 0 10px}
+ .at-pc-watch-search{display:flex;align-items:center;gap:10px;flex:1;min-width:220px;max-width:460px;min-height:43px;padding:0 14px;background:#1c1f31;border:1px solid #454059;border-radius:12px;color:#bcb1da;transition:border-color .17s,box-shadow .17s}
+ .at-pc-watch-search:focus-within{border-color:#ae91ed;box-shadow:0 0 0 3px #9e77df22}
+ .at-pc-watch-search>span{font-size:21px;line-height:1}
+ .at-pc-watch-search input{width:100%;min-width:0;padding:8px 0;border:0;outline:0;background:transparent;color:#f8f3ff;font-size:13px}
+ .at-pc-watch-search input::placeholder{color:#9692ad}
+ .at-pc-watch-search input::-webkit-search-cancel-button{cursor:pointer}
+ .at-pc-undo{min-height:42px;padding:8px 14px;background:#2f2846;border:1px solid #8d72b9;border-radius:11px;color:#e7d5ff;font-size:12px;font-weight:850;cursor:pointer}
+ .at-pc-undo:hover{background:#493561;border-color:#bd9ef5}
+ .at-pc-more-wrap{text-align:center;padding:19px 0 3px}
+ .at-pc-more{min-height:41px;min-width:210px;padding:10px 18px;color:#e6d7ff;font-weight:800;font-size:12px;border:1px solid #79679c;border-radius:11px;background:#302942;cursor:pointer}
+ .at-pc-more:hover{background:#45345e}
+ .at-h2-lineup-card{transition:border-color .17s,transform .17s}
+ .at-h2-lineup-card:hover{border-color:#9d81cb;transform:translateY(-2px)}
+ .at-h2-lineup-name:hover{text-decoration:underline}
+ .at-h2-lineup-actions button:focus-visible,.at-pc-more:focus-visible,.at-pc-undo:focus-visible{outline:2px solid #d5baff;outline-offset:2px}
+}
+@media (min-width:761px) and (max-width:1060px){
+ .at-pc-watch-tools{align-items:stretch}
+ .at-pc-watch-search{max-width:none;flex:1}
+ .at-h2-lineup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+ .at-pc-watch-tools,.at-pc-more-wrap{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){.at-h2-lineup-card,.at-pc-watch-search{transition:none}.at-h2-lineup-card:hover{transform:none}}

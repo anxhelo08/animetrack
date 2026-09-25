@@ -14,7 +14,7 @@ function load(extra={}){
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.5/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.6/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v105-3/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v106-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -190,4 +190,38 @@ test('iPhone feed uses same watch data and quick marking without duplicating lib
  feed.action('advance','a1');assert.equal(advanced,'a1');
  feed.action('episode','a1');assert.equal(JSON.stringify(opened),'["a1","s1",3]');
  feed.action('tab','upcoming');assert.match(feed.render(),/Ende nuk ka premiera/);
+});
+
+test('desktop Watchlist has search, show more, and a guarded +1 undo',()=>{
+ const w=load(),c=context();
+ const anime=Array.from({length:8},(_,i)=>({id:'watch'+i,title:'Series '+i,genre:i===7?'Mystery':'Action',status:'watching',favorite:false,updatedAt:'2026-09-25T12:00:00Z',seasons:[{id:'season'+i,watched:[1],total:12}]}));
+ const data={anime,history:[],preferences:{weeklyGoal:10,notificationRead:[]}};
+ c.state=()=>data;c.releasedTotal=()=>12;c.count=a=>a.seasons[0].watched.length;c.percent=a=>Math.round(c.count(a)/12*100);c.released=()=>12;
+ c.nextEpisode=a=>{const season=a.seasons[0];return {season,n:Math.max(1,...season.watched)+1}};
+ c.rerender=()=>{};c.poster=()=>'';c.user=()=>null;c.toast=()=>{};
+ let undone=0;
+ c.markNext=id=>{const a=data.anime.find(x=>x.id===id);a.seasons[0].watched.push(c.nextEpisode(a).n);data.history.push({id,seasonId:a.seasons[0].id,episode:2,action:'watched'})};
+ c.undoEpisode=(id,seasonId,n)=>{undone++;const a=data.anime.find(x=>x.id===id),ss=a.seasons.find(x=>x.id===seasonId);ss.watched=ss.watched.filter(v=>v!==n);return true};
+ const home=w.ATHome(c);
+ let page=home.render().lineup;
+ assert.match(page,/at-pc-watch-search/);assert.equal((page.match(/class="at-h2-lineup-card"/g)||[]).length,6);
+ assert.match(page,/more-watching/);
+ home.action('more-watching');page=home.render().lineup;assert.equal((page.match(/class="at-h2-lineup-card"/g)||[]).length,8);
+ home.search('mystery');page=home.render().lineup;assert.equal((page.match(/class="at-h2-lineup-card"/g)||[]).length,1);assert.match(page,/Series 7/);
+ home.search('');home.action('advance-next','watch0');page=home.render().lineup;
+ assert.match(page,/Zhbëj S1 · EP 2/);assert.equal(data.anime[0].seasons[0].watched.includes(2),true);
+ home.action('undo-watch');assert.equal(undone,1);assert.equal(data.anime[0].seasons[0].watched.includes(2),false);
+ assert.doesNotMatch(home.render().lineup,/Zhbëj S1 · EP 2/);
+});
+test('desktop controls are isolated from iPhone and cache includes their stylesheet',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/pro-desktop-106.css'),'utf8'),
+ html=fs.readFileSync(path.join(root,'index.html'),'utf8'),
+ sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),
+ core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),
+ pro=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8');
+ assert.match(css,/@media \(min-width:761px\)/);
+ assert.match(css,/at-pc-watch-search/);
+ assert.match(html,/pro-desktop-106\.css/);assert.match(sw,/pro-desktop-106\.css/);
+ assert.match(core,/undoEpisode:/);
+ assert.match(pro,/setSelectionRange\(caret,caret\)/);
 });
