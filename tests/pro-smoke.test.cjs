@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v104-2/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v105-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -176,7 +176,7 @@ test('iPhone app shell replaces mobile home and supports install instructions',(
  assert.equal(manifest.display,'standalone');
 });
 test('iPhone feed uses same watch data and quick marking without duplicating library',()=>{
- const w=load(),c=context(),season={id:'s1',watched:[1,2],total:12},a={id:'a1',title:'Anime Alpha',status:'watching',cover:'',seasons:[season],updatedAt:'2026-09-24T10:00:00Z'};
+ const w=load({navigator:{userAgent:'iPhone'},window:{matchMedia:()=>({matches:false})},localStorage:{getItem:()=>null,setItem:()=>{}}}),c=context(),season={id:'s1',watched:[1,2],total:12},a={id:'a1',title:'Anime Alpha',status:'watching',cover:'',seasons:[season],updatedAt:'2026-09-24T10:00:00Z'};
  const data={anime:[a],preferences:{},history:[]};let advanced='',opened='';
  c.state=()=>data;c.nextEpisode=()=>({season,n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.accountName=()=> 'Tester';c.markNext=id=>advanced=id;c.openEpisode=(id,s,n)=>opened=[id,s,n];c.recentAiring=()=>[];c.poster=()=>'';c.upcoming=()=>[];
  const feed=w.ATiPhone(c);const page=feed.render();
