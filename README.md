@@ -48,3 +48,5 @@ Për testet lokale: `npm test` (Node 20+; nuk ka varësi npm).
 Supabase Auth dhe RLS ndajnë bibliotekat personale. Profili nis privat; lista e përmbledhur ndahet publikisht vetëm pas aktivizimit nga përdoruesi ose me miqësinë e pranuar. Komentet dhe raportimet ruhen në tabela të veçanta. Në HTML ka vetëm publishable key; **mos vendos kurrë service-role/secret key në repo**.
 
 Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodikisht kopje rezervë.
+
+<!-- Production deployment sync: AnimeTrack 10.5 iPhone PWA release. -->
