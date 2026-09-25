@@ -127,13 +127,15 @@ function editSeasonCount(id,seasonId){const a=state.anime.find(x=>x.id===id),s=a
 function normalizePreferences(raw){
  const p=raw&&typeof raw==='object'&&!Array.isArray(raw)?raw:{};
  const allowed=new Set(['episodes','comments','friends','system']);
- const reminderEntries=Object.entries(p.calendarReminders&&typeof p.calendarReminders==='object'&&!Array.isArray(p.calendarReminders)?p.calendarReminders:{}).filter(([key,val])=>typeof key==='string'&&key.length<=180&&val===30).slice(-250);
+ const reminderEntries=Object.entries(p.calendarReminders&&typeof p.calendarReminders==='object'&&!Array.isArray(p.calendarReminders)?p.calendarReminders:{}).filter(([key,val])=>typeof key==='string'&&key.length<=180&&[0,10,30,60,1440].includes(val)).slice(-250);
  return{
   weeklyGoal:Math.max(1,Math.min(200,Number(p.weeklyGoal)||10)),
   notificationRead:Array.isArray(p.notificationRead)?p.notificationRead.filter(x=>typeof x==='string'&&x.length<=180).slice(-250):[],
   notificationMuted:Array.isArray(p.notificationMuted)?[...new Set(p.notificationMuted.filter(x=>allowed.has(x)))]:[],
   notificationDismissed:Array.isArray(p.notificationDismissed)?p.notificationDismissed.filter(x=>typeof x==='string'&&x.length<=180).slice(-250):[],
   calendarReminders:Object.fromEntries(reminderEntries),
+   reminderLead:[0,10,30,60,1440].includes(Number(p.reminderLead))?Number(p.reminderLead):30,
+   pushEnabled:p.pushEnabled===true,
   homeQueue:Array.isArray(p.homeQueue)?[...new Set(p.homeQueue.filter(x=>typeof x==='string'&&x.length<=90))].slice(0,6):[]
  };
 }
@@ -1157,6 +1159,7 @@ const proContext={
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
  canReload:()=>!cloudDirty&&!cloudSaving,
  watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected}),
+ syncReminderJobs:()=>proApp.modules.push.scheduleSync(),
  openDiscussion:key=>{
   const m=/^(mal|al|tv):(\d+):(\d+)$/.exec(String(key||''));if(!m)return false;
   for(const a of state.anime)for(const ss of a.seasons||[]){
