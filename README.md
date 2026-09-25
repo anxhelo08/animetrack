@@ -1,4 +1,4 @@
-# AnimeTrack 9.9 — Anime Universe Pro
+# AnimeTrack 10.0 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -9,7 +9,7 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Bibliotekë për çdo përdorues, sezone të grupuara, progres sipas episodeve të transmetuara dhe rewatch i ndarë.
 - AniList / Jikan / TVmaze për metadata, përshkrime dhe foto episodeve kur burimet i ofrojnë.
 - Njoftime brenda aplikacionit për episode, sezone, përgjigje komentesh dhe kërkesa miqësie.
-- Rekomandime nga zhanret, notat dhe të preferuarat.
+- Discovery 10.0: rekomandime nga notat/zhanret/favorites, filtra sipas humorit dhe gjatësisë, perla nën radar, filma, surpriza, arsyetim i sugjerimit dhe fshehje për çdo llogari.
 - Kalendar javor me eksport .ics; statistika dhe Wrapped me eksport të kartës PNG.
 - Profile private ose publike me miratim të përdoruesit, kërkesa miqësie dhe krahasim bibliotekash.
 - Panel moderimi vetëm për llogarinë e autorizuar.
