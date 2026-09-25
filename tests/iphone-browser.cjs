@@ -16,7 +16,7 @@ const assert=require('node:assert/strict');
  await page.waitForTimeout(1100);
  const info=await page.evaluate(()=>{
  const e=document.querySelector('#at-iphone-feed'),home=document.querySelector('#home-view');
- return {feed:!!e,display:e&&getComputedStyle(e).display,visibility:e&&getComputedStyle(e).visibility,rect:e&&e.getBoundingClientRect().height,home:hidden=home?.classList.contains('hidden'),text:e?.innerText.slice(0,240),boot:document.body.classList.contains('account-booting'),auth:document.body.classList.contains('auth-required')};
+ return {feed:!!e,display:e&&getComputedStyle(e).display,visibility:e&&getComputedStyle(e).visibility,rect:e&&e.getBoundingClientRect().height,home:home?.classList.contains('hidden'),text:e?.innerText,boot:document.body.classList.contains('account-booting'),auth:document.body.classList.contains('auth-required')};
  });
  console.log('IPHONE_RENDER',JSON.stringify(info));
  assert.equal(info.feed,true,'iPhone feed must exist');
