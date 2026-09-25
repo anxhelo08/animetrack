@@ -53,6 +53,12 @@ window.ATHome=function ATHome(ctx){
  }
  function releases(){
   const now=Date.now(),byKey=new Map();
+  for(const x of ctx.recentAiring?.()||[]){
+   const a=x.anime||byId(x.animeId),s=x.localSeason,n=Number(x.localEpisode||x.seasonEpisode||x.episode);
+   if(!a||!Number.isInteger(n)||n<1)continue;
+   const key=a.id+'|'+(s?.id||x.season||'')+'|'+n;
+   byKey.set(key,{e:x,a,s,n,seen:!!x.seen});
+  }
   for(const e of ctx.upcoming()){
    if(!e?.animeId||e.when>now||e.when<now-7*DAY)continue;
    const a=byId(e.animeId),s=a?.seasons?.find(s=>s.id===e.seasonId),n=Number(e.seasonEpisode||e.episode);
