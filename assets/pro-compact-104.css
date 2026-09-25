@@ -1,0 +1,67 @@
+/* AnimeTrack 10.4: compact desktop feature, readable episode advancement, honest sync state */
+@media(min-width:1101px){
+ .at-h2-top-grid{align-items:start;grid-template-columns:minmax(0,1.8fr) minmax(275px,.68fr)}
+ .at-h3-feature{grid-template-columns:clamp(190px,19vw,245px) minmax(0,1fr);min-height:300px;height:300px}
+ .at-h3-feature-panel{padding:18px 22px;gap:10px}
+ .at-h3-feature-over{left:13px;right:12px;bottom:15px}
+ .at-h3-feature-over h3{font-size:clamp(20px,1.9vw,27px);line-height:1.1;margin:6px 0 9px}
+ .at-h3-ep-pill{height:49px;flex-basis:51px;border-radius:9px}
+ .at-h3-ep-pill b{font-size:16px}
+ .at-h3-ep-pill span{font-size:7px}
+ .at-h3-ep-pill small{font-size:6px}
+ .at-h3-nextline strong{font-size:18px}
+ .at-h3-nextline>b{font-size:20px}
+ .at-h3-feature-actions button{min-height:38px}
+ .at-h2-session{height:300px;padding:16px}
+ .at-h2-session-empty{padding:20px 8px}
+}
+.at-h4-shortcuts{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:11px}
+.at-h4-shortcut-list{display:flex;flex-wrap:wrap;gap:7px}
+.at-h4-shortcut-list button{min-height:37px;padding:8px 12px;background:#252438;color:#d7cdef;border:1px solid #4b405f;border-radius:10px;font-size:11px;font-weight:800}
+.at-h4-shortcut-list button:hover,.at-h4-shortcut-list button:focus-visible{border-color:#a688e4}
+.at-h4-sync{display:flex;align-items:center;gap:7px;color:#a5a8c0;font-size:10px;min-width:0}
+.at-h4-sync-dot{width:7px;height:7px;background:#7fd8b2;border-radius:50%;flex:none}
+.at-live-checking .at-h4-sync-dot{background:#eed089;animation:at-h4-pulse 1s ease-in-out infinite}
+.at-h4-sync button{padding:7px 10px;border:1px solid #625575;background:#2b273f;border-radius:8px;color:#ded1f6;font-weight:750;font-size:10px}
+@keyframes at-h4-pulse{50%{opacity:.35}}
+.at-h2-lineup-grid{gap:12px}
+.at-h2-lineup-card{min-height:165px;border-radius:15px;background:linear-gradient(120deg,#202337,#1b2030);border-color:#454158}
+.at-h2-lineup-poster{flex:0 0 107px}
+.at-h2-lineup-info{padding:12px 13px;gap:7px}
+.at-h2-lineup-name{font-size:14px;min-height:36px;line-height:1.27}
+.at-h4-next-info{display:grid;gap:3px}
+.at-h4-ep-label{font-size:9px;color:#ad9acb;letter-spacing:.9px;font-weight:900}
+.at-h4-next-info strong{font-size:18px;line-height:1.2;color:#f9f4ff;letter-spacing:-.2px}
+.at-h4-remaining{font-size:10px;color:#afaabf}
+.at-h2-lineup-actions{gap:6px;margin-top:auto}
+.at-h2-lineup-actions button{min-height:39px;font-size:11px;padding:8px 10px}
+.at-h2-lineup-actions button.at-h4-advance{flex:1.15;background:linear-gradient(110deg,#7b5bb8,#57478d);border:1px solid #947ac2;color:#fff}
+.at-h2-lineup-actions button.at-h4-details{flex:.82;background:#2b2d43;border:1px solid #514c67;color:#e5d9ff}
+.at-h2-lineup-actions button:last-child{flex:0 0 36px}
+.at-h2-lineup-actions button:focus-visible,.at-h3-feature-actions button:focus-visible{outline:2px solid #d3baff;outline-offset:2px}
+@media(max-width:1100px) and (min-width:761px){
+ .at-h3-feature{grid-template-columns:225px minmax(0,1fr);min-height:300px;max-height:360px}
+ .at-h3-feature-panel{padding:20px;gap:11px}
+ .at-h2-session{height:auto}
+ .at-h2-lineup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+ .at-h4-shortcuts{align-items:stretch}
+ .at-h4-shortcut-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:5px}
+ .at-h4-shortcut-list button{padding:8px 3px;font-size:9px;min-height:39px}
+ .at-h4-sync{width:100%;justify-content:space-between;font-size:9px;line-height:1.4}
+ .at-h4-sync>span:nth-child(2){flex:1}
+ .at-h2-lineup-card{min-height:178px;flex-basis:90%}
+ .at-h2-lineup-poster{flex-basis:105px}
+ .at-h2-lineup-name{font-size:14px}
+ .at-h4-next-info strong{font-size:19px}
+ .at-h2-lineup-actions button{min-height:44px}
+ .at-h3-feature{min-height:0}
+}
+@media(max-width:390px){
+ .at-h2-lineup-card{flex-basis:96%}
+ .at-h2-lineup-poster{flex-basis:89px}
+ .at-h2-lineup-info{padding:9px}
+ .at-h2-lineup-actions button{padding:7px 5px;font-size:10px}
+}
+@media(prefers-reduced-motion:reduce){.at-live-checking .at-h4-sync-dot{animation:none}}

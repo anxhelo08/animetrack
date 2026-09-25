@@ -1,7 +1,7 @@
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
 window.AnimeTrackPro=function AnimeTrackPro(ctx){
  const $=ctx.el,esc=ctx.esc;
- let active='',installPrompt=null;
+ let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null;
  const proPages=['notifications','recommendations','calendar','wrapped','profile','friends','moderation'];
  ctx.button=(label,action,id='')=>`<button type="button" class="pro-btn" data-pro-action="${esc(action)}" data-id="${esc(id)}">${esc(label)}</button>`;
  const modules={
@@ -18,6 +18,13 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
  function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
+ async function refreshLive(force=false){
+  if(liveBusy||document.visibilityState==='hidden'||!navigator.onLine)return;
+  if(!force&&Date.now()-liveLastCheck<5*60000)return;
+  liveBusy=true;liveLastCheck=Date.now();document.body.classList.add('at-live-checking');renderHome();
+  try{await ctx.liveRefresh(force)}catch(e){console.warn('Live refresh failed',e)}
+  finally{liveBusy=false;document.body.classList.remove('at-live-checking');render();renderHome()}
+ }
  function renderHome(){
   if($('at-home-main')){const parts=modules.home.render();for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}}
   const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home();
@@ -39,7 +46,12 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/sw.js').catch(console.warn);
   document.addEventListener('click',handleClick);
   document.addEventListener('change',e=>{if(e.target?.id==='pro-rec-length')modules.recommendations.setLength(e.target.value)});
-  setInterval(()=>{if(ctx.user())modules.notifications.refresh()},5*60000);
+  // Active-tab polling only. The upstream anime schedules are not a push feed.
+  liveTimer=setInterval(()=>{if(document.visibilityState==='visible')void refreshLive(false)},10*60000);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refreshLive(false)});
+  window.addEventListener('online',()=>void refreshLive(false));
+  window.addEventListener('focus',()=>void refreshLive(false));
+  setInterval(()=>{if(document.visibilityState==='visible'&&ctx.user())void modules.notifications.refresh()},5*60000);
   renderHome();
   void modules.recommendations.refresh(false);
  }
@@ -53,16 +65,21 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  async function onAccount(){
-  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();
+  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
- function onStateChange(){modules.profiles.scheduleSnapshot();modules.notifications.badge();modules.recommendations.onLibraryChange();renderHome()}
+ function onStateChange(){
+  modules.profiles.scheduleSnapshot();modules.recommendations.onLibraryChange();
+  render();renderHome();
+  clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{if(document.visibilityState==='visible')void modules.notifications.refresh();else modules.notifications.badge()},450);
+ }
  function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';element.innerHTML=modules.rewatch.render(id);root.append(element)}
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
   if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}
+  if(b.dataset.homeAction==='sync-now'){await refreshLive(true);ctx.toast('Kontrolli i përditësimeve përfundoi.');return}
   if(b.dataset.homeAction){try{return await modules.home.action(b.dataset.homeAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120));return}}
   const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
   try{

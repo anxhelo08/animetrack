@@ -14,7 +14,7 @@ function load(extra={}){
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.3/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.4/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -98,12 +98,12 @@ test('watch-first home replaces duplicate stats without removing legacy render n
  const home=w.ATHome(c),parts=home.render();
  assert.match(parts.hero,/Çfarë do të shikosh sot/);
  assert.match(parts.feature,/Mystery Voyage/);assert.match(parts.feature,/10 për t’u parë/);assert.match(parts.feature,/Episodi 3/);
- assert.match(parts.lineup,/E3/);
+ assert.match(parts.lineup,/S1 · EP 3/);assert.match(parts.lineup,/\+1 episod/);
  assert.doesNotMatch(parts.hero,/Anime gjithsej/);
  home.action('queue-toggle','a1');assert.equal(JSON.stringify(data.preferences.homeQueue),'["a1"]');
  assert.match(home.render().session,/Mystery Voyage/);
  home.action('continue');assert.deepEqual(opened,['a1','s1',3]);
- home.action('mark-next','a1');assert.equal(marked,'a1');
+ home.action('advance-next','a1');assert.equal(marked,'a1');
  home.action('queue-toggle','a1');assert.equal(data.preferences.homeQueue.length,0);
 });
 test('profile stats tab and goal stay inside profile',()=>{
@@ -137,4 +137,25 @@ test('up-next exposes backlog, quick episode strip and one-click watched action'
  assert.match(h,/4 episode gati/);
  assert.match(h,/data-ep="3"/);assert.match(h,/data-ep="6"/);
  assert.match(h,/E pashë/);
+});
+
+test('compact 10.4 desktop focus and clearer advancing cards are wired',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),home=fs.readFileSync(path.join(root,'assets/pro-home.js'),'utf8');
+ assert.match(css,/height:300px/);assert.match(css,/at-h4-advance/);
+ assert.match(home,/advance-next/);assert.match(home,/sync-now/);
+ assert.match(html,/pro-compact-104\.css/);assert.match(sw,/pro-compact-104\.css/);
+});
+test('cloud round-trip preserves watch session and reminder preferences',()=>{
+ const core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');
+ assert.match(core,/preferences:normalizePreferences\(data.preferences\)/);
+ assert.match(core,/homeQueue:Array.isArray\(p.homeQueue\)/);
+ assert.match(core,/calendarReminders:Object.fromEntries/);
+ assert.match(core,/async function accountPullQuiet/);
+ assert.match(core,/upcomingCheckedAt<30\*60000/);
+});
+test('watched notifications are excluded and foreground sync refreshes views',()=>{
+ const notify=fs.readFileSync(path.join(root,'assets/pro-notifications.js'),'utf8'),features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8');
+ assert.match(notify,/alreadyWatched\(e\)/);
+ assert.match(features,/visibilitychange/);assert.match(features,/liveRefresh\(force\)/);
+ assert.match(features,/render\(\);renderHome\(\)/);
 });

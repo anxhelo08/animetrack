@@ -13,14 +13,15 @@ window.ATNotifications=function ATNotifications(ctx){
  function collect(){
   const out=[],now=Date.now();
   const reminders=preferences().calendarReminders||{};
+  const alreadyWatched=e=>{const a=state().anime.find(x=>x.id===e.animeId),season=a?.seasons?.find(x=>x.id===e.seasonId);return !!season?.watched?.includes(Number(e.seasonEpisode||e.episode))};
   for(const e of ctx.upcoming()){
    const key=[e.animeId,e.seasonId||'',e.episode,e.when].join(':');
-   if(!reminders[key]||e.when>now+30*60000||e.when<now-D)continue;
+   if(!reminders[key]||e.when>now+30*60000||e.when<now-D||alreadyWatched(e))continue;
    const a=state().anime.find(x=>x.id===e.animeId);if(!a)continue;
    out.push({key:'reminder:'+key,category:'episodes',title:'Kujtesa e episodit',body:a.title+' · EP '+e.episode+' · '+new Date(e.when).toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit'}),at:e.when-30*60000,id:a.id,cover:a.cover,season:e.seasonId||'',ep:e.seasonEpisode||e.episode});
   }
   for(const e of ctx.upcoming()){
-   if(!e.animeId||e.when>now||e.when<now-7*D)continue;
+   if(!e.animeId||e.when>now||e.when<now-7*D||alreadyWatched(e))continue;
    const a=state().anime.find(x=>x.id===e.animeId);if(!a)continue;
    out.push({key:'ep:'+e.animeId+':'+(e.seasonId||e.season)+':'+e.episode,category:'episodes',title:'Episod i ri',body:a.title+' · EP '+e.episode,at:e.when,id:a.id,cover:a.cover,season:e.seasonId||'',ep:e.seasonEpisode||e.episode});
   }
