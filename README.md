@@ -55,3 +55,5 @@ Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodiki
 - Feed-i i episodeve nuk fshihet më nga rregullat e vjetra të dashboard-it; vetëm pamja desktop fshihet në mobile.
 - Test real shfletuesi për hapjen e feed-it, kalimin +1 episod dhe pesë tab-et në Chromium dhe Safari WebKit.
 - Një rekord i paplotë episodi nuk e bllokon tërë aplikacionin; shfaqet veprim rikuperimi.
+
+<!-- Production redeploy: AnimeTrack 10.5.1 iPhone blank-feed hotfix. -->
