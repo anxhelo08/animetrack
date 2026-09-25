@@ -1,0 +1,24 @@
+window.ATProfiles=function ATProfiles(ctx){
+ let profile=null,timer=0;
+ const esc=ctx.esc,client=()=>ctx.client(),user=()=>ctx.user();
+ function snapshot(){const anime=ctx.state().anime.slice(0,450).map(a=>({key:a.malId?'mal:'+a.malId:a.sourceId?a.source+':'+a.sourceId:'name:'+a.title.toLowerCase(),title:a.title,cover:a.cover,rating:a.rating,genre:a.genre,status:a.status,watched:ctx.count(a)}));return{anime,stats:{titles:anime.length,episodes:anime.reduce((n,a)=>n+a.watched,0),completed:ctx.state().anime.filter(a=>a.status==='completed').length,favorites:ctx.state().anime.filter(a=>a.favorite).length},updatedAt:new Date().toISOString()}}
+ async function load(){if(!user()){profile=null;return}const r=await client().from('anime_profiles').select('user_id,handle,display_name,bio,avatar_emoji,is_public,snapshot').eq('user_id',user().id).maybeSingle();if(r.error)throw r.error;profile=r.data||null}
+ function render(){
+  const p=profile||{},s=snapshot();
+  return `<div class="pro-hero"><span class="pro-eyebrow">YOUR ANIME IDENTITY</span><h2>👤 Profili im</h2><p>Privat si parazgjedhje. Ti vendos nëse do të ndash listën dhe statistikat me të tjerët.</p></div><div class="pro-grid2"><section class="pro-panel"><div class="pro-row"><div class="pro-profile-icon">${esc(p.avatar_emoji||'🎌')}</div><div><strong>${esc(p.display_name||ctx.accountName())}</strong><small class="pro-muted">@${esc(p.handle||'pa username')}</small></div></div><div style="display:grid;gap:12px;margin-top:15px"><label class="pro-field">Username<input class="pro-input" id="pro-handle" maxlength="24" placeholder="animefan01" value="${esc(p.handle||'')}"></label><label class="pro-field">Emri publik<input class="pro-input" id="pro-name" maxlength="40" value="${esc(p.display_name||ctx.accountName())}"></label><label class="pro-field">Avatar emoji<input class="pro-input" id="pro-avatar" maxlength="12" value="${esc(p.avatar_emoji||'🎌')}"></label><label class="pro-field">Bio<textarea class="pro-textarea" id="pro-bio" maxlength="280">${esc(p.bio||'')}</textarea></label><label class="pro-toggle"><input type="checkbox" id="pro-public" ${p.is_public?'checked':''}> Bëje profilin publik</label><p class="pro-muted">Publikohen vetëm lista e përmbledhur dhe statistikat, jo email-i, historiku i detajuar apo shënimet private. Miqtë e pranuar i shohin edhe kur profili është privat.</p><button class="pro-btn primary" data-pro-action="profile-save">Ruaj profilin</button>${profile?'<button class="pro-btn" data-pro-action="profile-share">Kopjo linkun e profilit</button>':''}</div></section><section class="pro-panel"><h3>📊 Karta jote</h3><div class="pro-grid">${Object.entries(s.stats).map(([key,val])=>`<div class="pro-panel"><strong style="font-size:28px">${val}</strong><small>${({titles:'Anime',episodes:'Episode',completed:'Të përfunduara',favorites:'Të preferuarat'})[key]}</small></div>`).join('')}</div><h3>Top anime</h3><div class="pro-list">${s.anime.filter(a=>a.rating!=null).sort((a,b)=>b.rating-a.rating).slice(0,8).map(a=>`<div class="pro-row"><span>${esc(a.title)}</span><b>★ ${a.rating}/10</b></div>`).join('')||'<p class="pro-muted">Vlerëso disa anime për ta plotësuar kartën.</p>'}</div></section></div>`;
+ }
+ async function save(){
+  if(!user())return;const handle=String(ctx.el('pro-handle')?.value||'').trim().toLowerCase(),name=String(ctx.el('pro-name')?.value||'').trim(),bio=String(ctx.el('pro-bio')?.value||'').trim(),avatar=String(ctx.el('pro-avatar')?.value||'🎌').trim()||'🎌',is_public=!!ctx.el('pro-public')?.checked;
+  if(!/^[a-z0-9_]{3,24}$/.test(handle)){ctx.toast('Username: 3–24 shkronja të vogla, numra ose _.');return}
+  if(!name||name.length>40){ctx.toast('Emri duhet të ketë 1–40 karaktere.');return}
+  const row={user_id:user().id,handle,display_name:name,bio:bio.slice(0,280),avatar_emoji:avatar.slice(0,12),is_public,snapshot:snapshot(),updated_at:new Date().toISOString()};
+  const r=await client().from('anime_profiles').upsert(row,{onConflict:'user_id'}).select('user_id,handle,display_name,bio,avatar_emoji,is_public,snapshot').single();
+  if(r.error)throw r.error;profile=r.data;ctx.toast('Profili u ruajt në cloud ✓');ctx.rerender();
+ }
+ function scheduleSnapshot(){
+  if(!profile||!user())return;clearTimeout(timer);
+  timer=setTimeout(async()=>{const id=user()?.id;if(!id)return;try{await client().from('anime_profiles').update({snapshot:snapshot(),updated_at:new Date().toISOString()}).eq('user_id',id)}catch(e){console.warn('Snapshot sync',e)}},2200);
+ }
+ async function share(){if(!profile)return;try{await navigator.clipboard.writeText(location.origin+'/?profile='+encodeURIComponent(profile.handle));ctx.toast('Linku i profilit u kopjua ✓')}catch{ctx.toast('Kopjimi dështoi.')} }
+ return {load,render,save,share,scheduleSnapshot,snapshot,get:()=>profile};
+};
