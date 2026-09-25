@@ -38,6 +38,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   modules.home.mount(home,recommend,dash);
   document.body.insertAdjacentHTML('beforeend','<nav id="at-mobile-nav" class="at-mobile-nav" aria-label="Navigimi kryesor në telefon">'+[['home','⌂','Kreu'],['watching','▶','Watching'],['discover','✦','Zbulo'],['calendar','▦','Kalendari'],['profile','◉','Profili']].map(([key,icon,label])=>`<button type="button" data-mobile-go="${key}" aria-label="${label}"><span class="at-mobile-icon">${icon}</span><span>${label}</span></button>`).join('')+'</nav>');
   syncMobileNav();
+  const backup=document.querySelector('.mobile-backup'),accountBody=document.querySelector('#account-modal .modal-body');
+  if(backup&&accountBody){const details=document.createElement('details');details.className='at-h3-mobile-backup';details.innerHTML='<summary>↓ Kopje rezervë · Import / Eksport</summary>';accountBody.append(details);details.append(backup)}
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
   if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/sw.js').catch(console.warn);
