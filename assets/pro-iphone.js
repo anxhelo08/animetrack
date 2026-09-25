@@ -8,13 +8,13 @@ window.ATiPhone=function ATiPhone(ctx){
  const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
  const poster=a=>ctx.poster(a.cover||'');
  const getSeason=(a,n)=>a.seasons?.indexOf(n.season)+1||1;
- const eligible=()=>state().anime.filter(a=>a.status==='watching'&&ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a));
- const pending=()=>eligible().slice().sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
+ const eligible=()=>(state().anime||[]).filter(a=>{try{return a?.status==='watching'&&!!ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a)}catch(err){console.warn('Skipping incomplete anime in iPhone feed',a?.id,err);return false}});
+ const pending=()=>eligible().slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
  const recent=()=>{const seen=new Set();return (ctx.recentAiring?.()||[]).filter(x=>{
  const a=x.anime||state().anime.find(a=>a.id===x.animeId),n=Number(x.localEpisode||x.seasonEpisode||x.episode),s=x.localSeason||a?.seasons?.find(s=>s.id===x.seasonId);
- const key=a?.id+':'+s?.id+':'+n;if(!a||!s||!n||s.watched.includes(n)||seen.has(key))return false;seen.add(key);return true;
+ const key=a?.id+':'+s?.id+':'+n;if(!a||!s||!n||(s.watched||[]).includes(n)||seen.has(key))return false;seen.add(key);return true;
  }).sort((a,b)=>b.when-a.when).slice(0,40)};
- const upcoming=()=>ctx.upcoming().filter(x=>x.when>=Date.now()&&x.when<Date.now()+14*86400000&&state().anime.some(a=>a.id===x.animeId)).sort((a,b)=>a.when-b.when);
+ const upcoming=()=>(ctx.upcoming()||[]).filter(x=>x.when>=Date.now()&&x.when<Date.now()+14*86400000&&(state().anime||[]).some(a=>a.id===x.animeId)).sort((a,b)=>a.when-b.when);
  function readyCard(a){
   const nx=ctx.nextEpisode(a),total=ctx.releasedTotal(a),watched=ctx.count(a),remaining=Math.max(0,total-watched),season=getSeason(a,nx),url=poster(a);
   return `<article class="at-ios-episode-card"><button type="button" class="at-ios-cover" data-ios-action="details" data-id="${esc(a.id)}">${url?`<img src="${esc(url)}" loading="lazy" referrerpolicy="no-referrer" alt="Posteri i ${esc(a.title)}">`:'<span>✦</span>'}<span class="at-ios-cover-badge">${remaining} gati</span></button><div class="at-ios-episode-copy"><div class="at-ios-card-eyebrow">RADHA JOTE</div><button type="button" class="at-ios-title" data-ios-action="details" data-id="${esc(a.id)}">${esc(a.title)}</button><strong class="at-ios-next">S${season} · EP ${nx.n}</strong><div class="at-ios-card-progress"><span style="width:${ctx.percent(a)}%"></span></div><small>${watched}/${total} episode · ${ctx.percent(a)}%</small><div class="at-ios-card-actions"><button type="button" data-ios-action="advance" data-id="${esc(a.id)}" class="at-ios-done">✓ +1 episod</button><button type="button" data-ios-action="episode" data-id="${esc(a.id)}" class="at-ios-detail">Detajet ↗</button></div></div></article>`;
@@ -45,9 +45,17 @@ window.ATiPhone=function ATiPhone(ctx){
   return `<section class="at-ios-shell"><header class="at-ios-header"><div><span class="at-ios-kicker">ANIMETRACK · MY WATCHLIST</span><h1>${esc(new Date().getHours()<12?'Mirëmëngjes':new Date().getHours()<18?'Mirëdita':'Mirëmbrëma')}, ${esc(name)} <span>✦</span></h1><p>${watch.length?`${watch.length} anime me episode që të presin.`:'Historia jote anime, në një vend.'}</p></div><button class="at-ios-bell" data-pro-page="notifications" type="button" aria-label="Hap njoftimet">♧${unread?`<i>${Math.min(99,unread)}</i>`:''}</button></header>${installCard()}<div class="at-ios-section-heading"><h2>Çfarë do të shikosh?</h2><button type="button" data-ios-action="sync" aria-label="Rifresko listën dhe orarin">↻</button></div><div class="at-ios-tabs" role="group" aria-label="Episode dhe premiera">${tabs.map(([key,title,n])=>`<button type="button" class="${tab===key?'active':''}" data-ios-action="tab" data-id="${key}" aria-pressed="${tab===key}">${title} <b>${n}</b></button>`).join('')}</div><div class="at-ios-list">${content||`<div class="at-ios-empty"><span>${tab==='upcoming'?'◷':'✦'}</span><h3>${tab==='pending'?'Je në rregull me episodet!':tab==='recent'?'Nuk ka episode të reja.':'Ende nuk ka premiera të konfirmuara.'}</h3><p>${tab==='pending'?'Zbulo një anime dhe shtoje te Po shikoj.':'Rifresko orarin për njoftimet e ardhshme.'}</p><button type="button" data-ios-action="${tab==='pending'?'discover':'sync'}">${tab==='pending'?'Zbulo anime ↗':'Rifresko ↻'}</button></div>`}</div>${total>limit?'<button type="button" class="at-ios-more" data-ios-action="more">Shfaq më shumë ↓</button>':''}<div class="at-ios-end"><span>✦</span> Gjithçka që ke shënuar ruhet në bibliotekën tënde.</div></section>`;
  }
  function mount(){const home=ctx.el('home-view');if(!home||ctx.el('at-iphone-feed'))return;const el=document.createElement('div');el.id='at-iphone-feed';home.insertBefore(el,home.firstChild);document.body.classList.add('at-ios-enabled');}
- function refresh(){const node=ctx.el('at-iphone-feed');if(node)node.innerHTML=render()}
+ function refresh(){
+  const node=ctx.el('at-iphone-feed');if(!node)return;
+  try{node.innerHTML=render()}
+  catch(err){
+   console.warn('iPhone feed failed to render',err);
+   node.innerHTML='<section class="at-ios-empty" role="alert"><span>✦</span><h3>Nuk u ngarkuan episodet</h3><p>Mund të ketë një problem të përkohshëm me të dhënat. Provo përsëri ose hap Bibliotekën; progresi yt ruhet.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>';
+  }
+ }
  function action(op,id,b){
   const a=state().anime.find(a=>a.id===id);
+  if(op==='retry'){refresh();return}
   if(op==='tab'){if(['pending','recent','upcoming'].includes(id)){tab=id;limit=20;refresh()}return}
   if(op==='more'){limit=Math.min(500,limit+20);refresh();return}
   if(op==='details'){if(a)ctx.openAnime(a.id);return}

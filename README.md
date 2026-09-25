@@ -1,4 +1,4 @@
-# AnimeTrack 10.5 — Anime Universe Pro
+# AnimeTrack 10.5.1 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -49,4 +49,9 @@ Supabase Auth dhe RLS ndajnë bibliotekat personale. Profili nis privat; lista e
 
 Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodikisht kopje rezervë.
 
-<!-- Production deployment sync: AnimeTrack 10.5 iPhone PWA release. -->
+<!-- Production deployment sync: AnimeTrack 10.5.1 iPhone PWA release. -->
+
+## Korrigjimi 10.5.1 në iPhone
+- Feed-i i episodeve nuk fshihet më nga rregullat e vjetra të dashboard-it; vetëm pamja desktop fshihet në mobile.
+- Test real shfletuesi për hapjen e feed-it, kalimin +1 episod dhe pesë tab-et në Chromium dhe Safari WebKit.
+- Një rekord i paplotë episodi nuk e bllokon tërë aplikacionin; shfaqet veprim rikuperimi.

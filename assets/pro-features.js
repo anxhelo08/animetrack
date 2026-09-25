@@ -28,8 +28,10 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   finally{liveBusy=false;document.body.classList.remove('at-live-checking');render();renderHome()}
  }
  function renderHome(){
+  // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
+  try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)feed.innerHTML='<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>'}
+  if(window.matchMedia?.('(max-width: 760px)').matches)return;
   if($('at-home-main')){const parts=modules.home.render();for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}}
-  modules.iphone.refresh();
   const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home();
   const week=$('pro-home-week');if(week)week.innerHTML=modules.calendar.home();
   const inbox=$('pro-home-inbox');if(inbox)inbox.innerHTML=modules.notifications.home();
