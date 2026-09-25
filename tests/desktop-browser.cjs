@@ -33,7 +33,7 @@ const assert=require('node:assert/strict');
  await page.locator('[data-home-action="advance-next"][data-id="demo7"]').click();
  assert.match(await page.locator('#at-home-lineup').innerText(),/S1 · EP 3/,'failed storage should not advance progress');
  await page.evaluate(()=>{Storage.prototype.setItem=window.__atOriginalSetItem;delete window.__atOriginalSetItem});
- await page.locator('[data-home-action="open-anime"][data-id="demo7"]').click();
+ await page.locator('#at-home-lineup .at-h2-lineup-name[data-id="demo7"]').click();
  assert(await page.locator('#detail-modal').isVisible(),'Franchise detail should open');
  assert(await page.locator('#detail-body .at108-franchise').isVisible(),'Franchise Hub should render');
  assert.equal(await page.locator('#detail-body .at108-season-tile').count(),1);
