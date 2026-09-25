@@ -1091,6 +1091,7 @@ const proContext={
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
  nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(),
+ undoEpisode:(id,seasonId,n)=>{const last=state.history[state.history.length-1];if(!last||last.id!==id||last.seasonId!==seasonId||last.episode!==n||last.action!=='watched'){notify('Progresi ka ndryshuar. Zhbërja nuk u krye.');return false}return updateSeasonEpisode(id,seasonId,n,false)},
  openFilter:code=>setFilter(code),
  
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
