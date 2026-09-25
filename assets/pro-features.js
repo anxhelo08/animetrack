@@ -43,7 +43,22 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   modules.home.mount(home,recommend,dash);
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
-  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/sw.js').catch(console.warn);
+  if('serviceWorker' in navigator&&location.protocol==='https:'){
+   const showUpdate=()=>{
+    if($('at-pwa-update'))return;
+    document.body.insertAdjacentHTML('beforeend','<div id="at-pwa-update" class="at-pwa-update" role="status"><span>✦ Version i ri i AnimeTrack është gati.</span><button type="button" data-pro-action="reload-update">Përditëso tani ↻</button><button type="button" data-pro-action="dismiss-update" aria-label="Më vonë">×</button></div>');
+   };
+   navigator.serviceWorker.addEventListener('controllerchange',showUpdate);
+   navigator.serviceWorker.register('/sw.js').then(reg=>{
+    if(reg.waiting)showUpdate();
+    let lastCheck=0;
+    const check=()=>{if(document.visibilityState==='hidden'||!navigator.onLine||Date.now()-lastCheck<30*60000)return;lastCheck=Date.now();reg.update().catch(console.warn)};
+    reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(worker)worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate()})});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
+    window.addEventListener('online',check);
+    setInterval(check,60*60000);
+   }).catch(console.warn);
+  }
   document.addEventListener('click',handleClick);
   document.addEventListener('change',e=>{if(e.target?.id==='pro-rec-length')modules.recommendations.setLength(e.target.value)});
   // Active-tab polling only. The upstream anime schedules are not a push feed.
@@ -83,6 +98,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   if(b.dataset.homeAction){try{return await modules.home.action(b.dataset.homeAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120));return}}
   const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
   try{
+   if(op==='dismiss-update'){$('at-pwa-update')?.remove();return}
+   if(op==='reload-update'){if(ctx.canReload&&!ctx.canReload()){ctx.toast('Ruajtja në cloud është ende në proces. Provo përsëri pas sinkronizimit.');return}location.reload();return}
    if(op==='install'){if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Share → Add to Home Screen.');return}
    if(op==='recommendations'){ctx.navigate('recommendations');return}
    if(op==='add-recommendation')return await modules.recommendations.add(b.dataset.key);
