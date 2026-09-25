@@ -197,7 +197,7 @@ async function hydrateSeasons(id,force=false){
   const remote=entry.source==='AniList'?await anilistSeasons(entry.sourceId,entry.format):await jikanSeasons(entry.sourceId,entry.format);
   if(owner!==(accountUser?.id||null)||!state.anime.some(a=>a.id===id))return null;
   if(!remote.length)return id;
-  const keeper=reconcileSeriesLibrary(entry,remote);
+  const keeper=force?reconcileSeriesLibrary(entry,remote):hydrateSingleCard(entry,remote);
   save();render();renderHome();renderCatalog();if(typeof v8RenderSeasonal==='function')v8RenderSeasonal();
   if(detailId===keeper.id){renderDetail(keeper.id);const selected=keeper.seasons.find(s=>s.id===activeSeasonId)||keeper.seasons[0];if(selected)loadSeasonEpisodes(keeper.id,selected.id,0)}
   if(force)notify('Sezonet u bashkuan dhe u përditësuan ✓');
@@ -273,6 +273,24 @@ function mergeSeasonMetadata(old,updated){
  if(updated.airedCount!=null)old.airedCount=Math.max(Number(old.airedCount)||0,Number(updated.airedCount)||0);
  if(updated.nextAiringAt){old.nextAiringAt=updated.nextAiringAt;old.nextAiringEpisode=updated.nextAiringEpisode}
  return old;
+}
+// Passive metadata refresh must never delete other library cards. Explicit "Bashko"
+// remains the only pathway that reconciles separate records.
+function hydrateSingleCard(reference,remote){
+ if(!reference||!Array.isArray(remote)||!remote.length)return reference;
+ const seasons=(reference.seasons||[]).map((s,i)=>normSeason(s,i));
+ const ids=new Set(seasons.map(s=>s.id));
+ for(const update of remote){
+  const prior=seasons.find(s=>sameSeriesSeason(s,update));
+  if(prior){mergeSeasonMetadata(prior,update);continue}
+  const fresh=normSeason(update,seasons.length);
+  if(ids.has(fresh.id))fresh.id='manual-'+uuid();
+  ids.add(fresh.id);seasons.push(fresh);
+ }
+ seasons.sort((a,b)=>(a.year||9999)-(b.year||9999)||String(a.releaseStart||'9999').localeCompare(String(b.releaseStart||'9999'))||(Number(a.sourceId)||0)-(Number(b.sourceId)||0));
+ seasons.forEach((season,i)=>{if(!String(season.id).startsWith('manual-'))season.title=season.format==='MOVIE'?'Filmi':'Sezoni '+(i+1)});
+ reference.seasons=seasons;reference.hydrated=true;reference.updatedAt=now();syncTotals(reference);
+ return reference;
 }
 function reconcileSeriesLibrary(reference,remote){
  if(!reference||!Array.isArray(remote)||!remote.length)return reference;
@@ -977,7 +995,7 @@ accountOpenCloud=async function(user){
  await seriesBaseAccountOpen(user);
  const groups=new Map();
  for(const a of state.anime.filter(a=>a.source&&isSeriesFormat(a.format))){const root=seriesRootTitle(a.title);if(root.length<12)continue;const group=groups.get(root)||[];group.push(a);groups.set(root,group)}
- if([...groups.values()].some(group=>group.length>1&&group.some(a=>seriesHasSeasonSuffix(a.title))))setTimeout(()=>{if(accountUser?.id===user.id)scanAndMergeSeries(true)},3500);
+ // Duplicate-looking titles are grouped visually by Franchise Hub, never auto-merged at login.
 };
 
 
@@ -1100,6 +1118,26 @@ function v98EpisodeActionHandlers(){
  });
 }
 v98EpisodeActionHandlers();
+
+/* 10.8: augment existing season/episode views; never merge user records on view. */
+const atJourney=window.ATJourney({
+ el:$,esc:escapeHTML,state:()=>state,root:seriesRootTitle,seriesFormat:isSeriesFormat,
+ released:releasedCount,activeSeason:()=>activeSeasonId,episodeParts:v81EpisodeParts,
+ closeEpisode:()=>{if($('episode-detail-modal').classList.contains('show'))closeModal('episode-detail-modal')},
+ openEpisode:(id,sid,n)=>{if($('detail-modal').classList.contains('show'))closeModal('detail-modal');v81OpenEpisode(id,sid,n)},
+ openSeason:(id,sid)=>{
+  const a=state.anime.find(x=>x.id===id),season=a?.seasons.find(x=>x.id===sid);if(!season)return;
+  if($('episode-detail-modal').classList.contains('show'))closeModal('episode-detail-modal');
+  activeSeasonId=sid;episodePage=0;renderDetail(id);showModal('detail-modal');loadSeasonEpisodes(id,sid,0);
+ }
+});
+const priorJourneyDetail=renderDetail;
+renderDetail=function(id){priorJourneyDetail(id);atJourney.renderDetail(state.anime.find(a=>a.id===id))};
+const priorJourneyEpisode=v81RenderEpisode;
+v81RenderEpisode=function(message=''){priorJourneyEpisode(message);atJourney.renderEpisode(v81EpisodeParts())};
+const priorJourneyOpen=v81OpenEpisode;
+v81OpenEpisode=function(id,seasonId,n){atJourney.onOpen();return priorJourneyOpen(id,seasonId,n)};
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-journey-action]');if(b)atJourney.action(b)});
 
 
 /* AnimeTrack 9.9 — composed feature modules. Core user library remains unchanged. */
