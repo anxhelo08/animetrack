@@ -57,7 +57,7 @@ window.ATiPhone=function ATiPhone(ctx){
    node.innerHTML='<section class="at-ios-empty" role="alert"><span>✦</span><h3>Nuk u ngarkuan episodet</h3><p>Mund të ketë një problem të përkohshëm me të dhënat. Provo përsëri ose hap Bibliotekën; progresi yt ruhet.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>';
   }
  }
- function action(op,id,b){
+ async function action(op,id,b){
   const a=state().anime.find(a=>a.id===id);
   if(op==='retry'){refresh();return}
   if(op==='tab'){if(['pending','recent','upcoming'].includes(id)){tab=id;limit=20;refresh()}return}
