@@ -4,17 +4,17 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-const names=['pro-recommendations','pro-calendar-wrapped','pro-profiles','pro-friends','pro-moderation','pro-notifications','pro-rewatch','pro-features'];
+const names=['pro-recommendations','pro-calendar-wrapped','pro-profiles','pro-friends','pro-moderation','pro-notifications','pro-rewatch','pro-home','pro-features'];
 function load(extra={}){
  const sandbox={window:{},console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
  for(const name of names)vm.runInContext(fs.readFileSync(path.join(root,'assets',name+'.js'),'utf8'),sandbox,{filename:name+'.js'});
  return sandbox.window;
 }
-function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
+function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
-test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.1/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 10\.2/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -88,4 +88,35 @@ test('profile show-and-edit does not change library state',()=>{
  assert.match(p.render(),/at-profile-stats/);assert.match(p.render(),/Example/);
  p.setTab('settings');assert.match(p.render(),/Ndrysho profilin/);
  assert.equal(s.anime.length,1);
+});
+
+test('watch-first home replaces duplicate stats without removing legacy render nodes',()=>{
+ const w=load(),c=context(),a={id:'a1',title:'Mystery Voyage',cover:'',status:'watching',favorite:false,updatedAt:'2026-09-24T12:00:00Z',seasons:[{id:'s1',title:'Sezoni 1',total:12,watched:[1,2]}]};
+ const data={anime:[a],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};
+ c.state=()=>data;c.nextEpisode=()=>({season:a.seasons[0],n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.poster=()=>'';c.rerender=()=>{};
+ let opened=null,marked=null;c.openEpisode=(id,s,n)=>{opened=[id,s,n]};c.markNext=id=>{marked=id};c.save=()=>true;
+ const home=w.ATHome(c),parts=home.render();
+ assert.match(parts.hero,/Çfarë do të shikosh sot/);
+ assert.match(parts.feature,/Mystery Voyage/);
+ assert.match(parts.lineup,/E3/);
+ assert.doesNotMatch(parts.hero,/Anime gjithsej/);
+ home.action('queue-toggle','a1');assert.deepEqual(data.preferences.homeQueue,['a1']);
+ assert.match(home.render().session,/Mystery Voyage/);
+ home.action('continue');assert.deepEqual(opened,['a1','s1',3]);
+ home.action('mark-next','a1');assert.equal(marked,'a1');
+ home.action('queue-toggle','a1');assert.equal(data.preferences.homeQueue.length,0);
+});
+test('profile stats tab and goal stay inside profile',()=>{
+ const w=load(),c=context(),data={anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};
+ c.state=()=>data;c.rerender=()=>{};c.el=id=>id==='at-profile-goal-input'?{value:'15'}:null;c.save=()=>true;
+ const profile=w.ATProfiles(c);profile.setTab('stats');
+ assert.match(profile.render(),/Objektivi javor/);
+ assert.match(profile.render(),/7 ditët e javës/);
+ profile.goalSave();assert.equal(data.preferences.weeklyGoal,15);
+});
+test('home module is included ahead of pro app, styles and service worker cache updated',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-home-102.css'),'utf8');
+ assert.ok(html.indexOf('/assets/pro-home.js')<html.indexOf('/assets/pro-features.js'));
+ assert.match(html,/pro-home-102\.css/);assert.match(sw,/pro-home\.js/);
+ assert.match(css,/#home-view\.at-home-rebuilt > :not\(#at-home-main\)/);
 });
