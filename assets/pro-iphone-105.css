@@ -1,0 +1,98 @@
+/* AnimeTrack 10.5 — dedicated iPhone experience, no desktop dashboard on phones */
+#at-iphone-feed{display:none}
+.at-ios-install-dialog{border:1px solid #67558b;background:#1d1c30;color:#f6f2ff;border-radius:24px;max-width:min(420px,calc(100vw - 24px));padding:25px;box-shadow:0 25px 100px #000b}
+.at-ios-install-dialog::backdrop{background:#080812bb;backdrop-filter:blur(7px)}
+.at-ios-install-dialog h2{font-size:23px;margin:8px 0}
+.at-ios-install-dialog p{color:#b9b0cf;font-size:13px;line-height:1.55}
+.at-ios-install-dialog ol{padding-left:22px;display:grid;gap:13px;font-size:13px;line-height:1.6;margin:22px 0}
+.at-ios-install-dialog li::marker{color:#c3a7f4;font-weight:900}
+.at-ios-install-mark{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#a27bec,#614fbd);font-size:30px}
+.at-ios-install-ok{min-height:45px;width:100%;border:0;border-radius:12px;color:#fff;background:#8060d2;font-weight:850}
+.at-ios-dialog-close{float:right;border:0;background:#383047;color:#e4d9f5;border-radius:9px;width:32px;height:32px;font-size:19px}
+@media(max-width:760px){
+ html{background:#10111b;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
+ body{background:#10111b;padding-bottom:calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
+ body.at-ios-enabled .main{padding:0 13px!important;max-width:none}
+ body.at-ios-enabled #home-view.at-home-rebuilt>:not(#at-iphone-feed){display:none!important}
+ body.at-ios-enabled #at-iphone-feed{display:block!important}
+ body.at-ios-enabled .topbar{display:none!important}
+ body.at-ios-enabled .at-mobile-nav{left:0;right:0;bottom:0;padding:8px 7px calc(8px + env(safe-area-inset-bottom));border-radius:19px 19px 0 0;border:0;border-top:1px solid #3e3a56;background:#171827f5;box-shadow:0 -13px 45px #0909138c}
+ body.at-ios-enabled .at-mobile-nav button{min-height:51px;gap:4px}
+ body.at-ios-enabled .at-mobile-nav button span{font-size:21px}
+ body.at-ios-enabled .at-mobile-nav button small{font-size:10px}
+ body.at-ios-enabled .pro-view{padding:19px 0 calc(95px + env(safe-area-inset-bottom))!important}
+ body.at-ios-enabled #library-view,body.at-ios-enabled #explore-view,body.at-ios-enabled #upcoming-view,body.at-ios-enabled #seasons-view{padding-top:18px;padding-bottom:100px}
+ body.at-ios-enabled .app{min-height:100dvh}
+ body.at-ios-enabled .modal-backdrop .modal{max-height:calc(100dvh - 24px);overflow:auto}
+ body.at-ios-enabled input,body.at-ios-enabled select,body.at-ios-enabled textarea{font-size:16px!important}
+ .at-ios-shell{padding:calc(24px + env(safe-area-inset-top)) 0 24px;min-height:70vh}
+ .at-ios-header{display:flex;justify-content:space-between;gap:14px;align-items:start;margin-bottom:25px}
+ .at-ios-kicker{font-size:10px;letter-spacing:1.3px;color:#ac90e9;font-weight:900}
+ .at-ios-header h1{font-size:clamp(25px,7.5vw,33px);line-height:1.12;letter-spacing:-1.2px;margin:8px 0;color:#faf7ff}
+ .at-ios-header h1 span{color:#ae8bfa}
+ .at-ios-header p{font-size:12px;color:#a6a4bb;margin:0}
+ .at-ios-bell{position:relative;display:grid;place-items:center;flex:none;width:44px;height:44px;border-radius:14px;border:1px solid #514564;background:#252039;color:#ebdfff;font-size:25px}
+ .at-ios-bell i{position:absolute;right:-3px;top:-5px;display:grid;place-items:center;min-width:18px;height:18px;padding:0 3px;background:#9564e5;border-radius:99px;font-size:10px;font-style:normal}
+ .at-ios-install{display:flex;gap:11px;align-items:flex-start;border:1px solid #66518b;background:linear-gradient(120deg,#312447,#232039);border-radius:16px;padding:14px;margin:0 0 23px}
+ .at-ios-install>span{display:grid;place-items:center;border-radius:10px;background:#634c91;color:#f0e7ff;font-size:20px;width:38px;height:38px;flex:none}
+ .at-ios-install>div{flex:1;min-width:0}
+ .at-ios-install strong{font-size:13px}
+ .at-ios-install p{font-size:11px;line-height:1.45;color:#c7bbdc;margin:5px 0 9px}
+ .at-ios-install div button{border:0;border-radius:8px;background:#8c69d9;color:#fff;font-size:11px;font-weight:800;padding:8px 12px}
+ .at-ios-dismiss{border:0;background:none;color:#bbb1cc;font-size:19px;padding:0 2px}
+ .at-ios-section-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 14px}
+ .at-ios-section-heading h2{font-size:22px;letter-spacing:-.5px;margin:0}
+ .at-ios-section-heading button{width:34px;height:34px;border:1px solid #514865;border-radius:11px;background:#28253a;color:#dfcff6;font-size:18px}
+ .at-ios-tabs{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin:0 -13px 17px;padding:0 13px 5px}
+ .at-ios-tabs::-webkit-scrollbar{display:none}
+ .at-ios-tabs button{flex:0 0 auto;min-height:39px;padding:8px 12px;border:1px solid #3e3c50;background:#242337;border-radius:11px;color:#bdb7d1;font-weight:750;font-size:11px}
+ .at-ios-tabs button.active{background:#62499b;border-color:#9076d2;color:#fff}
+ .at-ios-tabs b{display:inline-grid;place-items:center;min-width:18px;height:18px;margin-left:3px;background:#ffffff1a;border-radius:99px;font-size:10px}
+ .at-ios-list{display:grid;gap:10px}
+ .at-ios-episode-card{display:grid;grid-template-columns:108px minmax(0,1fr);min-height:184px;overflow:hidden;background:#1e2031;border:1px solid #3c3b54;border-radius:15px}
+ .at-ios-cover{position:relative;display:grid;place-items:center;overflow:hidden;background:#342c48;padding:0;border:0;color:#bc9de7;font-size:26px}
+ .at-ios-cover img{width:100%;height:100%;min-height:184px;object-fit:cover}
+ .at-ios-cover-badge{position:absolute;bottom:8px;left:6px;right:6px;border:1px solid #ffffff28;border-radius:7px;background:#151421d8;backdrop-filter:blur(6px);padding:5px;font-size:10px;font-weight:850;color:#fff}
+ .at-ios-episode-copy{display:flex;flex-direction:column;gap:7px;padding:13px 11px;min-width:0}
+ .at-ios-card-eyebrow{font-size:9px;color:#ad98d5;font-weight:900;letter-spacing:1.1px}
+ .at-ios-title{border:0;background:none;text-align:left;padding:0;color:#f7f2ff;font-size:14px;font-weight:850;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .at-ios-next{font-size:19px;line-height:1.2;color:#cfb6ff}
+ .at-ios-card-progress{height:4px;background:#3f3853;border-radius:99px;overflow:hidden}
+ .at-ios-card-progress span{display:block;height:100%;background:linear-gradient(90deg,#a37ae9,#74d9e5)}
+ .at-ios-episode-copy>small{font-size:9px;color:#aaa5c1}
+ .at-ios-card-actions{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:auto}
+ .at-ios-card-actions button{min-height:36px;border-radius:9px;padding:7px 9px;font-size:10px;font-weight:850}
+ .at-ios-done{color:#fff;background:#7657ba;border:1px solid #9578cb}
+ .at-ios-detail{color:#e4d5ff;background:#29263a;border:1px solid #5d507a}
+ .at-ios-release,.at-ios-coming{display:flex;align-items:center;gap:11px;background:#202233;border:1px solid #424057;border-radius:14px;padding:9px;min-width:0}
+ .at-ios-mini-cover{display:grid;place-items:center;width:59px;height:81px;flex:none;border-radius:7px;overflow:hidden;background:#38304d;color:#b598e9}
+ .at-ios-mini-cover img{width:100%;height:100%;object-fit:cover}
+ .at-ios-release-copy{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+ .at-ios-release-copy>span{color:#b798ee;font-size:9px;font-weight:850;letter-spacing:.5px}
+ .at-ios-release-copy strong,.at-ios-coming-title strong{font-size:12px;color:#f0eaf9;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+ .at-ios-release-copy small,.at-ios-coming-title small{font-size:10px;color:#aaa5be}
+ .at-ios-release-copy>div{display:flex;gap:7px}
+ .at-ios-release-copy button{min-height:32px;font-size:10px;color:#e7d7ff;background:#342b4d;border:1px solid #665385;border-radius:7px;padding:6px 9px}
+ .at-ios-release-copy button:last-child{background:#345752;border-color:#568079;color:#e3fff5}
+ .at-ios-date{display:grid;place-items:center;align-content:center;gap:2px;width:42px;flex:none}
+ .at-ios-date b{font-size:19px}.at-ios-date small{font-size:9px;color:#a99abf}
+ .at-ios-coming-title{display:grid;flex:1;min-width:0;gap:6px}
+ .at-ios-coming>button{background:none;border:0;color:#bba1f4;font-size:19px}
+ .at-ios-empty{display:grid;justify-items:center;text-align:center;gap:10px;padding:45px 17px;border:1px dashed #4d4660;border-radius:17px;background:#1d1b2d}
+ .at-ios-empty>span{font-size:34px;color:#b08aef}
+ .at-ios-empty h3{font-size:17px;margin:0}.at-ios-empty p{font-size:12px;color:#b7afc9;margin:0}
+ .at-ios-empty button,.at-ios-more{min-height:39px;padding:10px 15px;border-radius:9px;border:1px solid #8265b1;background:#584081;color:#f9f3ff;font-weight:800}
+ .at-ios-more{width:100%;margin:15px 0}
+ .at-ios-end{text-align:center;font-size:10px;color:#88849c;margin:25px 0}
+ .at-ios-end span{color:#c0a0f5}
+ .at-ios-shell button:focus-visible,.at-mobile-nav button:focus-visible{outline:2px solid #d4b9ff;outline-offset:2px}
+}
+@media(max-width:380px){
+ .at-ios-episode-card{grid-template-columns:91px minmax(0,1fr)}
+ .at-ios-cover img{min-height:180px}
+ .at-ios-episode-copy{padding:10px 9px;gap:6px}
+ .at-ios-title{font-size:12px}
+ .at-ios-next{font-size:16px}
+ .at-ios-card-actions button{padding:6px;font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){.at-ios-card-progress span{transition:none}}

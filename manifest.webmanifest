@@ -1,20 +1,30 @@
 {
   "id": "/",
-  "name": "AnimeTrack – Your Anime Universe",
+  "name": "AnimeTrack — Anime & Episode Tracker",
   "short_name": "AnimeTrack",
-  "description": "Biblioteka personale anime, episode, statistika dhe komunitet.",
+  "description": "Ndiq episodet, kalendarin dhe bibliotekën tënde anime si aplikacion në iPhone.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "theme_color": "#171626",
-  "background_color": "#10101a",
+  "theme_color": "#10111b",
+  "background_color": "#10111b",
   "lang": "sq",
   "icons": [
     {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
+  ],
+  "categories": [
+    "entertainment",
+    "lifestyle"
   ]
 }
