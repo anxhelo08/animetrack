@@ -1,19 +1,32 @@
-# AnimeTrack
+# AnimeTrack 9.9 — Anime Universe Pro
 
-AnimeTrack është aplikacioni personal për ndjekjen e animeve.
+Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
-## Versioni aktiv në GitHub
-9.3 PC — menu me scroll dhe progres i bazuar vetëm te episodet e transmetuara.
+**Faqja:** https://animetrack-flax.vercel.app  
+**Deploy:** Vercel automatikisht nga `main` në `anxhelo08/animetrack`.
 
-## Publikimi
-Vercel: projekti ekzistues `animetrack`, dega `main`.
-Skedari hyrës: `index.html`.
-Adresa kryesore: https://animetrack-flax.vercel.app
+## Funksionet
+- Bibliotekë për çdo përdorues, sezone të grupuara, progres sipas episodeve të transmetuara dhe rewatch i ndarë.
+- AniList / Jikan / TVmaze për metadata, përshkrime dhe foto episodeve kur burimet i ofrojnë.
+- Njoftime brenda aplikacionit për episode, sezone, përgjigje komentesh dhe kërkesa miqësie.
+- Rekomandime nga zhanret, notat dhe të preferuarat.
+- Kalendar javor me eksport .ics; statistika dhe Wrapped me eksport të kartës PNG.
+- Profile private ose publike me miratim të përdoruesit, kërkesa miqësie dhe krahasim bibliotekash.
+- Panel moderimi vetëm për llogarinë e autorizuar.
+- PWA e instalueshme kur shfletuesi e mbështet. Funksionet cloud kërkojnë lidhje interneti.
 
-## Të dhënat
-Përdoruesit identifikohen me Supabase Auth. Bibliotekat personale ruhen në databazën Supabase me Row Level Security.
-Asnjë çelës sekret serveri apo fjalëkalim nuk duhet shtuar në këtë depo.
+**Njoftimet janë in-app**, jo push në sfond kur faqja është e mbyllur. Orari i një episodi tregon transmetimin e njoftuar, jo garanci për disponueshmërinë në një platformë streaming.
 
-Përditësimet e kodit nuk duhet të ndryshojnë apo fshijnë bibliotekat personale.
+## Arkitektura
+`index.html`: struktura e faqes dhe ngarkimi i moduleve.  
+`assets/app.js` / `assets/app.css`: aplikacioni ekzistues, i nxjerrë nga skedari monolitik pa ndryshuar përmbajtjen.  
+`assets/pro-*.js` / `assets/pro-features.css`: funksionet e reja si module të pavarura.  
+`manifest.webmanifest`, `sw.js`, `icon.svg`: instalimi dhe cache-i i skeletit të faqes.  
+`tests/pro-smoke.test.cjs`: prova të moduleve, strukturës dhe sintaksës.
 
-Kontroll publikimi: versioni 9.3 publikohet nga dega `main` në projektin ekzistues Vercel.
+Për testet lokale: `npm test` (Node 20+; nuk ka varësi npm).
+
+## Ruajtja dhe siguria
+Supabase Auth dhe RLS ndajnë bibliotekat personale. Profili nis privat; lista e përmbledhur ndahet publikisht vetëm pas aktivizimit nga përdoruesi ose me miqësinë e pranuar. Komentet dhe raportimet ruhen në tabela të veçanta. Në HTML ka vetëm publishable key; **mos vendos kurrë service-role/secret key në repo**.
+
+Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodikisht kopje rezervë.
