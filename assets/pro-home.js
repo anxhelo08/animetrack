@@ -1,7 +1,7 @@
 /* AnimeTrack 10.2 — action-oriented home. Legacy home nodes remain mounted for compatibility. */
 window.ATHome=function ATHome(ctx){
  const esc=ctx.esc,anime=()=>ctx.state().anime||[],DAY=86400000;
- let sort='recent',selection='',cycle=-1,owner='';
+ let sort='recent',selection='',cycle=-1,owner='',query='',limit=6,lastWatch=null;
  const prefs=()=>{const s=ctx.state();s.preferences=s.preferences||{};return s.preferences};
  const qids=()=>Array.isArray(prefs().homeQueue)?prefs().homeQueue.filter(x=>typeof x==='string').slice(0,6):[];
  const poster=a=>ctx.poster(a?.cover||'');
@@ -10,7 +10,7 @@ window.ATHome=function ATHome(ctx){
  const byId=id=>anime().find(x=>x.id===id);
  const dateTime=ms=>new Date(ms).toLocaleDateString('sq-AL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
  const stamp=a=>Date.parse(a?.updatedAt||a?.createdAt||'')||0;
- function syncOwner(){const id=String(ctx.user()?.id||'guest');if(owner!==id){owner=id;selection='';cycle=-1;sort='recent'}}
+ function syncOwner(){const id=String(ctx.user()?.id||'guest');if(owner!==id){owner=id;selection='';cycle=-1;sort='recent';query='';limit=6;lastWatch=null}}
  function candidates(){return anime().filter(a=>a.status==='watching'&&ready(a)>0&&next(a))}
  function ordered(){
   const xs=candidates().slice();
@@ -63,8 +63,8 @@ window.ATHome=function ATHome(ctx){
   return `<div class="at-h2-session"><div class="at-h2-section-title"><div><span class="at-h2-kicker">YOUR WATCH SESSION</span><h3>🎬 Sesioni im</h3><p>Zgjidh deri në 6 anime për t’i pasur gati.</p></div><button type="button" class="at-h2-plain" data-home-action="surprise" ${eligible.length?'':'disabled'}>🎲 Më surprizo</button></div><div class="at-h2-session-list">${queued.length?queued.map((a,i)=>`<div class="at-h2-session-row"><span class="at-h2-session-num">${String(i+1).padStart(2,'0')}</span><button type="button" class="at-h2-session-cover" data-home-action="choose" data-id="${esc(a.id)}">${img(a)}</button><button type="button" class="at-h2-session-name" data-home-action="choose" data-id="${esc(a.id)}"><strong>${esc(a.title)}</strong><small>${next(a)?`S${a.seasons.indexOf(next(a).season)+1} · E${next(a).n}`:ready(a)?ready(a)+' episode gati':'Hap sezonet'}</small></button><button type="button" class="at-h2-row-remove" data-home-action="queue-toggle" data-id="${esc(a.id)}" aria-label="Hiqe ${esc(a.title)} nga sesioni">×</button></div>`).join(''):`<div class="at-h2-session-empty"><span>✦</span><strong>Sesioni yt është bosh</strong><p>Shto anime nga “Gati për t’u parë” për të krijuar listën e mbrëmjes.</p></div>`}</div><div class="at-h2-session-foot"><span>${queued.length}/6 anime</span>${queued.length?'<button data-home-action="queue-clear" type="button">Pastro listën</button>':'<button data-home-action="lineup-scroll" type="button">Zgjidh nga Watching ↓</button>'}</div></div>`;
  }
  function lineup(){
-  const list=ordered(),filters=[['recent','Së fundmi'],['few','Pak episode'],['finish','Afër përfundimit'],['favorites','♥ Favorites']];
-  return `<div class="at-h2-section-head" id="at-h2-lineup-anchor"><div><span class="at-h2-kicker">READY TO WATCH</span><h3>Vazhdo shikimin <span>${list.length} anime</span></h3><p>Zgjidh çfarë të shikosh ose shëno episodin pas përfundimit.</p></div><button class="at-h2-plain" type="button" data-home-action="watching">Të gjitha te Watching ↗</button></div><div class="at-h2-filter-row" role="group" aria-label="Rendit anime">${filters.map(([id,label])=>`<button class="${sort===id?'active':''}" type="button" data-home-action="sort" data-id="${id}" aria-pressed="${sort===id}">${label}</button>`).join('')}</div>${list.length?`<div class="at-h2-lineup-grid">${list.slice(0,6).map(a=>{const nx=next(a);return `<article class="at-h2-lineup-card"><button type="button" class="at-h2-lineup-poster" data-home-action="open-next" data-id="${esc(a.id)}">${img(a)}<span>${ready(a)} gati</span></button><div class="at-h2-lineup-info"><button type="button" class="at-h2-lineup-name" data-home-action="open-anime" data-id="${esc(a.id)}">${esc(a.title)}</button><div class="at-h4-next-info"><span class="at-h4-ep-label">KU E KE LËNË</span><strong>S${a.seasons.indexOf(nx.season)+1} · EP ${nx.n}</strong><span class="at-h4-remaining">${ready(a)} episode gati · ${ctx.percent(a)}%</span></div><div class="at-h2-lineup-actions"><button type="button" class="at-h4-advance" data-home-action="advance-next" data-id="${esc(a.id)}" aria-label="Shëno episodin ${nx.n} të ${esc(a.title)} si të parë">✓ +1 episod</button><button type="button" class="at-h4-details" data-home-action="open-next" data-id="${esc(a.id)}" aria-label="Hap detajet e episodit ${nx.n}">▶ Detaje</button><button type="button" data-home-action="queue-toggle" data-id="${esc(a.id)}" aria-label="${qids().includes(a.id)?'Hiqe nga sesioni':'Shto në sesion'}">${qids().includes(a.id)?'✓':'+'}</button></div></div></article>`}).join('')}</div>`:'<div class="at-h2-inline-empty">Nuk ke episode të tjera të transmetuara te “Po shikoj”. Kontrollo kalendarin ose zbulo një anime të re. <button type="button" data-pro-page="recommendations">Zbulo anime →</button></div>'}`;
+  const list=ordered().filter(a=>(a.title+' '+(a.genre||'')).toLocaleLowerCase().includes(query.toLocaleLowerCase())),filters=[['recent','Së fundmi'],['few','Pak episode'],['finish','Afër përfundimit'],['favorites','♥ Favorites']];
+  return `<div class="at-h2-section-head" id="at-h2-lineup-anchor"><div><span class="at-h2-kicker">READY TO WATCH</span><h3>Vazhdo shikimin <span>${list.length} anime</span></h3><p>Zgjidh çfarë të shikosh ose shëno episodin pas përfundimit.</p></div><button class="at-h2-plain" type="button" data-home-action="watching">Të gjitha te Watching ↗</button></div><div class="at-h2-filter-row" role="group" aria-label="Rendit anime">${filters.map(([id,label])=>`<button class="${sort===id?'active':''}" type="button" data-home-action="sort" data-id="${id}" aria-pressed="${sort===id}">${label}</button>`).join('')}</div>${list.length?`<div class="at-h2-lineup-grid">${list.slice(0,limit).map(a=>{const nx=next(a);return `<article class="at-h2-lineup-card"><button type="button" class="at-h2-lineup-poster" data-home-action="open-next" data-id="${esc(a.id)}">${img(a)}<span>${ready(a)} gati</span></button><div class="at-h2-lineup-info"><button type="button" class="at-h2-lineup-name" data-home-action="open-anime" data-id="${esc(a.id)}">${esc(a.title)}</button><div class="at-h4-next-info"><span class="at-h4-ep-label">KU E KE LËNË</span><strong>S${a.seasons.indexOf(nx.season)+1} · EP ${nx.n}</strong><span class="at-h4-remaining">${ready(a)} episode gati · ${ctx.percent(a)}%</span></div><div class="at-h2-lineup-actions"><button type="button" class="at-h4-advance" data-home-action="advance-next" data-id="${esc(a.id)}" aria-label="Shëno episodin ${nx.n} të ${esc(a.title)} si të parë">✓ +1 episod</button><button type="button" class="at-h4-details" data-home-action="open-next" data-id="${esc(a.id)}" aria-label="Hap detajet e episodit ${nx.n}">▶ Detaje</button><button type="button" data-home-action="queue-toggle" data-id="${esc(a.id)}" aria-label="${qids().includes(a.id)?'Hiqe nga sesioni':'Shto në sesion'}">${qids().includes(a.id)?'✓':'+'}</button></div></div></article>`}).join('')}</div>`:'<div class="at-h2-inline-empty">Nuk ke episode të tjera të transmetuara te “Po shikoj”. Kontrollo kalendarin ose zbulo një anime të re. <button type="button" data-pro-page="recommendations">Zbulo anime →</button></div>'}`;
  }
  function releases(){
   const now=Date.now(),byKey=new Map();
@@ -91,6 +91,9 @@ window.ATHome=function ATHome(ctx){
  }
  function render(){return {hero:hero()+quickActions(),feature:feature(),session:session(),lineup:lineup(),releases:releases(),seasons:seasons()}}
  function scrollLineup(){ctx.el('at-h2-lineup-anchor')?.scrollIntoView({behavior:'smooth',block:'start'})}
+ function search(value){query=String(value||'').slice(0,80);limit=6;ctx.rerender()}
+ function rememberNext(a){const ep=a&&next(a);if(!ep)return null;return {id:a.id,seasonId:ep.season.id,seasonNumber:a.seasons.indexOf(ep.season)+1,n:ep.n,owner:owner}}
+ function marked(entry){const a=byId(entry?.id),s=a?.seasons.find(s=>s.id===entry.seasonId);return !!s?.watched.includes(entry.n)}
  function action(op,id,b){
   syncOwner();const a=byId(id);
   if(op==='find'){ctx.navigate('explore');return}
@@ -115,5 +118,5 @@ window.ATHome=function ATHome(ctx){
   }
   if(op==='refresh-airing')return ctx.refreshAiring();
  }
- return{mount,render,action,focus};
+ return{mount,render,action,focus,search};
 };
