@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v108-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v109-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -308,9 +308,9 @@ test('10.8 Episode Hub tab/next navigation hooks preserve existing spoiler comme
 test('10.9 personal airing keeps watched episodes out and supports exact per-event lead times',async()=>{
  const w=load(),c=context(),now=Date.now(),
  anime={id:'a',title:'New Galaxy',status:'watching',favorite:false,seasons:[{id:'s',watched:[1],total:12}]},
- seen={animeId:'a',seasonId:'s',episode:1,seasonEpisode:1,when:now+10*60000,title:'New Galaxy'},
- next={animeId:'a',seasonId:'s',episode:2,seasonEpisode:2,when:now+10*60000,title:'New Galaxy'},
- untracked={animeId:'outsider',seasonId:'none',episode:1,when:now+10*60000,title:'Other'};
+ seen={animeId:'a',seasonId:'s',episode:1,seasonEpisode:1,when:now+15*60000,title:'New Galaxy'},
+ next={animeId:'a',seasonId:'s',episode:2,seasonEpisode:2,when:now+15*60000,title:'New Galaxy'},
+ untracked={animeId:'outsider',seasonId:'none',episode:1,when:now+15*60000,title:'Other'};
  const data={anime:[anime],history:[],preferences:{calendarReminders:{}}};
  let saves=0;c.state=()=>data;c.upcoming=()=>[seen,next,untracked];c.save=()=>{saves++;return true};
  const smart=w.ATSmartAiring(c),key=smart.eventKey(next);
