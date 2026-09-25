@@ -1069,6 +1069,9 @@ const proContext={
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
+ nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,
+ openFilter:code=>setFilter(code),
+ 
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
  markEpisode:(id,seasonId,n)=>requestEpisodeToggle(id,seasonId,n),
  refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
