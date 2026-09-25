@@ -71,9 +71,26 @@ function count(a){return a.seasons.reduce((sum,s)=>sum+s.watched.length,0)}
 function percentage(a){const aired=releasedTotal(a);return aired?Math.min(100,Math.round(count(a)/aired*100)):0}
 function nextSeasonEp(a){for(const s of a.seasons){const seen=new Set(s.watched);let n=1;while(seen.has(n))n++;if(n<=releasedCount(s))return {season:s,n}}return null}
 function nextEp(a){const next=nextSeasonEp(a);return next?`${a.seasons.indexOf(next.season)+1} · ${next.n}`:null}
-function updateSeasonEpisode(id,seasonId,n,seen,quiet=false){const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId);if(!s||!Number.isInteger(n)||n<1||n>10000||(s.total&&n>s.total))return false;let old=s.watched.includes(n);if(old===seen)return false;if(seen&&n>releasedCount(s)){notify('Ky episod ende nuk është transmetuar. Do të shtohet pas publikimit të datës.');return false}const seasonIndex=a.seasons.findIndex(x=>x.id===seasonId)+1;s.watched=seen?tidyNums([...s.watched,n],s.total):s.watched.filter(x=>x!==n);syncTotals(a);a.updatedAt=now();releasedStatusAfterWatch(a,seen);record(id,n,seen?'watched':'unwatched',seasonId);save();render();if(detailId===id)renderDetail(id);renderHome();if(!quiet)notify(`Sezoni ${seasonIndex}, episodi ${n} ${seen?'u shënua ✓':'u hoq'}`);return true}
+function updateSeasonEpisode(id,seasonId,n,seen,quiet=false){
+ const index=state.anime.findIndex(x=>x.id===id),a=state.anime[index],s=a?.seasons.find(x=>x.id===seasonId);
+ if(!s||!Number.isInteger(n)||n<1||n>10000||(s.total&&n>s.total))return false;
+ if(s.watched.includes(n)===seen)return false;
+ if(seen&&n>releasedCount(s)){notify('Ky episod ende nuk është transmetuar. Do të shtohet pas publikimit të datës.');return false}
+ // Commit a single episode only after its local snapshot was persisted. Never show
+ // success or queue a cloud upload when localStorage rejected the transaction.
+ const before=JSON.parse(JSON.stringify(a)),historyBefore=state.history.slice(),seasonIndex=a.seasons.findIndex(x=>x.id===seasonId)+1;
+ try{
+  s.watched=seen?tidyNums([...s.watched,n],s.total):s.watched.filter(x=>x!==n);
+  syncTotals(a);a.updatedAt=now();releasedStatusAfterWatch(a,seen);
+  record(id,n,seen?'watched':'unwatched',seasonId);
+  if(!save()){state.anime[index]=before;state.history=historyBefore;return false}
+ }catch(err){state.anime[index]=before;state.history=historyBefore;console.error('Episode transaction rolled back',err);notify('Episodi nuk u ruajt. Provo përsëri.');return false}
+ try{render();if(detailId===id)renderDetail(id);renderHome()}catch(err){console.warn('View refresh after saved episode failed',err)}
+ if(!quiet)notify(`Sezoni ${seasonIndex}, episodi ${n} ${seen?'u shënua ✓':'u hoq'}`);
+ return true;
+}
 function updateEpisode(id,n,seen){let a=state.anime.find(x=>x.id===id);if(!a)return;let offset=0;for(const s of a.seasons){const len=s.total||Math.max(...s.watched,24);if(n<=offset+len)return updateSeasonEpisode(id,s.id,n-offset,seen);offset+=len}}
-function markNext(id){let a=state.anime.find(x=>x.id===id);if(!a)return;const ep=nextSeasonEp(a);if(!ep){notify('Nuk ka episode të tjera të transmetuara.');return}activeSeasonId=ep.season.id;episodePage=Math.floor((ep.n-1)/24);updateSeasonEpisode(id,ep.season.id,ep.n,true)}
+function markNext(id){let a=state.anime.find(x=>x.id===id);if(!a)return false;const ep=nextSeasonEp(a);if(!ep){notify('Nuk ka episode të tjera të transmetuara.');return false}activeSeasonId=ep.season.id;episodePage=Math.floor((ep.n-1)/24);return updateSeasonEpisode(id,ep.season.id,ep.n,true)}
 function record(id,episode,action,seasonId='',episodes=null){state.history.push({id,episode,action,seasonId,date:now(),...(Array.isArray(episodes)?{episodes:episodes.filter(n=>Number.isInteger(n)&&n>0&&n<=10000)}:{})});if(state.history.length>2000)state.history=state.history.slice(-2000)}
 let pendingSeason=null;
 function commitSeason(id,seasonId,seen,includePrevious=false){
@@ -787,7 +804,7 @@ async function accountOpenCloud(user){if(!user?.id)throw Error('Nuk u verifikua 
  // Snapshot is selected by authenticated user ID. Never copy the guest library implicitly.
  document.body.classList.remove('auth-required');accountUser=user;accountMode='cloud';KEY='animetrack_user_'+uid;cloudDirty=false;cloudConnected=true;cloudLastPullAt=Date.now();cloudLastSync=data?.updated_at?new Date(data.updated_at).toLocaleString('sq-AL'):'Llogari e re';state=data?.payload?accountNormalizePayload(data.payload):{anime:[],history:[]};localStorage.setItem(KEY,JSON.stringify(state));accountRefreshViews();if(!data)accountStatus('Llogari e re · bibliotekë bosh. Përdor “Kopjo bibliotekën lokale” vetëm nëse dëshiron të importosh progresin e vjetër.','ok');else accountStatus('Biblioteka u shkarkua nga cloud · '+cloudLastSync,'ok');}
 function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudDirty=true;cloudConnected=false;accountUI();clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>accountPush(false),1100)}
-async function accountPush(showResult=true){if(accountMode!=='cloud'||!accountUser||cloudSaving)return;clearTimeout(cloudTimer);const uid=accountUser.id;const payload=JSON.parse(JSON.stringify(state));cloudSaving=true;try{const {error}=await accountInitClient().from('anime_libraries').upsert({user_id:uid,payload},{onConflict:'user_id'});if(error)throw error;if(accountUser?.id!==uid)return;cloudConnected=true;cloudLastSync=new Date().toLocaleString('sq-AL');const changed=JSON.stringify(state)!==JSON.stringify(payload);cloudDirty=changed;if(changed)cloudTimer=setTimeout(()=>accountPush(false),1200);if(showResult)accountStatus('Ruajtur në cloud ✓ · '+cloudLastSync,'ok')}catch(e){if(accountUser?.id===uid){cloudConnected=false;cloudDirty=true;accountStatus('Nuk u sinkronizua: '+e.message+' · Ruajtja lokale për llogarinë tënde mbetet.','error');if(showResult)notify('Cloud nuk u lidh. Provo përsëri.')}}finally{cloudSaving=false;accountUI()}}
+async function accountPush(showResult=true){if(accountMode!=='cloud'||!accountUser||cloudSaving)return;clearTimeout(cloudTimer);const uid=accountUser.id;const payload=JSON.parse(JSON.stringify(state));cloudSaving=true;try{const {error}=await accountInitClient().from('anime_libraries').upsert({user_id:uid,payload},{onConflict:'user_id'});if(error)throw error;if(accountUser?.id!==uid)return;cloudConnected=true;cloudLastSync=new Date().toLocaleString('sq-AL');const changed=JSON.stringify(state)!==JSON.stringify(payload);cloudDirty=changed;if(changed)cloudTimer=setTimeout(()=>accountPush(false),1200);if(showResult)accountStatus('Ruajtur në cloud ✓ · '+cloudLastSync,'ok')}catch(e){if(accountUser?.id===uid){cloudConnected=false;cloudDirty=true;accountStatus('Nuk u sinkronizua: '+e.message+' · Ruajtja lokale për llogarinë tënde mbetet.','error');if(showResult)notify('Cloud nuk u lidh. Provo përsëri.');clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>{if(accountMode==='cloud'&&accountUser?.id===uid&&cloudDirty&&!cloudSaving&&navigator.onLine)void accountPush(false)},30000)}}finally{cloudSaving=false;accountUI()}}
 let quietCloudPullBusy=false;
 async function accountPullQuiet(){
  if(quietCloudPullBusy||accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||accountBusy)return false;
@@ -818,6 +835,7 @@ async function accountBoot(){try{const c=accountGetConfig();$('account-project-u
 $('account-top-btn').addEventListener('click',()=>accountToggle(true));$('account-sidebar-btn').addEventListener('click',()=>accountToggle(true));
 $('account-form').addEventListener('submit',accountLogin);$('account-register').addEventListener('click',accountRegister);$('account-reset').addEventListener('click',accountReset);$('account-save-config').addEventListener('click',accountSetConfig);$('account-refresh').addEventListener('click',()=>accountPull(true));$('account-push').addEventListener('click',()=>accountPush(true));$('account-copy-guest').addEventListener('click',accountCopyGuest);$('account-logout').addEventListener('click',accountLogout);$('account-export').addEventListener('click',exportData);$('account-guest-backup').addEventListener('click',()=>{const current=state;try{const raw=localStorage.getItem(GUEST_KEY);if(raw){state=accountNormalizePayload(JSON.parse(raw));exportData();}else notify('Nuk ka bibliotekë të vjetër në këtë shfletues.')}catch(e){notify('Kopja rezervë nuk u hap.')}finally{state=current}});$('account-use-guest').addEventListener('click',()=>accountToggle(false));
 window.addEventListener('focus',()=>{if(accountMode==='cloud'&&!cloudDirty&&!cloudSaving&&cloudLastSync&&Date.now()-cloudLastPullAt>90000)accountPull(false)});
+ window.addEventListener('online',()=>{if(accountMode==='cloud'&&accountUser&&cloudDirty&&!cloudSaving)void accountPush(false)});
 
 // 9.3 – season forecast is information only, never a watched episode.
 const v93BaseDetail=renderDetail;
@@ -1100,6 +1118,7 @@ const proContext={
  liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.render();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
  canReload:()=>!cloudDirty&&!cloudSaving,
+ watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected}),
  openDiscussion:key=>{
   const m=/^(mal|al|tv):(\d+):(\d+)$/.exec(String(key||''));if(!m)return false;
   for(const a of state.anime)for(const ss of a.seasons||[]){
@@ -1122,7 +1141,7 @@ const proPriorView=setView;setView=function(which){if(proApp.open(which))return;
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id)};
 const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);await proApp.onAccount()};
 const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
-const proPriorSave=save;save=function(){const result=proPriorSave();if(result)proApp.onStateChange();return result};
+const proPriorSave=save;save=function(){const result=proPriorSave();if(result)try{proApp.onStateChange()}catch(err){console.warn('Feature refresh after save failed',err)}return result};
 
 render();renderUpcoming();renderHome();setView('home');v8LoadSeason(1);accountBoot();
 })();

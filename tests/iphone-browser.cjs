@@ -31,6 +31,10 @@ const assert=require('node:assert/strict');
  await page.locator('[data-ios-action="advance"][data-id="demo1"]').click();
  await page.waitForTimeout(150);
  assert.match(await page.locator('#at-iphone-feed').innerText(),/EP 4/,'+1 should update episode');
+ assert(await page.locator('[data-ios-action="undo"]').isVisible(),'recent episode should offer Undo');
+ await page.locator('[data-ios-action="undo"]').click();
+ assert.match(await page.locator('#at-iphone-feed').innerText(),/EP 3/,'Undo must restore exact episode');
+ assert.equal(await page.locator('[data-ios-action="undo"]').count(),0,'Undo should disappear after use');
  for(const [tab,selector] of [['calendar','#pro-view'],['explore','#explore-view'],['library','#library-view'],['profile','#pro-view'],['home','#at-iphone-feed']]){
    await page.locator('[data-mobile-nav="'+tab+'"]').click();
    await page.waitForTimeout(70);

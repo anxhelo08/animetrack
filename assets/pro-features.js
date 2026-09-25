@@ -21,20 +21,27 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
  function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
  async function refreshLive(force=false){
-  if(liveBusy||document.visibilityState==='hidden'||!navigator.onLine)return;
-  if(!force&&Date.now()-liveLastCheck<5*60000)return;
+  if(liveBusy)return {status:'busy'};
+  if(document.visibilityState==='hidden')return {status:'hidden'};
+  if(!navigator.onLine)return {status:'offline'};
+  if(!force&&Date.now()-liveLastCheck<5*60000)return {status:'recent'};
   liveBusy=true;liveLastCheck=Date.now();document.body.classList.add('at-live-checking');renderHome();
-  try{await ctx.liveRefresh(force)}catch(e){console.warn('Live refresh failed',e)}
+  try{const result=await ctx.liveRefresh(force);return {status:result?.failed?'partial':'ok'}}
+  catch(e){console.warn('Live refresh failed',e);return {status:'error'}}
   finally{liveBusy=false;document.body.classList.remove('at-live-checking');render();renderHome()}
  }
  function renderHome(){
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)feed.innerHTML='<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>'}
   if(window.matchMedia?.('(max-width: 760px)').matches)return;
-  if($('at-home-main')){const parts=modules.home.render();for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}}
-  const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home();
-  const week=$('pro-home-week');if(week)week.innerHTML=modules.calendar.home();
-  const inbox=$('pro-home-inbox');if(inbox)inbox.innerHTML=modules.notifications.home();
+  if($('at-home-main'))try{
+   const parts=modules.home.render();
+   for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}
+  }catch(err){
+   console.warn('Desktop home recovery',err);
+   const focus=$('at-home-focus');if(focus)focus.innerHTML='<section class="at-pro-recovery" role="alert"><h3>Nuk u ngarkua ky seksion</h3><p>Biblioteka jote mbetet e ruajtur. Mund të riprovosh pa rifreskuar gjithë faqen.</p><button type="button" data-home-action="retry-home">Riprovo ↻</button></section>';
+  }
+  for(const [target,fn] of [['pro-home-recs',()=>modules.recommendations.home()],['pro-home-week',()=>modules.calendar.home()],['pro-home-inbox',()=>modules.notifications.home()]]){const node=$(target);if(node)try{node.innerHTML=fn()}catch(err){console.warn('Home widget recovery',target,err);node.innerHTML='<div class="at-pro-recovery"><p>Ky seksion nuk u ngarkua.</p><button type="button" data-home-action="retry-home">Riprovo ↻</button></div>'}}
  }
  ctx.rerender=()=>{render();renderHome()};
  function init(){
@@ -104,7 +111,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
   if(b.dataset.iosAction){if(b.dataset.iosAction==='close-install'){const d=$('at-ios-install-guide');d?.close?.();if(d)d.hidden=true;return}try{return await modules.iphone.action(b.dataset.iosAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
   if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}
-  if(b.dataset.homeAction==='sync-now'){await refreshLive(true);ctx.toast('Kontrolli i përditësimeve përfundoi.');return}
+  if(b.dataset.homeAction==='retry-home'){renderHome();return}
+  if(b.dataset.homeAction==='sync-now'){const result=await refreshLive(true);ctx.toast(({ok:'Orari u kontrollua ✓',partial:'Disa burime nuk u arritën. Provo përsëri.',offline:'Nuk ka internet. Provo kur të lidhet pajisja.',busy:'Kontrolli është në proces.',hidden:'Hap aplikacionin për kontroll.',recent:'Orari është kontrolluar së fundmi.',error:'Kontrolli dështoi. Provo përsëri.'})[result.status]||'Kontrolli nuk u krye.');return}
   if(b.dataset.homeAction){try{return await modules.home.action(b.dataset.homeAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120));return}}
   const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
   try{
