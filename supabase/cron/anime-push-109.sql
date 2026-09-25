@@ -1,0 +1,22 @@
+-- Execute only AFTER functions, VAPID secrets and migrations have been deployed.
+-- Generate a cryptographically random 32+ character ANIMETRACK_CRON_SECRET.
+-- Store the same value in Supabase Edge Functions secrets and Vault.
+-- Example SQL to run manually:
+--
+-- select vault.create_secret('<32+ RANDOM SECRET>', 'animetrack_push_cron_secret');
+--
+-- select cron.schedule('animetrack-push-every-five-minutes', '*/5 * * * *', $cron$
+--   select net.http_post(
+--     url := 'https://kwherbtspqirfrehqlfd.supabase.co/functions/v1/anime-push-dispatch',
+--     headers := jsonb_build_object(
+--       'Content-Type', 'application/json',
+--       'X-Cron-Secret',
+--       (select decrypted_secret from vault.decrypted_secrets where name='animetrack_push_cron_secret')
+--     ),
+--     body := '{}'::jsonb
+--   );
+-- $cron$);
+--
+-- Validate by testing with an opted-in device, then review Edge Function logs.
+-- To stop future sends:
+-- select cron.unschedule('animetrack-push-every-five-minutes');
