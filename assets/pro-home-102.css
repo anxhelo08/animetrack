@@ -1,5 +1,5 @@
 /* AnimeTrack 10.2 · watch-first Home and profile statistics */
-#home-view.at-home-rebuilt > :not(#at-home-main){display:none!important}
+#home-view.at-home-rebuilt > :not(#at-home-main):not(#at-iphone-feed){display:none!important}
 #home-view.at-home-rebuilt{display:block}
 #at-home-main{display:grid;gap:22px;padding:2px 0 32px;min-width:0}
 #at-home-main button{cursor:pointer}
