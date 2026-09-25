@@ -1,2 +1,68 @@
-/* AnimeTrack module */
-window.AnimeTrackPro=function(ctx){ return {open:()=>false}; };
+/* Modular extension for AnimeTrack; loaded after all feature modules. */
+window.AnimeTrackPro=function AnimeTrackPro(ctx){
+ const $=ctx.el,esc=ctx.esc;
+ let active='',installPrompt=null;
+ const proPages=['notifications','recommendations','calendar','wrapped','profile','friends','moderation'];
+ ctx.button=(label,action,id='')=>`<button type="button" class="pro-btn" data-pro-action="${esc(action)}" data-id="${esc(id)}">${esc(label)}</button>`;
+ const modules={
+  notifications:window.ATNotifications(ctx),
+  recommendations:window.ATRecommendations(ctx),
+  calendar:window.ATCalendarWrapped(ctx),
+  profiles:window.ATProfiles(ctx),
+  friends:null,
+  moderation:window.ATModeration(ctx),
+  rewatch:window.ATRewatch(ctx)
+ };
+ modules.friends=window.ATFriends(ctx,modules.profiles);
+ function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
+ function renderHome(){const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home()}
+ ctx.rerender=()=>{render();renderHome()};
+ function init(){
+  const nav=$('side-nav');
+  nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
+  document.querySelector('.top-actions')?.insertAdjacentHTML('afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
+  document.querySelector('main.main').insertAdjacentHTML('beforeend','<section class="pro-view hidden" id="pro-view" aria-label="AnimeTrack Pro"><div id="pro-content"></div></section>');
+  const home=$('home-view'),recommend=document.createElement('section');recommend.id='pro-home-recs';recommend.className='pro-panel';const sync=home.querySelector('.sync-panel');if(sync)sync.before(recommend);else home.append(recommend);
+  const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
+  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('/sw.js').catch(console.warn);
+  document.addEventListener('click',handleClick);
+  setInterval(()=>{if(ctx.user())modules.notifications.refresh()},5*60000);
+  renderHome();
+ }
+ function open(name){
+  if(!proPages.includes(name))return false;
+  active=name;ctx.setLocalView(name);
+  for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
+  $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
+  $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️'})[name];
+  render();window.scrollTo({top:0,behavior:'smooth'});return true;
+ }
+ function hide(){active='';$('pro-view')?.classList.add('hidden')}
+ async function onAccount(){
+  try{await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();if(ctx.user())await modules.recommendations.refresh(false);renderHome();
+   const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
+  }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
+ }
+ function onStateChange(){modules.profiles.scheduleSnapshot();modules.notifications.badge();renderHome()}
+ function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';element.innerHTML=modules.rewatch.render(id);root.append(element)}
+ async function handleClick(e){
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}
+  const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
+  try{
+   if(op==='install'){if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Share → Add to Home Screen.');return}
+   if(op==='recommendations'){ctx.navigate('recommendations');return}
+   if(op==='add-recommendation')return await modules.recommendations.add(b.dataset.key);
+   if(op==='refresh-recommendations')return await modules.recommendations.refresh(true);
+   if(op.startsWith('notification-'))return await modules.notifications.action(op,id);
+   if(op.startsWith('week-')||op.startsWith('calendar-')||op.startsWith('wrapped-'))return modules.calendar.action(op,id);
+   if(op==='profile-save')return await modules.profiles.save();
+   if(op==='profile-share')return await modules.profiles.share();
+   if(op.startsWith('friend-'))return await modules.friends.action(op,id);
+   if(op.startsWith('mod-'))return await modules.moderation.action(op,id,b.dataset.comment);
+   if(op.startsWith('rewatch-'))return modules.rewatch.action(op,id);
+  }catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120))}
+ }
+ return{init,open,hide,onAccount,onStateChange,renderRewatch,renderHome,render,modules};
+};
