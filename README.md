@@ -1,4 +1,4 @@
-# AnimeTrack 10.4.1 — Anime Universe Pro
+# AnimeTrack 10.5 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -29,6 +29,11 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Sinkronizimi i heshtur nga cloud nuk mbishkruan ndryshime lokale të paruajtura dhe nuk e nxjerr përdoruesin nga faqja aktuale. Preferencat e sesionit/kujtesave ruhen gjatë cloud reload. Statusi i orarit shfaqet në Home.
 
 - Kur publikohet një version i ri PWA, shfaqet një banner “Përditëso tani”. Rifreskimi bëhet nga përdoruesi dhe nuk lejohet gjatë sinkronizimit të ndryshimeve lokale të paruajtura.
+
+## iPhone 10.5
+- Ekrani i parë në telefon është feed-i i episodeve (Për t’u parë / Sapo dolën / Së shpejti), jo dashboard desktop. Navigimi i poshtëm: Episodet, Kalendari, Zbulo, Biblioteka, Unë.
+- Progres +1 episod me një prekje, detaje veçmas, rifreskim manual, badge i njoftimeve dhe kartë instalimi Safari. Përdor të njëjtën bibliotekë të sigurt Supabase; nuk krijohet databazë e dytë.
+- Instalim: Safari → Share → Add to Home Screen → Open as Web App → Add. Ky është PWA i instalueshëm, jo paketë IPA/App Store. Aplikacioni kërkon internet për shërbimet cloud dhe katalogun; njoftimet jashtë aplikacionit kërkojnë backend Web Push të veçantë.
 
 ## Arkitektura
 `index.html`: struktura e faqes dhe ngarkimi i moduleve.  
