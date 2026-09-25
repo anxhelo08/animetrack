@@ -110,7 +110,7 @@ test('profile stats tab and goal stay inside profile',()=>{
  const w=load(),c=context(),data={anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};
  c.state=()=>data;c.rerender=()=>{};c.el=id=>id==='at-profile-goal-input'?{value:'15'}:null;c.save=()=>true;
  const profile=w.ATProfiles(c);profile.setTab('stats');
- assert.match(profile.render(),/Objektivi javor/);
+ assert.match(profile.render(),/OBJEKTIVI JAVOR/);
  assert.match(profile.render(),/7 ditët e javës/);
  profile.goalSave();assert.equal(data.preferences.weeklyGoal,15);
 });
