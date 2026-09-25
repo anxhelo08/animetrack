@@ -8,6 +8,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   notifications:window.ATNotifications(ctx),
   recommendations:window.ATRecommendations(ctx),
   calendar:window.ATCalendarWrapped(ctx),
+  smart:window.ATSmartAiring(ctx),
+  push:window.ATPush109(ctx),
   profiles:window.ATProfiles(ctx),
   friends:null,
   moderation:window.ATModeration(ctx),
@@ -16,17 +18,20 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   iphone:window.ATiPhone(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
+ ctx.smartWeek=compact=>modules.smart.panel(!!compact);
+ ctx.smartReminderSelect=e=>modules.smart.reminderSelect(e);
+ ctx.setCalendarReminder=(key,value)=>modules.smart.setReminder(key,value);
  ctx.unreadCount=()=>modules.notifications.get().filter(n=>!((ctx.state().preferences?.notificationRead)||[]).includes(n.key)&&!((ctx.state().preferences?.notificationMuted)||[]).includes(n.category)&&!((ctx.state().preferences?.notificationDismissed)||[]).includes(n.key)).length;
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
- function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
+ function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
  async function refreshLive(force=false){
   if(liveBusy)return {status:'busy'};
   if(document.visibilityState==='hidden')return {status:'hidden'};
   if(!navigator.onLine)return {status:'offline'};
   if(!force&&Date.now()-liveLastCheck<5*60000)return {status:'recent'};
   liveBusy=true;liveLastCheck=Date.now();document.body.classList.add('at-live-checking');renderHome();
-  try{const result=await ctx.liveRefresh(force);return {status:result?.failed?'partial':'ok'}}
+  try{const result=await ctx.liveRefresh(force);modules.push.scheduleSync();return {status:result?.failed?'partial':'ok'}}
   catch(e){console.warn('Live refresh failed',e);return {status:'error'}}
   finally{liveBusy=false;document.body.classList.remove('at-live-checking');render();renderHome()}
  }
@@ -74,7 +79,12 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    }).catch(console.warn);
   }
   document.addEventListener('click',handleClick);
-  document.addEventListener('change',e=>{if(e.target?.id==='pro-rec-length')modules.recommendations.setLength(e.target.value)});
+  document.addEventListener('change',e=>{
+   const node=e.target;
+   if(node?.id==='pro-rec-length')modules.recommendations.setLength(node.value);
+   if(node?.dataset?.smartReminder!==undefined)modules.smart.setReminder(node.dataset.smartReminder,node.value);
+   if(node?.id==='at109-default-lead')modules.smart.setDefault(node.value);
+  });
   let pcSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at-pc-watch-search')return;clearTimeout(pcSearchTimer);pcSearchTimer=setTimeout(()=>{const current=$('at-pc-watch-search');if(!current)return;const value=current.value,caret=current.selectionStart,focused=document.activeElement===current;modules.home.search(value);const next=$('at-pc-watch-search');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});
   // Active-tab polling only. The upstream anime schedules are not a push feed.
   liveTimer=setInterval(()=>{if(document.visibilityState==='visible')void refreshLive(false)},10*60000);
@@ -96,12 +106,12 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name)}
  async function onAccount(){
-  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();void refreshLive(false);
+  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();void modules.push.prepare().then(()=>modules.push.scheduleSync());void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
  function onStateChange(){
-  modules.profiles.scheduleSnapshot();modules.recommendations.onLibraryChange();
+  modules.profiles.scheduleSnapshot();modules.recommendations.onLibraryChange();modules.push.scheduleSync();
   render();renderHome();
   clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{if(document.visibilityState==='visible')void modules.notifications.refresh();else modules.notifications.badge()},450);
  }
@@ -131,6 +141,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op==='reset-recommendation-filters')return modules.recommendations.resetFilters();
    if(op==='refresh-recommendations')return await modules.recommendations.refresh(true);
    if(op.startsWith('notification-'))return await modules.notifications.action(op,id);
+   if(op.startsWith('smart-push-'))return await modules.push.action(op);
    if(op.startsWith('week-')||op.startsWith('calendar-')||op.startsWith('wrapped-'))return modules.calendar.action(op,id);
    if(op==='profile-tab')return modules.profiles.setTab(id);
    if(op==='profile-goal-save')return modules.profiles.goalSave();
