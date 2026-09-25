@@ -1,4 +1,4 @@
-# AnimeTrack 10.2 — Anime Universe Pro
+# AnimeTrack 10.3 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -17,8 +17,9 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 
 **Njoftimet janë in-app**, jo push në sfond kur faqja është e mbyllur. Orari i një episodi tregon transmetimin e njoftuar, jo garanci për disponueshmërinë në një platformë streaming.
 
-## Kryefaqja 10.2
-- Watch-first Home: episodi i radhës, sesion personal deri në 6 anime, filtrat Watching, episode të sapotransmetuara, rekomandime, kalendar dhe inbox.
+## Kryefaqja 10.3
+- Watch-first Home: karta e madhe “ku e le” me backlog, episodin e radhës dhe episode të shpejta; sesion personal deri në 6 anime, filtrat Watching, episode të sapotransmetuara, rekomandime, kalendar dhe inbox.
+- Mobile-first: bottom navigation me Home/Bibliotekë/Kalendar/Zbulo/Profil, cards horizontale swipe/snap dhe veprime të optimizuara për një dorë.
 - Statistikat e mëdha dhe objektivi javor janë te Profili im → Statistikat e mia. Elementet e vjetra të Home ruhen të montuara për pajtueshmëri me funksionet ekzistuese, por janë të fshehura vizualisht.
 - Sesioni ruhet në preferencat e bibliotekës personale dhe mbijeton rikthimin nga cloud. Veprimet mbi episode kërkojnë klikim të përdoruesit.
 
