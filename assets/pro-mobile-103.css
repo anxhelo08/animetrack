@@ -84,3 +84,40 @@
  .at-h2-lineup-card{flex-basis:89%}
  .at-mobile-nav{left:7px;right:7px;bottom:max(7px,env(safe-area-inset-bottom));border-radius:16px}
 }
+@media(max-width:760px){
+ /* Mobile library behaves like a media app, not a squeezed desktop grid */
+ #library-view .hero,#library-view .stats,#library-view .home-section-head:first-child,#library-view .series-repair-panel{display:none!important}
+ #library-view .library-status-strip{display:flex;overflow-x:auto;gap:7px;position:sticky;top:55px;z-index:20;padding:8px 0;background:#0f1019e8;backdrop-filter:blur(12px);scrollbar-width:none}
+ #library-view .library-status-strip::-webkit-scrollbar{display:none}
+ #library-view .library-status-strip button{flex:0 0 auto;border-radius:99px;padding:8px 11px;font-size:10px}
+ #library-view .toolrow{display:grid;gap:8px}.toolrow .filters{display:flex;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.toolrow .filters::-webkit-scrollbar{display:none}
+ #library-view .anime-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #library-view .anime-card{border-radius:14px}.anime-card .poster{aspect-ratio:2/3;height:auto}.anime-card .card-info{padding:9px}.anime-card .card-title{font-size:11px;min-height:31px}
+ #library-view .card-actions .ghost{font-size:9px;padding:6px}.anime-card .v7-inline-select{font-size:9px;padding:6px}
+ /* Profile condensed but data-rich */
+ .at-profile-banner{height:88px}.at-profile-avatar{width:68px;height:68px;margin-top:-29px}
+ .at-profile-person h2{font-size:20px}.at-profile-person p{font-size:11px}
+ .at-profile-stats{display:flex!important;overflow-x:auto;gap:7px;scroll-snap-type:x mandatory;scrollbar-width:none}
+ .at-profile-stats::-webkit-scrollbar{display:none}.at-profile-stat{flex:0 0 38%;scroll-snap-align:start}
+ .at-profile-tabs{overflow-x:auto;white-space:nowrap;scrollbar-width:none}.at-profile-tabs::-webkit-scrollbar{display:none}.at-profile-tabs button{flex:0 0 auto;font-size:10px;padding:10px 12px}
+ .at-heatmap{min-width:510px}.at-profile-activity{overflow-x:auto}
+ /* Calendar turns into a swipeable episode agenda */
+ .at-cal-hero{display:block}.at-cal-hero-stat{display:none}
+ .at-cal-toolbar{position:sticky;top:55px;z-index:24;background:#171926e8;backdrop-filter:blur(12px)}
+ .at-cal-modes{width:100%}.at-cal-modes button{flex:1}
+ .at-cal-nav{width:100%;display:grid;grid-template-columns:42px 1fr 42px 1.25fr}.at-cal-nav .pro-btn:last-child{display:none}
+ .at-cal-grid:not(.month){display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:9px;scrollbar-width:none}
+ .at-cal-grid:not(.month)::-webkit-scrollbar{display:none}.at-cal-grid:not(.month) .at-cal-day{flex:0 0 88%;scroll-snap-align:center;min-height:210px}
+ .at-cal-grid.month{grid-template-columns:repeat(7,minmax(72px,1fr));font-size:9px}
+ .at-cal-event{padding:9px}.at-cal-cover{width:43px;height:59px}.at-cal-title{font-size:12px}
+ /* Inbox: thumb-friendly actions */
+ .at-notice-filters{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.at-notice-filters::-webkit-scrollbar{display:none}.at-filter{flex:0 0 auto}
+ .at-notice-options{display:grid;grid-template-columns:1fr 1fr}.at-notice-options .pro-btn{font-size:9px;padding:8px}
+ .at-notice{padding:11px;gap:9px}.at-notice-symbol{width:39px;height:39px}.at-notice-content p{font-size:11px}
+ .at-notice-actions{display:grid;grid-template-columns:1fr 1fr}.at-notice-actions .pro-btn{min-height:36px}.at-notice-dismiss{margin-left:0!important}
+}
+@media(max-width:390px){
+ #library-view .anime-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .at-profile-stat{flex-basis:44%}
+ .at-h3-progress-copy{grid-template-columns:1fr 1fr}.at-h3-progress-copy span:last-child{grid-column:1/-1}
+}
