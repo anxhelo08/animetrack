@@ -55,7 +55,7 @@ window.ATMobile113=(function(){
   }
   const sort=$('sort');el.querySelectorAll('[data-at117-sort]').forEach(b=>b.classList.toggle('active',b.dataset.at117Sort===sort?.value));
   const field=$('at113-library-search');if(field&&document.activeElement!==field&&field.value!==libraryQuery)field.value=libraryQuery;
-  const title=el.querySelector('h2'),legacy=$('library-title');if(title&&legacy)title.textContent=legacy.textContent;
+  const title=el.querySelector('h2');if(title)title.textContent='Biblioteka ime';
  }
  function init(){mountLibrary();libraryUpdate();authControls();}
  return {init,enhanceEpisode,libraryUpdate,phone,signupReady,signup,state:null};
