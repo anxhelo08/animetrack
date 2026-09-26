@@ -1,4 +1,4 @@
-# AnimeTrack 11.0 — Anime Universe Pro
+# AnimeTrack 11.0.1 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -68,6 +68,13 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Lists are persisted in validated `customLists` preferences, including cloud sync. One-click optional share contains anime titles only; it never includes private notes, ratings, watch history or a private profile URL.
 - The 10.9 smart airing calendar and staged Web Push backend remain unchanged; no additional database migrations and no Production deployment.
 
+## iPhone 11.0.1 — safe area dhe prekje
+- Zona e sigurt rreth Dynamic Island/baterisë dhe Home Indicator aplikohet në të gjitha dritaret (detajet e animes, episodet, hyrja, konfirmimet). Butoni Kthehu ka sipërfaqe të paktën 44px dhe pozicion të sigurt në header.
+- Dritaret mbulojnë siç duhet navigimin e poshtëm; nuk bllokohen butonat nga bar-i i telefonit.
+- `touch-action: manipulation` në sipërfaqe ndërvepruese pengon double-tap zoom aksidental, por lë të lirë pinch-to-zoom për aksesueshmëri; input-et kanë minimum 16px.
+- Karta/tekstet dhe butonat e Home-it mobil u rregulluan për gjerësitë 320–430px; status bar, fundi dhe peizazhi respektojnë safe-area.
+- Nuk ndryshon databazën ose progresin e përdoruesit; përfshin të gjithë 11.0 dhe heqjen e Franchise Hub.
+
 ## Arkitektura
 `index.html`: struktura e faqes dhe ngarkimi i moduleve.  
 `assets/app.js` / `assets/app.css`: aplikacioni ekzistues, i nxjerrë nga skedari monolitik pa ndryshuar përmbajtjen.  
@@ -82,11 +89,11 @@ Supabase Auth dhe RLS ndajnë bibliotekat personale. Profili nis privat; lista e
 
 Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodikisht kopje rezervë.
 
-<!-- Production deployment sync: AnimeTrack 11.0 iPhone PWA release. -->
+<!-- Production deployment sync: AnimeTrack 11.0.1 iPhone PWA release. -->
 
 ## Korrigjimi 10.5.1 në iPhone
 - Feed-i i episodeve nuk fshihet më nga rregullat e vjetra të dashboard-it; vetëm pamja desktop fshihet në mobile.
 - Test real shfletuesi për hapjen e feed-it, kalimin +1 episod dhe pesë tab-et në Chromium dhe Safari WebKit.
 - Një rekord i paplotë episodi nuk e bllokon tërë aplikacionin; shfaqet veprim rikuperimi.
 
-<!-- Production redeploy: AnimeTrack 11.0 iPhone blank-feed hotfix. -->
+<!-- Production redeploy: AnimeTrack 11.0.1 iPhone blank-feed hotfix. -->
