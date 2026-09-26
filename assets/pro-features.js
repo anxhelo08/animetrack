@@ -45,7 +45,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  function renderHome(){
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)feed.innerHTML='<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>'}
-  if(window.matchMedia?.('(max-width: 760px)').matches){renderMobileDiscover();return;}
+  if(window.matchMedia?.('(max-width: 760px)').matches){const feed=$('at-iphone-feed');if(feed){let day=$('at115-mobile-day');if(!day){day=document.createElement('div');day.id='at115-mobile-day';feed.querySelector('.at-ios-header')?.after(day)}if(day)day.innerHTML=modules.day.render(true)}renderMobileDiscover();return;}
   if($('at-home-main'))try{
    const day=$('at115-desktop-day');if(day)day.innerHTML=modules.day.render(false);
    const parts=modules.home.render();
@@ -122,7 +122,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
   $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤',tv:'Serialet e mia ▣'})[name];setMobileActive(name);
-  if(name==='collections')setMobileActive('library');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
+  if(name==='collections'||name==='tv')setMobileActive('library');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name);if(name==='explore'){renderMobileDiscover();void modules.recommendations.refresh(false)}}
