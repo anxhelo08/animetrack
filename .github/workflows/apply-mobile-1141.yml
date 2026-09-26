@@ -1,0 +1,41 @@
+name: Publish AnimeTrack 11.4.1
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release/11-4-1.ready'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify and apply exact release
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release/11-4-1-part1.b64 .release/11-4-1-part2.b64 .release/11-4-1-part3.b64 | base64 --decode | xz --decompress > /tmp/animetrack-11-4-1.patch
+          echo '9bc7afb4e3fbde8364fbea6e340be4b6dbe82864c7a5a3a696f9f50b707f1a19  /tmp/animetrack-11-4-1.patch' | sha256sum --check
+          git apply --check /tmp/animetrack-11-4-1.patch
+          git apply /tmp/animetrack-11-4-1.patch
+          npm test
+          node --check assets/app.js
+          node --check assets/pro-iphone.js
+          node --check assets/pro-features.js
+          node --check assets/pro-mobile-113.js
+          git add assets/pro-iphone.js assets/pro-mobile-113.css package.json index.html sw.js tests/pro-smoke.test.cjs RELEASE_11_4_1.md
+          git diff --cached --quiet && exit 0
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'AnimeTrack 11.4.1: mobile episode polish, upcoming and safe-area'
+          git push origin HEAD:main
