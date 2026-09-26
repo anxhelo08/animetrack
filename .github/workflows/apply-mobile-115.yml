@@ -1,0 +1,39 @@
+name: Publish AnimeTrack 11.5
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release/11-5.ready'
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify and apply exact release
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release/11-5-part{1,2,3,4,5}.b64 | base64 --decode | xz --decompress > /tmp/animetrack-11-5.patch
+          echo '2436d074bd1b110e17404c5c83cd5d53618fe6dc2ee198db35a5c14c3aa6d30c  /tmp/animetrack-11-5.patch' | sha256sum --check
+          git apply --check /tmp/animetrack-11-5.patch
+          git apply /tmp/animetrack-11-5.patch
+          npm test
+          node --check assets/app.js
+          node --check assets/pro-features.js
+          node --check assets/pro-daily-115.js
+          node --check assets/pro-iphone.js
+          git add -A
+          git diff --cached --quiet && exit 0
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'AnimeTrack 11.5: Daily Experience and safe sync'
+          git push origin HEAD:main
