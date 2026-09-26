@@ -38,7 +38,9 @@ jobs:
           node tests/auth-browser.cjs
           BROWSER=webkit node tests/auth-browser.cjs
           BROWSER=desktop node tests/auth-browser.cjs
-          git add .github/workflows/test.yml RELEASE_11_6.md assets/app.js assets/pro-features.js assets/pro-friends.js assets/pro-import-116.js assets/pro-mobile-113.js assets/pro-profiles.js assets/pro-social-auth-116.css index.html package.json sw.js tests/auth-browser.cjs tests/pro-smoke.test.cjs
+          # The automation token cannot modify workflow files. Browser checks already ran above.
+          git restore .github/workflows/test.yml
+          git add RELEASE_11_6.md assets/app.js assets/pro-features.js assets/pro-friends.js assets/pro-import-116.js assets/pro-mobile-113.js assets/pro-profiles.js assets/pro-social-auth-116.css index.html package.json sw.js tests/auth-browser.cjs tests/pro-smoke.test.cjs
           git diff --cached --quiet && exit 0
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
