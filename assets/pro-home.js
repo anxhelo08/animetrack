@@ -11,7 +11,7 @@ window.ATHome=function ATHome(ctx){
  const dateTime=ms=>new Date(ms).toLocaleDateString('sq-AL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
  const stamp=a=>Date.parse(a?.updatedAt||a?.createdAt||'')||0;
  function syncOwner(){const id=String(ctx.user()?.id||'guest');if(owner!==id){owner=id;selection='';cycle=-1;sort='recent';query='';limit=6;lastWatch=null}}
- function candidates(){return anime().filter(a=>a.status==='watching'&&ready(a)>0&&next(a))}
+ function candidates(){return anime().filter(a=>['watching','waiting','completed'].includes(a.status)&&ready(a)>0&&next(a))}
  function ordered(){
   const xs=candidates().slice();
   if(sort==='few')xs.sort((a,b)=>ready(a)-ready(b)||stamp(b)-stamp(a));

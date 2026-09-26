@@ -16,11 +16,13 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   moderation:window.ATModeration(ctx),
   rewatch:window.ATRewatch(ctx),
   home:window.ATHome(ctx),
+  day:window.ATDaily115(ctx),
   iphone:window.ATiPhone(ctx),
   experience:window.ATExperience112(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
  ctx.socialCounts=()=>modules.friends.counts();
+ ctx.dayBrief=compact=>modules.day.render(!!compact);
  ctx.smartWeek=compact=>modules.smart.panel(!!compact);
  ctx.smartReminderSelect=e=>modules.smart.reminderSelect(e);
  ctx.setCalendarReminder=(key,value)=>modules.smart.setReminder(key,value);
@@ -43,6 +45,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)feed.innerHTML='<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>'}
   if(window.matchMedia?.('(max-width: 760px)').matches)return;
   if($('at-home-main'))try{
+   const day=$('at115-desktop-day');if(day)day.innerHTML=modules.day.render(false);
    const parts=modules.home.render();
    for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}
   }catch(err){
@@ -63,6 +66,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   const home=$('home-view'),recommend=document.createElement('section');recommend.id='pro-home-recs';recommend.className='pro-panel';const sync=home.querySelector('.sync-panel');if(sync)sync.before(recommend);else home.append(recommend);
   const dash=document.createElement('div');dash.className='at-home-dashboard';dash.innerHTML='<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>';recommend.after(dash);
   modules.home.mount(home,recommend,dash);
+  const dayNode=document.createElement('section');dayNode.id='at115-desktop-day';dayNode.setAttribute('aria-label','Your Anime Day');$('at-home-top')?.after(dayNode);
   modules.iphone.mount();
   modules.collections.mountLibrary();
   document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}if(e.target?.id==='at11-friend-form'){e.preventDefault();void modules.friends.find()}});
@@ -139,6 +143,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
+  if(b.dataset.dayAction){try{return modules.day.action(b.dataset.dayAction,b.dataset.id||'')}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
   if(b.dataset.iosAction){if(b.dataset.iosAction==='close-install'){const d=$('at-ios-install-guide');d?.close?.();if(d)d.hidden=true;return}try{return await modules.iphone.action(b.dataset.iosAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
   if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}
   if(b.dataset.homeAction==='retry-home'){renderHome();return}

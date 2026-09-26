@@ -29,7 +29,7 @@ window.ATiPhone=function ATiPhone(ctx){
  }
  function eligibleAnime(){
   return (state().anime||[]).filter(a=>{
-   try{return a?.status==='watching'&&!!ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a)}
+   try{return ['watching','waiting','completed'].includes(a?.status)&&!!ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a)}
    catch(err){console.warn('Skipping incomplete anime in iPhone feed',a?.id,err);return false}
   });
  }
@@ -166,7 +166,7 @@ window.ATiPhone=function ATiPhone(ctx){
   if(lastWatch&&!validUndo)lastWatch=null;
   const feedback=`<div class="at-ios-watch-feedback" role="status" aria-live="polite"><span class="at-ios-sync-dot ${syncing?'busy':saveInfo.dirty?'pending':''}" aria-hidden="true"></span><span>${esc(syncText)}</span>${validUndo?`<button type="button" data-ios-action="undo" aria-label="Zhbëj episodin ${lastWatch.n}">↶ Zhbëj EP ${lastWatch.n}</button>`:''}</div>`;
   const body=tab==='watch'?renderWatchSection():renderUpcomingSection();
-  return `<section class="at-ios-shell at114-shell"><header class="at-ios-header"><div><span class="at-ios-kicker">ANIMETRACK · EPISODES</span><h1>${esc(new Date().getHours()<12?'Mirëmëngjes':new Date().getHours()<18?'Mirëdita':'Mirëmbrëma')}, ${esc(name)} <span>✦</span></h1><p>${watch.all.length?`${watch.all.length} anime me episode për të vazhduar.`:'Historia jote anime, në një vend.'}</p></div><button class="at11-head-friends" type="button" data-pro-page="friends" aria-label="Kërko dhe shto miq" title="Miqtë">👥<span> Miqtë</span></button><button class="at-ios-bell" data-pro-page="notifications" type="button" aria-label="Hap njoftimet">🔔${unread?`<i>${Math.min(99,unread)}</i>`:''}</button></header>${installCard()}${feedback}${tools(watch.all.length,soon.length)}${body}${(tab==='watch'&&(watch.all.length>limit||watch.stale.length>limit))||(tab==='upcoming'&&soon.length>Math.max(limit,12))?'<button type="button" class="at-ios-more" data-ios-action="more">Shfaq më shumë ↓</button>':''}<div class="at-ios-end"><span>✦</span> Gjithçka që ke shënuar ruhet në bibliotekën tënde.</div></section>`;
+  return `<section class="at-ios-shell at114-shell"><header class="at-ios-header"><div><span class="at-ios-kicker">ANIMETRACK · EPISODES</span><h1>${esc(new Date().getHours()<12?'Mirëmëngjes':new Date().getHours()<18?'Mirëdita':'Mirëmbrëma')}, ${esc(name)} <span>✦</span></h1><p>${watch.all.length?`${watch.all.length} anime me episode për të vazhduar.`:'Historia jote anime, në një vend.'}</p></div><button class="at11-head-friends" type="button" data-pro-page="friends" aria-label="Kërko dhe shto miq" title="Miqtë">👥<span> Miqtë</span></button><button class="at-ios-bell" data-pro-page="notifications" type="button" aria-label="Hap njoftimet">🔔${unread?`<i>${Math.min(99,unread)}</i>`:''}</button></header>${installCard()}${feedback}${tools(watch.all.length,soon.length)}${ctx.dayBrief?.(true)||''}${body}${(tab==='watch'&&(watch.all.length>limit||watch.stale.length>limit))||(tab==='upcoming'&&soon.length>Math.max(limit,12))?'<button type="button" class="at-ios-more" data-ios-action="more">Shfaq më shumë ↓</button>':''}<div class="at-ios-end"><span>✦</span> Gjithçka që ke shënuar ruhet në bibliotekën tënde.</div></section>`;
  }
  function mount(){
   const home=ctx.el('home-view');if(!home||ctx.el('at-iphone-feed'))return;
