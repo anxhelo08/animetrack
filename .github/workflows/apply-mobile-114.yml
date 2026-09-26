@@ -1,0 +1,39 @@
+name: Publish AnimeTrack 11.4
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release/11-4.ready'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source patch, run tests and publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release/11-4.part0 .release/11-4.part1 .release/11-4.part2 .release/11-4.part3 | base64 --decode | xz --decompress > /tmp/animetrack-11-4.patch
+          echo '87c84d38776d9de359ccb411d44d63ffd035e95a4bb18d352fe905702ae5b096  /tmp/animetrack-11-4.patch' | sha256sum --check
+          git apply --check /tmp/animetrack-11-4.patch
+          git apply /tmp/animetrack-11-4.patch
+          npm test
+          node --check assets/app.js
+          node --check assets/pro-iphone.js
+          git rm .release/11-4.part0 .release/11-4.part1 .release/11-4.part2 .release/11-4.part3 .release/11-4.ready .github/workflows/apply-mobile-114.yml
+          git add -A
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'AnimeTrack 11.4: mobile episode hub and upcoming feed'
+          git push origin HEAD:main
