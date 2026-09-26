@@ -21,7 +21,7 @@ const assert=require('node:assert/strict');
  await page.locator('[data-home-action="more-watching"]').click();
  assert.equal(await page.locator('#at-home-lineup .at-h2-lineup-card').count(),8);
  await page.locator('#at-pc-watch-search').fill('Mystery');
- await page.waitForTimeout(300);
+ await page.waitForFunction(()=>document.querySelectorAll('#at-home-lineup .at-h2-lineup-card').length===1,null,{timeout:5000});
  assert.equal(await page.locator('#at-home-lineup .at-h2-lineup-card').count(),1);
  assert.match(await page.locator('#at-home-lineup').innerText(),/Mystery Series 7/);
  assert.equal(await page.locator('#at-pc-watch-search').inputValue(),'Mystery');
