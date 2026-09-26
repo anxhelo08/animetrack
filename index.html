@@ -9,6 +9,7 @@
 <title>AnimeTrack 11.8.1 — Anime & TV Series</title>
 <link rel="manifest" href="/manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="stylesheet" href="/assets/app.css"><link rel="stylesheet" href="/assets/pro-features.css"><link rel="stylesheet" href="/assets/pro-visual-101.css"><link rel="stylesheet" href="/assets/pro-home-102.css"><link rel="stylesheet" href="/assets/pro-mobile-103.css"><link rel="stylesheet" href="/assets/pro-compact-104.css"><link rel="stylesheet" href="/assets/pro-iphone-105.css"><link rel="stylesheet" href="/assets/pro-desktop-106.css"><link rel="stylesheet" href="/assets/pro-quality-107.css"><link rel="stylesheet" href="/assets/pro-journey-108.css"><link rel="stylesheet" href="/assets/pro-airing-109.css"><link rel="stylesheet" href="/assets/pro-collections-110.css"><link rel="stylesheet" href="/assets/pro-ios-polish-1101.css"><link rel="stylesheet" href="/assets/pro-social-111.css"><link rel="stylesheet" href="/assets/pro-experience-112.css"><link rel="stylesheet" href="/assets/pro-mobile-113.css"><link rel="stylesheet" href="/assets/pro-daily-115.css"><link rel="stylesheet" href="/assets/pro-social-auth-116.css"><link rel="stylesheet" href="/assets/pro-mobile-profile-1161.css"><link rel="stylesheet" href="/assets/pro-mobile-117.css">
 <link rel="stylesheet" href="/assets/pro-tv-118.css" />
+<link rel="stylesheet" href="/assets/pro-unified-119.css">
 </head>
 <body class="account-booting">
 <div id="account-boot-screen" class="account-boot-screen" aria-live="polite"><div class="logo-mark">A</div><strong>AnimeTrack</strong><span>Po hap llogarinë...</span></div>
@@ -79,7 +80,7 @@
 <p class="season-note">Burimi kryesor AniList; alternativë MyAnimeList/Jikan. Data e transmetimit në Japoni nuk garanton publikim në Netflix ose Crunchyroll në Shqipëri. Rezultatet rifreskohen kur hap aplikacionin, nëse kanë kaluar 24 orë.</p>
 </section>
     <div id="library-view">
-    <div class="home-section-head"><div><span class="eyebrow">FILTRA TË SHPEJTË</span><h3>Listat e bibliotekës</h3></div></div><div class="library-status-strip" id="library-status-strip" aria-label="Filtrat e bibliotekës"></div><div class="series-repair-panel"><span>Sezonet e së njëjtës seri shfaqen bashkë, pa humbur progresin.</span><button id="series-repair-btn" class="ghost" type="button">↻ Kontrollo & bashko sezonet</button></div><section id="genre-controls" class="genre-panel hidden"><span class="eyebrow">ZHANRET E BIBLIOTEKËS</span><h3>Zgjidh zhanrin ✦</h3><p>Një anime mund t’i përkasë disa zhanreve. Filtrat bazohen te biblioteka jote.</p><div id="genre-chips" class="genre-chips"></div></section>
+    <div class="home-section-head"><div><span class="eyebrow">FILTRA TË SHPEJTË</span><h3>Listat e bibliotekës</h3></div></div><div class="at119-media-filter" role="group" aria-label="Lloji i përmbajtjes"><button type="button" data-media-filter="all" class="active" aria-pressed="true">✦ Të gjitha <b data-at119-count>0</b></button><button type="button" data-media-filter="anime" aria-pressed="false">Anime <b data-at119-count>0</b></button><button type="button" data-media-filter="tv" aria-pressed="false">▣ Seriale TV <b data-at119-count>0</b></button></div><div class="library-status-strip" id="library-status-strip" aria-label="Filtrat e bibliotekës"></div><div class="series-repair-panel"><span>Sezonet e së njëjtës seri shfaqen bashkë, pa humbur progresin.</span><button id="series-repair-btn" class="ghost" type="button">↻ Kontrollo & bashko sezonet</button></div><section id="genre-controls" class="genre-panel hidden"><span class="eyebrow">ZHANRET E BIBLIOTEKËS</span><h3>Zgjidh zhanrin ✦</h3><p>Një anime mund t’i përkasë disa zhanreve. Filtrat bazohen te biblioteka jote.</p><div id="genre-chips" class="genre-chips"></div></section>
 <section class="hero"><div><span class="eyebrow">KONTROLLO HISTORINË TËNDE</span><h2>Çdo episod, një hap më tej.</h2><p>Zbulo sezonet, shëno episodet një nga një ose përfundo sezonin me një klikim.</p></div><button class="primary" id="hero-add">+ Shto animen e parë</button></section>
 
 
@@ -92,7 +93,7 @@
     <section id="continue-section"><div class="section-head"><div><h3>Vazhdo shikimin <span style="color:var(--purple)">↗</span></h3><p>Animet që po ndjek tani</p></div><button id="view-watching">Shiko të gjitha →</button></div><div class="continue-grid" id="continue-grid"></div></section>
     <section><div class="section-head"><div><h3 id="library-title">Biblioteka ime</h3><p id="library-subtitle">Të gjitha animet e tua</p></div></div><div class="toolrow"><div class="filters" id="filters"><button class="filter active" data-filter="all">Të gjitha</button><button class="filter" data-filter="watching">Po shikoj</button><button class="filter" data-filter="completed">Përfunduar</button><button class="filter" data-filter="planning">Në listë</button><button class="filter" data-filter="paused">Në pauzë</button><button class="filter" data-filter="dropped">E lënë</button><button class="filter" data-filter="favorites">♥ Favorites</button><button class="filter" data-filter="genres">◈ Zhanret</button><button class="filter" data-filter="movies">🎬 Filma</button><button class="filter" data-filter="waiting">◷ Në pritje</button></div><select class="sort" id="sort" aria-label="Rendit animet"><option value="updated">Së fundmi</option><option value="title">Sipas titullit</option><option value="progress">Sipas progresit</option><option value="rating">Sipas vlerësimit</option></select></div><div class="anime-grid" id="anime-grid"></div></section>
     </div><!-- library-view -->
-    <footer class="footer">AnimeTrack 11.7.0 • Çdo llogari ruan bibliotekën e vet në cloud. Ruaj edhe një kopje rezervë herë pas here.</footer>
+    <footer class="footer">AnimeTrack 11.9.0 • Çdo llogari ruan bibliotekën e vet në cloud. Ruaj edhe një kopje rezervë herë pas here.</footer>
   </main>
 </div>
 
@@ -177,6 +178,7 @@ window.ANIMETRACK_CONFIG = {
 <script src="/assets/pro-mobile-113.js"></script>
 <script src="/assets/pro-tv-118.js"></script>
 <script src="/assets/pro-features.js"></script>
+<script src="/assets/pro-unified-119.js"></script>
 <script src="/assets/app.js"></script>
 </body>
 </html>
