@@ -55,11 +55,12 @@ window.ATFriends=function ATFriends(ctx,profiles){
    const lookups=[client().from('anime_profiles').select(cols).eq('is_public',true).ilike('handle',q+'%').limit(12),client().from('anime_profiles').select(cols).eq('is_public',true).ilike('display_name','%'+q+'%').limit(12)];
    const requests=[...lookups];
    if(/^[a-z0-9_]{3,24}$/.test(q)&&typeof client().rpc==='function')requests.push(client().rpc('anime_find_friend_by_handle',{p_handle:q}).then(r=>{if(r.error){console.warn('Exact username lookup unavailable',r.error.message);return {data:[]}}return r}));
-   const responses=await Promise.all(requests);
+   // A failed public search or a slow optional RPC must not hide independently successful results.
+   const settled=await Promise.allSettled(requests);
    if(seq!==searchSerial)return;
-   const failure=responses.slice(0,2).find(r=>r.error);if(failure)throw failure.error;
+   const responses=settled.map(r=>r.status==='fulfilled'?r.value:{data:[],error:r.reason});
    const seen=new Set();results=responses.flatMap(r=>r.data||[]).filter(p=>{if(p.user_id===myId()||seen.has(p.user_id))return false;seen.add(p.user_id);return true}).slice(0,12);
-   searchState='';showResults();
+   searchState=results.length?'':responses.every(r=>r.error)?'Kërkimi nuk u krye. Kontrollo lidhjen dhe provo përsëri.':'';showResults();
   }catch(err){if(seq!==searchSerial)return;results=[];searchState='Kërkimi nuk u krye. Kontrollo lidhjen dhe provo përsëri.';showResults();console.warn('Friend search',err)}
  }
  function showResults(){const slot=ctx.el('pro-find-results');if(slot)slot.innerHTML=resultMarkup()}

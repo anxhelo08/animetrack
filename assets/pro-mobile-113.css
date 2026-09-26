@@ -1,0 +1,183 @@
+/* AnimeTrack 11.3 — restore the original amethyst / cyan visual identity. */
+:root{--at113-accent:#a78bfa;--at113-cyan:#65e5ef;--at113-surface:#191a2b;--at113-border:#414058;--at113-muted:#b8b5ca}
+body.at-ios-enabled .at-ios-header h1 span{color:var(--at113-accent)}
+body.at-ios-enabled .at-ios-tabs button.active{background:linear-gradient(125deg,#8364d5,#6548b6)!important;color:#fff!important;border-color:#a68cf4!important;box-shadow:0 5px 19px #7951d535}
+body.at-ios-enabled .at-ios-done{background:linear-gradient(120deg,#9477e6,#6c54c6)!important;border:1px solid #aa95eb!important;color:#fff!important;box-shadow:0 5px 22px #8761d333}
+body.at-ios-enabled .at-ios-done .at11-watch-check{border-color:#ffffff8c;color:#fff}
+body.at-ios-enabled .at11-head-friends{border-color:#6d5a96;background:#302641;color:#e6d9ff}
+body.at-ios-enabled .at-mobile-nav button.active{background:#453363!important;color:#f2eaff!important}
+body.at-ios-enabled .at-ios-episode-card:focus-within{border-color:#a78bfa;box-shadow:0 0 0 2px #a78bfa25}
+.at112-phone-glance{border-color:#5a4b75;background:radial-gradient(circle at 100% 0%,#7955ac44,transparent 60%),linear-gradient(110deg,#2b253e,#1b1d2e)}
+.at112-phone-glance>span{border-color:#9e88d5;background:#8062c92c;color:#d9c7ff}
+.at112-phone-glance strong{color:#eee4ff}.at112-phone-glance button{background:#8060cc;border-color:#aa92e8;color:#fff}
+.at112-phone-search:focus-within{border-color:#a78bfa;box-shadow:0 0 0 3px #a78bfa20}
+.at112-invite-box{border-color:#77609a;background:linear-gradient(110deg,#423353,#25243a)}
+.at112-invite-box>span{color:#d8c2ff}.at112-invite-box .pro-btn{background:#7958c4;color:#fff}
+.at113-library-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;margin:3px 0 18px;padding:19px 21px;background:radial-gradient(circle at 93% 0%,#7750ba3d,transparent 55%),#1c1e30;border:1px solid #55466e;border-radius:20px}
+.at113-library-title>span{font-size:10px;letter-spacing:1.7px;color:#c5adf4;font-weight:900}.at113-library-title h2{margin:4px 0;font-size:clamp(23px,2.3vw,32px);line-height:1.2;letter-spacing:-.65px}.at113-library-title p{margin:0;color:#b7b2c9;font-size:12px}
+.at113-library-metrics{display:flex;gap:9px;flex-wrap:wrap}.at113-library-metrics>span{display:grid;justify-items:center;gap:1px;min-width:90px;padding:7px 12px;border:1px solid #484258;border-radius:12px;background:#25243b;color:#b8adc9;font-size:10px}.at113-library-metrics b{font-size:20px;color:#ede1ff}
+.at113-library-search{grid-column:1/-1;display:flex;align-items:center;gap:12px;min-height:50px;padding:0 15px;border:1px solid #56516f;border-radius:13px;background:#131523;color:#bdace0}.at113-library-search:focus-within{border-color:#a78bfa;box-shadow:0 0 0 3px #9272e321}.at113-library-search>span:first-child{font-size:24px}.at113-library-search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:#fff;font-size:16px}.at113-library-search input::placeholder{color:#9691a9}.at113-search-help{opacity:.5}
+/* Episode layout: visual is a small companion to the episode information, never a full desktop banner. */
+#episode-detail-modal .at113-episode-feature{display:grid;grid-template-columns:200px minmax(0,1fr);gap:17px;align-items:center;padding:13px;border:1px solid #4b425f;border-radius:17px;background:linear-gradient(115deg,#22233a,#191b2d);min-width:0}
+#episode-detail-modal .at113-episode-feature .ep-detail-visual{width:200px;height:125px;min-height:0;max-height:125px;aspect-ratio:auto;margin:0;border:1px solid #554b6b;border-radius:11px}
+#episode-detail-modal .at113-episode-feature .ep-detail-visual>img,#episode-detail-modal .at113-episode-feature .ep-detail-visual .v98-poster-fallback{height:100%;max-height:none;object-fit:cover;object-position:center}
+#episode-detail-modal .at113-episode-feature .ep-detail-visual .visual-caption{font-size:8px;bottom:5px;right:5px;left:5px;text-align:center;padding:3px 5px;line-height:1.2}
+#episode-detail-modal .at113-episode-feature .ep-detail-visual strong{font-size:20px}
+#episode-detail-modal .at113-episode-copy{min-width:0}.at113-episode-copy>.eyebrow{font-size:10px;letter-spacing:1px}.at113-episode-copy .ep-detail-name{font-size:clamp(17px,2vw,23px);margin:5px 0 11px;line-height:1.3;overflow-wrap:anywhere}.at113-episode-copy .ep-meta-row{display:flex;flex-wrap:wrap;gap:5px}.at113-episode-copy .ep-meta-row .pill{margin:0;font-size:10px}
+#episode-detail-modal .at113-mark-button{background:linear-gradient(120deg,#9479e5,#6c50bb)!important;border:1px solid #b19bea;color:white;min-height:46px}
+/* Desktop and mobile both preserve scroll position and a stable episode hero. */
+@media(max-width:760px){
+ html,body{overscroll-behavior-x:none}
+ body.at-ios-enabled .at-ios-shell{padding-bottom:22px}
+ body.at-ios-enabled #episode-detail-modal{position:fixed;inset:0;z-index:1270;align-items:stretch!important;justify-content:stretch;padding:0!important;background:#111220!important;backdrop-filter:none}
+ body.at-ios-enabled #episode-detail-modal .ep-detail-dialog{width:100%;max-width:100%;height:100dvh;max-height:100dvh;min-height:0;display:flex;flex-direction:column;overflow:hidden;border:0;border-radius:0;box-shadow:none;background:#121422}
+ body.at-ios-enabled #episode-detail-modal .modal-header{position:relative;z-index:12;flex:none;min-height:calc(65px + env(safe-area-inset-top,0px));padding:calc(11px + env(safe-area-inset-top,0px)) max(15px,env(safe-area-inset-right,0px)) 12px max(15px,env(safe-area-inset-left,0px));border-bottom:1px solid #454059;background:#1a1b2ded;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+ body.at-ios-enabled #episode-detail-modal .modal-header .eyebrow{font-size:9px;letter-spacing:1.4px}
+ body.at-ios-enabled #episode-detail-modal .modal-header h2{font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100vw - 95px);margin-top:3px}
+ body.at-ios-enabled #episode-detail-modal .modal-header .x{width:44px;height:44px;min-height:44px;font-size:25px;border-radius:12px;background:#302c46;border-color:#65547f}
+ body.at-ios-enabled #episode-detail-modal .modal-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px max(13px,env(safe-area-inset-right,0px)) calc(35px + env(safe-area-inset-bottom,0px)) max(13px,env(safe-area-inset-left,0px))}
+ body.at-ios-enabled #episode-detail-modal .at108-episode-head{padding:12px;gap:10px;margin:0 0 12px;background:#222138;border-color:#4b4062;border-radius:15px}
+ body.at-ios-enabled #episode-detail-modal .at108-kicker{color:#c7b2ed;font-size:9px}
+ body.at-ios-enabled #episode-detail-modal .at108-episode-summary strong{font-size:23px}
+ body.at-ios-enabled #episode-detail-modal .at108-episode-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+ body.at-ios-enabled #episode-detail-modal .at108-episode-switch button{width:100%;min-width:0;min-height:44px;padding:9px 7px;font-size:11px}
+ body.at-ios-enabled #episode-detail-modal .at108-no-episode{max-width:none;min-height:44px;display:grid;place-items:center;font-size:10px;line-height:1.3;text-align:center}
+ body.at-ios-enabled #episode-detail-modal .at108-episode-tabs{position:sticky;top:-14px;z-index:10;background:#191a2ff5;margin-bottom:12px;backdrop-filter:blur(12px)}
+ body.at-ios-enabled #episode-detail-modal .at108-episode-tabs button.active{background:#5c4688;color:#fff}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-feature{grid-template-columns:112px minmax(0,1fr);gap:11px;padding:10px;align-items:start;border-radius:14px}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-feature .ep-detail-visual{width:112px;height:100px;max-height:100px;min-height:0;border-radius:9px;align-self:start}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-feature .ep-detail-visual .visual-caption{font-size:7px;line-height:1.15}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-feature .ep-detail-visual strong{font-size:18px}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-copy .ep-detail-name{font-size:15px;line-height:1.3;margin:4px 0 7px}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-copy .eyebrow{font-size:9px;letter-spacing:.2px}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-copy .ep-meta-row{gap:4px}
+ body.at-ios-enabled #episode-detail-modal .at113-episode-copy .ep-meta-row .pill{font-size:9px;padding:4px 6px}
+ body.at-ios-enabled #episode-detail-modal .ep-detail-summary{font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+ body.at-ios-enabled #episode-detail-modal .ep-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px}
+ body.at-ios-enabled #episode-detail-modal .ep-detail-actions button{min-width:0;min-height:44px;font-size:11px;border-radius:11px;padding:9px 8px}
+ body.at-ios-enabled #episode-detail-modal .ep-detail-actions .at113-mark-button{grid-column:1/-1;min-height:49px;font-size:13px}
+ body.at-ios-enabled #episode-detail-modal .v98-personal,body.at-ios-enabled #episode-detail-modal .v98-discussion{padding:14px;border-radius:14px;margin-top:15px}
+ body.at-ios-enabled #episode-detail-modal .v98-personal-bottom button,body.at-ios-enabled #episode-detail-modal .v98-comment-controls button{min-height:44px}
+ body.at-ios-enabled #episode-detail-modal .v98-comment-controls,body.at-ios-enabled #episode-detail-modal .v98-personal-bottom{align-items:stretch}
+ body.at-ios-enabled #episode-detail-modal .v98-comment-form textarea{font-size:16px!important}
+ /* Show a compact library dashboard and maintain 2-column cards without clipped controls. */
+ body.at-ios-enabled #library-view .at113-library-head{margin:0 0 13px;padding:15px 13px;grid-template-columns:1fr;gap:13px;border-radius:17px;background:radial-gradient(circle at 100% 0%,#704da644,transparent 60%),#1c1d2d}
+ body.at-ios-enabled #library-view .at113-library-title h2{font-size:26px;margin:5px 0 2px}
+ body.at-ios-enabled #library-view .at113-library-title p{font-size:11px}
+ body.at-ios-enabled #library-view .at113-library-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ body.at-ios-enabled #library-view .at113-library-metrics>span{min-width:0;padding:8px 5px;font-size:10px;border-radius:10px}
+ body.at-ios-enabled #library-view .at113-library-metrics b{font-size:20px}
+ body.at-ios-enabled #library-view .at113-library-search{min-height:49px;padding:0 12px;grid-column:1}
+ body.at-ios-enabled #library-view .library-status-strip{position:relative!important;top:auto!important;z-index:2;background:transparent!important;margin-bottom:12px;padding:3px 0 9px;gap:7px}
+ body.at-ios-enabled #library-view .library-status-strip button{min-height:44px;min-width:73px;font-size:11px;padding:8px 13px;border-radius:12px}
+ body.at-ios-enabled #library-view .library-status-strip button.active{background:#59417f;border-color:#9f85ce;color:#fff}
+ body.at-ios-enabled #library-view .toolrow{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin:8px 0 14px}
+ body.at-ios-enabled #library-view .toolrow .filters{display:flex;gap:6px;overflow-x:auto;flex-wrap:nowrap;padding:3px 0 8px;scrollbar-width:none}
+ body.at-ios-enabled #library-view .toolrow .filters .filter{flex:0 0 auto;min-height:40px;padding:8px 12px;border-radius:99px;font-size:11px}
+ body.at-ios-enabled #library-view .toolrow .sort{width:100%;max-width:none;min-height:44px;font-size:16px;background:#212237;border-color:#514666}
+ body.at-ios-enabled #library-view .anime-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:stretch}
+ body.at-ios-enabled #library-view .anime-card{min-width:0;display:flex;flex-direction:column;border:1px solid #44405b;border-radius:15px;background:#1c1d2d;overflow:hidden;transform:none!important}
+ body.at-ios-enabled #library-view .anime-card .poster{width:100%;height:auto;aspect-ratio:3/3.6;min-height:0;flex:none}
+ body.at-ios-enabled #library-view .anime-card .poster img{width:100%;height:100%;object-fit:cover}
+ body.at-ios-enabled #library-view .anime-card .card-info{display:flex;flex:1;flex-direction:column;min-width:0;padding:10px 9px}
+ body.at-ios-enabled #library-view .anime-card .card-title{font-size:12px;line-height:1.35;min-height:33px;overflow-wrap:anywhere}
+ body.at-ios-enabled #library-view .anime-card .card-row{margin:7px 0 8px;gap:5px;font-size:10px}
+ body.at-ios-enabled #library-view .anime-card .card-row .progress{min-width:8px}
+ body.at-ios-enabled #library-view .anime-card .card-actions{display:grid;grid-template-columns:minmax(0,1fr) 43px;gap:6px;margin-top:auto}
+ body.at-ios-enabled #library-view .anime-card .card-actions button{min-width:0;min-height:44px;padding:8px 5px;font-size:11px;border-radius:10px}
+ body.at-ios-enabled #library-view .anime-card .card-actions .plus{background:#59427f;border-color:#8b71c3;font-size:14px}
+ body.at-ios-enabled #library-view .anime-card .v7-inline-select{width:100%;min-height:42px;font-size:12px;padding:6px;border-radius:9px}
+ body.at-ios-enabled #library-view .favorite-badge{font-size:13px}
+ body.at-ios-enabled .at110-heading{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding:15px}
+ body.at-ios-enabled .at110-heading h2{font-size:21px}.at110-heading p{line-height:1.4}
+ body.at-ios-enabled .at110-page .at110-aside,body.at-ios-enabled .at110-page .at110-content{padding:14px;border-radius:15px;background:#1b1d30}
+ body.at-ios-enabled .at110-choices{scroll-snap-type:x proximity;gap:8px;padding-bottom:8px}
+ body.at-ios-enabled .at110-choices button{min-height:47px;border-radius:12px;scroll-snap-align:start}
+ body.at-ios-enabled .at110-list-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:6px}
+ body.at-ios-enabled .at110-list-actions button{min-width:0;white-space:normal;min-height:45px;padding:8px 4px;font-size:10px}
+ body.at-ios-enabled .at110-anime{padding:9px;gap:9px;min-height:74px;border-radius:12px}
+ body.at-ios-enabled .at110-cover{width:46px;height:62px}
+ body.at-ios-enabled .at110-anime>div strong{font-size:12px}
+ body.at-ios-enabled .at110-toggle{min-height:44px;font-size:11px}
+ /* Calendar: true vertical agenda and selectable day strip instead of 7 clipped desktop columns. */
+ body.at-ios-enabled .at-cal-hero{padding:17px;border-radius:17px}
+ body.at-ios-enabled .at-cal-hero h2{font-size:24px;line-height:1.2}
+ body.at-ios-enabled .at-cal-highlights{grid-template-columns:1fr 1fr;gap:8px}
+ body.at-ios-enabled .at-cal-highlights>div{min-width:0;padding:12px;border-radius:13px}
+ body.at-ios-enabled .at-cal-highlights strong{font-size:13px;overflow-wrap:anywhere}
+ body.at-ios-enabled .at-cal-toolbar{position:relative!important;top:auto!important;z-index:2;margin-top:14px;border-radius:14px;padding:9px}
+ body.at-ios-enabled .at-cal-modes{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ body.at-ios-enabled .at-cal-modes button{min-height:44px;font-size:12px}
+ body.at-ios-enabled .at-cal-nav{width:100%;display:grid;grid-template-columns:44px minmax(44px,1fr) 44px minmax(60px,1fr);gap:7px}
+ body.at-ios-enabled .at-cal-nav button{min-height:44px;min-width:0;font-size:11px;padding:8px 6px}
+ body.at-ios-enabled .at-cal-nav .pro-btn:last-child{display:none}
+ body.at-ios-enabled .at-cal-filters{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:7px;padding:3px 0 9px;scrollbar-width:none}
+ body.at-ios-enabled .at-cal-filters button{flex:none;min-height:40px;font-size:11px}
+ body.at-ios-enabled .at113-cal-days{display:flex;overflow-x:auto;gap:7px;scroll-snap-type:x proximity;margin:9px 0 13px;padding:4px 1px 10px;scrollbar-width:none}
+ body.at-ios-enabled .at113-cal-days::-webkit-scrollbar{display:none}
+ body.at-ios-enabled .at113-cal-days button{flex:0 0 57px;min-height:71px;scroll-snap-align:start;display:grid;place-items:center;align-content:center;gap:1px;border:1px solid #514761;border-radius:12px;background:#242438;color:#d5cbe5;padding:7px 4px}
+ body.at-ios-enabled .at113-cal-days button.active,body.at-ios-enabled .at113-cal-days button.today{border-color:#a387dd;background:#4d3d73;color:#fff}
+ body.at-ios-enabled .at113-cal-days b{font-size:18px;line-height:1.3}
+ body.at-ios-enabled .at113-cal-days small{font-size:10px}.at113-cal-days i{font-style:normal;font-size:9px;color:#c8b4ff}
+ body.at-ios-enabled .at-cal-grid:not(.month){display:grid;overflow:visible;grid-template-columns:1fr;gap:10px;scroll-snap-type:none}
+ body.at-ios-enabled .at-cal-grid:not(.month) .at-cal-day{min-height:0;max-width:100%;width:100%;padding:12px;border-radius:14px}
+ body.at-ios-enabled .at-cal-grid.month{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px;overflow:visible}
+ body.at-ios-enabled .at-cal-grid.month .at-cal-day{min-width:0;max-width:100%;padding:5px 2px;border-radius:8px;min-height:70px}
+ body.at-ios-enabled .at-cal-grid.month .at-cal-day header{font-size:9px;display:grid;gap:2px;justify-items:center}
+ body.at-ios-enabled .at-cal-grid.month .at-cal-day-open{min-width:0;width:100%;min-height:32px;overflow:hidden;padding:2px}
+ body.at-ios-enabled .at-cal-grid.month .at-cal-month-event{width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:8px}
+ body.at-ios-enabled .at-cal-agenda{display:grid;grid-template-columns:1fr;gap:12px}
+ body.at-ios-enabled .at-cal-agenda section{min-width:0;padding:12px;border:1px solid #454157;border-radius:14px;background:#1c1e30}
+ body.at-ios-enabled .at-cal-agenda section h3{margin:0 0 12px;font-size:15px}
+ body.at-ios-enabled .at-cal-agenda-events{display:grid;grid-template-columns:1fr;gap:8px}
+ body.at-ios-enabled .at-cal-event{min-width:0;display:grid;grid-template-columns:52px minmax(0,1fr);gap:11px;align-items:start;padding:10px;border-radius:12px}
+ body.at-ios-enabled .at-cal-cover{width:52px;height:69px;grid-row:1 / 3}
+ body.at-ios-enabled .at-cal-event-info{min-width:0}
+ body.at-ios-enabled .at-cal-event-actions{display:flex;gap:7px;flex-wrap:wrap}
+ body.at-ios-enabled .at-cal-event-actions button{min-height:38px;min-width:0;font-size:10px;padding:7px 9px}
+ body.at-ios-enabled .at109-reminder-choice select{width:100%;min-height:43px;font-size:16px!important}
+ body.at-ios-enabled .at11-friend-search .at11-friend-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+ body.at-ios-enabled .at11-friend-search .at11-input-shell{min-width:0}
+ body.at-ios-enabled .at11-friend-search .at11-friend-form button{min-height:45px;padding:8px 10px}
+ body.at-ios-enabled .at11-person{display:grid;grid-template-columns:43px minmax(0,1fr);gap:9px;padding:10px}
+ body.at-ios-enabled .at11-person .at11-person-info{min-width:0}
+ body.at-ios-enabled .at11-person .at11-person-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:7px;width:100%}
+ body.at-ios-enabled .at11-person .at11-person-actions button{min-height:42px;min-width:0;flex:1}
+ body.at-ios-enabled .at112-invite-box{padding:13px;border-radius:13px}
+ body.at-ios-enabled .account-panel{width:100%;max-width:100%;min-height:0}
+ body.at-ios-enabled #account-modal .modal-header{position:sticky;top:0;z-index:3;background:#1b1c2ded;border-bottom:1px solid #48415c}
+ body.at-ios-enabled #account-modal .account-form input{font-size:16px!important;min-height:46px}
+ body.at-ios-enabled #account-modal .account-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ body.at-ios-enabled #account-modal .account-buttons button{min-height:45px;min-width:0;padding:10px 5px;font-size:12px}
+ body.at-ios-enabled #account-modal .account-buttons #account-login{grid-column:1/-1}
+ body.at-ios-enabled #account-modal .at113-pass-row{display:flex;gap:6px}
+ body.at-ios-enabled #account-modal .at113-pass-row input{min-width:0;flex:1}
+ body.at-ios-enabled #account-modal .at113-pass-row button{min-width:48px;border:1px solid #5f527d;border-radius:9px;background:#332a46;color:#e8dfff}
+ body.at-ios-enabled #account-modal .at113-signup-fields[hidden]{display:none!important}
+ body.at-ios-enabled #account-modal .at113-signup-fields{display:grid;gap:9px}
+}
+@media(max-width:350px){body.at-ios-enabled #episode-detail-modal .at113-episode-feature{grid-template-columns:94px minmax(0,1fr)}body.at-ios-enabled #episode-detail-modal .at113-episode-feature .ep-detail-visual{width:94px;height:90px}body.at-ios-enabled #library-view .anime-card .card-actions button{font-size:10px}}
+@media(prefers-reduced-motion:reduce){#episode-detail-modal *,body.at-ios-enabled .anime-card{scroll-behavior:auto!important;transition:none!important}}
+
+/* Account form works consistently on desktop as well as mobile. */
+#account-modal .at113-pass-row{display:flex;align-items:center;gap:8px}
+#account-modal .at113-pass-row>input{min-width:0;flex:1}
+#account-modal .at113-pass-row>button{flex:none;min-height:44px;min-width:46px;border:1px solid #615278;border-radius:10px;background:#302b46;color:#efe4ff;cursor:pointer}
+#account-modal .at113-signup-fields[hidden]{display:none!important}
+#account-modal .at113-signup-fields:not([hidden]){display:grid;gap:9px}
+.at113-cal-days{display:none}
+@media(max-width:760px){body.at-ios-enabled .at113-cal-days{display:flex}}
+/* Finish restoring the shared brand, including the desktop shortcuts from 11.2. */
+:root{--at112-gold:#ad91ef;--at112-ring:#bda4f9}
+.at112-launch>span:first-child,.at112-command-search>span{color:#bca4f8}
+.at112-launch:hover{border-color:#a78bfa;background:#342e4b}
+.at112-command-icon{background:#5a446d;color:#f0e4ff}
+.at112-connection{border-color:#8d75bc}.at112-connection>span:first-child{color:#bba3ed}
+.at112-phone-glance>span{border-color:#9981c8;background:#7250b02a;color:#e4d4ff}
+.at112-phone-tools .at112-phone-search:focus-within{border-color:#a78bfa;box-shadow:0 0 0 3px #a78bfa24}
+.at112-invite-box>span{color:#d6b8ff}.at112-invite-box small{color:#c8b5df}
+.at112-connection button:focus-visible,#account-modal button:focus-visible{outline:3px solid #bda4f9;outline-offset:3px}
+@media(min-width:761px){
+ .at-h2-lineup-actions [data-home-action="advance-next"],.at11-friend-form>.pro-btn{background:linear-gradient(120deg,#9479e5,#6d50bd)!important;color:#fff!important;border-color:#af99eb!important}
+ .at11-social-hero{background:radial-gradient(circle at 90% 12%,#7252a64c,transparent 47%),linear-gradient(132deg,#302936,#191a27)}
+}
