@@ -69,6 +69,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   const dayNode=document.createElement('section');dayNode.id='at115-desktop-day';dayNode.setAttribute('aria-label','Your Anime Day');$('at-home-top')?.after(dayNode);
   modules.iphone.mount();
   modules.collections.mountLibrary();
+  window.ATImport116?.mount?.(ctx);
   document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}if(e.target?.id==='at11-friend-form'){e.preventDefault();void modules.friends.find()}});
   let friendSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='pro-friend-query')return;const q=e.target.value;clearTimeout(friendSearchTimer);friendSearchTimer=setTimeout(()=>void modules.friends.find(q),340)});
   let collectionSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at110-search-input')return;clearTimeout(collectionSearchTimer);collectionSearchTimer=setTimeout(()=>{const input=$('at110-search-input');if(!input)return;const value=input.value,caret=input.selectionStart,focused=document.activeElement===input;modules.collections.setSearch(value);const next=$('at110-search-input');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});

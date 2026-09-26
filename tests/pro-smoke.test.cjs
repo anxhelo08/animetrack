@@ -14,7 +14,7 @@ function load(extra={}){
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','ATCollections110','AnimeTrackPro','ATExperience112'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','assets/pro-airing-109.css','assets/pro-collections-110.css','assets/pro-ios-polish-1101.css','assets/pro-social-111.css','assets/pro-experience-112.css','assets/pro-daily-115.css','assets/pro-daily-115.js','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 11\.5/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','assets/pro-airing-109.css','assets/pro-collections-110.css','assets/pro-ios-polish-1101.css','assets/pro-social-111.css','assets/pro-experience-112.css','assets/pro-daily-115.css','assets/pro-daily-115.js','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 11\.6/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1150-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1160-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -342,7 +342,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
  assert.match(index,/pro-airing-109\.css/);
- assert.match(sw,/animetrack-shell-v1150-1/);
+ assert.match(sw,/animetrack-shell-v1160-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -407,7 +407,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
  assert.match(html,/pro-ios-polish-1101\.css/);
  assert.match(sw,/pro-ios-polish-1101\.css/);
- assert.match(sw,/animetrack-shell-v1150-1/);
+ assert.match(sw,/animetrack-shell-v1160-1/);
  assert.match(html,/viewport-fit=cover/);
  assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
@@ -473,7 +473,7 @@ test('11.3 mobile experience, calendar, library and account features are include
  const js=fs.readFileSync(path.join(root,'assets/pro-mobile-113.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-mobile-113.css'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.doesNotThrow(()=>new vm.Script(js));
  for(const name of ['pro-mobile-113.js','pro-mobile-113.css']){assert.match(html,new RegExp(name.replace('.','\\.')));assert.match(sw,new RegExp(name.replace('.','\\.')))}
- assert.match(js,/function enhanceEpisode/);assert.match(js,/function signupReady/);assert.match(js,/submit',e=>/);assert.match(js,/function mountLibrary/);
+ assert.match(js,/function enhanceEpisode/);assert.match(js,/function signupReady/);assert.match(js,/function signup\(on\)/);assert.doesNotMatch(js,/stopImmediatePropagation/);assert.match(js,/function mountLibrary/);
  assert.match(css,/grid-template-columns:112px minmax\(0,1fr\)/);assert.match(css,/safe-area-inset-top/);assert.match(css,/at113-cal-days/);assert.match(html,/at113-confirm-password/);
 });
 test('11.3 registration explicitly validates confirmation and stronger new passwords',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.match(src,/password.length<10/);assert.match(src,/password!==confirmPassword/);assert.match(src,/signupReady/);assert.match(src,/account-password/);});
@@ -529,7 +529,7 @@ test('11.4.1 watches ignored metadata update for seven-day inactivity and filter
 });
 test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
  const css=fs.readFileSync(path.join(root,'assets/pro-mobile-113.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
- assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1150-1/);
+ assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1160-1/);
 });
 
 test('11.5 daily experience uses shared library, real weekly history and existing episode actions',()=>{
@@ -558,4 +558,58 @@ test('11.5 guarded cloud write uses updated_at CAS and does not silently overwri
  assert.match(core,/if\(!result\.data\?\.updated_at\)throw Object\.assign/);
  assert.match(core,/cloudConflict=true/);assert.match(core,/cloudDirty&&!cloudSaving&&!cloudConflict/);
  assert.match(core,/cloudRevision=data\.updated_at/);
+});
+
+test('11.6 auth has explicit login/signup tabs and no event capture to suppress form submission',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'assets/pro-mobile-113.js'),'utf8');
+ for(const id of ['at116-tab-login','at116-tab-signup','at116-back-login','at116-pending-email','at116-resend-email'])assert.match(html,new RegExp(id));
+ assert.match(core,/signupReady\?\.\(\)\?accountRegister\(\):accountLogin\(e\)/);
+ assert.match(core,/auth\.resend\(\{type:'signup'/);
+ assert.match(core,/!data\?\.user/);
+ assert.match(mobile,/password\.minLength=on\?10:0/);
+ assert.doesNotMatch(mobile,/stopImmediatePropagation/);
+});
+
+test('11.6 signup and login implement backend responses independently, including pending confirmation',async()=>{
+ const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),section=src.slice(src.indexOf('/* 11.6 auth:'),src.indexOf('async function accountReset()',src.indexOf('/* 11.6 auth:')));
+ const elements=new Map(),calls=[],messages=[];
+ function elem(id){if(!elements.has(id))elements.set(id,{value:'',disabled:false,hidden:true,checkValidity:()=>true});return elements.get(id)}
+ elem('account-email').value='friend@example.com';elem('account-password').value='StrongPass123';elem('account-name').value='Friend';elem('at113-confirm-password').value='StrongPass123';
+ let mode=true,result={data:{user:{id:'new-user'},session:null},error:null},signedIn=false;
+ const client={auth:{signUp:async options=>{calls.push(['signup',options]);return result},signInWithPassword:async options=>{calls.push(['login',options]);return {data:{user:{id:'new-user'}},error:null}},resend:async options=>{calls.push(['resend',options]);return {error:null}}}};
+ const sandbox={window:{ATMobile113:{signupReady:()=>mode,signup:()=>{mode=true}}},location:{protocol:'https:',origin:'https://animetrack.example',pathname:'/'},Date,
+  $:elem,accountBusy:false,accountInitClient:()=>client,accountStatus:(msg,kind)=>messages.push([msg,kind]),accountOpenCloud:async()=>{signedIn=true},accountToggle:()=>{},accountName:()=> 'Friend',notify:()=>{},console};
+ vm.createContext(sandbox);vm.runInContext(section,sandbox);
+ await vm.runInContext('accountRegister()',sandbox);
+ assert.equal(calls.length,1);assert.equal(calls[0][0],'signup');assert.equal(calls[0][1].options.emailRedirectTo,'https://animetrack.example/');
+ assert.equal(elem('at116-pending-email').hidden,false);assert.equal(signedIn,false);assert.match(messages.at(-1)[0],/konfirmim|konfirmimit|Inbox/i);
+ await vm.runInContext('accountResend()',sandbox);assert.equal(calls.at(-1)[0],'resend');
+ mode=false;elem('account-password').value='StrongPass123';await vm.runInContext('accountLogin()',sandbox);assert.equal(signedIn,true);assert.equal(elem('at116-pending-email').hidden,true);
+ result={data:{user:null,session:null},error:{code:'signup_disabled',message:'Signup disabled'}};
+ mode=true;elem('account-password').value='StrongPass123';elem('at113-confirm-password').value='StrongPass123';await vm.runInContext('accountRegister()',sandbox);
+ assert.match(messages.at(-1)[0],/çaktivizuar/i);
+});
+
+test('11.6 importer parses quoted AniList CSV and protects existing entries',()=>{
+ const sandbox={window:{}};vm.createContext(sandbox);const src=fs.readFileSync(path.join(root,'assets/pro-import-116.js'),'utf8');vm.runInContext(src,sandbox);
+ const importer=sandbox.window.ATImport116;
+ const csv='Title,Media ID,Status,Progress,Score,Total Episodes\n"One Piece, New Arc",21,CURRENT,4,9,12\n"Another ""Great"" Show",22,COMPLETED,10,8,10\n';
+ const rows=importer.parse(csv,'list.csv');assert.equal(rows.length,2);assert.equal(rows[0].title,'One Piece, New Arc');assert.equal(rows[1].title,'Another "Great" Show');assert.equal(rows[0].status,'watching');assert.equal(rows[0].progress,4);assert.equal(rows[0].sourceId,'21');
+ assert.match(src,/if\(!window\.confirm/);assert.match(src,/ctx\.importExternal\(pending\)/);assert.match(src,/existing/);
+});
+
+test('11.6 social activity is opt-in and only accepted friends enter the activity feed',()=>{
+ const profile=fs.readFileSync(path.join(root,'assets/pro-profiles.js'),'utf8'),friends=fs.readFileSync(path.join(root,'assets/pro-friends.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');
+ assert.match(core,/shareFriendActivity:p\.shareFriendActivity===true/);
+ assert.match(profile,/state\(\)\.preferences\?\.shareFriendActivity===true/);assert.match(profile,/visibility===false/);
+ assert.match(profile,/at116-share-activity/);
+ assert.match(friends,/const activity=accepted\.flatMap/);
+ assert.match(friends,/FRIENDS · OPT-IN/);
+ assert.doesNotMatch(friends,/\bemail\b.*activity/i);
+});
+
+test('11.6 profile onboarding creates private handle for newly confirmed accounts',()=>{
+ const src=fs.readFileSync(path.join(root,'assets/pro-profiles.js'),'utf8');
+ assert.match(src,/handle='fan_'/);assert.match(src,/is_public:false/);assert.match(src,/\.from\('anime_profiles'\)\.insert\(row\)/);
+ assert.match(src,/r\.data\|\|null/);
 });

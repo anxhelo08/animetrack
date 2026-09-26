@@ -145,6 +145,7 @@ function normalizePreferences(raw){
    reminderLead:[0,10,30,60,1440].includes(Number(p.reminderLead))?Number(p.reminderLead):30,
    pushEnabled:p.pushEnabled===true,
   homeQueue:Array.isArray(p.homeQueue)?[...new Set(p.homeQueue.filter(x=>typeof x==='string'&&x.length<=90))].slice(0,6):[],
+  shareFriendActivity:p.shareFriendActivity===true,
   customLists
  };
 }
@@ -163,6 +164,31 @@ function openDetail(id){previewKey=null;$('top-results').classList.add('hidden')
 function deleteAnime(){const id=$('anime-id').value;let a=state.anime.find(a=>a.id===id);if(!a)return;if(!confirm(`Ta fshijmë “${a.title}” dhe progresin e tij?`))return;state.anime=state.anime.filter(x=>x.id!==id);state.history=state.history.filter(h=>h.id!==id);save();closeModal('form-modal');render();renderHome();notify('Anime u fshi.')} 
 function exportData(){const blob=new Blob([JSON.stringify({...state,version:3,exportedAt:now()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AnimeTrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Kopja rezervë u shkarkua ✓')}
 async function importData(file){if(!file)return;try{const text=await file.text();if(text.length>8_000_000)throw Error('Skedari është tepër i madh.');const data=JSON.parse(text);if(!data||!Array.isArray(data.anime)||!Array.isArray(data.history))throw Error('Formati i kopjes rezervë nuk është i saktë.');if(!confirm('Importi do të zëvendësojë bibliotekën aktuale. Vazhdo?'))return;state={anime:data.anime.map(normalized).filter(Boolean),history:data.history.filter(h=>h&&typeof h==='object').slice(-2000),preferences:normalizePreferences(data.preferences)};upcomingCheckedAt=0;catalogSyncAt=0;upcomingEntries=[];persistCache();save();filter='all';search='';$('search').value='';$('global-search').value='';clearCatalog();render();notify('Biblioteka u importua me sukses ✓')}catch(e){notify('Importi dështoi: '+e.message)}finally{$('import-file').value=''}}
+
+
+/* 11.6 import: append-only, atomic local save. Cross-account data is never reused. */
+function importExternal(rows){
+ if(!Array.isArray(rows)||rows.length>3000)return {error:'Lista e importit është e pavlefshme.'};
+ const original=state.anime.slice(),originalHistory=state.history.slice(),added=[];
+ const seen=new Set();
+ const keys=a=>[a.malId?'mal:'+a.malId:'',a.sourceId?a.source+':'+a.sourceId:'','title:'+String(a.title||'').toLocaleLowerCase().replace(/\s+/g,' ').trim()].filter(Boolean);
+ for(const a of original)for(const key of keys(a))seen.add(key);
+ try{
+  for(const raw of rows){
+   const title=String(raw.title||'').trim().slice(0,180),progress=Math.min(2000,Math.max(0,Math.floor(Number(raw.progress)||0))),total=Math.min(10000,Math.max(progress,Math.floor(Number(raw.total)||0)));
+   if(!title)continue;
+   const source=['AniList','MyAnimeList'].includes(raw.source)?raw.source:'',sourceId=/^\d{1,12}$/.test(String(raw.sourceId||''))?String(raw.sourceId):'',malId=/^\d{1,12}$/.test(String(raw.malId||''))?String(raw.malId):'';
+   const entry=normalized({id:uuid(),title,status:STATUS[raw.status]?raw.status:'planning',source,sourceId,malId,total,watched:Array.from({length:progress},(_,i)=>i+1),rating:raw.rating,format:raw.format||'TV',hydrated:false,createdAt:now(),updatedAt:now(),seasons:[{id:(source==='AniList'?'al-':source==='MyAnimeList'?'mal-':'manual-')+(sourceId||uuid()),title:'Sezoni 1',total,watched:Array.from({length:progress},(_,i)=>i+1),source,sourceId,malId,format:raw.format||'TV',airedCount:progress,airedCheckedAt:''}]});
+   if(!entry)continue;
+   if(keys(entry).some(key=>seen.has(key)))continue;
+   for(const key of keys(entry))seen.add(key);added.push(entry);
+  }
+  if(!added.length)return {added:0};
+  state.anime=[...added,...original];
+  if(!save()){state.anime=original;state.history=originalHistory;return {error:'Ruajtja dështoi; biblioteka e mëparshme nuk u ndryshua.'}}
+  render();renderHome();renderUpcoming();notify('U shtuan '+added.length+' anime nga skedari ✓');return {added:added.length};
+ }catch(err){state.anime=original;state.history=originalHistory;return {error:String(err.message||err)}}
+}
 
 // Search across a live anime catalog. AniList is primary, Jikan (MAL) is fallback.
 const API_QUERY=`query ($search:String!, $page:Int!) { Page(page:$page, perPage:12) { pageInfo { hasNextPage } media(search:$search, type:ANIME, sort:SEARCH_MATCH, isAdult:false) { id idMal title { romaji english native } synonyms coverImage { large } episodes seasonYear startDate { year } format averageScore description(asHtml:false) genres siteUrl } } }`;
@@ -882,14 +908,67 @@ async function accountPullQuiet(){
  finally{quietCloudPullBusy=false}
 }
 async function accountPull(manual=false){if(accountMode!=='cloud'||!accountUser)return;if(cloudDirty){if(manual&&!confirm('Ke ndryshime lokale që nuk janë sinkronizuar. Të shkarkosh cloud mund t’i zëvendësojë. Vazhdo?'))return;if(!manual)return;}const uid=accountUser.id;try{const {data,error}=await accountInitClient().from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();if(error)throw error;if(accountUser?.id!==uid)return;if(data?.payload){state=accountNormalizePayload(data.payload);localStorage.setItem(KEY,JSON.stringify(state));cloudDirty=false;cloudConnected=true;cloudRevision=data.updated_at;cloudConflict=false;cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');cloudLastPullAt=Date.now();accountRefreshViews();if(manual)accountStatus('Biblioteka u rifreskua nga cloud ✓','ok')}else if(manual)accountStatus('Ende nuk ka bibliotekë të ruajtur në cloud.','ok')}catch(e){cloudConnected=false;accountUI();if(manual)accountStatus('Rifreskimi dështoi: '+e.message,'error')}}
-async function accountLogin(event){event?.preventDefault();if(accountBusy)return;let email=$('account-email').value.trim().toLowerCase(),password=$('account-password').value;if(!email||!password){accountStatus('Plotëso emailin dhe fjalëkalimin.','error');return}accountBusy=true;$('account-login').disabled=true;try{const client=accountInitClient();const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;await accountOpenCloud(data.user);accountToggle(false);notify('Mirë se u ktheve, '+accountName()+'!')}catch(e){accountStatus('Hyrja dështoi: '+e.message,'error')}finally{accountBusy=false;$('account-login').disabled=false}}
-async function accountRegister(){if(accountBusy)return;let email=$('account-email').value.trim().toLowerCase(),password=$('account-password').value,display_name=$('account-name').value.trim().slice(0,40);const confirmPassword=$('at113-confirm-password')?.value||'';if(!$('account-email').checkValidity()){accountStatus('Shkruaj një adresë emaili të vlefshme.','error');return}if(password.length<10||!/[a-z]/i.test(password)||!/[0-9]/.test(password)){accountStatus('Për llogari të re përdor të paktën 10 karaktere, një shkronjë dhe një numër.','error');return}if(password!==confirmPassword){accountStatus('Fjalëkalimet nuk përputhen.','error');return}if(!window.ATMobile113?.signupReady?.()){accountStatus('Konfirmo fjalëkalimin për të krijuar llogarinë.','error');return}accountBusy=true;$('account-register').disabled=true;try{const client=accountInitClient();const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name},...(location.protocol==='https:'?{emailRedirectTo:location.origin+location.pathname}:{})}});if(error)throw error;if(data.session&&data.user){await accountOpenCloud(data.user);accountToggle(false);notify('Llogaria u krijua ✓')}else accountStatus('U dërgua emaili i konfirmimit. Hape, konfirmo llogarinë dhe kthehu këtu për të hyrë.','ok')}catch(e){accountStatus('Regjistrimi dështoi: '+e.message,'error')}finally{accountBusy=false;$('account-register').disabled=false}}
+/* 11.6 auth: one explicit submit mode; predictable confirmation and recovery. */
+let at116ResendBusy=false,at116ResendAt=0,at116PendingEmail='';
+function at116AuthMessage(err,operation='login'){
+ const code=String(err?.code||''),message=String(err?.message||'').toLowerCase(),status=Number(err?.status||0);
+ if(code==='email_not_confirmed'||message.includes('email not confirmed'))return 'Emaili nuk është konfirmuar. Kontrollo Inbox/Spam ose ridërgo emailin e konfirmimit.';
+ if(code==='over_email_send_rate_limit'||message.includes('rate limit')||status===429)return 'U arrit kufiri i kërkesave për email. Mos e shtyp përsëri vazhdimisht; provo më vonë.';
+ if(code==='invalid_credentials')return 'Emaili ose fjalëkalimi nuk është i saktë. Nëse sapo u regjistrove, konfirmo emailin përpara hyrjes.';
+ if(code==='email_address_not_authorized'||message.includes('email address not authorized'))return 'Ky email nuk lejohet nga shërbimi aktual i dërgimit. Administratori duhet të konfigurojë SMTP për regjistrime nga përdorues të rinj.';
+ if(code==='email_address_invalid')return 'Adresa e emailit nuk pranohet. Kontrollo emailin dhe provo përsëri.';
+ if(code==='weak_password')return 'Fjalëkalimi nuk plotëson rregullat e sigurisë. Përdor një fjalëkalim më të fortë.';
+ if(code==='signup_disabled'||code==='email_provider_disabled')return 'Regjistrimi me email është i çaktivizuar në server. Kontakto administratorin e AnimeTrack.';
+ if(code==='captcha_failed')return 'Verifikimi CAPTCHA dështoi. Rifresko faqen dhe provo përsëri.';
+ if(code==='user_already_exists')return 'Nëse e ke krijuar më parë llogarinë, hyr ose përdor rikuperimin e fjalëkalimit.';
+ if(message.includes('failed to fetch')||message.includes('network'))return 'Lidhja me serverin nuk u krye. Kontrollo internetin dhe provo përsëri.';
+ if(message.includes('supabase')||message.includes('databaza'))return 'Serveri i bibliotekës nuk u lidh. Llogaria mund të jetë krijuar; provo hyrjen pa u regjistruar përsëri.';
+ return operation==='register'?'Regjistrimi nuk u përfundua. Kontrollo të dhënat dhe provo përsëri.':'Hyrja nuk u përfundua. Provo përsëri.';
+}
+async function accountLogin(event){
+ event?.preventDefault();if(accountBusy)return;
+ const email=$('account-email').value.trim().toLowerCase(),password=$('account-password').value;
+ if(!email||!password){accountStatus('Plotëso emailin dhe fjalëkalimin.','error');return}
+ accountBusy=true;$('account-login').disabled=true;
+ try{const client=accountInitClient();const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;if(!data?.user)throw Error('Nuk u verifikua llogaria.');await accountOpenCloud(data.user);$('at116-pending-email').hidden=true;accountToggle(false);notify('Mirë se u ktheve, '+accountName()+'!')}
+ catch(e){if(e?.code==='email_not_confirmed'||/email not confirmed/i.test(e.message||'')){at116PendingEmail=email;$('at116-pending-email').hidden=false}accountStatus(at116AuthMessage(e),'error')}
+ finally{accountBusy=false;$('account-login').disabled=false}
+}
+async function accountRegister(){
+ if(accountBusy)return;
+ const email=$('account-email').value.trim().toLowerCase(),password=$('account-password').value,display_name=$('account-name').value.trim().slice(0,40),confirmPassword=$('at113-confirm-password')?.value||'';
+ if(!window.ATMobile113?.signupReady?.()){window.ATMobile113?.signup?.(true);return}
+ if(!$('account-email').checkValidity()){accountStatus('Shkruaj një adresë emaili të vlefshme.','error');return}
+ if(!display_name){accountStatus('Shkruaj emrin që dëshiron të shfaqet në profil.','error');return}
+ if(password.length<10||!/[a-z]/i.test(password)||!/[0-9]/.test(password)){accountStatus('Përdor të paktën 10 karaktere, një shkronjë dhe një numër.','error');return}
+ if(password!==confirmPassword){accountStatus('Fjalëkalimet nuk përputhen.','error');return}
+ accountBusy=true;$('account-login').disabled=true;accountStatus('Po krijohet llogaria…');
+ try{
+  const client=accountInitClient(),redirect=location.protocol==='https:'?{emailRedirectTo:location.origin+location.pathname}:{};
+  const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name},...redirect}});
+  if(error)throw error;
+  if(!data?.user)throw Error('Serveri nuk konfirmoi regjistrimin.');
+  if(data.session){await accountOpenCloud(data.user);$('at116-pending-email').hidden=true;accountToggle(false);notify('Llogaria u krijua ✓');return}
+  at116PendingEmail=email;$('at116-pending-email').hidden=false;
+  $('at113-confirm-password').value='';$('account-password').value='';
+  accountStatus('Nëse regjistrimi u pranua, kontrollo emailin (edhe Spam/Junk), kliko linkun e konfirmimit dhe pastaj hyr. Nëse nuk mbërrin, përdor “Ridërgo”.','ok');
+ }catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}
+ finally{accountBusy=false;$('account-login').disabled=false}
+}
+async function accountResend(){
+ const email=at116PendingEmail||$('account-email').value.trim().toLowerCase();if(!email||at116ResendBusy)return;
+ const wait=Math.ceil((at116ResendAt+60000-Date.now())/1000);if(wait>0){accountStatus('Provo ridërgimin pas '+wait+' sekondash.','error');return}
+ at116ResendBusy=true;$('at116-resend-email').disabled=true;
+ try{const {error}=await accountInitClient().auth.resend({type:'signup',email,options:location.protocol==='https:'?{emailRedirectTo:location.origin+location.pathname}:{}});if(error)throw error;at116ResendAt=Date.now();accountStatus('Nëse emaili pret konfirmim, u kërkua një dërgim i ri. Kontrollo Inbox/Spam.','ok')}
+ catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}
+ finally{at116ResendBusy=false;$('at116-resend-email').disabled=false}
+}
 async function accountReset(){const email=$('account-email').value.trim().toLowerCase();if(!email){accountStatus('Shkruaj emailin dhe pastaj shtyp Harrova fjalëkalimin.','error');return}try{const {error}=await accountInitClient().auth.resetPasswordForEmail(email,location.protocol==='https:'?{redirectTo:location.origin+location.pathname}:{});if(error)throw error;accountStatus('Nëse emaili ka llogari, udhëzimet e rikuperimit do të të vijnë aty.','ok')}catch(e){accountStatus('Nuk u dërgua kërkesa: '+e.message,'error')}}
 async function accountLogout(){if(accountMode!=='cloud')return;if(cloudDirty){await accountPush(false);if(cloudDirty&&!confirm('Ka ndryshime të paruajtura në cloud. Mund t’i rifitosh nga ky kompjuter. Të dalësh gjithsesi?'))return}try{const {error}=await accountInitClient().auth.signOut();if(error)throw error}catch(e){accountStatus('Dalja dështoi: '+e.message,'error');return}clearTimeout(cloudTimer);accountMode='guest';accountUser=null;cloudConnected=false;cloudDirty=false;cloudRevision=null;cloudConflict=false;KEY=GUEST_KEY;state={anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};accountRefreshViews();document.body.classList.add('auth-required');accountToggle(true);accountStatus('Dole nga llogaria. Hyr me një tjetër ose krijo të re.','ok');notify('Dole nga llogaria ✓')}
 function accountCopyGuest(){if(accountMode!=='cloud')return;let guest;try{guest=JSON.parse(localStorage.getItem(GUEST_KEY)||'null')}catch{}if(!guest||!Array.isArray(guest.anime)||!guest.anime.length){accountStatus('Nuk u gjet bibliotekë lokale me anime për import.','error');return}if(!confirm(`Të zëvendësojmë bibliotekën e kësaj llogarie me ${guest.anime.length} anime nga versioni lokal? Eksporto më parë një kopje të të dhënave cloud.`))return;state=accountNormalizePayload(guest);save();render();renderHome();renderUpcoming();accountStatus('Biblioteka lokale u kopjua. Po sinkronizohet në cloud…','ok')}
 async function accountBoot(){try{const c=accountGetConfig();$('account-project-url').value=c.url||'';$('account-project-key').value=c.key||'';if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user)}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};render();renderHome();accountToggle(true);}accountUI()}}
 $('account-top-btn').addEventListener('click',()=>accountToggle(true));$('account-sidebar-btn').addEventListener('click',()=>accountToggle(true));
-$('account-form').addEventListener('submit',accountLogin);$('account-register').addEventListener('click',accountRegister);$('account-reset').addEventListener('click',accountReset);$('account-save-config').addEventListener('click',accountSetConfig);$('account-refresh').addEventListener('click',()=>accountPull(true));$('account-push').addEventListener('click',()=>accountPush(true));$('account-copy-guest').addEventListener('click',accountCopyGuest);$('account-logout').addEventListener('click',accountLogout);$('account-export').addEventListener('click',exportData);$('account-guest-backup').addEventListener('click',()=>{const current=state;try{const raw=localStorage.getItem(GUEST_KEY);if(raw){state=accountNormalizePayload(JSON.parse(raw));exportData();}else notify('Nuk ka bibliotekë të vjetër në këtë shfletues.')}catch(e){notify('Kopja rezervë nuk u hap.')}finally{state=current}});$('account-use-guest').addEventListener('click',()=>accountToggle(false));
+$('account-form').addEventListener('submit',e=>{e.preventDefault();return window.ATMobile113?.signupReady?.()?accountRegister():accountLogin(e)});$('at116-resend-email').addEventListener('click',accountResend);$('account-reset').addEventListener('click',accountReset);$('account-save-config').addEventListener('click',accountSetConfig);$('account-refresh').addEventListener('click',()=>accountPull(true));$('account-push').addEventListener('click',()=>accountPush(true));$('account-copy-guest').addEventListener('click',accountCopyGuest);$('account-logout').addEventListener('click',accountLogout);$('account-export').addEventListener('click',exportData);$('account-guest-backup').addEventListener('click',()=>{const current=state;try{const raw=localStorage.getItem(GUEST_KEY);if(raw){state=accountNormalizePayload(JSON.parse(raw));exportData();}else notify('Nuk ka bibliotekë të vjetër në këtë shfletues.')}catch(e){notify('Kopja rezervë nuk u hap.')}finally{state=current}});$('account-use-guest').addEventListener('click',()=>accountToggle(false));
 window.addEventListener('focus',()=>{if(accountMode==='cloud'&&!cloudDirty&&!cloudSaving&&cloudLastSync&&Date.now()-cloudLastPullAt>90000)accountPull(false)});
  window.addEventListener('online',()=>{if(accountMode==='cloud'&&accountUser&&cloudDirty&&!cloudSaving&&!cloudConflict)void accountPush(false)});
 
@@ -1175,7 +1254,7 @@ const proContext={
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,
  confirm:message=>window.confirm(message),prompt:(message,value)=>window.prompt(message,value),closeDetail:()=>{if($('detail-modal').classList.contains('show'))closeModal('detail-modal')},
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
- toast:notify,save:()=>save(),accountName,openAnime:id=>openDetail(id),
+ toast:notify,save:()=>save(),exportLibrary:exportData,importExternal,accountName,openAnime:id=>openDetail(id),
  nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(),
  undoEpisode:(id,seasonId,n)=>{const last=state.history[state.history.length-1];if(!last||last.id!==id||last.seasonId!==seasonId||last.episode!==n||last.action!=='watched'){notify('Progresi ka ndryshuar. Zhbërja nuk u krye.');return false}return updateSeasonEpisode(id,seasonId,n,false)},
  openFilter:code=>setFilter(code),

@@ -4,15 +4,29 @@ window.ATMobile113=(function(){
  const phone=()=>window.matchMedia('(max-width:760px)').matches;
  let libraryQuery='';
  let signupMode=false;
- function signupReady(){return signupMode&&!$('at113-signup-fields')?.hidden;}
- function signup(on){signupMode=!!on;const extra=$('at113-signup-fields'),confirm=$('at113-confirm-password'),password=$('account-password'),register=$('account-register');if(!extra)return;extra.hidden=!on;confirm.required=!!on;password.autocomplete=on?'new-password':'current-password';if(register)register.textContent=on?'✓ Regjistrohu':'＋ Krijo llogari';if(on){$('account-status').textContent='Plotëso të dhënat dhe konfirmo fjalëkalimin për llogarinë tënde të re.';confirm.focus({preventScroll:true});}else confirm.value='';}
+ function signupReady(){return signupMode}
+ function signup(on){
+  signupMode=!!on;
+  const extra=$('at113-signup-fields'),confirm=$('at113-confirm-password'),password=$('account-password'),submit=$('account-login');
+  if(!extra||!confirm||!password||!submit)return;
+  extra.hidden=!on;confirm.required=!!on;confirm.disabled=!on;
+  $('at116-name-field').hidden=!on;
+  $('account-register').hidden=!!on;$('at116-back-login').hidden=!on;$('account-reset').hidden=!!on;
+  password.autocomplete=on?'new-password':'current-password';password.minLength=on?10:0;
+  submit.textContent=on?'✓ Krijo llogarinë':'Hyr në llogari';
+  for(const mode of ['login','signup']){const tab=$('at116-tab-'+mode),active=on=== (mode==='signup');tab.classList.toggle('active',active);tab.setAttribute('aria-pressed',String(active));}
+  const status=$('account-status');if(status){status.textContent=on?'Plotëso emrin, emailin dhe dy fjalëkalimet; më pas shtyp “Krijo llogarinë”.':'Hyr me emailin dhe fjalëkalimin tënd.';status.dataset.error='0';status.dataset.ok='0';}
+ }
  function authControls(){
-  document.addEventListener('submit',e=>{if(e.target?.id==='account-form'&&signupReady()){e.preventDefault();e.stopImmediatePropagation();$('account-register')?.click();}},true);
   document.addEventListener('click',e=>{
-   const reg=e.target.closest('#account-register');if(reg&&!signupReady()){e.preventDefault();e.stopImmediatePropagation();signup(true);return;}
-   if(e.target.closest('#account-login')&&signupReady()){signup(false);}
-   if(e.target.closest('#at113-password-toggle')){e.preventDefault();const password=$('account-password'),btn=$('at113-password-toggle');const reveal=password.type==='password';password.type=reveal?'text':'password';btn.setAttribute('aria-pressed',String(reveal));btn.setAttribute('aria-label',reveal?'Fshih fjalëkalimin':'Shfaq fjalëkalimin');btn.textContent=reveal?'◌':'◉';}
-  },true);
+   const b=e.target.closest('button');if(!b)return;
+   if(['account-register','at116-tab-signup'].includes(b.id)){e.preventDefault();signup(true);return}
+   if(['at116-tab-login','at116-back-login','at116-pending-login'].includes(b.id)){e.preventDefault();signup(false);return}
+   if(b.id==='at113-password-toggle'){
+    e.preventDefault();const password=$('account-password'),btn=$('at113-password-toggle');const reveal=password.type==='password';password.type=reveal?'text':'password';btn.setAttribute('aria-pressed',String(reveal));btn.setAttribute('aria-label',reveal?'Fshih fjalëkalimin':'Shfaq fjalëkalimin');btn.textContent=reveal?'◌':'◉';
+   }
+  });
+  signup(false);
  }
 
  function enhanceEpisode(){
@@ -42,5 +56,5 @@ window.ATMobile113=(function(){
   const title=el.querySelector('h2'),legacy=$('library-title');if(title&&legacy)title.textContent=legacy.textContent;
  }
  function init(){mountLibrary();libraryUpdate();authControls();}
- return {init,enhanceEpisode,libraryUpdate,phone,signupReady,state:null};
+ return {init,enhanceEpisode,libraryUpdate,phone,signupReady,signup,state:null};
 })();
