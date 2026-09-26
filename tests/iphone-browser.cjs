@@ -37,6 +37,22 @@ const assert=require('node:assert/strict');
  await page.locator('[data-ios-action="undo"]').click();
  assert.match(await page.locator('#at-iphone-feed').innerText(),/EP 3/,'Undo must restore exact episode');
  assert.equal(await page.locator('[data-ios-action="undo"]').count(),0,'Undo should disappear after use');
+ const touchInfo=await page.evaluate(()=>({
+  touchAction:getComputedStyle(document.body).touchAction,
+  font:parseFloat(getComputedStyle(document.querySelector('#at-ios-feed input, #at110-new-list')||document.querySelector('input')).fontSize),
+  scale:window.visualViewport?.scale||1
+ }));
+ assert.equal(touchInfo.touchAction,'manipulation','Touch handling should block accidental double-tap zoom');
+ assert(touchInfo.font>=16,'iPhone inputs should not cause Safari focus zoom');
+ const zoomTarget=await page.locator('#at-iphone-feed .at-ios-section-heading h2').boundingBox();
+ assert(zoomTarget&&zoomTarget.width>0,'Feed heading should be present for zoom regression');
+ await page.touchscreen.tap(zoomTarget.x+zoomTarget.width/2,zoomTarget.y+zoomTarget.height/2);
+ await page.waitForTimeout(75);
+ await page.touchscreen.tap(zoomTarget.x+zoomTarget.width/2,zoomTarget.y+zoomTarget.height/2);
+ await page.waitForTimeout(280);
+ const postTapScale=await page.evaluate(()=>window.visualViewport?.scale||1);
+ assert(postTapScale<1.05,'Double-tap should not enlarge the mobile screen: '+postTapScale);
+ console.log('DOUBLE_TAP_SCALE',postTapScale);
  await page.locator('[data-ios-action="episode"][data-id="demo1"]').click();
  assert(await page.locator('#episode-detail-modal').isVisible(),'iPhone Episode Hub should open');
  assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible(),'Episode Hub should render mobile');
@@ -74,7 +90,41 @@ const assert=require('node:assert/strict');
    }
    console.log('NAV_OK',tab);
  }
- if(errors.length)throw Error('Browser JavaScript errors: '+errors.join(' | '));
+
+ for(const [width,height] of [[320,700],[375,812],[390,844],[430,932],[844,390]]){
+  await page.setViewportSize({width,height});
+  await page.locator('[data-mobile-nav="home"]').click();
+  assert(await page.locator('#at-iphone-feed').isVisible(),'iPhone feed should remain visible at '+width+'x'+height);
+  const sheet=await page.evaluate(()=>({
+   width:document.documentElement.scrollWidth,viewport:window.innerWidth,
+   nav:document.querySelector('.at-mobile-nav')?.getBoundingClientRect().height,
+   touch:getComputedStyle(document.body).touchAction
+  }));
+  assert(sheet.width<=sheet.viewport+2,'Unexpected horizontal document overflow at '+width+'x'+height+': '+JSON.stringify(sheet));
+  assert(sheet.nav>=44,'Bottom navigation should be usable at '+width+'x'+height);
+  assert.equal(sheet.touch,'manipulation');
+  await page.locator('#at-iphone-feed [data-ios-action="details"][data-id="demo1"]').first().click();
+  assert(await page.locator('#detail-modal').isVisible(),'Anime details must be visible at '+width);
+  const safe=await page.evaluate(()=>{
+   const back=document.querySelector('#detail-modal .detail-back'),
+         nav=document.querySelector('.at-mobile-nav'),
+         modal=document.querySelector('#detail-modal'),
+         rect=back.getBoundingClientRect(),
+         hit=document.elementFromPoint(rect.left+rect.width/2,rect.top+rect.height/2);
+   return {top:rect.top,bottom:rect.bottom,height:rect.height,visible:back.contains(hit),
+     modalZ:Number(getComputedStyle(modal).zIndex),navZ:Number(getComputedStyle(nav).zIndex),
+     width:window.innerWidth,heightView:window.innerHeight};
+  });
+  assert(safe.top>=7&&safe.bottom<=safe.heightView+1,'Back button outside visible safe header at '+width+'x'+height+': '+JSON.stringify(safe));
+  assert(safe.height>=44,'Back button touch target too small at '+width+'x'+height);
+  assert(safe.visible,'Back button blocked by another layer at '+width+'x'+height);
+  assert(safe.modalZ>safe.navZ,'Modal must appear above mobile nav at '+width+'x'+height);
+  await page.locator('#detail-modal .detail-back').click();
+  assert(await page.locator('#detail-modal').isHidden(),'Back button must close details at '+width+'x'+height);
+  console.log('IPHONE_SAFE_AREA',width+'x'+height,JSON.stringify(safe));
+ }
+ await page.setViewportSize({width:390,height:844});
+  if(errors.length)throw Error('Browser JavaScript errors: '+errors.join(' | '));
  console.log('IPHONE_BROWSER_PASS',engine===webkit?'WebKit':'Chromium');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});
