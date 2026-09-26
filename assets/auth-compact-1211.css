@@ -1,0 +1,22 @@
+/* Compact sign-in; hidden recovery controls must not become grid items. */
+#account-modal [hidden]{display:none!important}
+#account-modal .account-panel{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 40px);border:1px solid #454052;border-radius:20px;background:#1b1b26;overflow-y:auto}
+#account-modal .modal-header{padding:22px 24px 16px;border-bottom:1px solid #353442;align-items:center}
+#account-modal .modal-header h2{font-size:23px;line-height:1.2;letter-spacing:-.5px;margin:5px 0 0}
+#account-modal .modal-header .eyebrow{font-size:9px;letter-spacing:1.5px;color:#b8a4dc}
+#account-modal .modal-body{padding:18px 24px 24px}
+#account-modal .account-form{gap:12px}
+#account-modal .account-form label{font-size:12px;line-height:1.5}
+#account-modal .account-form input{min-height:44px;padding:10px 12px;font-size:16px;border-radius:10px;background:#12131d}
+#account-modal .at116-auth-tabs{margin:0 0 17px;border-radius:11px;padding:4px;background:#13141f}
+#account-modal .at116-auth-tabs button{min-height:42px;padding:9px 6px;font-size:12px;border-radius:8px}
+#account-modal .at116-auth-tabs button.active{background:#c5b4ff;color:#231c33;border-color:#c5b4ff;box-shadow:none}
+#account-modal .account-buttons{display:grid;grid-template-columns:1fr;gap:9px}
+#account-modal #account-login{background:#c5b4ff;color:#231c33;border-color:#c5b4ff;border-radius:10px;min-height:44px}
+#account-modal #account-reset,#account-modal #at116-back-login{background:none;border:0;min-height:36px;padding:6px;color:#c3b7d6;font-size:12px}
+#account-modal .account-status{font-size:12px;line-height:1.55;padding:10px 12px;margin:0 0 15px;border-radius:10px}
+#account-modal .account-note{font-size:11px;line-height:1.5}
+#account-modal #at116-pending-email{padding:13px;gap:9px}
+body.auth-required #account-modal .account-summary,body.auth-required #account-personal-stats,body.auth-required #account-guest-user>.account-grid,body.auth-required #account-guest-user>.account-box-title,body.auth-required #account-guest-user>.account-note,#account-modal #account-register{display:none!important}
+#account-modal:has(#at1162-recovery-panel:not([hidden])) #account-guest-user{display:none!important}
+@media(max-width:760px){body.at-ios-enabled #account-modal{align-items:center!important;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))!important}body.at-ios-enabled #account-modal .account-panel{width:100%!important;max-width:440px!important;height:auto!important;max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;border-radius:18px!important;padding-bottom:0!important}body.at-ios-enabled #account-modal .modal-header{padding:18px 20px 14px!important}body.at-ios-enabled #account-modal .modal-body{padding:16px 20px 20px!important}body.at-ios-enabled #account-modal .at116-auth-tabs button{min-height:44px;font-size:12px}}
