@@ -333,6 +333,12 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(src,/Notification\.requestPermission\(\)/);
  assert.match(backend,/X-Cron-Secret/);assert.match(backend,/stillWanted\(job, library\?\.payload\)/);
  assert.match(sql,/enable row level security/);assert.match(sql,/with check \(user_id=\(select auth\.uid\(\)\)\)/);
+ const config=fs.readFileSync(path.join(root,'supabase/functions/anime-push-config/index.ts'),'utf8');
+ assert.match(config,/request\.method === "OPTIONS"/);
+ assert.match(config,/Access-Control-Allow-Headers/);
+ assert.match(config,/Access-Control-Allow-Origin/);
+ assert.match(sql,/public\.anime_push_subscriptions to service_role/);
+ assert.match(sql,/public\.anime_push_reminders to service_role/);
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
  assert.match(index,/pro-airing-109\.css/);
