@@ -55,3 +55,5 @@ body.at-ios-enabled #library-view .anime-card .card-actions button{min-width:0}
 body.at-ios-enabled #library-view .at113-library-search input{font-size:16px}
 }
 @media(max-width:360px){body.at-ios-enabled .at117-upcoming-action{flex-basis:52px;width:52px;margin-right:6px}body.at-ios-enabled .at117-trending-card{flex-basis:105px}}
+
+@media(max-width:760px){body.at-ios-enabled .at-mobile-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}body.at-ios-enabled .at117-upcoming-timeline .at114-upcoming-card.is-grid .at117-upcoming-action{min-width:0;width:calc(100% - 16px);margin:0 8px 8px}}
