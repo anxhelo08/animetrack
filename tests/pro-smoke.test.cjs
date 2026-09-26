@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'..');
-const names=['pro-recommendations','pro-calendar-wrapped','pro-profiles','pro-friends','pro-moderation','pro-notifications','pro-rewatch','pro-home','pro-iphone','pro-daily-115','pro-journey-108','pro-smart-airing-109','pro-push-109','pro-collections-110','pro-experience-112','pro-features'];
+const names=['pro-recommendations','pro-calendar-wrapped','pro-profiles','pro-friends','pro-moderation','pro-notifications','pro-rewatch','pro-home','pro-iphone','pro-tv-118','pro-daily-115','pro-journey-108','pro-smart-airing-109','pro-push-109','pro-collections-110','pro-experience-112','pro-features'];
 function load(extra={}){
  const sandbox={window:{},console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
@@ -622,3 +622,35 @@ test('11.6.2 signup uses canonical production redirect and handles consumed link
 test('11.6.3 password recovery uses authenticated updateUser and requires matching strong password',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/auth\.updateUser\(\{password\}\)/);assert.match(src,/recoveryReturn&&accountMode==='cloud'/);assert.match(src,/password!==confirm\.value/);for(const id of ['at1162-recovery-panel','at1162-new-password','at1162-confirm-password','at1162-save-password'])assert.match(html,new RegExp(id))});
 
 test('11.7 mobile upcoming, discovery and library controls',()=>{const fs=require('node:fs'),path=require('node:path'),root=path.resolve(__dirname,'..');const iphone=fs.readFileSync(path.join(root,'assets/pro-iphone.js'),'utf8'),features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'assets/pro-mobile-113.js'),'utf8'),recs=fs.readFileSync(path.join(root,'assets/pro-recommendations.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(iphone,/upcomingWindow=7/);assert.match(iphone,/data-ios-action="horizon"/);assert.match(iphone,/at117-upcoming-action/);assert.match(features,/at117-mobile-discover/);assert.match(features,/data-mobile-nav="explore"/);assert.doesNotMatch(features,/data-mobile-nav="calendar"/);assert.match(mobile,/data-at117-sort/);assert.match(recs,/function trending\(\)/);assert.match(html,/pro-mobile-117.css/)});
+
+test('11.8 TV series are isolated, normalize by TVMaze ID and preserve episode progress',()=>{
+ const w=load();assert.equal(typeof w.ATTVShows,'function');
+ const state={anime:[{id:'anime-1',title:'Anime'}],tvShows:[],history:[],preferences:{}};
+ const c={...context(),state:()=>state,save:()=>true,rerender:()=>{},poster:x=>x,confirm:()=>true};
+ const tv=w.ATTVShows(c);
+ const show=tv.mapShow({id:123,name:'Dexter',premiered:'2006-10-01',genres:['Drama','Crime'],rating:{average:8.5},image:{medium:'https://example.com/dexter.jpg'},url:'https://www.tvmaze.com/shows/123/dexter'},[
+ {id:10,season:1,number:1,name:'Dexter',airdate:'2006-10-01',runtime:55},
+ {id:11,season:1,number:2,name:'Crocodile',airdate:'2006-10-08',runtime:50},
+ {id:12,season:2,number:1,name:'Future',airdate:'2099-01-01',runtime:50},
+ {id:13,season:0,number:1,name:'Special',airdate:'2006-09-01',runtime:30}
+ ]);
+ assert.equal(show.id,'tvmaze-123');assert.equal(show.seasons.length,3);
+ state.tvShows=[show];
+ assert.match(tv.render(),/Dexter/);assert.match(tv.render(),/Seriale TV/);
+ tv.action('detail',show.id);
+ tv.action('season',show.id+':1');
+ tv.action('episode',show.id,10);
+ assert.deepEqual(show.watched,[10]);
+ assert.equal(state.anime.length,1,'TV episode changes must not affect anime');
+ tv.action('episode',show.id,12);
+ assert.deepEqual(show.watched,[10],'unreleased episodes cannot be marked watched');
+ tv.change('at118-show-status','watching');assert.equal(show.status,'watching');
+ assert.match(tv.render(),/1 \/ 4 episode/);
+});
+test('11.8 TV resources, cloud normalization and mobile entry are wired',()=>{
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),app=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+ for(const file of ['pro-tv-118.js','pro-tv-118.css']){assert.match(html,new RegExp(file.replace('.','\\.')));assert.match(sw,new RegExp(file.replace('.','\\.')))}
+ assert.match(app,/function normalizeTVShows/);assert.match(app,/tvShows:normalizeTVShows\(data\.tvShows\)/);
+ assert.match(pro,/data-mobile-nav="tv"/);assert.match(pro,/modules\.tv\.render/);
+ assert.match(sw,/animetrack-shell-v1180-1/);
+});

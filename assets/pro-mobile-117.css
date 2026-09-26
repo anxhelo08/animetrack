@@ -57,3 +57,7 @@ body.at-ios-enabled #library-view .at113-library-search input{font-size:16px}
 @media(max-width:360px){body.at-ios-enabled .at117-upcoming-action{flex-basis:52px;width:52px;margin-right:6px}body.at-ios-enabled .at117-trending-card{flex-basis:105px}}
 
 @media(max-width:760px){body.at-ios-enabled .at-mobile-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}body.at-ios-enabled .at117-upcoming-timeline .at114-upcoming-card.is-grid .at117-upcoming-action{min-width:0;width:calc(100% - 16px);margin:0 8px 8px}}
+
+/* 11.8: five clear mobile destinations, without clipping labels. */
+@media(max-width:760px){body.at-ios-enabled .at-mobile-nav{grid-template-columns:repeat(5,minmax(0,1fr))}body.at-ios-enabled .at-mobile-nav button{min-width:0;padding-inline:2px}body.at-ios-enabled .at-mobile-nav small{font-size:10px;white-space:nowrap}}
+.at118-library-link{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;margin:0 0 15px;border-radius:14px;background:#272238;border:1px solid #55446f;color:#c8b8e7;font-size:12px}.at118-library-link b{color:#957cdb}.at118-library-link button{background:#7258ba;border:0;color:white;border-radius:11px;padding:10px 12px;min-height:42px;font-weight:750;cursor:pointer}@media(max-width:760px){.at118-library-link{flex-wrap:wrap}.at118-library-link button{width:100%}}
