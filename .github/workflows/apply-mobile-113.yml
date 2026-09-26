@@ -1,0 +1,41 @@
+name: Publish AnimeTrack 11.3
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.release/11-3.ready'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify exact release patch and apply
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release/11-3-part1.b64 .release/11-3-part2.b64 .release/11-3-part3.b64 .release/11-3-part4.b64 | base64 --decode | xz --decompress > /tmp/animetrack-11-3.patch
+          echo 'e75d9d0a7d0ac23fa54ec5cf233bafec1119f159110861a5d629cc5316b80bf2  /tmp/animetrack-11-3.patch' | sha256sum --check
+          git apply --unidiff-zero --check /tmp/animetrack-11-3.patch
+          git apply --unidiff-zero /tmp/animetrack-11-3.patch
+          npm test
+          node --check assets/app.js
+          node --check assets/pro-mobile-113.js
+          node --check assets/pro-features.js
+          node --check assets/pro-friends.js
+          git add -A
+          git diff --cached --quiet && exit 0
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'AnimeTrack 11.3 Mobile Pro: publish verified release'
+          git push origin HEAD:main
