@@ -1,0 +1,56 @@
+/* AnimeTrack 11.6.1 — mobile profile and auth readability */
+#account-modal .at116-mail-help{display:block;color:#c7badf;line-height:1.55;font-size:12px}
+#account-modal #account-status[data-error="1"]{border-left:3px solid #ee8f9d;overflow-wrap:anywhere}
+#account-modal #account-status[data-ok="1"]{border-left:3px solid #8bcbb0}
+.at1161-profile{display:none}
+@media(max-width:760px){
+ body.at-ios-enabled .pro-view{padding:0 0 calc(104px + env(safe-area-inset-bottom,0px));overflow:visible}
+ body.at-ios-enabled #pro-content{min-width:0}
+ body.at-ios-enabled .at1161-profile{display:block;margin:0 -12px 14px;color:#f7f5ff}
+ body.at-ios-enabled .at1161-profile+.at-profile-header,body.at-ios-enabled .at1161-profile~.at11-profile-social{display:none}
+ body.at-ios-enabled .at1161-cover{height:178px;position:relative;overflow:hidden;background:radial-gradient(circle at 25% 0%,#5d4a89,transparent 52%),linear-gradient(115deg,#232039,#151521)}
+ body.at-ios-enabled .at1161-cover>img{width:100%;height:100%;object-fit:cover;filter:blur(5px) brightness(.5);transform:scale(1.09)}
+ body.at-ios-enabled .at1161-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#101015,transparent 85%)}
+ body.at-ios-enabled .at1161-cover-actions{position:absolute;z-index:1;top:calc(10px + env(safe-area-inset-top,0px));left:16px;right:16px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+ body.at-ios-enabled .at1161-cover-actions span{font-size:11px;letter-spacing:1px;font-weight:900;text-align:center;color:#f4e9ff}
+ body.at-ios-enabled .at1161-cover-actions button{width:42px;height:42px;border-radius:50%;border:1px solid #ffffff55;background:#17131eaa;color:#fff;font-size:21px;backdrop-filter:blur(10px)}
+ body.at-ios-enabled .at1161-identity{text-align:center;margin:-40px 12px 18px;position:relative;z-index:2}
+ body.at-ios-enabled .at1161-avatar{width:92px;height:92px;margin:auto;display:grid;place-items:center;border-radius:50%;border:4px solid #14131b;background:#322647;font-size:39px;overflow:hidden;box-shadow:0 5px 24px #0007}
+ body.at-ios-enabled .at1161-avatar img{width:100%;height:100%;object-fit:cover}
+ body.at-ios-enabled .at1161-identity h2{font-size:25px;line-height:1.15;margin:11px 0 3px;overflow-wrap:anywhere}
+ body.at-ios-enabled .at1161-identity>span{font-size:12px;color:#b6a5f3}
+ body.at-ios-enabled .at1161-identity p{font-size:12px;color:#bcb7cc;margin:9px auto;max-width:320px;line-height:1.45}
+ body.at-ios-enabled .at1161-identity small{display:inline-block;padding:5px 10px;border:1px solid #514268;border-radius:99px;color:#cfc2e8;font-size:10px}
+ body.at-ios-enabled .at1161-level{display:flex;align-items:center;gap:11px;margin:0 16px 10px;padding:13px;border-radius:17px;background:#201d2b;border:1px solid #363044}
+ body.at-ios-enabled .at1161-level>span{font-size:26px;color:#b7a0ff}
+ body.at-ios-enabled .at1161-level>div{flex:1;min-width:0}
+ body.at-ios-enabled .at1161-level strong{font-size:13px}
+ body.at-ios-enabled .at1161-level>b{font-size:12px;color:#bba7f4;white-space:nowrap}
+ body.at-ios-enabled .at1161-meter{height:6px;background:#484151;border-radius:20px;overflow:hidden;margin-top:7px}
+ body.at-ios-enabled .at1161-meter i{display:block;height:100%;background:#9274e9;border-radius:20px}
+ body.at-ios-enabled .at1161-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:0 16px 10px;border-radius:16px;overflow:hidden;background:#1c1b25;border:1px solid #302d3c}
+ body.at-ios-enabled .at1161-metrics>div,body.at-ios-enabled .at1161-metrics>button{min-width:0;display:grid;justify-items:center;gap:5px;padding:14px 5px;background:transparent;border:0;color:#f4f1fa;text-align:center;position:relative}
+ body.at-ios-enabled .at1161-metrics>div+div:before,body.at-ios-enabled .at1161-metrics>button+button:before{content:"";position:absolute;left:0;top:18%;height:64%;border-left:1px solid #403948}
+ body.at-ios-enabled .at1161-metrics strong{font-size:18px;letter-spacing:-.4px}
+ body.at-ios-enabled .at1161-metrics span{font-size:10px;color:#a9a3b7}
+ body.at-ios-enabled .at1161-social button{cursor:pointer;min-height:63px}
+ body.at-ios-enabled .at1161-collection{margin:24px 16px 6px}
+ body.at-ios-enabled .at1161-section-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:25px 0 12px}
+ body.at-ios-enabled .at1161-section-heading h3{font-size:20px;margin:0;letter-spacing:-.4px}
+ body.at-ios-enabled .at1161-section-heading button{border:0;background:none;color:#b9a7f0;font-size:11px;font-weight:750;white-space:nowrap}
+ body.at-ios-enabled .at1161-posters{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding:0 0 8px}
+ body.at-ios-enabled .at1161-posters::-webkit-scrollbar{display:none}
+ body.at-ios-enabled .at1161-poster{flex:0 0 clamp(102px,27vw,144px);min-width:0;scroll-snap-align:start;border:0;padding:0;background:#242032;border-radius:11px;overflow:hidden;text-align:left;color:#e9e4f3}
+ body.at-ios-enabled .at1161-poster img{display:block;width:100%;aspect-ratio:2/3;object-fit:cover}
+ body.at-ios-enabled .at1161-poster>span:first-child{display:grid;place-items:center;aspect-ratio:2/3;font-size:27px}
+ body.at-ios-enabled .at1161-poster-title{display:block;padding:7px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;font-weight:750}
+ body.at-ios-enabled .at1161-empty{color:#9c95aa;font-size:12px;padding:12px}
+ body.at-ios-enabled .at1161-profile~.at-profile-tabs{margin:4px 16px 17px}
+ body.at-ios-enabled .at1161-profile~.at-profile-stats{display:none!important}
+ body.at-ios-enabled #account-modal .account-panel{max-height:100dvh}
+ body.at-ios-enabled #account-modal .modal-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(26px + env(safe-area-inset-bottom,0px))}
+ body.at-ios-enabled #account-modal input{font-size:16px!important}
+ body.at-ios-enabled .at-mobile-nav{padding-bottom:max(7px,env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:360px){body.at-ios-enabled .at1161-section-heading h3{font-size:18px}body.at-ios-enabled .at1161-cover-actions span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){body.at-ios-enabled .at1161-posters{scroll-behavior:auto}}

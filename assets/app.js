@@ -913,10 +913,11 @@ let at116ResendBusy=false,at116ResendAt=0,at116PendingEmail='';
 function at116AuthMessage(err,operation='login'){
  const code=String(err?.code||''),message=String(err?.message||'').toLowerCase(),status=Number(err?.status||0);
  if(code==='email_not_confirmed'||message.includes('email not confirmed'))return 'Emaili nuk është konfirmuar. Kontrollo Inbox/Spam ose ridërgo emailin e konfirmimit.';
- if(code==='over_email_send_rate_limit'||message.includes('rate limit')||status===429)return 'U arrit kufiri i kërkesave për email. Mos e shtyp përsëri vazhdimisht; provo më vonë.';
+ if(code==='over_email_send_rate_limit'||message.includes('rate limit')||status===429)return 'Serveri ka arritur kufirin e dërgimit të emaileve. Mos e përsërit kërkesën vazhdimisht; administratori duhet të kontrollojë kufirin dhe SMTP në Supabase.';
  if(code==='invalid_credentials')return 'Emaili ose fjalëkalimi nuk është i saktë. Nëse sapo u regjistrove, konfirmo emailin përpara hyrjes.';
- if(code==='email_address_not_authorized'||message.includes('email address not authorized'))return 'Ky email nuk lejohet nga shërbimi aktual i dërgimit. Administratori duhet të konfigurojë SMTP për regjistrime nga përdorues të rinj.';
+ if(code==='email_address_not_authorized'||message.includes('email address not authorized'))return 'Serveri nuk mund t’i dërgojë email kësaj adrese. Regjistrimi nuk përfundoi. Administratori duhet të aktivizojë SMTP të personalizuar në Supabase → Authentication → SMTP Settings.';
  if(code==='email_address_invalid')return 'Adresa e emailit nuk pranohet. Kontrollo emailin dhe provo përsëri.';
+ if(code==='email_provider_disabled'||code==='email_address_not_authorized'||message.includes('error sending confirmation email')||message.includes('smtp'))return 'Emaili i konfirmimit nuk u dërgua nga serveri. Administratori duhet të kontrollojë SMTP dhe regjistrat e Supabase Auth.';
  if(code==='weak_password')return 'Fjalëkalimi nuk plotëson rregullat e sigurisë. Përdor një fjalëkalim më të fortë.';
  if(code==='signup_disabled'||code==='email_provider_disabled')return 'Regjistrimi me email është i çaktivizuar në server. Kontakto administratorin e AnimeTrack.';
  if(code==='captcha_failed')return 'Verifikimi CAPTCHA dështoi. Rifresko faqen dhe provo përsëri.';
@@ -948,22 +949,25 @@ async function accountRegister(){
   const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name},...redirect}});
   if(error)throw error;
   if(!data?.user)throw Error('Serveri nuk konfirmoi regjistrimin.');
+  // Supabase may return an obfuscated existing user; never claim a fresh signup succeeded.
+  if(Array.isArray(data.user.identities)&&data.user.identities.length===0){at116PendingEmail=email;$('at116-pending-email').hidden=false;accountStatus('Nëse kjo adresë ka llogari, provo hyrjen ose rikuperimin e fjalëkalimit. Nëse pret konfirmim, mund të kërkosh ridërgim.','ok');return}
   if(data.session){await accountOpenCloud(data.user);$('at116-pending-email').hidden=true;accountToggle(false);notify('Llogaria u krijua ✓');return}
   at116PendingEmail=email;$('at116-pending-email').hidden=false;
   $('at113-confirm-password').value='';$('account-password').value='';
-  accountStatus('Nëse regjistrimi u pranua, kontrollo emailin (edhe Spam/Junk), kliko linkun e konfirmimit dhe pastaj hyr. Nëse nuk mbërrin, përdor “Ridërgo”.','ok');
+  accountStatus('Kërkesa u pranua nga serveri. Kontrollo Inbox/Spam për konfirmimin; kjo nuk garanton mbërritjen e emailit. Nëse nuk vjen, përdor Ridërgo ose kontakto administratorin për SMTP.','ok');
  }catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}
  finally{accountBusy=false;$('account-login').disabled=false}
 }
 async function accountResend(){
- const email=at116PendingEmail||$('account-email').value.trim().toLowerCase();if(!email||at116ResendBusy)return;
+ const email=$('account-email').value.trim().toLowerCase()||at116PendingEmail;if(!email||at116ResendBusy)return;
+ if(!$('account-email').checkValidity()){accountStatus('Korrigjo adresën e emailit para ridërgimit.','error');return}
  const wait=Math.ceil((at116ResendAt+60000-Date.now())/1000);if(wait>0){accountStatus('Provo ridërgimin pas '+wait+' sekondash.','error');return}
  at116ResendBusy=true;$('at116-resend-email').disabled=true;
- try{const {error}=await accountInitClient().auth.resend({type:'signup',email,options:location.protocol==='https:'?{emailRedirectTo:location.origin+location.pathname}:{}});if(error)throw error;at116ResendAt=Date.now();accountStatus('Nëse emaili pret konfirmim, u kërkua një dërgim i ri. Kontrollo Inbox/Spam.','ok')}
+ try{const {error}=await accountInitClient().auth.resend({type:'signup',email,options:location.protocol==='https:'?{emailRedirectTo:location.origin+location.pathname}:{}});if(error)throw error;at116ResendAt=Date.now();at116PendingEmail=email;accountStatus('Serveri pranoi kërkesën e ridërgimit. Kontrollo Inbox/Spam. Nëse nuk vjen, administratori duhet të verifikojë dërgimin në SMTP.','ok')}
  catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}
  finally{at116ResendBusy=false;$('at116-resend-email').disabled=false}
 }
-async function accountReset(){const email=$('account-email').value.trim().toLowerCase();if(!email){accountStatus('Shkruaj emailin dhe pastaj shtyp Harrova fjalëkalimin.','error');return}try{const {error}=await accountInitClient().auth.resetPasswordForEmail(email,location.protocol==='https:'?{redirectTo:location.origin+location.pathname}:{});if(error)throw error;accountStatus('Nëse emaili ka llogari, udhëzimet e rikuperimit do të të vijnë aty.','ok')}catch(e){accountStatus('Nuk u dërgua kërkesa: '+e.message,'error')}}
+async function accountReset(){const email=$('account-email').value.trim().toLowerCase();if(!email){accountStatus('Shkruaj emailin dhe pastaj shtyp Harrova fjalëkalimin.','error');return}if(!$('account-email').checkValidity()){accountStatus('Korrigjo adresën e emailit.','error');return}try{const {error}=await accountInitClient().auth.resetPasswordForEmail(email,location.protocol==='https:'?{redirectTo:location.origin+location.pathname}:{});if(error)throw error;accountStatus('Nëse emaili ka llogari, udhëzimet e rikuperimit do të të vijnë aty.','ok')}catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}}
 async function accountLogout(){if(accountMode!=='cloud')return;if(cloudDirty){await accountPush(false);if(cloudDirty&&!confirm('Ka ndryshime të paruajtura në cloud. Mund t’i rifitosh nga ky kompjuter. Të dalësh gjithsesi?'))return}try{const {error}=await accountInitClient().auth.signOut();if(error)throw error}catch(e){accountStatus('Dalja dështoi: '+e.message,'error');return}clearTimeout(cloudTimer);accountMode='guest';accountUser=null;cloudConnected=false;cloudDirty=false;cloudRevision=null;cloudConflict=false;KEY=GUEST_KEY;state={anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};accountRefreshViews();document.body.classList.add('auth-required');accountToggle(true);accountStatus('Dole nga llogaria. Hyr me një tjetër ose krijo të re.','ok');notify('Dole nga llogaria ✓')}
 function accountCopyGuest(){if(accountMode!=='cloud')return;let guest;try{guest=JSON.parse(localStorage.getItem(GUEST_KEY)||'null')}catch{}if(!guest||!Array.isArray(guest.anime)||!guest.anime.length){accountStatus('Nuk u gjet bibliotekë lokale me anime për import.','error');return}if(!confirm(`Të zëvendësojmë bibliotekën e kësaj llogarie me ${guest.anime.length} anime nga versioni lokal? Eksporto më parë një kopje të të dhënave cloud.`))return;state=accountNormalizePayload(guest);save();render();renderHome();renderUpcoming();accountStatus('Biblioteka lokale u kopjua. Po sinkronizohet në cloud…','ok')}
 async function accountBoot(){try{const c=accountGetConfig();$('account-project-url').value=c.url||'';$('account-project-key').value=c.key||'';if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user)}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};render();renderHome();accountToggle(true);}accountUI()}}
