@@ -53,7 +53,7 @@ const assert=require('node:assert/strict');
  const postTapScale=await page.evaluate(()=>window.visualViewport?.scale||1);
  assert(postTapScale<1.05,'Double-tap should not enlarge the mobile screen: '+postTapScale);
  console.log('DOUBLE_TAP_SCALE',postTapScale);
- await page.locator('[data-ios-action="episode"][data-id="demo1"]').click();
+ await page.locator('[data-ios-action="episode"][data-id="demo1"]').first().click();
  assert(await page.locator('#episode-detail-modal').isVisible(),'iPhone Episode Hub should open');
  assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible(),'Episode Hub should render mobile');
  await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="discussion"]').click();
