@@ -37,6 +37,10 @@ jobs:
           curl -fsS http://127.0.0.1:8765/ >/dev/null
       - run: node tests/iphone-browser.cjs
       - run: BROWSER=webkit node tests/iphone-browser.cjs
+      - name: Register, confirm and sign in — Chromium iPhone
+        run: node tests/auth-browser.cjs
+      - name: Register, confirm and sign in — WebKit iPhone
+        run: BROWSER=webkit node tests/auth-browser.cjs
 
   desktop-browser:
     runs-on: ubuntu-latest
@@ -57,3 +61,5 @@ jobs:
           for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8765/ >/dev/null && break; sleep 1; done
           curl -fsS http://127.0.0.1:8765/ >/dev/null
       - run: node tests/desktop-browser.cjs
+      - name: Register, confirm and sign in — desktop
+        run: BROWSER=desktop node tests/auth-browser.cjs
