@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1140-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1141-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -342,7 +342,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
  assert.match(index,/pro-airing-109\.css/);
- assert.match(sw,/animetrack-shell-v1140-1/);
+ assert.match(sw,/animetrack-shell-v1141-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -407,7 +407,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
  assert.match(html,/pro-ios-polish-1101\.css/);
  assert.match(sw,/pro-ios-polish-1101\.css/);
- assert.match(sw,/animetrack-shell-v1140-1/);
+ assert.match(sw,/animetrack-shell-v1141-1/);
  assert.match(html,/viewport-fit=cover/);
  assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
@@ -510,4 +510,24 @@ test('11.4 Upcoming uses scheduled releases and never marks unreleased episodes'
  const f=w.ATiPhone(c);f.render();await f.action('tab','upcoming');const html=f.render();assert.match(html,/UPCOMING/);assert.match(html,/S01 \| E04/);assert.match(html,/The Actual Episode Title/);
  assert.match(html,/Del/);assert.doesNotMatch(html,/data-ios-action="advance"/);
  await f.action('details','a');assert.equal(opened,'a');assert.equal(marked,0);
+});
+
+
+test('11.4.1 unwatched is neutral, watched history is green, upcoming cannot be marked',async()=>{
+ const w=load({navigator:{onLine:true,userAgent:'iPhone'},window:{matchMedia:()=>({matches:true})},localStorage:{getItem:()=>null}}),c=context();
+ const s={id:'s',watched:[1],total:12,episodes:[{number:2,title:'Next Chapter'}]},a={id:'a',title:'Test Anime',status:'watching',cover:'',updatedAt:new Date().toISOString(),seasons:[s]};
+ c.state=()=>({anime:[a],history:[{id:'a',seasonId:'s',episode:1,action:'watched',date:new Date().toISOString()}],preferences:{}});c.nextEpisode=()=>({season:s,n:2});c.releasedTotal=()=>12;c.count=()=>1;c.percent=()=>8;c.poster=()=>'';c.accountName=()=>'Tester';c.upcoming=()=>[{animeId:'a',seasonId:'s',episode:3,when:Date.now()+3600000}];
+ const feed=w.ATiPhone(c);let html=feed.render();assert.match(html,/at114-check pending/);assert.match(html,/at114-check done/);assert.doesNotMatch(html,/at114-check ready/);
+ await feed.action('tab','upcoming');html=feed.render();assert.match(html,/at114-check upcoming/);assert.doesNotMatch(html,/data-ios-action="advance"/);assert.match(html,/Premierat e radhës/);
+});
+test('11.4.1 watches ignored metadata update for seven-day inactivity and filters old releases',async()=>{
+ const w=load({navigator:{onLine:true,userAgent:'iPhone'},window:{matchMedia:()=>({matches:true})},localStorage:{getItem:()=>null}}),c=context();
+ const old=new Date(Date.now()-9*86400000).toISOString(),fresh=new Date().toISOString(),s={id:'s',total:8,watched:[1]},a={id:'old',title:'Old Series',status:'watching',updatedAt:fresh,createdAt:old,seasons:[s]};
+ c.state=()=>({anime:[a],history:[{id:'old',seasonId:'s',episode:1,action:'watched',date:old}],preferences:{}});c.nextEpisode=()=>({season:s,n:2});c.releasedTotal=()=>8;c.count=()=>1;c.percent=()=>12;c.poster=()=>'';c.accountName=()=>'Tester';c.upcoming=()=>[{animeId:'old',seasonId:'s',episode:4,when:Date.now()-3600000},{animeId:'old',seasonId:'s',episode:5,when:Date.now()+3600000}];
+ const feed=w.ATiPhone(c);assert.match(feed.render(),/NOT WATCHED IN A WHILE/);
+ await feed.action('tab','upcoming');const html=feed.render();assert.match(html,/E05/);assert.doesNotMatch(html,/E04/);
+});
+test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/pro-mobile-113.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+ assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1141-1/);
 });
