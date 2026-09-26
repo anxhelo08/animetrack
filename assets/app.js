@@ -1182,7 +1182,7 @@ proApp.init();
 const proPriorHome=renderHome;renderHome=function(){proPriorHome();proApp.renderHome()};
 const at113PreviousLibraryRender=render;render=function(...args){const result=at113PreviousLibraryRender(...args);window.ATMobile113.libraryUpdate();return result};
 window.addEventListener('at113-library-search',e=>{search=String(e.detail||'').trim().toLocaleLowerCase();render()});
-const at113EpisodeRender=v81RenderEpisode;v81RenderEpisode=function(...args){const panel=$('episode-detail-modal')?.querySelector('.modal-body');const position=panel?.scrollTop||0;at113EpisodeRender(...args);window.ATMobile113.enhanceEpisode();if(panel&&position>0)panel.scrollTop=position};
+let at113LastEpisodeKey='';const at113EpisodeRender=v81RenderEpisode;v81RenderEpisode=function(...args){const panel=$('episode-detail-modal')?.querySelector('.modal-body'),parts=v81EpisodeParts(),key=[parts.a?.id,parts.s?.id,parts.n].join(':');const position=key===at113LastEpisodeKey?(panel?.scrollTop||0):0;at113EpisodeRender(...args);window.ATMobile113.enhanceEpisode();if(panel)panel.scrollTop=position;at113LastEpisodeKey=key};
 const proPriorView=setView;setView=function(which){if(proApp.open(which))return;proApp.hide();proApp.syncMobile(which);return proPriorView(which)};
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id)};
 const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);void proApp.onAccount().catch(e=>console.warn('Optional account features',e))};
