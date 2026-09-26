@@ -39,7 +39,7 @@ function releaseFromMedia(s,m){
 function releasedCount(s, at=Date.now()){
  const maxWatched=Math.max(0,...(s?.watched||[]));if(!s)return 0;
  const total=Math.max(0,Number(s.total)||0),status=String(s.releaseStatus||'').toUpperCase();
- if(s.source==='TVmaze'&&s.episodes?.length){
+ if(String(s.source||'').toLowerCase()==='tvmaze'&&s.episodes?.length){
   let dated=0;
   for(const ep of s.episodes){let passed=false;
    if(ep.airedAt){let t=Date.parse(ep.airedAt);passed=Number.isFinite(t)&&t<=at;}
