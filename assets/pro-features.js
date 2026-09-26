@@ -2,12 +2,15 @@
 window.AnimeTrackPro=function AnimeTrackPro(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null;
- const proPages=['notifications','recommendations','calendar','wrapped','profile','friends','moderation'];
+ const proPages=['notifications','recommendations','calendar','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>`<button type="button" class="pro-btn" data-pro-action="${esc(action)}" data-id="${esc(id)}">${esc(label)}</button>`;
  const modules={
   notifications:window.ATNotifications(ctx),
   recommendations:window.ATRecommendations(ctx),
   calendar:window.ATCalendarWrapped(ctx),
+  smart:window.ATSmartAiring(ctx),
+  push:window.ATPush109(ctx),
+  collections:window.ATCollections110(ctx),
   profiles:window.ATProfiles(ctx),
   friends:null,
   moderation:window.ATModeration(ctx),
@@ -16,30 +19,40 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   iphone:window.ATiPhone(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
+ ctx.smartWeek=compact=>modules.smart.panel(!!compact);
+ ctx.smartReminderSelect=e=>modules.smart.reminderSelect(e);
+ ctx.setCalendarReminder=(key,value)=>modules.smart.setReminder(key,value);
  ctx.unreadCount=()=>modules.notifications.get().filter(n=>!((ctx.state().preferences?.notificationRead)||[]).includes(n.key)&&!((ctx.state().preferences?.notificationMuted)||[]).includes(n.category)&&!((ctx.state().preferences?.notificationDismissed)||[]).includes(n.key)).length;
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
- function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:modules.calendar.calendar,wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render};$('pro-content').innerHTML=renderers[active]?.()||''}
+ function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render};$('pro-content').innerHTML=renderers[active]?.()||''}
  async function refreshLive(force=false){
-  if(liveBusy||document.visibilityState==='hidden'||!navigator.onLine)return;
-  if(!force&&Date.now()-liveLastCheck<5*60000)return;
+  if(liveBusy)return {status:'busy'};
+  if(document.visibilityState==='hidden')return {status:'hidden'};
+  if(!navigator.onLine)return {status:'offline'};
+  if(!force&&Date.now()-liveLastCheck<5*60000)return {status:'recent'};
   liveBusy=true;liveLastCheck=Date.now();document.body.classList.add('at-live-checking');renderHome();
-  try{await ctx.liveRefresh(force)}catch(e){console.warn('Live refresh failed',e)}
+  try{const result=await ctx.liveRefresh(force);modules.push.scheduleSync();return {status:result?.failed?'partial':'ok'}}
+  catch(e){console.warn('Live refresh failed',e);return {status:'error'}}
   finally{liveBusy=false;document.body.classList.remove('at-live-checking');render();renderHome()}
  }
  function renderHome(){
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)feed.innerHTML='<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>'}
   if(window.matchMedia?.('(max-width: 760px)').matches)return;
-  if($('at-home-main')){const parts=modules.home.render();for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}}
-  const box=$('pro-home-recs');if(box)box.innerHTML=modules.recommendations.home();
-  const week=$('pro-home-week');if(week)week.innerHTML=modules.calendar.home();
-  const inbox=$('pro-home-inbox');if(inbox)inbox.innerHTML=modules.notifications.home();
+  if($('at-home-main'))try{
+   const parts=modules.home.render();
+   for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)node.innerHTML=parts[key]}
+  }catch(err){
+   console.warn('Desktop home recovery',err);
+   const focus=$('at-home-focus');if(focus)focus.innerHTML='<section class="at-pro-recovery" role="alert"><h3>Nuk u ngarkua ky seksion</h3><p>Biblioteka jote mbetet e ruajtur. Mund të riprovosh pa rifreskuar gjithë faqen.</p><button type="button" data-home-action="retry-home">Riprovo ↻</button></section>';
+  }
+  for(const [target,fn] of [['pro-home-recs',()=>modules.recommendations.home()],['pro-home-week',()=>modules.calendar.home()],['pro-home-inbox',()=>modules.notifications.home()]]){const node=$(target);if(node)try{node.innerHTML=fn()}catch(err){console.warn('Home widget recovery',target,err);node.innerHTML='<div class="at-pro-recovery"><p>Ky seksion nuk u ngarkua.</p><button type="button" data-home-action="retry-home">Riprovo ↻</button></div>'}}
  }
  ctx.rerender=()=>{render();renderHome()};
  function init(){
   const nav=$('side-nav');
-  nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
+  nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['collections','▤','Listat e mia'],['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
   document.querySelector('.top-actions')?.insertAdjacentHTML('afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
   document.querySelector('main.main').insertAdjacentHTML('beforeend','<section class="pro-view hidden" id="pro-view" aria-label="AnimeTrack Pro"><div id="pro-content"></div></section>');
   document.body.insertAdjacentHTML('beforeend','<nav class="at-mobile-nav" aria-label="Navigimi i aplikacionit"><button type="button" data-mobile-nav="home" class="active"><span>▶</span><small>Episodet</small></button><button type="button" data-mobile-nav="calendar"><span>▦</span><small>Kalendari</small></button><button type="button" data-mobile-nav="explore"><span>⌕</span><small>Zbulo</small></button><button type="button" data-mobile-nav="library"><span>▤</span><small>Biblioteka</small></button><button type="button" data-mobile-nav="profile"><span>◉</span><small>Unë</small></button></nav>');
@@ -47,6 +60,9 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   const dash=document.createElement('div');dash.className='at-home-dashboard';dash.innerHTML='<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>';recommend.after(dash);
   modules.home.mount(home,recommend,dash);
   modules.iphone.mount();
+  modules.collections.mountLibrary();
+  document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}});
+  let collectionSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at110-search-input')return;clearTimeout(collectionSearchTimer);collectionSearchTimer=setTimeout(()=>{const input=$('at110-search-input');if(!input)return;const value=input.value,caret=input.selectionStart,focused=document.activeElement===input;modules.collections.setSearch(value);const next=$('at110-search-input');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});
   document.body.insertAdjacentHTML('beforeend','<dialog id="at-ios-install-guide" class="at-ios-install-dialog" aria-labelledby="at-ios-install-title"><button type="button" class="at-ios-dialog-close" data-ios-action="close-install" aria-label="Mbyll">×</button><div class="at-ios-install-mark">✦</div><h2 id="at-ios-install-title">Instalo AnimeTrack</h2><p>Hape në Safari dhe shtoje si aplikacion në ekranin e iPhone.</p><ol><li>Hap <strong>Safari</strong> në iPhone.</li><li>Prek butonin <strong>Share</strong> (katrori me shigjetë).</li><li>Zgjidh <strong>Add to Home Screen</strong>.</li><li>Aktivizo <strong>Open as Web App</strong>, pastaj prek <strong>Add</strong>.</li></ol><button type="button" class="at-ios-install-ok" data-ios-action="close-install">E kuptova ✓</button></dialog>');
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
@@ -67,7 +83,12 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    }).catch(console.warn);
   }
   document.addEventListener('click',handleClick);
-  document.addEventListener('change',e=>{if(e.target?.id==='pro-rec-length')modules.recommendations.setLength(e.target.value)});
+  document.addEventListener('change',e=>{
+   const node=e.target;
+   if(node?.id==='pro-rec-length')modules.recommendations.setLength(node.value);
+   if(node?.dataset?.smartReminder!==undefined)modules.smart.setReminder(node.dataset.smartReminder,node.value);
+   if(node?.id==='at109-default-lead')modules.smart.setDefault(node.value);
+  });
   let pcSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at-pc-watch-search')return;clearTimeout(pcSearchTimer);pcSearchTimer=setTimeout(()=>{const current=$('at-pc-watch-search');if(!current)return;const value=current.value,caret=current.selectionStart,focused=document.activeElement===current;modules.home.search(value);const next=$('at-pc-watch-search');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});
   // Active-tab polling only. The upstream anime schedules are not a push feed.
   liveTimer=setInterval(()=>{if(document.visibilityState==='visible')void refreshLive(false)},10*60000);
@@ -83,18 +104,18 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   active=name;ctx.setLocalView(name);
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
-  $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️'})[name];setMobileActive(name);
-  render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
+  $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤'})[name];setMobileActive(name);
+  if(name==='collections')setMobileActive('library');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name)}
  async function onAccount(){
-  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();void refreshLive(false);
+  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();void modules.push.prepare().then(()=>modules.push.scheduleSync());void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
  function onStateChange(){
-  modules.profiles.scheduleSnapshot();modules.recommendations.onLibraryChange();
+  modules.profiles.scheduleSnapshot();modules.recommendations.onLibraryChange();modules.push.scheduleSync();
   render();renderHome();
   clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{if(document.visibilityState==='visible')void modules.notifications.refresh();else modules.notifications.badge()},450);
  }
@@ -104,7 +125,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
   if(b.dataset.iosAction){if(b.dataset.iosAction==='close-install'){const d=$('at-ios-install-guide');d?.close?.();if(d)d.hidden=true;return}try{return await modules.iphone.action(b.dataset.iosAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
   if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}
-  if(b.dataset.homeAction==='sync-now'){await refreshLive(true);ctx.toast('Kontrolli i përditësimeve përfundoi.');return}
+  if(b.dataset.homeAction==='retry-home'){renderHome();return}
+  if(b.dataset.homeAction==='sync-now'){const result=await refreshLive(true);ctx.toast(({ok:'Orari u kontrollua ✓',partial:'Disa burime nuk u arritën. Provo përsëri.',offline:'Nuk ka internet. Provo kur të lidhet pajisja.',busy:'Kontrolli është në proces.',hidden:'Hap aplikacionin për kontroll.',recent:'Orari është kontrolluar së fundmi.',error:'Kontrolli dështoi. Provo përsëri.'})[result.status]||'Kontrolli nuk u krye.');return}
   if(b.dataset.homeAction){try{return await modules.home.action(b.dataset.homeAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120));return}}
   const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
   try{
@@ -123,6 +145,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op==='reset-recommendation-filters')return modules.recommendations.resetFilters();
    if(op==='refresh-recommendations')return await modules.recommendations.refresh(true);
    if(op.startsWith('notification-'))return await modules.notifications.action(op,id);
+   if(op.startsWith('collection-'))return await modules.collections.action(op,id);
+   if(op.startsWith('smart-push-'))return await modules.push.action(op);
    if(op.startsWith('week-')||op.startsWith('calendar-')||op.startsWith('wrapped-'))return modules.calendar.action(op,id);
    if(op==='profile-tab')return modules.profiles.setTab(id);
    if(op==='profile-goal-save')return modules.profiles.goalSave();

@@ -33,6 +33,8 @@ jobs:
         run: |
           python -m http.server 8765 --bind 127.0.0.1 >/tmp/animetrack-http.log 2>&1 &
           echo $! > /tmp/animetrack-http.pid
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8765/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/ >/dev/null
       - run: node tests/iphone-browser.cjs
       - run: BROWSER=webkit node tests/iphone-browser.cjs
 
@@ -52,4 +54,6 @@ jobs:
         run: |
           python -m http.server 8765 --bind 127.0.0.1 >/tmp/animetrack-desktop-http.log 2>&1 &
           echo $! > /tmp/animetrack-desktop-http.pid
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8765/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8765/ >/dev/null
       - run: node tests/desktop-browser.cjs

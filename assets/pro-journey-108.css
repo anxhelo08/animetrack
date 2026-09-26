@@ -1,0 +1,40 @@
+/* AnimeTrack 11.0 · Episode Hub only. Native season selector handles all seasons. */
+.at108-kicker{font-size:10px;letter-spacing:1.25px;text-transform:uppercase;color:#bca0f0;font-weight:900}
+#episode-detail-modal .ep-detail-dialog{width:min(900px,100%);max-height:min(95dvh,990px)}
+#episode-detail-modal .modal-header{border-bottom:1px solid #ffffff10}
+.at108-episode-head{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;margin:3px 0 12px;padding:15px;border:1px solid #564567;border-radius:15px;background:linear-gradient(115deg,#35294d,#1f2434)}
+.at108-episode-summary{display:grid;gap:6px;min-width:0}
+.at108-episode-summary>div{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.at108-episode-summary strong{font-size:26px;line-height:1.05;letter-spacing:-.6px}
+.at108-episode-summary>div span{border-radius:99px;padding:5px 8px;border:1px solid #5c516a;background:#262337;font-size:10px;font-weight:800;color:#d1c5e5}
+.at108-episode-summary>div span.seen{background:#234842;border-color:#4d8477;color:#bffbea}
+.at108-episode-summary small{font-size:10px;color:#b1a7c7}
+.at108-episode-switch{display:flex;align-items:center;flex-wrap:wrap;justify-content:end;gap:7px}
+.at108-episode-switch button{min-height:39px;padding:8px 12px;border-radius:9px;border:1px solid #8b6bc0;background:#57437f;color:#fff;font-size:11px;font-weight:850}
+.at108-episode-switch button:first-child{background:#28283b;border-color:#5f536e;color:#e4d9f6}
+.at108-no-episode{color:#88849f;font-size:10px;max-width:130px}
+.at108-episode-tabs{display:flex;align-items:center;gap:7px;margin:0 0 18px;padding:5px;background:#17192a;border:1px solid #37364c;border-radius:12px}
+.at108-episode-tabs button{flex:1;min-height:39px;border:0;border-radius:9px;background:transparent;color:#b5acc8;font-size:12px;font-weight:850}
+.at108-episode-tabs button.active{background:#544078;color:#fff}
+.at108-episode-tabs button span{margin-left:5px;padding:2px 5px;border-radius:99px;background:#ffffff20;font-size:10px}
+#ep-detail-body[data-at108-tab="episode"]>.v98-discussion{display:none!important}
+#ep-detail-body[data-at108-tab="discussion"]>:not(.at108-episode-head):not(.at108-episode-tabs):not(.v98-discussion){display:none!important}
+#ep-detail-body[data-at108-tab="discussion"]>.v98-discussion{display:block!important}
+#episode-detail-modal .v98-navline{display:none!important}
+#episode-detail-modal .ep-detail-visual{max-height:370px;overflow:hidden;border-radius:15px}
+#episode-detail-modal .ep-detail-visual img{max-height:370px;object-fit:cover}
+#episode-detail-modal .v98-discussion{margin-top:4px}
+.at108-episode-switch button:focus-visible,.at108-episode-tabs button:focus-visible{outline:2px solid #e2d0ff;outline-offset:2px}
+@media(max-width:760px){
+ #episode-detail-modal .ep-detail-dialog{width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - 12px);border-radius:18px}
+ #episode-detail-modal .modal-body{padding:9px 13px calc(22px + env(safe-area-inset-bottom))}
+ .at108-episode-head{display:grid;gap:12px;padding:13px}
+ .at108-episode-summary strong{font-size:23px}
+ .at108-episode-switch{justify-content:space-between;flex-wrap:nowrap}
+ .at108-episode-switch button{flex:1;min-height:42px;padding:7px 6px;font-size:10px}
+ .at108-no-episode{max-width:110px}
+ .at108-episode-tabs{position:sticky;top:0;z-index:5;background:#191a2bf5;backdrop-filter:blur(12px)}
+ .at108-episode-tabs button{min-height:43px}
+}
+
+

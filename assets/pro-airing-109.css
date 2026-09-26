@@ -1,0 +1,59 @@
+/* AnimeTrack 10.9 — personal anime week, opt-in reminders, push readiness. */
+.at109-smart-week{display:grid;gap:15px;padding:19px;margin:0 0 20px;border:1px solid #55496c;border-radius:19px;background:linear-gradient(125deg,#27233c,#1c2534)}
+.at109-week-heading{display:flex;align-items:start;justify-content:space-between;gap:13px}
+.at109-eyebrow{font-size:9px;letter-spacing:1.3px;font-weight:900;color:#bca5f2}
+.at109-week-heading h3{margin:3px 0;font-size:20px;letter-spacing:-.4px;color:#faf6ff}
+.at109-week-heading p{margin:0;font-size:11px;color:#aaa6c0}
+.at109-week-heading>button{min-height:35px;flex:none;border:1px solid #8b72bd;border-radius:9px;padding:7px 10px;background:#4e3b78;color:#f9eeff;font-weight:850;font-size:10px}
+.at109-week-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.at109-week-stats span{display:flex;align-items:baseline;gap:6px;padding:10px 12px;border:1px solid #4a405c;border-radius:10px;background:#1a2030;color:#bcb1cf;font-size:10px}
+.at109-week-stats b{font-size:21px;color:#f7edff}
+.at109-week-list{display:grid;gap:8px}
+.at109-week-event{display:flex;align-items:center;gap:10px;min-height:69px;padding:10px 12px;background:#1b2030;border:1px solid #3d4056;border-radius:12px}
+.at109-week-date{display:grid;gap:2px;min-width:88px;color:#e5d7ff}
+.at109-week-date b{font-size:11px}.at109-week-date small{font-size:10px;color:#aaa7c0}
+.at109-week-event>div{display:grid;gap:4px;flex:1;min-width:0}
+.at109-week-event>div strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.at109-week-event>div small{color:#aca6bd;font-size:10px}
+.at109-week-event>button{width:33px;height:33px;flex:none;background:#34294c;color:#e4d5ff;border:1px solid #6b557d;border-radius:9px}
+.at109-reminder-choice{display:flex;align-items:center;gap:5px;flex:none;font-size:11px;color:#e4d5ff}
+.at109-reminder-choice select{min-height:33px;max-width:160px;padding:6px 8px;background:#29283e;color:#f4eaff;border:1px solid #6b5982;border-radius:8px;font-size:11px}
+.at109-reminder-choice select:focus-visible{outline:2px solid #c0a2f4;outline-offset:2px}
+.at109-week-disclaimer,.at109-empty{margin:0;font-size:10px;line-height:1.5;color:#a5a1b7}
+.at109-settings{display:grid;gap:15px;padding:18px;border:1px solid #544765;border-radius:17px;margin:0 0 20px;background:#201e31}
+.at109-settings h3{font-size:18px;margin:4px 0}.at109-settings p{font-size:11px;color:#b5aec8;line-height:1.55;margin:0}
+.at109-settings>small{font-size:10px;line-height:1.5;color:#aaa4c0}
+.at109-default{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;font-size:11px;font-weight:800}
+.at109-default select{min-height:38px;border-radius:9px;border:1px solid #73608a;background:#2a283e;color:#f5eeff;padding:8px 11px;font-size:11px}
+.at109-push-state{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid #564763;border-radius:13px;background:#1b1e2f}
+.at109-push-state.enabled{border-color:#538677;background:#1a332e}
+.at109-push-state>div{flex:1;min-width:0}
+.at109-push-state strong{font-size:12px}.at109-push-state p{margin:5px 0;font-size:11px}.at109-push-state small{font-size:9px;color:#a5a0b9}
+.at109-push-dot{display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;background:#e1b470}
+.at109-push-state.enabled .at109-push-dot{background:#78d8aa}
+.at109-push-state>button{min-height:37px;flex:none;max-width:135px;padding:8px;border:1px solid #9472bc;border-radius:9px;background:#554078;color:#fff;font-size:10px;font-weight:850}
+.at109-push-state>button:disabled{opacity:.6}
+.at-cal-event .at109-reminder-choice{margin:8px 0 0}
+.at-cal-event .at109-reminder-choice select{max-width:180px}
+@media(max-width:760px){
+ .at109-smart-week{padding:13px;margin:0 0 19px;border-radius:15px;gap:11px}
+ .at109-week-heading h3{font-size:17px}
+ .at109-week-heading p{font-size:10px}
+ .at109-week-heading>button{max-width:107px;line-height:1.3;min-height:37px}
+ .at109-week-stats span{display:grid;justify-items:center;text-align:center;gap:1px;padding:7px 3px;font-size:9px}
+ .at109-week-stats b{font-size:20px}
+ .at109-week-event{padding:9px;gap:8px}
+ .at109-week-date{min-width:65px}
+ .at109-week-event>div strong{font-size:11px}
+ .at109-reminder-choice select{font-size:10px}
+ .at109-settings{padding:14px}
+ .at109-push-state{align-items:stretch;flex-direction:column}
+ .at109-push-state>button{max-width:none;min-height:42px}
+ .at109-smart-week.compact .at109-week-event{min-height:56px}
+ .at109-smart-week.compact .at109-week-heading>button{background:#332849}
+}
+@media(max-width:370px){
+ .at109-week-heading{gap:6px}
+ .at109-week-heading>button{font-size:9px;max-width:97px;padding:7px 5px}
+ .at109-week-stats span{font-size:8px}
+}

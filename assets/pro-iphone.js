@@ -1,7 +1,7 @@
 /* AnimeTrack 10.5 — iPhone watch-first feed, shared personal library. */
 window.ATiPhone=function ATiPhone(ctx){
  const esc=ctx.esc;
- let tab='pending',limit=20,dismissed=false,lastUser='';
+ let tab='pending',limit=20,dismissed=false,lastUser='',lastWatch=null,syncing=false,syncMessage='';
  const state=()=>ctx.state();
  const userKey=()=>`animetrack_ios_install_${ctx.user()?.id||'guest'}`;
  const ios=()=>/iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -12,7 +12,7 @@ window.ATiPhone=function ATiPhone(ctx){
  const pending=()=>eligible().slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')));
  const recent=()=>{const seen=new Set();return (ctx.recentAiring?.()||[]).filter(x=>{
  const a=x.anime||state().anime.find(a=>a.id===x.animeId),n=Number(x.localEpisode||x.seasonEpisode||x.episode),s=x.localSeason||a?.seasons?.find(s=>s.id===x.seasonId);
- const key=a?.id+':'+s?.id+':'+n;if(!a||!s||!n||(s.watched||[]).includes(n)||seen.has(key))return false;seen.add(key);return true;
+ const key=a?.id+':'+s?.id+':'+n;if(!a||!s||!Number.isInteger(n)||n<1||(s.watched||[]).includes(n)||seen.has(key)||!Number.isFinite(Number(x.when)))return false;seen.add(key);return true;
  }).sort((a,b)=>b.when-a.when).slice(0,40)};
  const upcoming=()=>(ctx.upcoming()||[]).filter(x=>x.when>=Date.now()&&x.when<Date.now()+14*86400000&&(state().anime||[]).some(a=>a.id===x.animeId)).sort((a,b)=>a.when-b.when);
  function readyCard(a){
@@ -36,13 +36,17 @@ window.ATiPhone=function ATiPhone(ctx){
   return `<aside class="at-ios-install"><span>✦</span><div><strong>AnimeTrack në iPhone</strong><p>Instaloje në Home Screen për ta hapur si aplikacion, pa shiritin e Safari.</p><button type="button" data-ios-action="install">Si ta instaloj ↗</button></div><button type="button" class="at-ios-dismiss" data-ios-action="dismiss-install" aria-label="Mbyll këshillën">×</button></aside>`;
  }
  function render(){
-  const id=ctx.user()?.id||'guest';if(lastUser!==id){lastUser=id;try{dismissed=localStorage.getItem(userKey())==='1'}catch{dismissed=false}}
+  const id=ctx.user()?.id||'guest';if(lastUser!==id){lastUser=id;lastWatch=null;syncMessage='';try{dismissed=localStorage.getItem(userKey())==='1'}catch{dismissed=false}}
   const watch=pending(),released=recent(),soon=upcoming(),unread=ctx.unreadCount?.()||0;
   const name=ctx.accountName().split(/[\s@]/)[0]||'Anime fan';
+  const saveInfo=ctx.watchSaveStatus?.()||{},syncText=syncing?'Po kontrollohen episodet…':syncMessage||(!navigator.onLine?'Pa internet · progresi ruhet lokalisht':saveInfo.dirty?'Progresi është në pritje të cloud':saveInfo.mode==='cloud'&&saveInfo.connected?'Biblioteka në cloud ✓':'Biblioteka ruhet në pajisje');
+  const validUndo=lastWatch&&lastWatch.owner===id&&(state().anime||[]).some(a=>a.id===lastWatch.id&&a.seasons?.some(s=>s.id===lastWatch.seasonId&&(s.watched||[]).includes(lastWatch.n)));
+  if(lastWatch&&!validUndo)lastWatch=null;
+  const feedback=`<div class="at-ios-watch-feedback" role="status" aria-live="polite"><span class="at-ios-sync-dot ${syncing?'busy':saveInfo.dirty?'pending':''}" aria-hidden="true"></span><span>${esc(syncText)}</span>${validUndo?`<button type="button" data-ios-action="undo" aria-label="Zhbëj episodin ${lastWatch.n}">↶ Zhbëj EP ${lastWatch.n}</button>`:''}</div>`;
   const tabs=[['pending','Për t’u parë',watch.length],['recent','Sapo dolën',released.length],['upcoming','Së shpejti',soon.length]];
   let content=tab==='pending'?watch.slice(0,limit).map(readyCard).join(''):tab==='recent'?released.slice(0,limit).map(releaseCard).join(''):soon.slice(0,limit).map(comingCard).join('');
   const total=tab==='pending'?watch.length:tab==='recent'?released.length:soon.length;
-  return `<section class="at-ios-shell"><header class="at-ios-header"><div><span class="at-ios-kicker">ANIMETRACK · MY WATCHLIST</span><h1>${esc(new Date().getHours()<12?'Mirëmëngjes':new Date().getHours()<18?'Mirëdita':'Mirëmbrëma')}, ${esc(name)} <span>✦</span></h1><p>${watch.length?`${watch.length} anime me episode që të presin.`:'Historia jote anime, në një vend.'}</p></div><button class="at-ios-bell" data-pro-page="notifications" type="button" aria-label="Hap njoftimet">♧${unread?`<i>${Math.min(99,unread)}</i>`:''}</button></header>${installCard()}<div class="at-ios-section-heading"><h2>Çfarë do të shikosh?</h2><button type="button" data-ios-action="sync" aria-label="Rifresko listën dhe orarin">↻</button></div><div class="at-ios-tabs" role="group" aria-label="Episode dhe premiera">${tabs.map(([key,title,n])=>`<button type="button" class="${tab===key?'active':''}" data-ios-action="tab" data-id="${key}" aria-pressed="${tab===key}">${title} <b>${n}</b></button>`).join('')}</div><div class="at-ios-list">${content||`<div class="at-ios-empty"><span>${tab==='upcoming'?'◷':'✦'}</span><h3>${tab==='pending'?'Je në rregull me episodet!':tab==='recent'?'Nuk ka episode të reja.':'Ende nuk ka premiera të konfirmuara.'}</h3><p>${tab==='pending'?'Zbulo një anime dhe shtoje te Po shikoj.':'Rifresko orarin për njoftimet e ardhshme.'}</p><button type="button" data-ios-action="${tab==='pending'?'discover':'sync'}">${tab==='pending'?'Zbulo anime ↗':'Rifresko ↻'}</button></div>`}</div>${total>limit?'<button type="button" class="at-ios-more" data-ios-action="more">Shfaq më shumë ↓</button>':''}<div class="at-ios-end"><span>✦</span> Gjithçka që ke shënuar ruhet në bibliotekën tënde.</div></section>`;
+  return `<section class="at-ios-shell"><header class="at-ios-header"><div><span class="at-ios-kicker">ANIMETRACK · MY WATCHLIST</span><h1>${esc(new Date().getHours()<12?'Mirëmëngjes':new Date().getHours()<18?'Mirëdita':'Mirëmbrëma')}, ${esc(name)} <span>✦</span></h1><p>${watch.length?`${watch.length} anime me episode që të presin.`:'Historia jote anime, në një vend.'}</p></div><button class="at-ios-bell" data-pro-page="notifications" type="button" aria-label="Hap njoftimet">♧${unread?`<i>${Math.min(99,unread)}</i>`:''}</button></header>${installCard()}${feedback}${ctx.smartWeek?.(true)||''}<div class="at-ios-section-heading"><h2>Çfarë do të shikosh?</h2><button type="button" data-ios-action="sync" aria-label="Rifresko listën dhe orarin" ${syncing?'disabled aria-busy="true"':''}>↻</button></div><div class="at-ios-tabs" role="group" aria-label="Episode dhe premiera">${tabs.map(([key,title,n])=>`<button type="button" class="${tab===key?'active':''}" data-ios-action="tab" data-id="${key}" aria-pressed="${tab===key}">${title} <b>${n}</b></button>`).join('')}</div><div class="at-ios-list">${content||`<div class="at-ios-empty"><span>${tab==='upcoming'?'◷':'✦'}</span><h3>${tab==='pending'?'Je në rregull me episodet!':tab==='recent'?'Nuk ka episode të reja.':'Ende nuk ka premiera të konfirmuara.'}</h3><p>${tab==='pending'?'Zbulo një anime dhe shtoje te Po shikoj.':'Rifresko orarin për njoftimet e ardhshme.'}</p><button type="button" data-ios-action="${tab==='pending'?'discover':'sync'}">${tab==='pending'?'Zbulo anime ↗':'Rifresko ↻'}</button></div>`}</div>${total>limit?'<button type="button" class="at-ios-more" data-ios-action="more">Shfaq më shumë ↓</button>':''}<div class="at-ios-end"><span>✦</span> Gjithçka që ke shënuar ruhet në bibliotekën tënde.</div></section>`;
  }
  function mount(){const home=ctx.el('home-view');if(!home||ctx.el('at-iphone-feed'))return;const el=document.createElement('div');el.id='at-iphone-feed';home.insertBefore(el,home.firstChild);document.body.classList.add('at-ios-enabled');}
  function refresh(){
@@ -53,14 +57,26 @@ window.ATiPhone=function ATiPhone(ctx){
    node.innerHTML='<section class="at-ios-empty" role="alert"><span>✦</span><h3>Nuk u ngarkuan episodet</h3><p>Mund të ketë një problem të përkohshëm me të dhënat. Provo përsëri ose hap Bibliotekën; progresi yt ruhet.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>';
   }
  }
- function action(op,id,b){
+ async function action(op,id,b){
   const a=state().anime.find(a=>a.id===id);
   if(op==='retry'){refresh();return}
   if(op==='tab'){if(['pending','recent','upcoming'].includes(id)){tab=id;limit=20;refresh()}return}
   if(op==='more'){limit=Math.min(500,limit+20);refresh();return}
   if(op==='details'){if(a)ctx.openAnime(a.id);return}
   if(op==='episode'){if(a){const n=ctx.nextEpisode(a);if(n)ctx.openEpisode(a.id,n.season.id,n.n)}return}
-  if(op==='advance'){if(a&&ctx.nextEpisode(a))ctx.markNext(a.id);return}
+  if(op==='advance'){
+   const nx=a&&ctx.nextEpisode(a);if(!nx)return;
+   const owner=ctx.user()?.id||'guest',entry={id:a.id,seasonId:nx.season.id,n:nx.n,owner};
+   if(ctx.markNext(a.id)){lastWatch=entry;syncMessage='Episodi u shënua ✓';refresh()}
+   return;
+  }
+  if(op==='undo'){
+   const old=lastWatch;lastWatch=null;
+   const item=(state().anime||[]).find(a=>a.id===old?.id),season=item?.seasons?.find(s=>s.id===old?.seasonId);
+   if(old&&old.owner===(ctx.user()?.id||'guest')&&season?.watched?.includes(old.n)&&ctx.undoEpisode?.(old.id,old.seasonId,old.n)){syncMessage='Shënimi u kthye mbrapsht ✓'}
+   else {syncMessage='Progresi ka ndryshuar. Nuk u zhbë.'}
+   refresh();return;
+  }
   if(op==='episode-specific'||op==='mark-specific'){
    if(!a)return;const s=a.seasons.find(s=>s.id===b?.dataset.season),n=Number(b?.dataset.ep);
    if(!s||!Number.isInteger(n)||n<1)return;
@@ -68,7 +84,12 @@ window.ATiPhone=function ATiPhone(ctx){
    else if(n<=ctx.released(s)&&!s.watched.includes(n))ctx.markEpisode(a.id,s.id,n);
    return;
   }
-  if(op==='sync')return ctx.liveRefresh?.(true).then(()=>refresh());
+  if(op==='sync'){
+   if(syncing)return;syncing=true;syncMessage='';refresh();
+   try{await ctx.liveRefresh?.(true);const status=ctx.liveStatus?.()||{};syncMessage=status.failed?'Disa burime të orarit nuk u arritën':'Kontrolli përfundoi ✓'}
+   catch(err){console.warn('iPhone sync failed',err);syncMessage='Nuk u lidh burimi. Provo përsëri.'}
+   finally{syncing=false;refresh()}return;
+  }
   if(op==='discover'){ctx.navigate('explore');return}
   if(op==='install'){const d=ctx.el('at-ios-install-guide');if(d){d.hidden=false;d.showModal?.()}return}
   if(op==='dismiss-install'){dismissed=true;try{localStorage.setItem(userKey(),'1')}catch{}refresh();return}
