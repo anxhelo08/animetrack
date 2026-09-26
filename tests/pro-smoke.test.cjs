@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1170-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1180-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -342,7 +342,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
  assert.match(index,/pro-airing-109\.css/);
- assert.match(sw,/animetrack-shell-v1170-1/);
+ assert.match(sw,/animetrack-shell-v1180-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -407,7 +407,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
  assert.match(html,/pro-ios-polish-1101\.css/);
  assert.match(sw,/pro-ios-polish-1101\.css/);
- assert.match(sw,/animetrack-shell-v1170-1/);
+ assert.match(sw,/animetrack-shell-v1180-1/);
  assert.match(html,/viewport-fit=cover/);
  assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
@@ -529,7 +529,7 @@ test('11.4.1 watches ignored metadata update for seven-day inactivity and filter
 });
 test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
  const css=fs.readFileSync(path.join(root,'assets/pro-mobile-113.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
- assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1170-1/);
+ assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1180-1/);
 });
 
 test('11.5 daily experience uses shared library, real weekly history and existing episode actions',()=>{
@@ -640,7 +640,7 @@ test('11.8 TV series are isolated, normalize by TVMaze ID and preserve episode p
  tv.action('detail',show.id);
  tv.action('season',show.id+':1');
  tv.action('episode',show.id,10);
- assert.deepEqual(show.watched,[10]);
+ assert.deepEqual(Array.from(show.watched),[10]);
  assert.equal(state.anime.length,1,'TV episode changes must not affect anime');
  tv.action('episode',show.id,12);
  assert.deepEqual(show.watched,[10],'unreleased episodes cannot be marked watched');
