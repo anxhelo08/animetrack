@@ -2,7 +2,7 @@
    Keep pinch-to-zoom available for accessibility; disable accidental double-tap
    smart zoom through touch-action: manipulation, not user-scalable=no.
 */
-@media (max-width:760px) {
+@media (max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse) {
  :root {--at-mobile-safe-top:env(safe-area-inset-top,0px);--at-mobile-safe-bottom:env(safe-area-inset-bottom,0px)}
  html {width:100%;max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
  body {width:100%;max-width:100%;overflow-x:clip;-webkit-tap-highlight-color:transparent}
@@ -171,4 +171,21 @@
 }
 @media(prefers-reduced-motion:reduce){
  .at-ios-episode-card,.at-ios-tabs button,.at-mobile-nav button {transition:none!important}
+}
+
+/* Landscape iPhone is wider than 760 CSS pixels: keep the mobile app shell. */
+@media (max-height:500px) and (orientation:landscape) and (pointer:coarse) {
+ body.at-ios-enabled .app {display:block!important}
+ body.at-ios-enabled .sidebar,body.at-ios-enabled .topbar {display:none!important}
+ body.at-ios-enabled .main {display:block;max-width:100%;width:100%;padding-top:0!important}
+ body.at-ios-enabled .at-mobile-nav {display:grid!important;z-index:900}
+ body.at-ios-enabled #home-view.at-home-rebuilt > :not(#at-iphone-feed) {display:none!important}
+ body.at-ios-enabled #home-view.at-home-rebuilt > #at-iphone-feed {display:block!important;visibility:visible!important}
+ body.at-ios-enabled #at-iphone-feed {display:block!important}
+ .at-ios-shell {padding-top:calc(12px + env(safe-area-inset-top,0px));}
+ .at-ios-header {margin-bottom:11px}
+ .at-ios-header h1 {font-size:24px}
+ .at-ios-episode-card {min-height:150px}
+ .at-ios-cover img {min-height:150px}
+ #detail-modal .modal-header {padding-top:calc(8px + env(safe-area-inset-top,0px))}
 }
