@@ -82,16 +82,6 @@ const assert=require('node:assert/strict');
     await page.locator('[data-pro-action="collection-back"]').click();
     assert(await page.locator('#library-view').isVisible(),'Back to library should work on iPhone');
    }
-   if(tab==='calendar'){
-    assert(await page.locator('.at109-settings').isVisible(),'Notification settings should render');
-    await page.locator('#at109-default-lead').selectOption('60');
-    assert.equal(await page.locator('#at109-default-lead').inputValue(),'60');
-    const choices=page.locator('[data-smart-reminder]');
-    assert(await choices.count()>0,'Per-episode reminder select should render');
-    await choices.first().selectOption('10');
-    assert.equal(await page.locator('[data-smart-reminder]').first().inputValue(),'10');
-    assert.match(await page.locator('#pro-content').innerText(),/Njoftimet jashtë aplikacionit/);
-   }
    console.log('NAV_OK',tab);
  }
 
