@@ -123,10 +123,10 @@ const assert=require('node:assert/strict');
  assert(await page.locator('.at117-library-tools button.active').isVisible(),'Sort control must have active style');
  await page.locator('[data-mobile-nav="home"]').click();
  assert(await page.locator('#at-iphone-feed').isVisible(),'Anime feed remains accessible after TV progress');
- assert(await page.locator('#at115-mobile-day .at115-day-summary').isVisible(),'Daily brief must be collapsed on iPhone');
- assert.equal(await page.locator('#at115-mobile-day .at115-day').count(),0,'Daily content starts closed');
- await page.locator('#at115-mobile-day .at115-day-summary').click();
- assert(await page.locator('#at115-mobile-day .at115-day').isVisible(),'Daily brief opens on tap');
+ assert(await page.locator('#at-iphone-feed .at115-day-summary').isVisible(),'Daily brief must be collapsed on iPhone');
+ assert.equal(await page.locator('#at-iphone-feed .at115-day').count(),0,'Daily content starts closed');
+ await page.locator('#at-iphone-feed .at115-day-summary').click();
+ assert(await page.locator('#at-iphone-feed .at115-day').isVisible(),'Daily brief opens on tap');
  console.log('TV_BROWSER_PASS',JSON.stringify({show:'Dexter',watched:1,animeIntact:true}));
 
  for(const [width,height] of [[320,700],[375,812],[390,844],[430,932],[844,390]]){

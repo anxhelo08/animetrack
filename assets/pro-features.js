@@ -45,7 +45,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  function renderHome(){
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)feed.innerHTML='<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>'}
-  if(window.matchMedia?.('(max-width: 760px)').matches){const feed=$('at-iphone-feed');if(feed){let day=$('at115-mobile-day');if(!day){day=document.createElement('div');day.id='at115-mobile-day';feed.querySelector('.at-ios-header')?.after(day)}if(day)day.innerHTML=modules.day.render(true)}renderMobileDiscover();return;}
+  if(window.matchMedia?.('(max-width: 760px)').matches){renderMobileDiscover();return;}
   if($('at-home-main'))try{
    const day=$('at115-desktop-day');if(day)day.innerHTML=modules.day.render(true);
    const parts=modules.home.render();
