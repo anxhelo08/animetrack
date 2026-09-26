@@ -21,7 +21,7 @@ window.ATTVUnified120=(()=>{
    const watched=sorted.filter(e=>(raw.watched||[]).map(Number).includes(Number(e.tvmazeEpisodeId))).map(e=>e.number);
    return {id:'tvmaze-'+showId+'-s'+seasonNo,title:(isDexter(title)?title+' · ':'')+(seasonNo===0?'Speciale':'Sezoni '+seasonNo),subtitle:title,total,watched,source:'TVMaze',sourceId:String(showId),format:'TV_SERIES',year:raw.year||null,releaseStatus:'',episodes:sorted,imdbSeasonNumber:seasonNo};
   }).filter(s=>s.total>0).sort((a,b)=>Number(a.id.split('-s').pop())-Number(b.id.split('-s').pop()));
-  if(!seasons.length)return null;
+  if(!seasons.length)seasons.push({id:'tvmaze-'+showId+'-s1',title:'Sezoni 1',subtitle:title,total:0,watched:[],source:'TVMaze',sourceId:String(showId),format:'TV_SERIES',episodes:[]});
   return {id:'tvmaze-'+showId,title,status:raw.status||'planning',format:'TV_SERIES',source:'TVMaze',sourceId:String(showId),tvmazeId:String(showId),tvmazeLoaded:true,hydrated:true,cover:poster(raw.image),year:raw.year||null,genre:(raw.genres||[]).join(', '),synopsis:clean(raw.summary),sourceUrl:raw.url||'',rating:null,communityScore:raw.rating?Math.round(Number(raw.rating)*10):null,communitySource:'TVMaze',createdAt:raw.updatedAt||new Date().toISOString(),updatedAt:raw.updatedAt||new Date().toISOString(),seasons};
  }
  function merge(anime,raw,normalize){
