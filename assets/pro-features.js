@@ -98,6 +98,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    }).catch(console.warn);
   }
   document.addEventListener('click',handleClick);
+  window.addEventListener('at120-tv-open',e=>{open('tv');void modules.tv.openExternal(e.detail)});
   document.addEventListener('change',e=>{
    const node=e.target;
    if(node?.id?.startsWith('at118-')){modules.tv.change(node.id,node.value);return}
@@ -152,6 +153,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
+  if(b.dataset.tvSearchPreview){open('tv');return modules.tv.openExternal(b.dataset.tvSearchPreview)}
   if(b.dataset.tvAction){if(active!=='tv')open('tv');return modules.tv.action(b.dataset.tvAction,b.dataset.id||'',b.dataset.ep||'')}
   if(b.hasAttribute('data-at119-add-tv')){open('tv');return}
   if(b.dataset.dayAction){try{return modules.day.action(b.dataset.dayAction,b.dataset.id||'')}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
