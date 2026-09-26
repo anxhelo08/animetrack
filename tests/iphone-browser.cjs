@@ -64,12 +64,13 @@ const assert=require('node:assert/strict');
  await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="episode"]').click();
  assert.equal(await page.locator('#ep-detail-body').getAttribute('data-at108-tab'),'episode');
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
- for(const [tab,selector] of [['calendar','#pro-view'],['explore','#explore-view'],['library','#library-view'],['profile','#pro-view'],['home','#at-iphone-feed']]){
+ for(const [tab,selector] of [['explore','#explore-view'],['library','#library-view'],['profile','#pro-view'],['home','#at-iphone-feed']]){
    await page.locator('[data-mobile-nav="'+tab+'"]').click();
    await page.waitForTimeout(70);
    const el=page.locator(selector);
    assert(await el.isVisible(),tab+' destination should display');
-   if(tab==='library'){
+   if(tab==='explore'){assert(await page.locator('#at117-mobile-discover').isVisible(),'Personal discovery must render on iPhone');assert(await page.locator('#global-search').isVisible(),'Anime search must remain accessible');}
+    if(tab==='library'){assert(await page.locator('[data-at117-sort="title"]').isVisible(),'Library sort chips must be visible');await page.locator('[data-at117-sort="title"]').click();assert.equal(await page.locator('#sort').inputValue(),'title');
     assert(await page.locator('#at110-mobile-lists').isVisible(),'My Lists shortcut should appear in iPhone library');
     await page.locator('#at110-mobile-lists').click();
     assert(await page.locator('#pro-content .at110-page').isVisible(),'Lists page should open on iPhone');
