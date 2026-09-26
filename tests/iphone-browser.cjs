@@ -92,7 +92,7 @@ const assert=require('node:assert/strict');
    console.log('NAV_OK',tab);
  }
 
- await page.locator('[data-mobile-nav="library"]').click();
+ await page.locator('.at-mobile-nav [data-mobile-nav="library"]').click();
  assert(await page.locator('[data-media-filter="all"]').isVisible(),'Unified library filter must be visible');
  await page.locator('.at119-library-intro [data-pro-page="tv"]').click();
  assert(await page.locator('.at118-page').isVisible(),'TV catalog must open on iPhone');
@@ -110,7 +110,7 @@ const assert=require('node:assert/strict');
  assert(await page.locator('#at118-episode-7771').isVisible(),'All seasons stay expanded');
  assert.equal(await page.locator('[data-tv-action="resume"][data-id="tvmaze-777"]').count(),0,'No resume when only a future episode remains');
  assert(await page.locator('[data-tv-action="episode"][data-ep="7772"]').isDisabled(),'Unaired TV episode must stay locked');
- await page.locator('[data-mobile-nav="library"]').click();
+ await page.locator('.at-mobile-nav [data-mobile-nav="library"]').click();
  assert(await page.locator('.at119-tv-card').isVisible(),'Dexter must appear alongside anime in unified library');
  assert(await page.locator('#anime-grid .anime-card').count()>=2,'Unified library must show both anime and TV');
  await page.locator('[data-media-filter="tv"]').click();
