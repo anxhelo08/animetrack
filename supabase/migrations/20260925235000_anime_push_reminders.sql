@@ -14,6 +14,7 @@ create index if not exists anime_push_subscriptions_user_idx on public.anime_pus
 alter table public.anime_push_subscriptions enable row level security;
 revoke all on public.anime_push_subscriptions from anon, public;
 grant select,insert,update,delete on public.anime_push_subscriptions to authenticated;
+grant select,insert,update,delete on public.anime_push_subscriptions to service_role;
 create policy "push subscriptions: own read" on public.anime_push_subscriptions for select to authenticated using (user_id=(select auth.uid()));
 create policy "push subscriptions: own insert" on public.anime_push_subscriptions for insert to authenticated with check (user_id=(select auth.uid()));
 create policy "push subscriptions: own update" on public.anime_push_subscriptions for update to authenticated using (user_id=(select auth.uid())) with check (user_id=(select auth.uid()));
@@ -41,6 +42,7 @@ create index if not exists anime_push_reminders_user_idx on public.anime_push_re
 alter table public.anime_push_reminders enable row level security;
 revoke all on public.anime_push_reminders from anon,public;
 grant select,insert,update,delete on public.anime_push_reminders to authenticated;
+grant select,insert,update,delete on public.anime_push_reminders to service_role;
 create policy "push reminders: own read" on public.anime_push_reminders for select to authenticated using (user_id=(select auth.uid()));
 create policy "push reminders: own insert" on public.anime_push_reminders for insert to authenticated with check (user_id=(select auth.uid()));
 create policy "push reminders: own update" on public.anime_push_reminders for update to authenticated using (user_id=(select auth.uid())) with check (user_id=(select auth.uid()));
