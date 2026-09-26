@@ -2,7 +2,7 @@
 window.AnimeTrackPro=function AnimeTrackPro(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null;
- const proPages=['notifications','recommendations','calendar','wrapped','profile','friends','moderation','collections','tv'];
+ const proPages=['notifications','recommendations','calendar','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>`<button type="button" class="pro-btn" data-pro-action="${esc(action)}" data-id="${esc(id)}">${esc(label)}</button>`;
  const modules={
   notifications:window.ATNotifications(ctx),
@@ -73,7 +73,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   modules.iphone.mount();
   $('discover')?.insertAdjacentHTML('beforebegin','<section id="at117-mobile-discover" class="at117-mobile-discover" aria-label="Rekomandimet dhe animet popullore"></section>');
   modules.collections.mountLibrary();
-  $('library-view')?.insertAdjacentHTML('afterbegin','<div class="at119-library-intro"><span>✦ BIBLIOTEKA JOTE</span><strong>Anime dhe seriale, bashkë.</strong><button type="button" data-pro-page="tv">+ Shto serial TV</button></div>');
+  $('library-view')?.insertAdjacentHTML('afterbegin','<div class="at119-library-intro"><span>✦ BIBLIOTEKA JOTE</span><strong>Anime dhe seriale, bashkë.</strong><button type="button" data-at119-add-tv>+ Shto anime ose serial</button></div>');
   window.ATImport116?.mount?.(ctx);
   document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}if(e.target?.id==='at11-friend-form'){e.preventDefault();void modules.friends.find()}});
   let friendSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='pro-friend-query')return;const q=e.target.value;clearTimeout(friendSearchTimer);friendSearchTimer=setTimeout(()=>void modules.friends.find(q),340)});
@@ -98,7 +98,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    }).catch(console.warn);
   }
   document.addEventListener('click',handleClick);
-  window.addEventListener('at120-tv-open',e=>{open('tv');void modules.tv.openExternal(e.detail)});
+  window.addEventListener('at120-tv-open',e=>{window.dispatchEvent(new CustomEvent('at120-unified-tv-open',{detail:e.detail}))});
   document.addEventListener('change',e=>{
    const node=e.target;
    if(node?.id?.startsWith('at118-')){modules.tv.change(node.id,node.value);return}
@@ -153,9 +153,9 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
-  if(b.dataset.tvSearchPreview){open('tv');return modules.tv.openExternal(b.dataset.tvSearchPreview)}
-  if(b.dataset.tvAction){if(active!=='tv')open('tv');return modules.tv.action(b.dataset.tvAction,b.dataset.id||'',b.dataset.ep||'')}
-  if(b.hasAttribute('data-at119-add-tv')){open('tv');return}
+  if(b.dataset.tvSearchPreview){window.dispatchEvent(new CustomEvent('at120-unified-tv-open',{detail:b.dataset.tvSearchPreview}));return}
+  if(b.dataset.tvAction){const id=String(b.dataset.id||'');if(id.startsWith('tvmaze-')){ctx.openAnime(id);return}return modules.tv.action(b.dataset.tvAction,id,b.dataset.ep||'')}
+  if(b.hasAttribute('data-at119-add-tv')){ctx.navigate('explore');document.getElementById('global-search')?.focus();return}
   if(b.dataset.dayAction){try{return modules.day.action(b.dataset.dayAction,b.dataset.id||'')}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
   if(b.dataset.iosAction){if(b.dataset.iosAction==='close-install'){const d=$('at-ios-install-guide');d?.close?.();if(d)d.hidden=true;return}try{return await modules.iphone.action(b.dataset.iosAction,b.dataset.id||'',b)}catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,110));return}}
   if(b.dataset.proPage){ctx.navigate(b.dataset.proPage);return}

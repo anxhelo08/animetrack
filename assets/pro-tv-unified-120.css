@@ -1,0 +1,17 @@
+/* 12.0 — one card system for both media types, one responsive library. */
+#anime-grid .anime-card[hidden],#anime-grid .empty[hidden]{display:none!important}
+#anime-grid .anime-card[data-media="tv"]{position:relative}
+#anime-grid .anime-card[data-media="tv"]::before{content:"SERIAL TV";position:absolute;top:9px;left:9px;z-index:3;background:#302442e8;border:1px solid #ad98ef;color:#eee7ff;font-size:9px;font-weight:850;letter-spacing:.08em;border-radius:8px;padding:5px 8px;pointer-events:none}
+#anime-grid .anime-card[data-media="tv"] .card-title{padding-top:2px}
+#at113-library-head .at113-library-title h2{font-size:clamp(23px,2.5vw,31px);line-height:1.15}
+#library-view .at119-media-filter{margin-top:10px}
+#library-view .at117-library-tools{max-width:100%;flex-wrap:wrap}
+#library-view .at117-library-tools button{min-height:36px}
+#library-view .at117-library-tools button.active{background:#7255b8!important;border-color:#ae93f1!important;color:#fff!important}
+#library-view #at113-library-search{min-height:48px;font-size:16px}
+#detail-modal .season-tab{min-width:155px}
+#detail-modal .season-scroller{overflow-x:auto;scroll-snap-type:x proximity}
+#detail-modal .season-tab{scroll-snap-align:start}
+@media(max-width:760px){#library-view .at117-library-tools{gap:8px}#library-view .at117-library-tools button{min-height:40px}#detail-modal .season-tab{min-width:140px}#library-view .at119-media-filter{width:100%}}
+
+.at120-card-poster{display:block;width:100%;border:0;padding:0;background:transparent;text-align:inherit;cursor:pointer}.at120-card-poster .poster{width:100%}.at120-card-title{display:block;width:100%;background:transparent;border:0;padding:0;text-align:left;color:inherit;font:inherit;font-weight:800;cursor:pointer}.at120-card-title:focus-visible,.at120-card-poster:focus-visible{outline:2px solid #c8afff;outline-offset:2px}
