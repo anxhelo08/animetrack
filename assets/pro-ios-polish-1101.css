@@ -1,0 +1,174 @@
+/* AnimeTrack 11.0.1 — iPhone layout & touch ergonomics.
+   Keep pinch-to-zoom available for accessibility; disable accidental double-tap
+   smart zoom through touch-action: manipulation, not user-scalable=no.
+*/
+@media (max-width:760px) {
+ :root {--at-mobile-safe-top:env(safe-area-inset-top,0px);--at-mobile-safe-bottom:env(safe-area-inset-bottom,0px)}
+ html {width:100%;max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
+ body {width:100%;max-width:100%;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+ body.at-ios-enabled {min-width:0;padding-bottom:calc(91px + var(--at-mobile-safe-bottom))}
+ body.at-ios-enabled .app {min-width:0;max-width:100%;min-height:100dvh}
+ body.at-ios-enabled .main {
+   width:100%;min-width:0;max-width:100%;
+   padding:0 max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))!important;
+ }
+ body.at-ios-enabled #home-view,
+ body.at-ios-enabled #library-view,
+ body.at-ios-enabled #explore-view,
+ body.at-ios-enabled #upcoming-view,
+ body.at-ios-enabled #seasons-view,
+ body.at-ios-enabled #statistics-view,
+ body.at-ios-enabled #pro-view {max-width:100%;min-width:0}
+ body.at-ios-enabled #home-view {padding-bottom:calc(104px + var(--at-mobile-safe-bottom))}
+ body.at-ios-enabled #library-view,
+ body.at-ios-enabled #explore-view,
+ body.at-ios-enabled #upcoming-view,
+ body.at-ios-enabled #seasons-view,
+ body.at-ios-enabled #statistics-view {
+   padding-top:calc(16px + var(--at-mobile-safe-top))!important;
+   padding-bottom:calc(110px + var(--at-mobile-safe-bottom))!important;
+ }
+ body.at-ios-enabled .pro-view {
+   padding-top:calc(16px + var(--at-mobile-safe-top))!important;
+   padding-bottom:calc(110px + var(--at-mobile-safe-bottom))!important;
+ }
+ body.at-ios-enabled .at-mobile-nav {
+   z-index:900;
+   left:0;right:0;bottom:0;
+   grid-template-columns:repeat(5,minmax(0,1fr));
+   padding:8px max(6px,env(safe-area-inset-right,0px))
+           calc(8px + var(--at-mobile-safe-bottom))
+           max(6px,env(safe-area-inset-left,0px));
+   min-height:calc(66px + var(--at-mobile-safe-bottom));
+   border-radius:17px 17px 0 0;
+   background:#171827f7;
+ }
+ body.at-ios-enabled .at-mobile-nav button {
+   min-width:0;min-height:50px;padding:7px 2px 5px;gap:4px;
+   border-radius:11px;align-content:center;
+ }
+ body.at-ios-enabled .at-mobile-nav button span {font-size:21px;line-height:1.12}
+ body.at-ios-enabled .at-mobile-nav button small {font-size:11px;line-height:1.2;font-weight:750}
+ body.at-ios-enabled .at-ios-shell {padding-top:calc(19px + var(--at-mobile-safe-top));padding-bottom:20px}
+ .at-ios-header {margin-bottom:19px}
+ .at-ios-header h1 {font-size:clamp(25px,7.3vw,32px)}
+ .at-ios-header p {font-size:12px;line-height:1.45}
+ .at-ios-section-heading h2 {font-size:21px}
+ .at-ios-tabs button {min-height:44px;font-size:12px;padding-inline:13px}
+ .at-ios-episode-card {grid-template-columns:clamp(90px,26vw,114px) minmax(0,1fr);min-height:173px}
+ .at-ios-cover img {min-height:173px}
+ .at-ios-episode-copy {gap:7px;padding:12px 10px}
+ .at-ios-title {font-size:14px;line-height:1.28}
+ .at-ios-next {font-size:18px}
+ .at-ios-episode-copy>small {font-size:11px}
+ .at-ios-card-actions button {min-height:44px;padding:7px 8px;font-size:11px;white-space:normal;line-height:1.2}
+ .at-ios-card-actions {gap:6px}
+ .at-ios-release-copy button {min-height:42px;font-size:11px}
+ .at-ios-coming>button,.at-ios-section-heading>button,.at-ios-bell {min-width:44px;min-height:44px}
+ .at-ios-more,.at-ios-empty button {min-height:46px;font-size:12px}
+ .at-ios-watch-feedback button {min-height:44px;font-size:11px}
+ .at109-week-heading>button,.at110-library-link,.at110-heading>button {min-height:44px;font-size:11px}
+ .at109-week-event>button,.at110-list-actions button,.at110-create>button {min-height:44px}
+ .at110-heading {gap:9px}
+ .at110-heading h2 {font-size:clamp(19px,5.8vw,24px);line-height:1.2}
+ .at110-heading>button {white-space:nowrap}
+ .at110-create input,.at110-search input,.at109-default select,.at109-reminder-choice select {
+   font-size:16px!important;
+ }
+ /* Modal backdrops must outrank the tab bar (legacy bar used z-index:1000).
+    Put all controls below the notch and above the home indicator. */
+ .modal-backdrop:not(#detail-modal) {
+   padding:calc(12px + var(--at-mobile-safe-top))
+           max(12px,env(safe-area-inset-right,0px))
+           calc(12px + var(--at-mobile-safe-bottom))
+           max(12px,env(safe-area-inset-left,0px));
+ }
+ .modal-backdrop:not(#detail-modal)>.modal {
+   max-height:calc(100dvh - 24px - var(--at-mobile-safe-top) - var(--at-mobile-safe-bottom));
+   overscroll-behavior:contain;
+   -webkit-overflow-scrolling:touch;
+ }
+ #detail-modal {z-index:1150;padding:0!important;align-items:stretch}
+ #detail-modal .seasons-modal {
+   width:100%;max-width:100%;height:100dvh;max-height:100dvh;
+   overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ }
+ #detail-modal .modal-header {
+   position:sticky;top:0;z-index:8;
+   display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;
+   min-height:calc(65px + var(--at-mobile-safe-top));
+   padding:calc(12px + var(--at-mobile-safe-top))
+           max(13px,env(safe-area-inset-right,0px))
+           12px
+           max(13px,env(safe-area-inset-left,0px));
+   background:#171827f5;
+ }
+ #detail-modal .modal-header h2 {min-width:0;font-size:18px;line-height:1.3;overflow:hidden;text-overflow:ellipsis}
+ #detail-modal .detail-back {
+   display:inline-flex;align-items:center;justify-content:center;
+   min-height:46px;min-width:94px;margin:0;padding:8px 12px;white-space:nowrap;
+   font-size:13px;font-weight:800;line-height:1.2;border-radius:12px;
+ }
+ #detail-modal .modal-body {
+   width:100%;max-width:100%;padding:
+     16px max(13px,env(safe-area-inset-right,0px))
+     calc(30px + var(--at-mobile-safe-bottom))
+     max(13px,env(safe-area-inset-left,0px));
+ }
+ #detail-modal .detail-top {gap:12px}
+ #detail-modal .detail-poster {min-width:82px;width:82px;height:124px;flex:0 0 82px}
+ #detail-modal .detail-content h3 {font-size:clamp(18px,5vw,23px)}
+ #detail-modal .season-scroller {scroll-padding-inline:10px}
+ #detail-modal .season-tab {min-height:115px;flex-basis:145px}
+ #detail-modal .episode-list .ep-row button {min-height:44px}
+ #episode-detail-modal {z-index:1170;align-items:flex-start}
+ #episode-detail-modal .ep-detail-dialog {
+   width:100%;max-height:calc(100dvh - 24px - var(--at-mobile-safe-top) - var(--at-mobile-safe-bottom));
+   overflow-y:auto;
+ }
+ #episode-detail-modal .modal-header {
+   position:sticky;top:0;z-index:12;align-items:center;
+   padding:12px 13px;background:#1a1b2bf8;border-bottom:1px solid #39334d;
+ }
+ #episode-detail-modal .modal-header h2 {font-size:19px;line-height:1.25}
+ #episode-detail-modal .modal-header .x {flex:0 0 46px;width:46px;height:46px;font-size:24px}
+ #episode-detail-modal .modal-body {padding:12px 13px calc(24px + var(--at-mobile-safe-bottom))}
+ #episode-detail-modal .at108-episode-tabs {top:0}
+ #episode-detail-modal .at108-episode-switch button {min-height:44px}
+ #account-modal {z-index:1180}
+ #form-modal,#catalog-preview-modal {z-index:1180}
+ #confirm-modal,#season-confirm-modal {z-index:1200}
+ #account-modal .modal-header .x,
+ .modal-backdrop:not(#detail-modal) .modal-header>.x {width:46px;height:46px;flex:0 0 46px;font-size:23px}
+ .modal-backdrop:not(#detail-modal) .modal-header {align-items:center}
+ .modal-backdrop:not(#detail-modal) .modal-header h2 {font-size:clamp(18px,5.5vw,23px);line-height:1.25}
+ .toast {z-index:1300;bottom:calc(82px + var(--at-mobile-safe-bottom));left:12px;right:12px;max-width:none;font-size:13px}
+ .at-ios-install-dialog {max-height:calc(100dvh - 24px - var(--at-mobile-safe-top) - var(--at-mobile-safe-bottom));overflow-y:auto}
+ .at-ios-install-dialog button {min-height:44px}
+}
+@media(max-width:380px){
+ .at-ios-episode-card {grid-template-columns:90px minmax(0,1fr)}
+ .at-ios-episode-copy {gap:5px;padding:10px 8px}
+ .at-ios-title {font-size:12.5px}
+ .at-ios-next {font-size:17px}
+ .at-ios-card-actions button {font-size:10px;padding-inline:5px}
+ body.at-ios-enabled .at-mobile-nav button small {font-size:10px}
+ #detail-modal .modal-header h2 {font-size:16px}
+ #detail-modal .detail-back {min-width:88px;padding-inline:9px}
+}
+@media(max-width:760px) and (orientation:landscape) and (max-height:500px){
+ body.at-ios-enabled .at-mobile-nav button {min-height:44px;padding-block:4px}
+ body.at-ios-enabled .at-mobile-nav {min-height:calc(58px + var(--at-mobile-safe-bottom));padding-top:5px}
+ #detail-modal .modal-header {min-height:calc(54px + var(--at-mobile-safe-top));padding-top:calc(7px + var(--at-mobile-safe-top));padding-bottom:7px}
+}
+@media(hover:none) and (pointer:coarse){
+ /* manipulation blocks accidental double-tap zoom, but preserves pinch zoom. */
+ html,body,button,a,summary,select,label,[role="button"],
+ .at-ios-episode-card,.at-ios-release,.at-ios-coming,.anime-card,.modal-backdrop,.modal {
+   touch-action:manipulation;
+ }
+ input,textarea {font-size:16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .at-ios-episode-card,.at-ios-tabs button,.at-mobile-nav button {transition:none!important}
+}
