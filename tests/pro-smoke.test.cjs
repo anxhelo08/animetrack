@@ -14,7 +14,7 @@ function load(extra={}){
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','ATCollections110','AnimeTrackPro'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','assets/pro-airing-109.css','assets/pro-collections-110.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 11\.0/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','assets/pro-airing-109.css','assets/pro-collections-110.css','assets/pro-ios-polish-1101.css','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 11\.0\.1/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v110-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1101-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -342,7 +342,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
  assert.match(index,/pro-airing-109\.css/);
- assert.match(sw,/animetrack-shell-v110-1/);
+ assert.match(sw,/animetrack-shell-v1101-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -389,4 +389,25 @@ test('11.0 collections roll back failed saves and are linked on phone/desktop',(
  assert.match(index,/pro-collections-110\.js/);
  assert.match(sw,/pro-collections-110\.css/);
  assert.match(file,/Listat e mia/);
+});
+
+test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
+ const css=fs.readFileSync(path.join(root,'assets/pro-ios-polish-1101.css'),'utf8'),
+ html=fs.readFileSync(path.join(root,'index.html'),'utf8'),
+ sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+ assert.match(css,/#detail-modal \.modal-header/);
+ assert.match(css,/safe-area-inset-top/);
+ assert.match(css,/safe-area-inset-bottom/);
+ assert.match(css,/#detail-modal \.detail-back/);
+ assert.match(css,/min-height:46px/);
+ assert.match(css,/touch-action:manipulation/);
+ assert.match(css,/pointer:coarse/);
+ assert.match(css,/orientation:landscape/);
+ assert.match(css,/#episode-detail-modal \{z-index:1170/);
+ assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
+ assert.match(html,/pro-ios-polish-1101\.css/);
+ assert.match(sw,/pro-ios-polish-1101\.css/);
+ assert.match(sw,/animetrack-shell-v1101-1/);
+ assert.match(html,/viewport-fit=cover/);
+ assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
