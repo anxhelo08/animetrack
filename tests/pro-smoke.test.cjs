@@ -643,7 +643,7 @@ test('11.8 TV series are isolated, normalize by TVMaze ID and preserve episode p
  assert.deepEqual(Array.from(show.watched),[10]);
  assert.equal(state.anime.length,1,'TV episode changes must not affect anime');
  tv.action('episode',show.id,12);
- assert.deepEqual(show.watched,[10],'unreleased episodes cannot be marked watched');
+ assert.deepEqual(Array.from(show.watched),[10],'unreleased episodes cannot be marked watched');
  tv.change('at118-show-status','watching');assert.equal(show.status,'watching');
  assert.match(tv.render(),/1 \/ 4 episode/);
 });
