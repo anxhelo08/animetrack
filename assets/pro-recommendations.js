@@ -141,6 +141,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  };
  return `<div class="at-home-rec-header"><div><span class="pro-eyebrow">CURATED FOR YOU</span><h3>✨ Rekomandime për ty</h3><p>${p.personal?'Zgjedhje nga zhanret dhe vlerësimet e tua.':'Zbulo diçka të re nga katalogu anime.'}</p></div><button class="pro-btn at-home-rec-discover" data-pro-page="recommendations">Eksploro të gjitha ↗</button></div>${featured.length?`<div class="at-home-rec-grid">${featured.map(tile).join('')}</div>`:'<div class="at-home-rec-empty"><span>✦</span><p>Rekomandimet po përgatiten sipas bibliotekës tënde.</p><button class="pro-btn" data-pro-page="recommendations">Hap zbulimet →</button></div>'}`;
 }
+ function trending(){return items.filter(x=>!ctx.inLibrary(x)).slice().sort((a,b)=>b.popularity-a.popularity).slice(0,8).map(x=>{const src=ctx.poster(x.cover);return `<button type="button" class="at117-trending-card" data-pro-action="preview-recommendation" data-key="${esc(x.key)}" aria-label="Hap ${esc(x.title)}">${src?`<img src="${esc(src)}" alt="Posteri i ${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<span>✦</span>'}<strong>${esc(x.title)}</strong><small>${x.score==null?'AniList':`★ ${(Number(x.score)/10).toFixed(1)}`} · ${Number(x.popularity).toLocaleString('sq-AL')} ndjekës në AniList</small></button>`}).join('')}
  function rerank(){items=uniqueRanked(candidates,profile());ctx.rerender()}
  function switchOwner(){
   const id=String(ctx.user()?.id||'guest');
@@ -194,5 +195,5 @@ window.ATRecommendations=function ATRecommendations(ctx){
  async function add(key){const x=items.find(x=>x.key===key);if(!x)return;await ctx.addItem(x);rerank()}
  function reset(){requestId++;owner='';candidates=[];items=[];loading=false;error='';ctx.rerender()}
  function onLibraryChange(){if(owner===String(ctx.user()?.id||'guest')&&candidates.length)rerank()}
- return {render,home,refresh,add,preview,hide,restore,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange};
+ return {render,home,trending,refresh,add,preview,hide,restore,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange};
 };
