@@ -1,4 +1,4 @@
-# AnimeTrack 11.0.1 — Anime Universe Pro
+# AnimeTrack 11.2 — Anime Universe Pro
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
@@ -97,3 +97,22 @@ Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodiki
 - Një rekord i paplotë episodi nuk e bllokon tërë aplikacionin; shfaqet veprim rikuperimi.
 
 <!-- Production redeploy: AnimeTrack 11.0.1 iPhone blank-feed hotfix. -->
+
+## AnimeTrack 11.1 — Phone + Friends & Watch polish
+- iPhone: refreshed graphite/dark design inspired by the compact media-app layout, safe-area-aware fixed navigation, larger tappable episode watch buttons, explicit undo.
+- Friends: public username/display-name search, 340ms debounce, clearer incoming/outgoing/accepted lists, request cancellation, accept/decline and privacy-preserving library comparison. Profile and phone feed link directly to Friends. Requires existing `anime_profiles` and `anime_friendships` RLS; does not expose private profiles in search.
+- Desktop: redesigned social/profile components, watch cards, episode buttons and interactive focus states.
+- Cloud: independent module recovery so a social feature failure cannot prevent other account widgets from loading; full-season marking rolls back if local persistence fails.
+- No database schema changes. Web Push remains staged, not enabled by this release.
+
+
+## AnimeTrack 11.2 — Pro Experience (iPhone + PC)
+- iPhone: personal glance me episodet gati, kërkim në feed, renditje Të fundit / Më shumë EP / A–Z, fushë kërkimi 16px dhe veprime të arritshme me prekje. Kërkimi/renditja nuk ndryshojnë të dhënat.
+- Desktop: kërkim global brenda aplikacionit me Ctrl/⌘+K ose `/`, navigim me shigjeta/Enter/Escape, hapje direkte e animeve nga biblioteka, focus trap dhe etiketa accessibility.
+- Miqtë: kutia “Kopjo ftesën”, kërkimi i saktë i username-it privat përmes RPC me output minimal, ftesë private me kërkesë eksplicite dhe pa shpërndarë snapshot, bio ose email; kërkimi i gjerë mbetet vetëm për profile publike. Respektohen kërkesat ekzistuese/refuzimet.
+- Offline: njoftim i qartë kur humbet lidhja, pa pretenduar se cloud është sinkronizuar; version PWA cache `v1120-1`.
+- Skedari i migrimit për ftesat private është `supabase/migrations/20260926153000_private_friend_invites_112.sql`. **Është aplikuar dhe verifikuar në projektin Supabase të lidhur (26.09.2026); për një projekt tjetër, ekzekuto migrimet sipas radhës.** Versioni më i vjetër mbetet i përdorshëm për kërkesat publike pa migrimin. RLS e bibliotekave dhe të dhënat ekzistuese nuk ndryshohen.
+- `npm test` verifikon 11.2 dhe regresionet e mëparshme. Shiko `tests/iphone-browser.cjs`/`tests/desktop-browser.cjs` për teste browser kur mjedisi mbështet Chromium/WebKit.
+- Ky ZIP është release source; publikimi në Vercel është hap më vete dhe nuk nënkuptohet nga ndryshimi i versionit në skedarë.
+
+- Fortifikimi RPC: `supabase/migrations/20260926154500_private_friend_rpc_hardening_112.sql` zhvendos implementimin me privilegje në skemë private dhe mban vetëm wrapper-at SECURITY INVOKER në API-n publike.

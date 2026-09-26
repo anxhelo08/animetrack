@@ -94,7 +94,8 @@ function markNext(id){let a=state.anime.find(x=>x.id===id);if(!a)return false;co
 function record(id,episode,action,seasonId='',episodes=null){state.history.push({id,episode,action,seasonId,date:now(),...(Array.isArray(episodes)?{episodes:episodes.filter(n=>Number.isInteger(n)&&n>0&&n<=10000)}:{})});if(state.history.length>2000)state.history=state.history.slice(-2000)}
 let pendingSeason=null;
 function commitSeason(id,seasonId,seen,includePrevious=false){
- const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId);if(!a||!s)return;
+ const index=state.anime.findIndex(x=>x.id===id),a=state.anime[index],s=a?.seasons.find(x=>x.id===seasonId);if(!a||!s)return;
+ const before=JSON.parse(JSON.stringify(a)),historyBefore=state.history.slice();
  const idx=a.seasons.indexOf(s), targets=includePrevious&&seen?a.seasons.slice(0,idx+1):[s];
  let added=0,removed=0,skipped=0;
  for(const x of targets){const available=releasedCount(x);if(!available){skipped++;continue}
@@ -105,7 +106,8 @@ function commitSeason(id,seasonId,seen,includePrevious=false){
  if(!added&&!removed){notify('Nuk kishte episode për t’u ndryshuar.');return}
  syncTotals(a);a.updatedAt=now();
  releasedStatusAfterWatch(a,seen);
- save();render();if(detailId===id)renderDetail(id);renderHome();
+ if(!save()){state.anime[index]=before;state.history=historyBefore;notify('Sezoni nuk u ruajt. Nuk është ndryshuar progresi.');return}
+ render();if(detailId===id)renderDetail(id);renderHome();
  notify(`${seen?'U shënuan '+added:'U hoqën '+removed} episode${skipped?' · '+skipped+' sezone me total të panjohur u lanë pa ndryshuar':''} ✓`);
 }
 function markSeason(id,seasonId,seen){
@@ -1179,7 +1181,7 @@ proApp.init();
 const proPriorHome=renderHome;renderHome=function(){proPriorHome();proApp.renderHome()};
 const proPriorView=setView;setView=function(which){if(proApp.open(which))return;proApp.hide();proApp.syncMobile(which);return proPriorView(which)};
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id)};
-const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);await proApp.onAccount()};
+const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);void proApp.onAccount().catch(e=>console.warn('Optional account features',e))};
 const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
 const proPriorSave=save;save=function(){const result=proPriorSave();if(result)try{proApp.onStateChange()}catch(err){console.warn('Feature refresh after save failed',err)}return result};
 

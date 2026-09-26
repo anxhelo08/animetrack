@@ -16,9 +16,11 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   moderation:window.ATModeration(ctx),
   rewatch:window.ATRewatch(ctx),
   home:window.ATHome(ctx),
-  iphone:window.ATiPhone(ctx)
+  iphone:window.ATiPhone(ctx),
+  experience:window.ATExperience112(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
+ ctx.socialCounts=()=>modules.friends.counts();
  ctx.smartWeek=compact=>modules.smart.panel(!!compact);
  ctx.smartReminderSelect=e=>modules.smart.reminderSelect(e);
  ctx.setCalendarReminder=(key,value)=>modules.smart.setReminder(key,value);
@@ -51,6 +53,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  }
  ctx.rerender=()=>{render();renderHome()};
  function init(){
+  modules.experience.init();
   const nav=$('side-nav');
   nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['collections','▤','Listat e mia'],['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
   document.querySelector('.top-actions')?.insertAdjacentHTML('afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
@@ -61,7 +64,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   modules.home.mount(home,recommend,dash);
   modules.iphone.mount();
   modules.collections.mountLibrary();
-  document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}});
+  document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}if(e.target?.id==='at11-friend-form'){e.preventDefault();void modules.friends.find()}});
+  let friendSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='pro-friend-query')return;const q=e.target.value;clearTimeout(friendSearchTimer);friendSearchTimer=setTimeout(()=>void modules.friends.find(q),340)});
   let collectionSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at110-search-input')return;clearTimeout(collectionSearchTimer);collectionSearchTimer=setTimeout(()=>{const input=$('at110-search-input');if(!input)return;const value=input.value,caret=input.selectionStart,focused=document.activeElement===input;modules.collections.setSearch(value);const next=$('at110-search-input');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});
   document.body.insertAdjacentHTML('beforeend','<dialog id="at-ios-install-guide" class="at-ios-install-dialog" aria-labelledby="at-ios-install-title"><button type="button" class="at-ios-dialog-close" data-ios-action="close-install" aria-label="Mbyll">×</button><div class="at-ios-install-mark">✦</div><h2 id="at-ios-install-title">Instalo AnimeTrack</h2><p>Hape në Safari dhe shtoje si aplikacion në ekranin e iPhone.</p><ol><li>Hap <strong>Safari</strong> në iPhone.</li><li>Prek butonin <strong>Share</strong> (katrori me shigjetë).</li><li>Zgjidh <strong>Add to Home Screen</strong>.</li><li>Aktivizo <strong>Open as Web App</strong>, pastaj prek <strong>Add</strong>.</li></ol><button type="button" class="at-ios-install-ok" data-ios-action="close-install">E kuptova ✓</button></dialog>');
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
@@ -110,8 +114,19 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name)}
  async function onAccount(){
-  try{if(!ctx.user())modules.recommendations.reset();await modules.profiles.load();await modules.friends.load();await modules.moderation.load();await modules.notifications.refresh();await modules.recommendations.refresh(false);renderHome();void modules.push.prepare().then(()=>modules.push.scheduleSync());void refreshLive(false);
-   const handle=new URLSearchParams(location.search).get('profile');if(handle&&ctx.user()){open('friends');await modules.friends.openHandle(handle)}
+  try{
+   if(!ctx.user())modules.recommendations.reset();
+   // Social, notifications and external recommendations must not hold the entire account UI hostage.
+   const work=[['profiles',()=>modules.profiles.load()],['friends',()=>modules.friends.load()],['moderation',()=>modules.moderation.load()],['notifications',()=>modules.notifications.refresh()],['recommendations',()=>modules.recommendations.refresh(false)]];
+   void Promise.allSettled(work.map(async([name,fn])=>{
+    try{await fn()}catch(err){console.warn('Account module '+name,err)}
+    finally{if(name==='profiles'||name==='friends'){render();renderHome()}}
+   }));
+   render();renderHome();
+   void modules.push.prepare().then(()=>modules.push.scheduleSync()).catch(console.warn);
+   void refreshLive(false);
+   const handle=new URLSearchParams(location.search).get('profile');
+   if(handle&&ctx.user()){open('friends');await modules.friends.load();await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
  function onStateChange(){
