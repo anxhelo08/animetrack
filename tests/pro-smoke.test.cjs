@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1180-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1181-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -342,7 +342,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
  assert.match(index,/pro-airing-109\.css/);
- assert.match(sw,/animetrack-shell-v1180-1/);
+ assert.match(sw,/animetrack-shell-v1181-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -407,7 +407,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
  assert.match(html,/pro-ios-polish-1101\.css/);
  assert.match(sw,/pro-ios-polish-1101\.css/);
- assert.match(sw,/animetrack-shell-v1180-1/);
+ assert.match(sw,/animetrack-shell-v1181-1/);
  assert.match(html,/viewport-fit=cover/);
  assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
@@ -529,7 +529,7 @@ test('11.4.1 watches ignored metadata update for seven-day inactivity and filter
 });
 test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
  const css=fs.readFileSync(path.join(root,'assets/pro-mobile-113.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
- assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1180-1/);
+ assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1181-1/);
 });
 
 test('11.5 daily experience uses shared library, real weekly history and existing episode actions',()=>{
@@ -647,10 +647,33 @@ test('11.8 TV series are isolated, normalize by TVMaze ID and preserve episode p
  tv.change('at118-show-status','watching');assert.equal(show.status,'watching');
  assert.match(tv.render(),/1 \/ 4 episode/);
 });
+test('11.8.1 TV resume, bulk prior episodes, season all and grouped Dexter',()=>{
+ const w=load(),state={anime:[{id:'anime-1'}],tvShows:[],history:[],preferences:{}};
+ const c={...context(),state:()=>state,save:()=>true,rerender:()=>{},poster:x=>x,confirm:()=>true};
+ const tv=w.ATTVShows(c),mk=(id,name)=>tv.mapShow({id,name,genres:['Drama'],premiered:'2006-01-01'},[
+ {id:id*100+1,season:1,number:1,name:'One',airdate:'2006-01-01'},
+ {id:id*100+2,season:1,number:2,name:'Two',airdate:'2006-01-08'},
+ {id:id*100+3,season:1,number:3,name:'Three',airdate:'2006-01-15'},
+ {id:id*100+4,season:2,number:1,name:'Future',airdate:'2099-01-01'}]);
+ const dex=mk(123,'Dexter'),newBlood=mk(124,'Dexter: New Blood');state.tvShows=[dex,newBlood];
+ assert.match(tv.render(),/Universi Dexter/i);
+ tv.action('franchise');assert.match(tv.render(),/Dexter: New Blood/);
+ tv.action('detail',dex.id);assert.match(tv.render(),/E03/);
+ tv.action('episode',dex.id,12303);assert.deepEqual(Array.from(dex.watched),[]);
+ assert.match(tv.render(),/Po, edhe të mëparshmit/);
+ tv.action('bulk-only');assert.deepEqual(Array.from(dex.watched),[12303]);
+ tv.action('resume',dex.id);assert.match(tv.render(),/E01/);
+ tv.action('episode',dex.id,12302);tv.action('bulk-all');
+ assert.deepEqual(Array.from(dex.watched).sort(),[12301,12302,12303]);
+ tv.action('season-all',dex.id,2);assert.doesNotMatch(tv.render(),/I ke parë episodet e sezonit 2/);
+ tv.action('season-all',dex.id,1);assert.match(tv.render(),/I ke parë episodet e sezonit 1/);
+ tv.action('bulk-all');assert.equal(dex.watched.includes(12304),false);
+ assert.equal(state.anime.length,1);assert.deepEqual(Array.from(newBlood.watched),[]);
+});
 test('11.8 TV resources, cloud normalization and mobile entry are wired',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),app=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  for(const file of ['pro-tv-118.js','pro-tv-118.css']){assert.match(html,new RegExp(file.replace('.','\\.')));assert.match(sw,new RegExp(file.replace('.','\\.')))}
  assert.match(app,/function normalizeTVShows/);assert.match(app,/tvShows:normalizeTVShows\(data\.tvShows\)/);
  assert.match(pro,/data-mobile-nav="tv"/);assert.match(pro,/modules\.tv\.render/);
- assert.match(sw,/animetrack-shell-v1180-1/);
+ assert.match(sw,/animetrack-shell-v1181-1/);
 });
