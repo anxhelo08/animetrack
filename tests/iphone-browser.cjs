@@ -14,6 +14,8 @@ const assert=require('node:assert/strict');
  window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'demo-user',email:'demo@example.com'}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain('rpc')})};
  })();`;
  await page.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2*',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub}));
+ await page.route('https://api.tvmaze.com/search/shows?q=*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{score:1,show:{id:777,name:'Dexter',premiered:'2006-10-01',genres:['Drama'],rating:{average:8.5},image:null,url:'https://www.tvmaze.com/shows/777/dexter'}}])}));
+ await page.route('https://api.tvmaze.com/shows/777/episodes?specials=1',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{id:7771,season:1,number:1,name:'Dexter',airdate:'2006-10-01',runtime:55},{id:7772,season:1,number:2,name:'Future',airdate:'2099-01-01',runtime:55}])}));
  await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
  await page.waitForTimeout(1100);
  const info=await page.evaluate(()=>{
@@ -84,6 +86,21 @@ const assert=require('node:assert/strict');
    }
    console.log('NAV_OK',tab);
  }
+
+ await page.locator('[data-mobile-nav="tv"]').click();
+ assert(await page.locator('.at118-page').isVisible(),'TV catalog must open on iPhone');
+ await page.locator('#at118-query').fill('Dexter');
+ await page.locator('[data-tv-action="search"]').click();
+ await page.locator('[data-tv-action="add"][data-id="777"]').waitFor();
+ await page.locator('[data-tv-action="add"][data-id="777"]').click();
+ await page.locator('.at118-detail').waitFor();
+ assert.match(await page.locator('.at118-detail').innerText(),/Dexter/);
+ await page.locator('[data-tv-action="episode"][data-ep="7771"]').click();
+ assert.match(await page.locator('.at118-detail').innerText(),/1 \/ 2 episode/);
+ assert(await page.locator('[data-tv-action="episode"][data-ep="7772"]').isDisabled(),'Unaired TV episode must stay locked');
+ await page.locator('[data-mobile-nav="home"]').click();
+ assert(await page.locator('#at-iphone-feed').isVisible(),'Anime feed remains separate after TV progress');
+ console.log('TV_BROWSER_PASS',JSON.stringify({show:'Dexter',watched:1,animeIntact:true}));
 
  for(const [width,height] of [[320,700],[375,812],[390,844],[430,932],[844,390]]){
   await page.setViewportSize({width,height});
