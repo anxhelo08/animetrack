@@ -38,21 +38,23 @@ window.ATCalendarWrapped=function ATCalendarWrapped(ctx){
  const body=mode==='agenda'?`<div class="at-cal-agenda">${showDates.map(d=>`<section><h3>${esc(labelDate(d))} <small>${dayEvents(d).length} ngjarje</small></h3><div class="at-cal-agenda-events">${dayEvents(d).map(line).join('')||'<p class="at-cal-noevents">Asnjë premierë e konfirmuar.</p>'}</div></section>`).join('')}</div>`:`<div class="at-cal-grid ${mode==='month'?'month':''}">${dates.map(d=>day(d,mode==='month')).join('')}</div>`;
  return `<header class="at-cal-hero"><div><span class="pro-eyebrow">YOUR AIRING SCHEDULE</span><h2>📅 Kalendari yt anime</h2><p>Premierat e animeve nga biblioteka jote, në orën lokale. Orari i transmetimit nuk garanton disponueshmërinë në një platformë.</p></div><div class="at-cal-hero-stat"><strong>${upcoming}</strong><span>premiera në këtë periudhë</span></div></header><div class="at-cal-highlights"><div><span>◷ Episodi i radhës</span><strong>${nearest?esc(nearest.title):'Ende pa njoftim'}</strong><small>${lead!=null?'Pas rreth '+lead+' orësh':'Rifresko kalendarin për data të reja.'}</small></div><div><span>✦ Dita më aktive</span><strong>${busiest?.[1]?esc(busiest[0]):'Nuk ka premiera'}</strong><small>${busiest?.[1]||0} transmetime të njoftuara</small></div></div>${controls}${dayChips}<div class="at-cal-period"><h3>${heading}</h3>${mode==='agenda'&&focusDay?'<button class="pro-btn" data-pro-action="calendar-focus-reset">Shiko gjithë periudhën</button>':''}</div>${body}${missed.length?`<section class="pro-panel at-cal-missed"><div class="pro-row"><div><span class="pro-eyebrow">CATCH UP</span><h3>Episode të fundit që s’i ke shënuar</h3></div><span class="at-cal-quiet">${missed.length} episode</span></div><div class="at-cal-missed-list">${missed.map(line).join('')}</div></section>`:''}<p class="pro-muted at-cal-footnote">🔔 Kujtesat brenda aplikacionit ndjekin kohën që ke zgjedhur. Web Push jashtë aplikacionit aktivizohet vetëm kur shërbimi i serverit është gati; eksporti .ics mund ta shtojë orarin në kalendarin e telefonit.</p>`;
 }
- function wrapped(){
-  const now=new Date(),start=period==='month'?new Date(now.getFullYear(),now.getMonth(),1).getTime():new Date(now.getFullYear(),0,1).getTime();
-  const events=ctx.activity().filter(e=>e.at>=start),byId=new Map(ctx.state().anime.map(a=>[a.id,a])),counts=new Map(),genres=new Map();
-  for(const e of events){counts.set(e.id,(counts.get(e.id)||0)+1);for(const g of ctx.genres(byId.get(e.id)||{}))genres.set(g,(genres.get(g)||0)+1)}
-  const top=[...counts].sort((a,b)=>b[1]-a[1]).slice(0,5),favorite=[...genres].sort((a,b)=>b[1]-a[1]).slice(0,3),minutes=events.reduce((n,e)=>n+(ctx.isMovie(byId.get(e.id))?100:24),0),title=period==='month'?now.toLocaleDateString('sq-AL',{month:'long',year:'numeric'}):String(now.getFullYear());
-  const completed=ctx.state().anime.filter(a=>a.status==='completed').length;
-  return `<div class="pro-hero"><span class="pro-eyebrow">YOUR ANIME STORY</span><h2>🏆 Anime Wrapped</h2><p>Përmbledhja personale e muajit ose vitit, nga historiku real i episodeve.</p></div><div class="pro-actions"><button class="pro-btn" data-pro-action="wrapped-month">Ky muaj</button><button class="pro-btn" data-pro-action="wrapped-year">Ky vit</button><button class="pro-btn primary" data-pro-action="wrapped-image">↓ Ruaj kartën PNG</button><button class="pro-btn" data-pro-action="wrapped-copy">Kopjo përmbledhjen</button></div><div class="pro-wrapped" id="pro-wrapped-card"><span class="pro-eyebrow">ANIMETRACK · ${esc(title)}</span><h2>Historia jote anime ✦</h2><div class="pro-wrapped-number">${events.length}</div><p>episode të shënuara në këtë periudhë</p><div class="pro-wrapped-stats"><div><strong>${(minutes/60).toFixed(1)} h</strong><small>Kohë e përafërt</small></div><div><strong>${completed}</strong><small>Anime gjithsej të përfunduara</small></div><div><strong>${favorite.length}</strong><small>Zhanre aktive</small></div></div><h3>Anime më aktive</h3><div class="pro-list">${top.map(([id,n])=>`<div class="pro-row"><strong>${esc(byId.get(id)?.title||'Anime')}</strong><span>${n} ep.</span></div>`).join('')||'<small>Ende pa episode këtë periudhë.</small>'}</div><h3>Zhanret kryesore</h3><div class="pro-tags">${favorite.map(([g,n])=>`<span class="pro-tag">${esc(g)} · ${n}</span>`).join('')||'<small>Ende pa të dhëna.</small>'}</div></div><p class="pro-muted">Koha e shikimit është vlerësim 24 min/episod dhe 100 min/film; nuk është kohë e matur. Shënimet e vjetra pa datë nuk shpiken.</p>`;
+ let wrappedScope='all',badgeFilter='all';
+ function wrappedReport(){return window.ATWrapped129.analyze({state:ctx.state(),events:ctx.activity(),genres:ctx.genres,isMovie:ctx.isMovie,period,scope:wrappedScope,now:new Date()})}
+ function wrapped(){return window.ATWrapped129.render(wrappedReport(),{badgeFilter})}
+ function achievementsMini(){return window.ATWrapped129.mini(window.ATWrapped129.analyze({state:ctx.state(),events:ctx.activity(),genres:ctx.genres,isMovie:ctx.isMovie,period:'all',scope:'all',now:new Date()}))}
+ function achievementIds(){return window.ATWrapped129.analyze({state:ctx.state(),events:ctx.activity(),genres:ctx.genres,isMovie:ctx.isMovie,period:'all',scope:'all',now:new Date()}).unlocked.map(x=>x.id)}
+ function copy(){
+  const text=window.ATWrapped129.copyText(wrappedReport());
+  if(!navigator.clipboard?.writeText){ctx.toast('Kopjimi nuk mbështetet në këtë shfletues.');return}
+  navigator.clipboard.writeText(text).then(()=>ctx.toast('Përmbledhja u kopjua ✓')).catch(()=>ctx.toast('Kopjimi nuk u krye.'));
  }
- function copy(){const text=$('pro-wrapped-card')?.innerText||'';navigator.clipboard?.writeText(text).then(()=>ctx.toast('Përmbledhja u kopjua ✓')).catch(()=>ctx.toast('Kopjimi nuk u krye.'))}
  function image(){
-  const raw=($('pro-wrapped-card')?.innerText||'AnimeTrack').split('\n').map(x=>x.trim()).filter(Boolean).slice(0,17);
-  const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1350;const g=canvas.getContext('2d');
-  const bg=g.createLinearGradient(0,0,1080,1350);bg.addColorStop(0,'#37244f');bg.addColorStop(1,'#13283b');g.fillStyle=bg;g.fillRect(0,0,1080,1350);g.fillStyle='#e9d4ff';g.font='bold 60px system-ui';g.fillText('AnimeTrack Wrapped ✦',65,110);g.fillStyle='#f7f3ff';g.font='bold 41px system-ui';
-  raw.forEach((line,i)=>{const max=46,short=line.length>max?line.slice(0,max-1)+'…':line;g.fillText(short,65,190+i*58)});
-  canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AnimeTrack-Wrapped.png';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000)},'image/png');
+  const canvas=document.createElement('canvas');
+  if(!window.ATWrapped129.drawShare(canvas,wrappedReport())){ctx.toast('Karta nuk u krijua në këtë pajisje.');return}
+  canvas.toBlob(blob=>{if(!blob){ctx.toast('Eksporti i kartës nuk u krye.');return}
+   const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='AnimeTrack-Wrapped.png';link.click();
+   setTimeout(()=>URL.revokeObjectURL(url),3000);
+  },'image/png');
  }
  function ical(){
  const now=Date.now(),D=86400000,reminders=ctx.state().preferences?.calendarReminders||{},events=ctx.upcoming().filter(e=>e.when>=now&&e.when<now+90*D);
@@ -91,11 +93,12 @@ window.ATCalendarWrapped=function ATCalendarWrapped(ctx){
    return ctx.setCalendarReminder?.(id,Object.prototype.hasOwnProperty.call(reminders,id)?'off':String([0,10,30,60,1440].includes(Number(defaultLead))?Number(defaultLead):30));
   }
  }
- if(op==='wrapped-month'){period='month';ctx.rerender();return}
- if(op==='wrapped-year'){period='year';ctx.rerender();return}
+ if(op==='wrapped-month'||op==='wrapped-year'||op==='wrapped-all'){period=op.slice(8);ctx.rerender();return}
+ if(op==='wrapped-scope'){if(['all','anime','tv'].includes(id)){wrappedScope=id;ctx.rerender()}return}
+ if(op==='wrapped-badges'){if(['all','unlocked','locked'].includes(id)){badgeFilter=id;ctx.rerender()}return}
  if(op==='wrapped-copy'){copy();return}
  if(op==='wrapped-image'){image();return}
 }
  function home(){return ctx.smartWeek?ctx.smartWeek(true):'<div class="at-home-widget-empty">Orari personal nuk u ngarkua.</div>'}
- return{calendar,wrapped,action,home};
+ return{calendar,wrapped,action,home,achievementsMini,achievementIds};
 };

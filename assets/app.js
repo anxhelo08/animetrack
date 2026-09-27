@@ -1140,7 +1140,7 @@ async function accountPullQuiet(){
   if(cloudDirty||cloudSaving)return false;
   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(remote));cloudMirrorUnavailable=!mirror.ok;state=remote;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
   cloudConnected=true;cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');
-  render();renderHome();renderUpcoming();proApp.render();void proApp.modules.notifications.refresh();
+  render();renderHome();renderUpcoming();proApp.renderBackground();void proApp.modules.notifications.refresh();
   proApp.modules.recommendations.onLibraryChange();accountUI();return true;
  }catch(e){console.warn('Quiet library synchronization failed',e);return false}
  finally{quietCloudPullBusy=false}
@@ -1610,7 +1610,7 @@ const proContext={
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
  markEpisode:(id,seasonId,n)=>requestEpisodeToggle(id,seasonId,n),
  refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
- liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshTrackedTV127(force);await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.render();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
+ liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshTrackedTV127(force);await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.renderBackground();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
  canReload:()=>!cloudDirty&&!cloudSaving,
  watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict}),
