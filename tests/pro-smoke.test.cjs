@@ -495,7 +495,7 @@ test('11.4 mobile separates shows untouched for at least 7 days',()=>{
  const a={id:'fresh',title:'Fresh Anime',status:'watching',updatedAt:today,seasons:[{id:'sf',total:8,watched:[]}]};
  const b={id:'old',title:'Old Anime',status:'watching',updatedAt:old,seasons:[{id:'so',total:8,watched:[]}]};
  c.state=()=>({anime:[a,b],history:[],preferences:{}});c.nextEpisode=x=>({season:x.seasons[0],n:1});c.releasedTotal=()=>8;c.count=()=>0;c.percent=()=>0;c.poster=()=>'';c.accountName=()=>'Tester';
- const page=w.ATiPhone(c).render();assert.match(page,/S’KE PARË PREJ 7\\+ DITËSH/);
+ const page=w.ATiPhone(c).render();assert.match(page,/S’KE PARË PREJ 7\+ DITËSH/);
  assert.ok(page.indexOf('Fresh Anime')<page.indexOf('S’KE PARË PREJ 7+ DITËSH'));
  assert.ok(page.indexOf('Old Anime')>page.indexOf('S’KE PARË PREJ 7+ DITËSH'));
 });
@@ -524,7 +524,7 @@ test('11.4.1 watches ignored metadata update for seven-day inactivity and filter
  const w=load({navigator:{onLine:true,userAgent:'iPhone'},window:{matchMedia:()=>({matches:true})},localStorage:{getItem:()=>null}}),c=context();
  const old=new Date(Date.now()-9*86400000).toISOString(),fresh=new Date().toISOString(),s={id:'s',total:8,watched:[1]},a={id:'old',title:'Old Series',status:'watching',updatedAt:fresh,createdAt:old,seasons:[s]};
  c.state=()=>({anime:[a],history:[{id:'old',seasonId:'s',episode:1,action:'watched',date:old}],preferences:{}});c.nextEpisode=()=>({season:s,n:2});c.releasedTotal=()=>8;c.count=()=>1;c.percent=()=>12;c.poster=()=>'';c.accountName=()=>'Tester';c.upcoming=()=>[{animeId:'old',seasonId:'s',episode:4,when:Date.now()-3600000},{animeId:'old',seasonId:'s',episode:5,when:Date.now()+3600000}];
- const feed=w.ATiPhone(c);assert.match(feed.render(),/S’KE PARË PREJ 7\\+ DITËSH/);
+ const feed=w.ATiPhone(c);assert.match(feed.render(),/S’KE PARË PREJ 7\+ DITËSH/);
  await feed.action('tab','upcoming');const html=feed.render();assert.match(html,/E05/);assert.doesNotMatch(html,/E04/);
 });
 test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
