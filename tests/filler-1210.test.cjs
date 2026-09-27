@@ -40,6 +40,9 @@ test('separate MAL IDs use local numbering; long shared MAL IDs use absolute num
 test('unverified providers and incomplete payloads are never labelled by guessing',()=>{
  assert.equal(f.validId(''),false);assert.equal(f.validId('TVMaze'),false);assert.equal(f.validId('20'),true);
  assert.equal(f.kind({title:'Filler-like',filler:false}),'unknown');
+ const partial={total:2,watched:[],episodes:[]};f.merge(partial,[{mal_id:1,filler:false},{mal_id:2,filler:true}],false,'now');
+ assert.equal(f.kind(partial.episodes[0]),'unknown','one false field is not enough to call canon');
+ assert.equal(f.kind(partial.episodes[1]),'filler','an explicit true remains visible');
  assert.throws(()=>f.merge({episodes:[]},null,false),/Invalid Jikan/);
 });
 test('UI and PWA integration preserve all existing routes',()=>{
