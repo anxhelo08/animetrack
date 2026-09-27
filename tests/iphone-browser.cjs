@@ -14,7 +14,12 @@ const assert=require('node:assert/strict');
  window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'demo-user',email:'demo@example.com'}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain('rpc')})};
  })();`;
  await page.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2*',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub}));
- await page.route('https://graphql.anilist.co',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{Page:{media:[],pageInfo:{hasNextPage:false}}}})}));
+ const seasonalMedia=[
+  {id:12801,idMal:12801,title:{romaji:'Parallel World',english:'Parallel World'},episodes:12,averageScore:83,format:'TV',genres:['Action','Fantasy'],description:'A new world.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12801',seasonYear:2026,startDate:{year:2026,month:9,day:3},tags:[{name:'Isekai',rank:95,isMediaSpoiler:false,isGeneralSpoiler:false}]},
+  {id:12802,idMal:12802,title:{romaji:'Hidden Truth',english:'Hidden Truth'},episodes:12,averageScore:81,format:'TV',genres:['Drama','Mystery'],description:'A mystery.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12802',seasonYear:2026,startDate:{year:2026,month:9,day:3},tags:[{name:'Thriller',rank:86,isMediaSpoiler:false,isGeneralSpoiler:false}]},
+  {id:12803,idMal:12803,title:{romaji:'Sweet Days',english:'Sweet Days'},episodes:1,averageScore:75,format:'MOVIE',genres:['Romance'],description:'A romance.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12803',seasonYear:2026,startDate:{year:2026,month:9,day:5},tags:[]}
+ ];
+ await page.route('https://graphql.anilist.co',route=>{const query=String(route.request().postDataJSON()?.query||'');const media=query.includes('$season:MediaSeason')?seasonalMedia:[];return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{Page:{media,pageInfo:{hasNextPage:false}}}})});});
  await page.route('https://api.tvmaze.com/shows/777',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:777,name:'Dexter',premiered:'2006-10-01',genres:['Drama'],rating:{average:8.5},image:null,url:'https://www.tvmaze.com/shows/777/dexter'})}));
  await page.route('https://api.tvmaze.com/search/shows?q=*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{score:1,show:{id:777,name:'Dexter',premiered:'2006-10-01',genres:['Drama'],rating:{average:8.5},image:null,url:'https://www.tvmaze.com/shows/777/dexter'}}])}));
  await page.route('https://api.tvmaze.com/shows/777/episodes?specials=1',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{id:7771,season:1,number:1,name:'Dexter',airdate:'2006-10-01',runtime:55},{id:7772,season:1,number:2,name:'Future',airdate:'2099-01-01',runtime:55}])}));
@@ -29,6 +34,27 @@ const assert=require('node:assert/strict');
  assert.notEqual(info.display,'none','iPhone feed must be visible');
  assert(info.rect>100,'iPhone feed must have visible layout');
  assert.match(info.text,/Demo Anime/,'cloud library should render');
+ // 12.8 mobile Discover exposes the seasonal catalog and touch-friendly genre filters.
+ await page.locator('[data-mobile-nav="explore"]').click();
+ assert(await page.locator('[data-at128-open-seasons]').isVisible(),'iPhone must have a direct seasonal entry');
+ await page.locator('[data-at128-open-seasons]').click();
+ assert(await page.locator('#seasons-view').isVisible(),'seasonal catalogue must open on iPhone');
+ await page.locator('#season-catalog-grid .seasonal-tile').first().waitFor({timeout:10000});
+ await page.locator('[data-at128-genre="Isekai"]').click();
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),1);
+ assert.match(await page.locator('#season-catalog-grid').innerText(),/Parallel World/);
+ await page.locator('[data-at128-genre="Drama"]').click();
+ assert.match(await page.locator('#season-catalog-grid').innerText(),/Hidden Truth/);
+ await page.locator('#season-genre-search').fill('Missing Title');
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),0);
+ await page.locator('#season-filter-reset').click();
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),3);
+ const mobileSeason=await page.evaluate(()=>({width:document.documentElement.scrollWidth,viewport:innerWidth,searchFont:parseFloat(getComputedStyle(document.querySelector('#season-genre-search')).fontSize)}));
+ assert(mobileSeason.width<=mobileSeason.viewport+2,'seasonal page must not scroll horizontally: '+JSON.stringify(mobileSeason));
+ assert(mobileSeason.searchFont>=16,'seasonal title search must not trigger iOS focus zoom');
+ console.log('SEASONAL_IPHONE_PASS',JSON.stringify(mobileSeason));
+ await page.locator('[data-mobile-nav="home"]').click();
+
  await page.locator('#at-iphone-feed .at124-mobile-search').click();
  assert(await page.locator('#at124-command').isVisible(),'iPhone search opens');
  await page.locator('#at124-command-input').fill('Demo Anime');
