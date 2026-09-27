@@ -1,0 +1,12 @@
+/* AnimeTrack 12.7.4: explicit, non-destructive recovery if localStorage is full. */
+body.at128-storage-blocked .app,body.at128-storage-blocked .at-mobile-nav{pointer-events:none!important}
+body.at128-storage-blocked{overflow:hidden}
+.at128-storage-overlay{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;padding:clamp(18px,5vw,36px);background:rgba(10,9,18,.91);color:#f7f2ff}
+.at128-storage-panel{box-sizing:border-box;width:min(100%,480px);padding:28px;border:1px solid #75649c;border-radius:22px;background:#24202f;box-shadow:0 24px 80px rgba(0,0,0,.4);line-height:1.55}
+.at128-storage-kicker{display:block;margin-bottom:12px;color:#c8adff;font-size:10px;letter-spacing:1.5px;font-weight:900}
+.at128-storage-panel h2{margin:0 0 12px;font-size:22px;line-height:1.22;color:#fff}
+.at128-storage-panel p{margin:0 0 22px;font-size:14px;color:#d6d0e3}
+.at128-storage-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.at128-storage-actions button{min-height:48px;flex:1 1 180px;padding:12px 15px;border-radius:12px;font-weight:800;font-size:13px;border:1px solid #9680d8;background:#bba5ff;color:#170f28;cursor:pointer}
+.at128-storage-actions button+button{background:#30283e;color:#f1e8ff}
+.at128-storage-panel small{display:block;color:#a69cb9;font-size:11px;line-height:1.45}
