@@ -70,7 +70,7 @@ test('12.9 integrated Wrapped and profile have new assets, period actions, safe 
  assert.match(calendar,/ATWrapped129\.render/);assert.match(calendar,/wrapped-badges/);
  assert.match(html,/pro-wrapped-129\.js/);assert.match(html,/pro-wrapped-129\.css/);
  assert.match(sw,/pro-wrapped-129\.js/);assert.match(sw,/pro-wrapped-129\.css/);
- assert.match(sw,/animetrack-shell-v12100-1/);assert.match(html,/AnimeTrack 12\.10\.0/);
+ assert.match(sw,/animetrack-shell-v12101-1/);assert.match(html,/AnimeTrack 12\.10\.1/);
  assert.match(css,/@media\(max-width:760px\)/);
 });
 

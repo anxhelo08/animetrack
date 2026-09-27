@@ -57,6 +57,34 @@ test('UI and PWA integration preserve all existing routes',()=>{
  assert.match(app,/data-filler-manual/);
  assert.match(css,/at1210-chip\.filler/);assert.match(css,/at1210-manual/);
  for(const file of ['pro-filler-1210.js','pro-filler-1210.css']){assert(html.includes('/assets/'+file));assert(sw.includes('/assets/'+file));}
- assert.match(sw,/animetrack-shell-v12100-1/);assert.match(html,/AnimeTrack 12\.10\.0/);
- assert.equal(JSON.parse(read('package.json')).version,'12.10.0');
+ assert.match(sw,/animetrack-shell-v12101-1/);assert.match(html,/AnimeTrack 12\.10\.1/);
+ assert.equal(JSON.parse(read('package.json')).version,'12.10.1');
+});
+
+test('12.10.1 Jikan pages are marked complete only when all flags are present',()=>{
+ const full=[{mal_id:1,filler:false,recap:false},{mal_id:2,filler:true,recap:false}];
+ assert.equal(f.pageVerified(full),true);
+ assert.equal(f.pageVerified([]),false,'empty page is retried rather than cached');
+ assert.equal(f.pageVerified([{mal_id:1,filler:false}]),false,'missing recap flag must not be counted as verified normal');
+ assert.equal(f.pageVerified([{mal_id:1,filler:true,recap:false},{mal_id:2,filler:false}]),false);
+ const season={globalStart:1,total:2,episodes:[]};
+ f.merge(season,full,false,'now');
+ assert.equal(f.storedPageVerified(season,1,false),true);
+ season.episodes[1].fillerChecked=false;
+ assert.equal(f.storedPageVerified(season,1,false),false,'a cached partial page must be retried');
+ season.episodes.pop();
+ assert.equal(f.storedPageVerified(season,1,false),false,'missing catalog entries cannot be called a complete page');
+ const shared={globalStart:98,total:5,episodes:[]};
+ f.merge(shared,[{mal_id:98,filler:false,recap:false},{mal_id:99,filler:false,recap:false},{mal_id:100,filler:false,recap:false}],true,'now');
+ assert.equal(f.storedPageVerified(shared,1,true),true,'shared MAL pages verify only their own in-range episode numbers');
+ assert.equal(f.storedPageVerified(shared,2,true),false);
+});
+test('12.10.1 transient and partial API results do not permanently suppress retries or invent canon',()=>{
+ const app=read('assets/app.js'),src=read('assets/pro-filler-1210.js');
+ assert.match(app,/fillerPageRetryUntil\.set\(key,Date\.now\(\)\+6\*60\*60\*1000\)/);
+ assert.match(app,/fillerPageRetryUntil\.set\(key,Date\.now\(\)\+30\*60\*1000\)/);
+ assert.match(app,/pageVerified\(j\.data\)&&window\.ATFiller1210\.storedPageVerified/);
+ assert.match(app,/fillerPagesChecked=verified\?/);
+ assert.match(app,/typeof d\.filler==='boolean'&&typeof d\.recap==='boolean'/);
+ assert.match(src,/pageVerified,storedPageVerified/);
 });

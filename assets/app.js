@@ -280,27 +280,35 @@ async function hydrateSeasons(id,force=false){
  }catch(err){console.warn('Season grouping failed; existing library preserved',err);if(detailId===id)notify('S’u verifikuan lidhjet e sezoneve. Provo “Bashko sezonet”.');return id}
  finally{hydrating.delete(id)}
 }
+// A transient upstream error or incomplete record may be retried without stressing Jikan.
+const fillerPageRetryUntil=new Map();
 async function loadSeasonEpisodes(id,seasonId,uiPage=0,force=false){
  const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId);
  if(!s||!window.ATFiller1210.validId(s.malId))return;
  const owner=accountUser?.id||null,storageKey=KEY,shared=window.ATFiller1210.sharedCatalog(a,s),pages=window.ATFiller1210.pages(s,uiPage,shared);
  let changed=false;const before=JSON.stringify(s);
  for(const metadataPage of pages){
-  const key=id+':'+seasonId+':'+metadataPage;
-  if(episodesLoading.has(key)||(!force&&s.fillerPagesChecked?.includes(metadataPage)))continue;
+  const key=storageKey+':'+id+':'+seasonId+':'+metadataPage;
+  if(episodesLoading.has(key)||(!force&&(fillerPageRetryUntil.get(key)||0)>Date.now()))continue;
+  if(!force&&s.fillerPagesChecked?.includes(metadataPage)&&window.ATFiller1210.storedPageVerified(s,metadataPage,shared))continue;
   episodesLoading.add(key);
   try{
    const j=await jikanGet('https://api.jikan.moe/v4/anime/'+encodeURIComponent(s.malId)+'/episodes?page='+metadataPage);
    if(owner!==(accountUser?.id||null)||storageKey!==KEY||!state.anime.some(x=>x===a)||!a.seasons.includes(s))return;
-   if(!Array.isArray(j.data))throw Error('Lista e episodeve është e paplotë');
+   if(!Array.isArray(j.data)||!j.data.length)throw Error('Lista e episodeve është bosh ose e paplotë');
    changed=window.ATFiller1210.merge(s,j.data,shared,now())||changed;
    s.loadedPages=[...new Set([...(s.loadedPages||[]),metadataPage])];
-   // Loaded before 12.10 did not record classification: backfill once, then cache.
-   s.fillerPagesChecked=[...new Set([...(s.fillerPagesChecked||[]),metadataPage])];
+   // Only complete source flags can close a page. Old 12.10 partial pages are reopened.
+   const verified=window.ATFiller1210.pageVerified(j.data)&&window.ATFiller1210.storedPageVerified(s,metadataPage,shared);
+   const priorChecked=JSON.stringify(s.fillerPagesChecked||[]);
+   s.fillerPagesChecked=verified?[...new Set([...(s.fillerPagesChecked||[]),metadataPage])]:(s.fillerPagesChecked||[]).filter(p=>p!==metadataPage);
+   if(priorChecked!==JSON.stringify(s.fillerPagesChecked))changed=true;
+   if(verified)fillerPageRetryUntil.delete(key);
+   else fillerPageRetryUntil.set(key,Date.now()+6*60*60*1000);
    s.epPage=Math.max(s.epPage,metadataPage);
    s.hasMore=!!j.pagination?.has_next_page;changed=true;
    if(!s.total&&!s.hasMore&&s.episodes.length)s.total=Math.max(...s.episodes.map(e=>e.number));
-  }catch(err){console.warn('Jikan episode labels unavailable',err);if(force&&detailId===id)notify('Etiketat Filler nuk u përditësuan. Provo përsëri; shënimet nuk ndryshojnë.')}
+  }catch(err){fillerPageRetryUntil.set(key,Date.now()+30*60*1000);console.warn('Jikan episode labels unavailable',err);if(force&&detailId===id)notify('Etiketat Filler nuk u përditësuan. Provo përsëri; shënimet nuk ndryshojnë.')}
   finally{episodesLoading.delete(key)}
  }
  if(changed){
@@ -969,7 +977,7 @@ async function v81FetchEpisode(force=false){
  if(window.ATFiller1210.validId(s.malId)&&(!prior.summary||force||!prior.fillerChecked))try{
   const eid=window.ATFiller1210.absolute(s,n,window.ATFiller1210.sharedCatalog(a,s));
   const res=await fetch(`https://api.jikan.moe/v4/anime/${s.malId}/episodes/${eid}`);
-  if(res.ok){const j=await res.json(),d=j.data;if(d){prior={...prior,number:n,title:d.title||d.title_romanji||prior.title||'',aired:d.aired||prior.aired||'',summary:textOnly(d.synopsis)||prior.summary||'',filler:typeof d.filler==='boolean'?d.filler:prior.filler===true,recap:typeof d.recap==='boolean'?d.recap:prior.recap===true,fillerChecked:typeof d.filler==='boolean'||typeof d.recap==='boolean'||prior.fillerChecked===true,fillerSource:'Jikan',fillerCheckedAt:now()};changed=true;}}
+  if(res.ok){const j=await res.json(),d=j.data;if(d){prior={...prior,number:n,title:d.title||d.title_romanji||prior.title||'',aired:d.aired||prior.aired||'',summary:textOnly(d.synopsis)||prior.summary||'',filler:typeof d.filler==='boolean'?d.filler:prior.filler===true,recap:typeof d.recap==='boolean'?d.recap:prior.recap===true,fillerChecked:(typeof d.filler==='boolean'&&typeof d.recap==='boolean')||prior.fillerChecked===true,fillerSource:(typeof d.filler==='boolean'&&typeof d.recap==='boolean')?'Jikan':prior.fillerSource||'',fillerCheckedAt:(typeof d.filler==='boolean'&&typeof d.recap==='boolean')?now():prior.fillerCheckedAt||''};changed=true;}}
  }catch(e){errors.push('Jikan')}
  {const old=new Map(s.episodes.map(e=>[e.number,e]));old.set(n,{...old.get(n),...prior,detailsCheckedAt:now()});s.episodes=[...old.values()].sort((x,y)=>x.number-y.number);save();if(detailId===a.id)renderDetail(a.id);}
  v81EpisodeBusy=false;v81RenderEpisode(changed?'Detajet u kontrolluan në katalog.':errors.length?'Burimi nuk u lidh. Provo përsëri kur të kesh internet.':'Nuk u gjetën detaje të tjera të konfirmuara për këtë episod.');

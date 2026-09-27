@@ -20,6 +20,21 @@ window.ATFiller1210=(()=>{
   const start=absolute(season,first,shared),end=absolute(season,last,shared);
   return [...new Set([Math.ceil(start/100),Math.ceil(end/100)])].filter(p=>p>0&&p<=500);
  }
+ function pageVerified(rows){
+  return Array.isArray(rows)&&rows.length>0&&rows.every(ep=>
+   ep&&Number.isInteger(Number(ep.mal_id))&&Number(ep.mal_id)>0&&
+   typeof ep.filler==='boolean'&&typeof ep.recap==='boolean');
+ }
+ function storedPageVerified(season,page,shared){
+  const entries=(season?.episodes||[]).filter(ep=>{
+   const n=Number(ep?.number);return Number.isInteger(n)&&n>0&&
+    Math.ceil(absolute(season,n,shared)/100)===page;
+  });
+  const total=Number(season?.total)||0,start=shared?Number(season.globalStart):1;
+  const first=(page-1)*100+1,last=page*100;
+  const expected=total>0?Math.max(0,Math.min(last,start+total-1)-Math.max(first,start)+1):0;
+  return entries.length>0&&(!expected||entries.length>=expected)&&entries.every(ep=>ep.fillerChecked===true);
+ }
  function merge(season,rows,shared,checkedAt){
   if(!Array.isArray(rows))throw Error('Invalid Jikan episode list');
   const original=Array.isArray(season.episodes)?season.episodes:[],byNumber=new Map(original.map(e=>[Number(e.number),e]));
@@ -42,5 +57,5 @@ window.ATFiller1210=(()=>{
   if(changed)season.episodes=[...byNumber.values()].sort((a,b)=>a.number-b.number);
   return changed;
  }
- return {kind,sharedCatalog,absolute,local,pages,merge,validId};
+ return {kind,sharedCatalog,absolute,local,pages,merge,validId,pageVerified,storedPageVerified};
 })();
