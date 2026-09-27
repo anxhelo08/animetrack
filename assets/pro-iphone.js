@@ -213,7 +213,7 @@ window.ATiPhone=function ATiPhone(ctx){
    if(!a)return;const s=a.seasons.find(x=>x.id===b?.dataset.season),n=Number(b?.dataset.ep);
    if(!s||!Number.isInteger(n)||n<1||n>ctx.released(s))return;
    if(op==='open-recent')ctx.openEpisode(a.id,s.id,n);
-   else if(!s.watched.includes(n)){ctx.markEpisode(a.id,s.id,n);refresh()}
+   else if(!s.watched.includes(n)){const owner=ctx.user()?.id||'guest';ctx.markEpisode(a.id,s.id,n);if(s.watched.includes(n)){lastWatch={id:a.id,seasonId:s.id,n,owner};syncMessage='Episodi i ri u shënua ✓'}refresh()}
    return;
   }
   if(op==='mode'){if(['list','grid'].includes(id)){viewMode=id;refresh()}return}
