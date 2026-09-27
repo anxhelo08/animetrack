@@ -186,7 +186,7 @@ test('iPhone feed uses same watch data and quick marking without duplicating lib
  const data={anime:[a],preferences:{},history:[]};let advanced='',opened='';
  c.state=()=>data;c.nextEpisode=()=>({season,n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.accountName=()=> 'Tester';c.markNext=id=>advanced=id;c.openEpisode=(id,s,n)=>opened=[id,s,n];c.recentAiring=()=>[];c.poster=()=>'';c.upcoming=()=>[];
  const feed=w.ATiPhone(c);const page=feed.render();
- assert.match(page,/TO WATCH/);assert.match(page,/S01 \| E03/);assert.match(page,/data-ios-action="advance"/);assert.match(page,/Fill my shows list/);assert.doesNotMatch(page,/dashboard personal/i);
+ assert.match(page,/PËR T’U PARË/);assert.match(page,/S01 \| E03/);assert.match(page,/data-ios-action="advance"/);assert.match(page,/Fill my shows list/);assert.doesNotMatch(page,/dashboard personal/i);
  feed.action('advance','a1');assert.equal(advanced,'a1');
  feed.action('episode','a1');assert.equal(JSON.stringify(opened),'["a1","s1",3]');
  feed.action('tab','upcoming');assert.match(feed.render(),/Nuk ka premiera në 7 ditët e ardhshme/);
@@ -448,7 +448,7 @@ test('11.2 iPhone glance renders next released episode with a read-only list',()
  const w=load({navigator:{onLine:true,userAgent:'Desktop'},localStorage:{getItem:()=>null}}),c=context();
  c.state=()=>s;c.nextEpisode=a=>({season:a.seasons[0],n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.poster=()=>'';
  const html=w.ATiPhone(c).render();
- assert.match(html,/at114-topbar/);assert.match(html,/TO WATCH/);
+ assert.match(html,/at114-topbar/);assert.match(html,/PËR T’U PARË/);
  assert.match(html,/S01 \| E03/);assert.match(html,/data-ios-action="advance"/);
  assert.match(html,/Fill my shows list/);
  assert.deepEqual(s.anime[0].seasons[0].watched,[1,2]);
@@ -507,7 +507,7 @@ test('11.4 Upcoming uses scheduled releases and never marks unreleased episodes'
  const now=Date.now();let marked=0,opened='';
  c.state=()=>({anime:[anime],history:[],preferences:{}});c.nextEpisode=()=>({season,n:2});c.releasedTotal=()=>3;c.count=()=>1;c.percent=()=>33;c.poster=()=>'';c.accountName=()=>'Viewer';
  c.upcoming=()=>[{animeId:'a',title:'Anime Series',seasonId:'s',seasonEpisode:4,when:now+86400000}];c.openAnime=id=>opened=id;c.markEpisode=()=>marked++;
- const f=w.ATiPhone(c);f.render();await f.action('tab','upcoming');const html=f.render();assert.match(html,/UPCOMING/);assert.match(html,/S01 \| E04/);assert.match(html,/The Actual Episode Title/);
+ const f=w.ATiPhone(c);f.render();await f.action('tab','upcoming');const html=f.render();assert.match(html,/SË SHPEJTI/);assert.match(html,/S01 \| E04/);assert.match(html,/The Actual Episode Title/);
  assert.match(html,/Del/);assert.doesNotMatch(html,/data-ios-action="advance"/);
  await f.action('details','a');assert.equal(opened,'a');assert.equal(marked,0);
 });
