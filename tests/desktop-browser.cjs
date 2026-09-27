@@ -95,6 +95,8 @@ const assert=require('node:assert/strict');
  // 12.5: anime and TV share the same first-premiere-year ordering.
  await page.evaluate(()=>{
   const entries=window.ATMobile113.state().anime;
+  // Control all years in the test fixture, avoiding unrelated 2026 demo cards.
+  for(const item of entries.filter(a=>a.id.startsWith('demo'))){item.year=null;for(const season of item.seasons||[]){season.year=null;season.releaseStart='';season.episodes=[]}}
   entries.find(a=>a.id==='demo0').year=1999;
   entries.find(a=>a.id==='demo1').year=2025;
  });
