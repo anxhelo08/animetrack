@@ -4,10 +4,10 @@ window.ATWrapped129=(()=>{
  const DAY=86400000;
  const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const fmt=n=>Math.max(0,Number(n)||0).toLocaleString('sq-AL');
- const kind=a=>a?.source==='TVMaze'||a?.format==='TV_SERIES'||String(a?.id||'').startsWith('tvmaze-')?'tv':'anime';
+ const kind=a=>String(a?.source||'').toLowerCase()==='tvmaze'||a?.format==='TV_SERIES'||String(a?.id||'').startsWith('tvmaze-')?'tv':'anime';
  const keyDay=ms=>{const d=new Date(ms);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
  const keyMonth=ms=>keyDay(ms).slice(0,7);
- const dayTime=key=>new Date(key+'T12:00:00').getTime();
+ const dayTime=key=>Date.parse(key+'T00:00:00Z'); // civil-day ordinal, unaffected by DST
  const top=(map,n)=>[...map].sort((a,b)=>b[1]-a[1]||String(a[0]).localeCompare(String(b[0]))).slice(0,n);
  const periodStart=(period,now)=>period==='month'?new Date(now.getFullYear(),now.getMonth(),1).getTime():period==='year'?new Date(now.getFullYear(),0,1).getTime():0;
  const scopeTitle=scope=>scope==='tv'?'Seriale TV':scope==='anime'?'Anime dhe filma':'Anime + seriale';
@@ -44,11 +44,11 @@ window.ATWrapped129=(()=>{
   const selected=all.filter(e=>scope==='all'||kind(byId.get(e.id))===scope),current=selected.filter(e=>e.at>=start);
   const totalMarked=anime.reduce((v,a)=>v+(a.seasons||[]).reduce((n,s)=>n+(Array.isArray(s.watched)?s.watched.length:0),0),0);
   const completed=anime.filter(a=>a.status==='completed').length;
-  const titleEvents=new Map(),genreEvents=new Map(),daily=new Map(),monthly=new Map(),weekday=Array(7).fill(0),typeCounts={anime:0,tv:0},days=new Map(),allGenres=new Set(),allTitles=new Set(),weeks=new Map(),months=new Map();
+  const titleEvents=new Map(),genreEvents=new Map(),daily=new Map(),recentDaily=new Map(),monthly=new Map(),weekday=Array(7).fill(0),typeCounts={anime:0,tv:0},days=new Map(),allGenres=new Set(),allTitles=new Set(),weeks=new Map(),months=new Map();
   const addGenre=(ev,map,set)=>{const entry=byId.get(ev.id);let list=[];try{list=genres(entry)||[]}catch{}for(const g of list){const text=String(g||'').trim();if(!text)continue;map.set(text,(map.get(text)||0)+1);if(set)set.add(text.toLocaleLowerCase())}};
   for(const e of all){
    const day=keyDay(e.at),month=keyMonth(e.at),d=new Date(e.at),dow=(d.getDay()+6)%7,weekDay=new Date(d.getFullYear(),d.getMonth(),d.getDate()-(d.getDay()+6)%7).getTime(),week=keyDay(weekDay);
-   days.set(day,(days.get(day)||0)+1);weeks.set(week,(weeks.get(week)||0)+1);months.set(month,(months.get(month)||0)+1);allTitles.add(e.id);addGenre(e,new Map(),allGenres);
+   days.set(day,(days.get(day)||0)+1);recentDaily.set(day,(recentDaily.get(day)||0)+1);weeks.set(week,(weeks.get(week)||0)+1);months.set(month,(months.get(month)||0)+1);allTitles.add(e.id);addGenre(e,new Map(),allGenres);
   }
   for(const e of current){
    const a=byId.get(e.id),day=keyDay(e.at),month=keyMonth(e.at),dow=(new Date(e.at).getDay()+6)%7;
@@ -63,11 +63,11 @@ window.ATWrapped129=(()=>{
   const badges=defs.map(([id,icon,name,description,target,measure])=>({id,icon,name,description,target,measure,value:Math.max(0,metric[measure]||0),unlocked:(metric[measure]||0)>=target}));
   const unlocked=badges.filter(b=>b.unlocked);
   const minutes=current.reduce((v,e)=>{const a=byId.get(e.id);return v+(isMovie(a)?100:kind(a)==='tv'?45:24)},0);
-  const previous14=Array.from({length:14},(_,i)=>{const when=end-(13-i)*DAY;return {day:keyDay(when),count:daily.get(keyDay(when))||0}});
+  const previous14=Array.from({length:14},(_,i)=>{const when=new Date(time.getFullYear(),time.getMonth(),time.getDate()-(13-i)).getTime();return {day:keyDay(when),count:recentDaily.get(keyDay(when))||0}});
   const range=period==='month'?time.toLocaleDateString('sq-AL',{month:'long',year:'numeric'}):period==='year'?String(time.getFullYear()):'Nga historiku i ruajtur';
   const names=['Hënë','Martë','Mërkurë','Enjte','Premte','Shtunë','Diel'];
   return {period,scope,range,scopeLabel:scopeTitle(scope),events:current.length,allEvents:all.length,minutes,completed,totalMarked,
-   titleCount:titleEvents.size,days:daily.size,peak:top(daily,1)[0]||['',0],lifetimePeak:peak,weekday:names.map((label,i)=>({label,count:weekday[i]})),
+   titleCount:titleEvents.size,genreCount:genreEvents.size,days:daily.size,peak:top(daily,1)[0]||['',0],lifetimePeak:peak,weekday:names.map((label,i)=>({label,count:weekday[i]})),
    top:top(titleEvents,5).map(([id,count])=>({id,title:byId.get(id)?.title||'Titull',count,kind:kind(byId.get(id))})),
    genres:top(genreEvents,6).map(([label,count])=>({label,count})),daily14:previous14,monthly:top(monthly,12),
    longestStreak:longest,activeStreak,allTitles:allTitles.size,badges,unlocked,media:typeCounts,
@@ -85,7 +85,7 @@ window.ATWrapped129=(()=>{
     stat('◷',(r.minutes/60).toLocaleString('sq-AL',{maximumFractionDigits:1})+' h','kohë e përafërt')+
     stat('◈',fmt(r.titleCount),'tituj të ndjekur')+
     stat('☼',fmt(r.days),'ditë me aktivitet')+
-    stat('✧',fmt(r.genres.length),'zhanre në këtë periudhë')+'</div>'+
+    stat('✧',fmt(r.genreCount),'zhanre në këtë periudhë')+'</div>'+
     '<div class="at129-split"><section class="at129-panel"><span class="at129-eyebrow">RITMI YT</span><h3>14 ditët e fundit</h3><div class="at129-heat" aria-label="Episode të shënuara në 14 ditët e fundit">'+r.daily14.map(x=>'<div class="at129-heat-col" title="'+esc(x.day+': '+x.count+' episode')+'"><div class="at129-heat-fill" style="height:'+Math.max(5,Math.round(x.count/maximum*100))+'%;opacity:'+(x.count?1:0.18)+'"></div><small>'+esc(x.day.slice(8))+'</small></div>').join('')+'</div><div class="at129-facts"><div><span>Dita më aktive</span><b>'+esc(best)+' · '+fmt(r.peak[1])+' ep.</b></div><div><span>Seria e ditëve rresht</span><b>'+fmt(r.activeStreak)+' tani · '+fmt(r.longestStreak)+' rekord</b></div></div></section>'+
     '<section class="at129-panel"><span class="at129-eyebrow">TOP STORIES</span><h3>Titujt që ndoqe më shumë</h3><div class="at129-top">'+(r.top.map((x,i)=>'<div class="at129-top-item"><span class="at129-rank">'+String(i+1).padStart(2,'0')+'</span><div><b>'+esc(x.title)+'</b><small>'+esc(x.kind==='tv'?'Serial':'Anime / film')+'</small></div><strong>'+fmt(x.count)+' <small>ep.</small></strong></div>').join('')||'<p class="at129-empty">Shëno episodin e parë për të nisur historinë.</p>')+'</div></section></div>'+
     '<div class="at129-split"><section class="at129-panel"><span class="at129-eyebrow">PREFERENCAT</span><h3>Zhanret e tua</h3>'+(r.genres.length?r.genres.map(x=>'<div class="at129-genre"><div><span>'+esc(x.label)+'</span><b>'+fmt(x.count)+'</b></div><i><span style="width:'+Math.round(x.count/maxGenre*100)+'%"></span></i></div>').join(''):'<p class="at129-empty">Nuk ka zhanre të regjistruara për këtë periudhë.</p>')+'</section>'+
