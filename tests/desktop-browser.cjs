@@ -106,7 +106,7 @@ const assert=require('node:assert/strict');
  assert.equal(desktopLayout.display,'grid','desktop episode uses a dedicated two-column layout');
  assert.equal(desktopLayout.columns.split(' ').length,2,'desktop has two episode columns');
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
- await page.locator('#detail-modal [data-close="detail-modal"]').click();
+ if(await page.locator('#detail-modal').isVisible())await page.locator('#detail-modal [data-close="detail-modal"]').click();
  console.log('RESUME_DESKTOP_PASS',JSON.stringify({title:'One Piece',season:'s3',episode:50,page:3,layout:desktopLayout.display}));
 
  if(errors.length)throw Error('Desktop runtime errors: '+errors.join(' | '));
