@@ -65,6 +65,13 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  for(const file of ['pro-episode-hub-127.js','pro-tv-episodes-127.js','pro-episode-hub-127.css']){assert.match(html,new RegExp(file.replaceAll('.','\\.')));assert.match(sw,new RegExp(file.replaceAll('.','\\.')))}
- assert.match(css,/at127-new-pill/);assert.match(sw,/animetrack-shell-v1271-1/);
- assert.match(html,/AnimeTrack 12\.7\.1/);
+ assert.match(css,/at127-new-pill/);assert.match(sw,/animetrack-shell-v1272-1/);
+ assert.match(html,/AnimeTrack 12\.7\.2/);
+});
+
+test('12.7.2 background TV checks preserve editable pages without bypassing cloud journal',()=>{
+ const feature=read('assets/pro-features.js'),app=read('assets/app.js');
+ assert.match(app,/ATSync126\.save\(localStorage,KEY,state,cloudRevision,true\);accountQueueSave\(\)/);
+ assert.match(feature,/finally\{liveBusy=false;document\.body\.classList\.remove\('at-live-checking'\);if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)\}/);
+ assert.match(feature,/function onStateChange\(\)\{[\s\S]*?if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)/);
 });
