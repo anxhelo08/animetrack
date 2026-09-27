@@ -139,6 +139,32 @@ const assert=require('node:assert/strict');
  if(await page.locator('#detail-modal').isVisible())await page.locator('#detail-modal [data-close="detail-modal"]').click();
  console.log('RESUME_DESKTOP_PASS',JSON.stringify({title:'One Piece',season:'s3',episode:50,page:3,layout:desktopLayout.display}));
 
+
+ // 12.6: queued offline episode survives a new session even if cloud has moved on.
+ await page.locator('#library-nav').click();
+ const beforeOffline=await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].watched.length);
+ await page.evaluate(()=>Object.defineProperty(navigator,'onLine',{configurable:true,get:()=>false}));
+ await page.locator('#anime-grid [data-next="demo7"]').first().click();
+ const local=await page.evaluate(()=>{
+  const key='animetrack_user_desktop-demo',state=JSON.parse(localStorage.getItem(key)),pending=JSON.parse(localStorage.getItem(key+'_pending_126'));
+  return {watched:state.anime.find(a=>a.id==='demo7').seasons[0].watched.length,pending,indicator:document.querySelector('#account-sync-pill').textContent};
+ });
+ assert.equal(local.watched,beforeOffline+1,'offline +1 must be durably saved to this account');
+ assert(local.pending&&local.pending.baseRevision,'pending journal records the original cloud revision');
+ assert.match(local.indicator,/Offline/);
+ await page.reload({waitUntil:'domcontentloaded'});
+ await page.waitForFunction(()=>!document.body.classList.contains('account-booting')&&window.ATMobile113?.state()?.anime?.some(a=>a.id==='demo7'));
+ const recovered=await page.evaluate(()=>{
+  const key='animetrack_user_desktop-demo';return {
+   watched:window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].watched.length,
+   pending:!!localStorage.getItem(key+'_pending_126'),
+   indicator:document.querySelector('#account-sync-pill').textContent
+  };
+ });
+ assert.equal(recovered.watched,local.watched,'stale cloud snapshot cannot overwrite offline progress on login');
+ assert.equal(recovered.pending,true,'conflicting progress remains queued');
+ assert.match(recovered.indicator,/Konflikt/,'cloud mismatch requires explicit resolution');
+ console.log('OFFLINE_RECOVERY_DESKTOP_PASS',JSON.stringify({saved:local.watched,recovered:recovered.watched,conflict:true}));
  if(errors.length)throw Error('Desktop runtime errors: '+errors.join(' | '));
  console.log('DESKTOP_BROWSER_PASS',JSON.stringify({cards:8,search:'Mystery',advance:'EP4',undo:'EP3',navigation:'ok'}));
  await browser.close();
