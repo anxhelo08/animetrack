@@ -81,7 +81,8 @@ const assert=require('node:assert/strict');
   {mal_id:1,title:'Pilot',filler:false,recap:false},
   {mal_id:2,title:'Main story',filler:false,recap:false},
   {mal_id:3,title:'Training sidestory',filler:true,recap:false},
-  {mal_id:4,title:'Return to canon',filler:false,recap:false}
+  {mal_id:4,title:'Return to canon',filler:false,recap:false},
+  ...Array.from({length:8},(_,i)=>({mal_id:i+5,title:'Story episode '+(i+5),filler:false,recap:false}))
  ],pagination:{has_next_page:false}})}));
  await page.route('https://api.jikan.moe/v4/anime/20/episodes/3',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{mal_id:3,title:'Training sidestory',filler:true,recap:false,synopsis:'Bonus story'}})}));
  await page.evaluate(()=>{const a=window.ATMobile113.state().anime.find(x=>x.id==='demo7');a.seasons[0].malId='20';a.seasons[0].loadedPages=[1];a.seasons[0].episodes.push({number:3,title:'Cached episode, classification unknown',filler:false,recap:false});});

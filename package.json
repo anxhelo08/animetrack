@@ -1,1 +1,1 @@
-{"name":"animetrack","version": "12.10.0","private":true,"scripts":{"test":"node --test tests/*.test.cjs"}}
+{"name":"animetrack","version": "12.10.1","private":true,"scripts":{"test":"node --test tests/*.test.cjs"}}
