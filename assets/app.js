@@ -189,7 +189,7 @@ function closeModal(id){
  node.classList.remove('show');const another=document.querySelector('.modal-backdrop.show');
  if(!another)document.body.style.overflow='';
  const target=modalReturnFocus.get(id);modalReturnFocus.delete(id);
- if(target?.isConnected&&!target.closest('.modal-backdrop:not(.show)')&&!target.closest('[hidden]'))requestAnimationFrame(()=>target.focus({preventScroll:true}));
+ if(!another&&target?.isConnected&&!target.closest('.modal-backdrop:not(.show)')&&!target.closest('[hidden]'))requestAnimationFrame(()=>{if(!document.querySelector('.modal-backdrop.show')&&target.isConnected)target.focus({preventScroll:true})});
  if(id==='detail-modal'){detailId=null;activeSeasonId=null;previewKey=null;pendingTVPreview=null;}
  if(id==='confirm-modal')pendingEpisode=null;if(id==='season-confirm-modal')pendingSeason=null;
 }
@@ -1203,7 +1203,7 @@ function initV95(){
 initV95();
 
 
-function v96RecentEpisodes(){
+function v96RecentEpisodes(limit=8){
  const cutoff=Date.now()-7*DAY,found=new Map(),library=new Map(state.anime.map(a=>[a.id,a]));
  const add=(x,season=null,n=null)=>{if(!x||x.when<cutoff||x.when>Date.now())return;const a=library.get(x.animeId);if(!a)return;let s=season||a.seasons.find(v=>v.id===x.seasonId)||null;const ep=Math.max(1,Number(n??x.seasonEpisode??x.episode)||1);if(!s&&x.source==='AniList')s=a.seasons.find(v=>v.sourceId&&x.url?.includes('/anime/'+v.sourceId))||null;if(!s)s=a.seasons.find(v=>releasedCount(v)>=ep)||a.seasons[0]||null;const key=a.id+':'+(s?.id||x.season||'')+':'+ep;if(found.has(key)&&Number(found.get(key).when)>=Number(x.when))return;found.set(key,{...x,anime:a,localSeason:s,localEpisode:ep,seen:!!s?.watched.includes(ep)})};
  for(const x of upcomingEntries)add(x);
@@ -1211,7 +1211,7 @@ function v96RecentEpisodes(){
   const when=Date.parse(ep.airedAt||ep.aired||'');if(!Number.isFinite(when))continue;
   add({animeId:a.id,title:a.title,cover:a.cover,episode:ep.number,season:s.subtitle||s.title,seasonId:s.id,seasonEpisode:ep.number,when,source:'Datë episodi',url:a.sourceUrl||''},s,ep.number);
  }
- return [...found.values()].sort((a,b)=>b.when-a.when).slice(0,8);
+ return [...found.values()].sort((a,b)=>b.when-a.when).slice(0,Math.max(1,Math.min(40,Number(limit)||8)));
 }
 function v96RenderReleases(){
  const list=v96RecentEpisodes(),future=upcomingEntries.filter(x=>x.when>Date.now()&&x.when<=Date.now()+30*DAY).sort((a,b)=>a.when-b.when).slice(0,3),unseen=list.filter(x=>!x.seen).length;
@@ -1406,7 +1406,7 @@ const proContext={
  confirm:message=>window.confirm(message),prompt:(message,value)=>window.prompt(message,value),closeDetail:()=>{if($('detail-modal').classList.contains('show'))closeModal('detail-modal')},
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),exportLibrary:exportData,importExternal,accountName,openAnime:id=>openDetail(id),
- nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(),
+ nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(40),
  undoEpisode:(id,seasonId,n)=>{const last=state.history[state.history.length-1];if(!last||last.id!==id||last.seasonId!==seasonId||last.episode!==n||last.action!=='watched'){notify('Progresi ka ndryshuar. Zhbërja nuk u krye.');return false}return updateSeasonEpisode(id,seasonId,n,false)},
  openFilter:code=>setFilter(code),
  
