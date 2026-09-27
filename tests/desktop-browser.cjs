@@ -165,6 +165,39 @@ const assert=require('node:assert/strict');
  assert.equal(recovered.pending,true,'conflicting progress remains queued');
  assert.match(recovered.indicator,/Konflikt/,'cloud mismatch requires explicit resolution');
  console.log('OFFLINE_RECOVERY_DESKTOP_PASS',JSON.stringify({saved:local.watched,recovered:recovered.watched,conflict:true}));
+ // 12.7.4: deliberately exhaust writes to the cloud snapshot while auth still succeeds.
+ // The app must show a backup/retry gate instead of returning to the login form.
+ const quotaContext=await browser.newContext({viewport:{width:1360,height:840},acceptDownloads:true});
+ const quotaPage=await quotaContext.newPage(),quotaErrors=[];
+ quotaPage.on('pageerror',e=>quotaErrors.push(e.message));
+ await quotaPage.addInitScript(()=>{
+  const original=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(key,value){
+   if(String(key).startsWith('animetrack_user_'))throw new DOMException('exceeded the quota','QuotaExceededError');
+   return original.call(this,key,value);
+  };
+ });
+ await quotaPage.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2*',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub}));
+ await quotaPage.route('https://graphql.anilist.co',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{Page:{media:[],pageInfo:{hasNextPage:false}}}})}));
+ await quotaPage.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
+ await quotaPage.waitForFunction(()=>!document.body.classList.contains('account-booting'));
+ const quotaState=await quotaPage.evaluate(()=>({
+  loggedIn:!document.body.classList.contains('auth-required'),
+  readOnly:document.body.classList.contains('at128-storage-blocked'),
+  backup:!!document.querySelector('[data-at128-export]'),
+  retry:!!document.querySelector('[data-at128-retry]'),
+  anime:window.ATMobile113?.state()?.anime?.length||0,
+  badge:document.querySelector('#account-sync-pill')?.textContent||''
+ }));
+ assert.equal(quotaState.loggedIn,true,'quota must not reject a valid cloud session');
+ assert.equal(quotaState.readOnly,true,'unpersistable cloud data is explicitly read-only');
+ assert.equal(quotaState.anime,8,'cloud library remains visible in memory without overwriting local user data');
+ assert.equal(quotaState.backup,true,'backup export is available');
+ assert.equal(quotaState.retry,true,'safe retry is available');
+ assert.match(quotaState.badge,/Hapësirë plot/);
+ assert.equal(quotaErrors.length,0,quotaErrors.join(' | '));
+ console.log('QUOTA_RECOVERY_DESKTOP_PASS',JSON.stringify(quotaState));
+ await quotaContext.close();
  if(errors.length)throw Error('Desktop runtime errors: '+errors.join(' | '));
  console.log('DESKTOP_BROWSER_PASS',JSON.stringify({cards:8,search:'Mystery',advance:'EP4',undo:'EP3',navigation:'ok'}));
  await browser.close();
