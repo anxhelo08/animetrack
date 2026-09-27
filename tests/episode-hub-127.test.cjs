@@ -65,6 +65,6 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  for(const file of ['pro-episode-hub-127.js','pro-tv-episodes-127.js','pro-episode-hub-127.css']){assert.match(html,new RegExp(file.replaceAll('.','\\.')));assert.match(sw,new RegExp(file.replaceAll('.','\\.')))}
- assert.match(css,/at127-new-pill/);assert.match(sw,/animetrack-shell-v1270-1/);
- assert.match(html,/AnimeTrack 12\.7\.0/);
+ assert.match(css,/at127-new-pill/);assert.match(sw,/animetrack-shell-v1271-1/);
+ assert.match(html,/AnimeTrack 12\.7\.1/);
 });
