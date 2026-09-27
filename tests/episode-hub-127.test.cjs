@@ -68,3 +68,11 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(css,/at127-new-pill/);assert.match(sw,/animetrack-shell-v1270-1/);
  assert.match(html,/AnimeTrack 12\.7\.0/);
 });
+
+test('12.7 background episode checks preserve in-progress personal collection forms',()=>{
+ const feature=read('assets/pro-features.js'),app=read('assets/app.js');
+ assert.match(app,/TV metadata refresh must not rebuild an active form/);
+ assert.match(app,/ATSync126\.save\(localStorage,KEY,state,cloudRevision,true\);accountQueueSave\(\)/);
+ assert.match(feature,/finally\{liveBusy=false;document\.body\.classList\.remove\('at-live-checking'\);if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)\}/);
+ assert.match(feature,/if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)/);
+});
