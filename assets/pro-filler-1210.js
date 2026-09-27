@@ -30,7 +30,7 @@ window.ATFiller1210=(()=>{
    const old=byNumber.get(n)||{number:n};
    const filler=typeof raw.filler==='boolean'?raw.filler:old.filler===true;
    const recap=typeof raw.recap==='boolean'?raw.recap:old.recap===true;
-   const known=typeof raw.filler==='boolean'||typeof raw.recap==='boolean';
+   const known=typeof raw.filler==='boolean'&&typeof raw.recap==='boolean';
    const updated={...old,number:n,absolute:number,
     title:String(old.title||raw.title||raw.title_romanji||'').slice(0,220),
     aired:String(old.aired||raw.aired||'').slice(0,40),
