@@ -972,6 +972,23 @@ async function v81FetchEpisode(force=false){
  {const old=new Map(s.episodes.map(e=>[e.number,e]));old.set(n,{...old.get(n),...prior,detailsCheckedAt:now()});s.episodes=[...old.values()].sort((x,y)=>x.number-y.number);save();if(detailId===a.id)renderDetail(a.id);}
  v81EpisodeBusy=false;v81RenderEpisode(changed?'Detajet u kontrolluan në katalog.':errors.length?'Burimi nuk u lidh. Provo përsëri kur të kesh internet.':'Nuk u gjetën detaje të tjera të konfirmuara për këtë episod.');
 }
+/* Personal fallback: changes only classification, never watch status or history. */
+document.addEventListener('change',e=>{
+ if(e.target?.dataset?.fillerManual===undefined)return;
+ const {a,s,n}=v81EpisodeParts();if(!a||!s)return;
+ const value=e.target.value;if(!['auto','filler','normal'].includes(value))return;
+ const previous=JSON.stringify(s.episodes),items=new Map(s.episodes.map(ep=>[ep.number,ep]));
+ const ep={...(items.get(n)||{number:n})};ep.fillerManual=value==='auto'?null:value==='filler';
+ items.set(n,ep);s.episodes=[...items.values()].sort((x,y)=>x.number-y.number);
+ if(!save()){s.episodes=JSON.parse(previous);v81RenderEpisode('Nuk u ruajt klasifikimi. Eksporto një kopje rezervë.');return}
+ if(detailId===a.id)renderDetail(a.id);
+ v81RenderEpisode('Klasifikimi i episodit u ruajt ✓');
+});
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button[data-filler-refresh]');if(!b)return;
+ if(detailId!==b.dataset.id||activeSeasonId!==b.dataset.season)return;
+ void loadSeasonEpisodes(detailId,activeSeasonId,episodePage,true);
+});
 function v81OpenEpisode(id,seasonId,n){
  const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId);n=Number(n);if(!s||!Number.isInteger(n)||n<1||(s.total&&n>s.total))return;
  v81EpisodeRef={id,seasonId,n};v81RenderEpisode();showModal('episode-detail-modal');v81FetchEpisode(false);
