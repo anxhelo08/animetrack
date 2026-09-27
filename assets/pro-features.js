@@ -149,7 +149,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    const work=[['profiles',()=>modules.profiles.load()],['friends',()=>modules.friends.load()],['moderation',()=>modules.moderation.load()],['notifications',()=>modules.notifications.refresh()],['recommendations',()=>modules.recommendations.refresh(false)]];
    void Promise.allSettled(work.map(async([name,fn])=>{
     try{await fn()}catch(err){console.warn('Account module '+name,err)}
-    finally{if(name==='profiles'||name==='friends'){render();renderHome()}}
+    finally{if((name==='profiles'&&active==='profile')||(name==='friends'&&active==='friends'))render();if(name==='profiles'||name==='friends')renderHome()}
    }));
    render();renderHome();
    void modules.push.prepare().then(()=>modules.push.scheduleSync()).catch(console.warn);
