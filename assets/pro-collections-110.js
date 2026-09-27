@@ -29,7 +29,7 @@ window.ATCollections110=function ATCollections110(ctx){
   if(lists().some(x=>x.title.toLocaleLowerCase()===text.toLocaleLowerCase())){ctx.toast('Një listë me këtë emër ekziston.');return false}
   const id='list-'+ctx.uuid(),now=new Date().toISOString(),created={id,title:text,animeIds:[],createdAt:now,updatedAt:now};
   if(!saveMutation(rows=>rows.push(created)))return false;
-  selected=id;ctx.toast('Lista u krijua ✓');ctx.rerender();return true;
+  selected=id;ctx.toast('Lista u krijua ✓');ctx.rerender(true);return true;
  }
  function toggle(itemId,listId=selected){
   syncOwner();const a=library().find(a=>a.id===itemId),list=lists().find(x=>x.id===listId);
@@ -39,20 +39,20 @@ window.ATCollections110=function ATCollections110(ctx){
   if(!saveMutation(rows=>{const target=rows.find(x=>x.id===listId);target.animeIds=has?target.animeIds.filter(id=>id!==itemId):[...target.animeIds,itemId];target.updatedAt=new Date().toISOString()}))return false;
   if(pending===itemId)pending='';
   ctx.toast(has?'Anime u hoq nga lista ✓':'Anime u shtua në listë ✓');
-  ctx.rerender();return true;
+  ctx.rerender(true);return true;
  }
  function remove(listId){
   syncOwner();const list=lists().find(x=>x.id===listId);if(!list)return false;
   if(!ctx.confirm('Ta fshijmë listën “'+list.title+'”? Anime dhe progresi i tyre nuk do të fshihen.'))return false;
   if(!saveMutation(rows=>rows.splice(rows.findIndex(x=>x.id===listId),1)))return false;
-  selected='';pending='';ctx.toast('Lista u fshi. Biblioteka mbeti e pandryshuar ✓');ctx.rerender();return true;
+  selected='';pending='';ctx.toast('Lista u fshi. Biblioteka mbeti e pandryshuar ✓');ctx.rerender(true);return true;
  }
  function rename(listId,title){
   syncOwner();const target=lists().find(x=>x.id===listId),name=String(title||'').replace(/\s+/g,' ').trim().slice(0,50);
   if(!target||name.length<2)return false;
   if(lists().some(x=>x.id!==listId&&x.title.toLocaleLowerCase()===name.toLocaleLowerCase())){ctx.toast('Ky emër përdoret nga një listë tjetër.');return false}
   if(!saveMutation(rows=>{const item=rows.find(x=>x.id===listId);item.title=name;item.updatedAt=new Date().toISOString()}))return false;
-  ctx.toast('Emri u ndryshua ✓');ctx.rerender();return true;
+  ctx.toast('Emri u ndryshua ✓');ctx.rerender(true);return true;
  }
  function pickAnime(id){
   syncOwner();
@@ -87,16 +87,16 @@ window.ATCollections110=function ATCollections110(ctx){
  function action(op,id){
   if(op==='collection-open'){ctx.navigate('collections');return}
   if(op==='collection-back'){ctx.navigate('library');return}
-  if(op==='collection-select'){selected=id;query='';ctx.rerender();return}
+  if(op==='collection-select'){selected=id;query='';ctx.rerender(true);return}
   if(op==='collection-create')return make(ctx.el('at110-new-list')?.value);
   if(op==='collection-toggle')return toggle(id);
   if(op==='collection-delete')return remove(selected);
   if(op==='collection-rename'){const item=current();if(!item)return;const text=ctx.prompt('Emri i ri i listës:',item.title);if(text!==null)return rename(item.id,text);return}
   if(op==='collection-share')return share();
-  if(op==='collection-cancel'){pending='';ctx.rerender();return}
+  if(op==='collection-cancel'){pending='';ctx.rerender(true);return}
   if(op==='collection-pick')return pickAnime(id);
   if(op==='collection-anime')return ctx.openAnime(id);
  }
- function setSearch(value){query=String(value||'').slice(0,80);ctx.rerender()}
+ function setSearch(value){query=String(value||'').slice(0,80);ctx.rerender(true)}
  return{render,mountLibrary,action,setSearch,pickAnime,make,toggle,remove,rename,shareText,lists};
 };
