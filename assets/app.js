@@ -22,7 +22,7 @@ function isMovieAnime(a){return mediaFormat(a?.format)==='MOVIE'||(Array.isArray
 function isConfirmedFutureSeason(s){return !!s&&['TV','TV_SHORT','ONA'].includes(mediaFormat(s.format))&&String(s.releaseStatus||'').toUpperCase()==='NOT_YET_RELEASED'}
 function futureSeasonOf(a){if(a?.status!=='completed')return null;return (a.seasons||[]).find(isConfirmedFutureSeason)||((a.source==='TVMaze')?(a.seasons||[]).find(s=>(s.episodes||[]).some(e=>e.airedAt&&Date.parse(e.airedAt)>Date.now())):null)}
 function tidyNums(values,total=0){return [...new Set((Array.isArray(values)?values:[]).map(Number).filter(n=>Number.isInteger(n)&&n>0&&n<=10000&&(!total||n<=total)))].sort((a,b)=>a-b)}
-function normSeason(raw,idx=0){const total=Math.max(0,Math.min(10000,parseInt(raw?.total,10)||0));return {id:String(raw?.id||'manual-'+(idx+1)).slice(0,65),title:String(raw?.title||'Sezoni '+(idx+1)).slice(0,180),subtitle:String(raw?.subtitle||'').slice(0,180),total,watched:tidyNums(raw?.watched,total),year:Number(raw?.year)||null,source:String(raw?.source||'').slice(0,20),sourceId:String(raw?.sourceId||'').slice(0,30),malId:String(raw?.malId||'').slice(0,30),format:mediaFormat(raw?.format||'TV'),globalStart:Math.max(0,Number(raw?.globalStart)||0),episodes:(Array.isArray(raw?.episodes)?raw.episodes:[]).filter(e=>e&&Number.isInteger(Number(e.number))&&Number(e.number)>0).slice(0,10000).map(e=>({number:Number(e.number),absolute:Number(e.absolute)||0,title:String(e.title||'').slice(0,220),aired:String(e.aired||'').slice(0,40),airedAt:String(e.airedAt||'').slice(0,60),summary:String(e.summary||'').slice(0,2500),image:validPoster(e.image||''),url:validPoster(e.url||''),tvmazeEpisodeId:String(e.tvmazeEpisodeId||'').slice(0,30),filler:!!e.filler,recap:!!e.recap,detailsCheckedAt:String(e.detailsCheckedAt||'').slice(0,40),myNote:String(e.myNote||'').slice(0,1500),personalRating:e.personalRating==null?null:Math.max(1,Math.min(10,Number(e.personalRating)||1))})),loadedPages:[...new Set((Array.isArray(raw?.loadedPages)?raw.loadedPages:[]).filter(n=>Number.isInteger(n)&&n>0&&n<=500))],epPage:Math.max(0,Math.min(500,parseInt(raw?.epPage,10)||0)),hasMore:!!raw?.hasMore,myRating:raw?.myRating==null||raw.myRating===''?null:Math.min(10,Math.max(0,Number(raw.myRating)||0)),communityScore:Number.isFinite(Number(raw?.communityScore))&&raw?.communityScore!=null?Math.max(0,Math.min(100,Number(raw.communityScore))):null,communitySource:String(raw?.communitySource||'').slice(0,25),discoveredAt:String(raw?.discoveredAt||'').slice(0,40),releaseStatus:String(raw?.releaseStatus||'').slice(0,32),releaseStart:String(raw?.releaseStart||'').slice(0,32),nextAiringAt:Math.max(0,Number(raw?.nextAiringAt)||0),nextAiringEpisode:Math.max(0,Number(raw?.nextAiringEpisode)||0),airedCount:raw?.airedCount==null?null:Math.max(0,Number(raw.airedCount)||0),airedCheckedAt:String(raw?.airedCheckedAt||'').slice(0,40),imdbId:/^tt\d{5,12}$/.test(String(raw?.imdbId||''))?String(raw.imdbId):'',imdbSeasonNumber:Math.max(1,Math.min(200,Number(raw?.imdbSeasonNumber)||idx+1)),imdbEpisodeAverage:raw?.imdbEpisodeAverage==null?null:(Number.isFinite(Number(raw.imdbEpisodeAverage))?Math.max(0,Math.min(10,Number(raw.imdbEpisodeAverage))):null),imdbEpisodeCount:Math.max(0,Number(raw?.imdbEpisodeCount)||0),imdbCheckedAt:String(raw?.imdbCheckedAt||'').slice(0,40)};}
+function normSeason(raw,idx=0){const total=Math.max(0,Math.min(10000,parseInt(raw?.total,10)||0));return {id:String(raw?.id||'manual-'+(idx+1)).slice(0,65),title:String(raw?.title||'Sezoni '+(idx+1)).slice(0,180),subtitle:String(raw?.subtitle||'').slice(0,180),total,watched:tidyNums(raw?.watched,total),year:Number(raw?.year)||null,source:String(raw?.source||'').slice(0,20),sourceId:String(raw?.sourceId||'').slice(0,30),malId:String(raw?.malId||'').slice(0,30),format:mediaFormat(raw?.format||'TV'),globalStart:Math.max(0,Number(raw?.globalStart)||0),episodes:(Array.isArray(raw?.episodes)?raw.episodes:[]).filter(e=>e&&Number.isInteger(Number(e.number))&&Number(e.number)>0).slice(0,10000).map(e=>({number:Number(e.number),absolute:Number(e.absolute)||0,title:String(e.title||'').slice(0,220),aired:String(e.aired||'').slice(0,40),airedAt:String(e.airedAt||'').slice(0,60),summary:String(e.summary||'').slice(0,2500),image:validPoster(e.image||''),url:validPoster(e.url||''),tvmazeEpisodeId:String(e.tvmazeEpisodeId||'').slice(0,30),filler:!!e.filler,recap:!!e.recap,fillerChecked:e.fillerChecked===true,fillerSource:String(e.fillerSource||'').slice(0,18),fillerCheckedAt:String(e.fillerCheckedAt||'').slice(0,40),fillerManual:e.fillerManual===true?true:e.fillerManual===false?false:null,detailsCheckedAt:String(e.detailsCheckedAt||'').slice(0,40),myNote:String(e.myNote||'').slice(0,1500),personalRating:e.personalRating==null?null:Math.max(1,Math.min(10,Number(e.personalRating)||1))})),loadedPages:[...new Set((Array.isArray(raw?.loadedPages)?raw.loadedPages:[]).filter(n=>Number.isInteger(n)&&n>0&&n<=500))],epPage:Math.max(0,Math.min(500,parseInt(raw?.epPage,10)||0)),hasMore:!!raw?.hasMore,myRating:raw?.myRating==null||raw.myRating===''?null:Math.min(10,Math.max(0,Number(raw.myRating)||0)),communityScore:Number.isFinite(Number(raw?.communityScore))&&raw?.communityScore!=null?Math.max(0,Math.min(100,Number(raw.communityScore))):null,communitySource:String(raw?.communitySource||'').slice(0,25),discoveredAt:String(raw?.discoveredAt||'').slice(0,40),releaseStatus:String(raw?.releaseStatus||'').slice(0,32),releaseStart:String(raw?.releaseStart||'').slice(0,32),nextAiringAt:Math.max(0,Number(raw?.nextAiringAt)||0),nextAiringEpisode:Math.max(0,Number(raw?.nextAiringEpisode)||0),airedCount:raw?.airedCount==null?null:Math.max(0,Number(raw.airedCount)||0),airedCheckedAt:String(raw?.airedCheckedAt||'').slice(0,40),imdbId:/^tt\d{5,12}$/.test(String(raw?.imdbId||''))?String(raw.imdbId):'',imdbSeasonNumber:Math.max(1,Math.min(200,Number(raw?.imdbSeasonNumber)||idx+1)),imdbEpisodeAverage:raw?.imdbEpisodeAverage==null?null:(Number.isFinite(Number(raw.imdbEpisodeAverage))?Math.max(0,Math.min(10,Number(raw.imdbEpisodeAverage))):null),imdbEpisodeCount:Math.max(0,Number(raw?.imdbEpisodeCount)||0),imdbCheckedAt:String(raw?.imdbCheckedAt||'').slice(0,40)};}
 // 9.3: "planned" is never the denominator of viewing progress.
 function mediaStartIso(d){if(!d?.year)return '';return [String(d.year),String(d.month||1).padStart(2,'0'),String(d.day||1).padStart(2,'0')].join('-')}
 function releaseFromMedia(s,m){
@@ -280,25 +280,31 @@ async function hydrateSeasons(id,force=false){
  }catch(err){console.warn('Season grouping failed; existing library preserved',err);if(detailId===id)notify('S’u verifikuan lidhjet e sezoneve. Provo “Bashko sezonet”.');return id}
  finally{hydrating.delete(id)}
 }
-async function loadSeasonEpisodes(id,seasonId,uiPage=0){
+async function loadSeasonEpisodes(id,seasonId,uiPage=0,force=false){
  const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId);
- if(!s||!s.malId||s.source==='TVmaze'||(s.total>0&&s.episodes.length>=s.total))return;
- const first=uiPage*24+1,last=Math.min(s.total||first+23,first+23),absFirst=s.globalStart?first+s.globalStart-1:first,absLast=s.globalStart?last+s.globalStart-1:last;
- const pages=[...new Set([Math.ceil(absFirst/100),Math.ceil(absLast/100)])];let changed=false;
+ if(!s||!window.ATFiller1210.validId(s.malId))return;
+ const owner=accountUser?.id||null,storageKey=KEY,shared=window.ATFiller1210.sharedCatalog(a,s),pages=window.ATFiller1210.pages(s,uiPage,shared);
+ let changed=false;const before=JSON.stringify(s);
  for(const metadataPage of pages){
   const key=id+':'+seasonId+':'+metadataPage;
-  if(episodesLoading.has(key)||s.loadedPages?.includes(metadataPage))continue;
+  if(episodesLoading.has(key)||(!force&&s.loadedPages?.includes(metadataPage)))continue;
   episodesLoading.add(key);
   try{
    const j=await jikanGet('https://api.jikan.moe/v4/anime/'+encodeURIComponent(s.malId)+'/episodes?page='+metadataPage);
-   const prior=new Map(s.episodes.map(e=>[e.number,e]));
-   for(const ep of j.data||[]){const abs=Number(ep.mal_id);const n=s.globalStart?abs-s.globalStart+1:abs;if(Number.isInteger(n)&&n>0&&(!s.total||n<=s.total))prior.set(n,{...(prior.get(n)||{}),number:n,absolute:abs,title:String(ep.title||ep.title_romanji||prior.get(n)?.title||'').slice(0,220),aired:String(ep.aired||prior.get(n)?.aired||'').slice(0,40),filler:!!ep.filler,recap:!!ep.recap});}
-   s.episodes=[...prior.values()].sort((x,y)=>x.number-y.number);s.loadedPages=[...(s.loadedPages||[]),metadataPage];s.epPage=Math.max(s.epPage,metadataPage);s.hasMore=!!j.pagination?.has_next_page;changed=true;
+   if(owner!==(accountUser?.id||null)||storageKey!==KEY||!state.anime.some(x=>x===a)||!a.seasons.includes(s))return;
+   if(!Array.isArray(j.data))throw Error('Lista e episodeve është e paplotë');
+   changed=window.ATFiller1210.merge(s,j.data,shared,now())||changed;
+   s.loadedPages=[...new Set([...(s.loadedPages||[]),metadataPage])];
+   s.epPage=Math.max(s.epPage,metadataPage);
+   s.hasMore=!!j.pagination?.has_next_page;changed=true;
    if(!s.total&&!s.hasMore&&s.episodes.length)s.total=Math.max(...s.episodes.map(e=>e.number));
-  }catch(err){console.warn('Episode metadata unavailable',err);if(detailId===id)notify('Titujt nuk u ngarkuan; episodet mund t’i shënosh normalisht.');}
+  }catch(err){console.warn('Jikan episode labels unavailable',err);if(force&&detailId===id)notify('Etiketat Filler nuk u përditësuan. Provo përsëri; shënimet nuk ndryshojnë.')}
   finally{episodesLoading.delete(key)}
  }
- if(changed){syncTotals(a);save();if(detailId===id&&activeSeasonId===seasonId)renderDetail(id)}
+ if(changed){
+  if(!save()){Object.assign(s,JSON.parse(before));return}
+  if(detailId===id&&activeSeasonId===seasonId)renderDetail(id);
+ }
 }
 
 function textOnly(html){const d=new DOMParser().parseFromString(String(html||''),'text/html');return (d.body.textContent||'').replace(/\s+/g,' ').trim().slice(0,1800)}
