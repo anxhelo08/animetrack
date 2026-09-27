@@ -51,13 +51,17 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('[data-ios-action="horizon"][data-id="30"]').getAttribute('aria-pressed'),'true');
  assert.equal(await page.locator('.at117-upcoming-action').count(),1,'Future episode is not a green watched check');
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
- await page.locator('[data-ios-action="advance"][data-id="demo1"]').click();
+ assert(await page.locator('#at-iphone-feed .at127-fresh-list .at127-new-pill').isVisible(),'newly aired episode is elevated with NEW');
+ assert.equal(await page.locator('#at-iphone-feed .at127-active-list [data-ios-action="episode"][data-id="demo1"]').count(),0,'NEW show is not duplicated in active watch list');
+ await page.locator('#at-iphone-feed .at127-fresh-list [data-ios-action="mark-recent"][data-id="demo1"]').click();
  await page.waitForTimeout(150);
- assert.match(await page.locator('#at-iphone-feed').innerText(),/E04/,'+1 should update episode');
- assert(await page.locator('[data-ios-action="undo"]').isVisible(),'recent episode should offer Undo');
+ assert.equal(await page.locator('#at-iphone-feed .at127-new-pill').count(),0,'NEW marker disappears immediately after marking watched');
+ assert.match(await page.locator('#at-iphone-feed').innerText(),/E04/,'progress advances after marking new episode');
+ assert(await page.locator('[data-ios-action="undo"]').isVisible(),'NEW episode should offer Undo');
  await page.locator('[data-ios-action="undo"]').click();
- assert.match(await page.locator('#at-iphone-feed').innerText(),/E03/,'Undo must restore exact episode');
- assert.equal(await page.locator('[data-ios-action="undo"]').count(),0,'Undo should disappear after use');
+ assert.match(await page.locator('#at-iphone-feed').innerText(),/E03/,'Undo restores the exact episode');
+ assert(await page.locator('#at-iphone-feed .at127-new-pill').isVisible(),'undo restores NEW when episode remains unwatched');
+ assert.equal(await page.locator('[data-ios-action="undo"]').count(),0,'Undo disappears after use');
  const touchInfo=await page.evaluate(()=>({
   touchAction:getComputedStyle(document.body).touchAction,
   font:parseFloat(getComputedStyle(document.querySelector('#at-ios-feed input, #at110-new-list')||document.querySelector('input')).fontSize),
