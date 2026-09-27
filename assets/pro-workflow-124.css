@@ -26,6 +26,10 @@ body.at124-command-open{overflow:hidden}
 #at-home-main #pro-home-recs .at-home-pick-actions button{min-height:43px}
 #detail-body .at123-resume-button:focus-visible,.at124-search-trigger:focus-visible,.at124-command button:focus-visible,.at124-mobile-search:focus-visible{outline:2px solid #e5d9ff;outline-offset:3px}
 .at124-episode-quickbar{display:none}
+@media (min-width:761px) and (max-width:1450px){
+ /* Retain the existing universal search while Ctrl/Cmd+K stays active; avoid narrow desktop overflow. */
+ .top-actions .at124-search-trigger{display:none}
+}
 @media(max-width:760px){
  .at124-search-trigger{display:none}
  body.at-ios-enabled .at124-mobile-search{display:grid;place-items:center;flex:none;width:44px;height:44px;min-height:44px;border:1px solid #625876;border-radius:14px;background:#2e2a42;color:#f2eaff;font-size:26px;cursor:pointer}
