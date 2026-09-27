@@ -109,6 +109,18 @@ const assert=require('node:assert/strict');
  assert(await page.locator('[data-smart-reminder]').count()>0,'Desktop per-event reminder must be available');
  await page.locator('[data-smart-reminder]').first().selectOption('30');
  assert.equal(await page.locator('[data-smart-reminder]').first().inputValue(),'30');
+ // 12.9: Desktop Wrapped and Trophy Room.
+ await page.locator('#pro-nav-wrapped').click();
+ assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped 12.9 renders on desktop');
+ assert.match(await page.locator('#pro-content .at129-hero').innerText(),/Historia jote/);
+ assert.equal(await page.locator('#pro-content .at129-badge').count(),24,'24 achievement icons render');
+ await page.locator('[data-pro-action="wrapped-all"]').click();
+ assert.equal(await page.locator('[data-pro-action="wrapped-all"]').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-pro-action="wrapped-scope"][data-id="tv"]').click();
+ assert.equal(await page.locator('[data-pro-action="wrapped-scope"][data-id="tv"]').getAttribute('aria-pressed'),'true');
+ await page.locator('[data-pro-action="wrapped-badges"][data-id="unlocked"]').click();
+ assert.equal(await page.locator('.at129-badge.locked').count(),0,'Unlocked view excludes locked trophies');
+ console.log('WRAPPED_DESKTOP_PASS',JSON.stringify({badgeCount:24,period:'all',scope:'tv'}));
  await page.locator('#library-nav').click();
  assert.equal(await page.locator('#at113-library-head h2').innerText(),'Biblioteka ime');
  await page.locator('#explore-nav').click();
