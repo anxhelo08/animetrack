@@ -995,12 +995,24 @@ async function accountPullQuiet(){
 }
 async function accountPull(manual=false){if(accountMode!=='cloud'||!accountUser)return;if(cloudDirty){if(manual&&!confirm('Ke ndryshime lokale që nuk janë sinkronizuar. Të shkarkosh cloud mund t’i zëvendësojë. Vazhdo?'))return;if(!manual)return;}const uid=accountUser.id;try{const {data,error}=await accountInitClient().from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();if(error)throw error;if(accountUser?.id!==uid)return;if(data?.payload){state=accountNormalizePayload(data.payload);localStorage.setItem(KEY,JSON.stringify(state));cloudDirty=false;cloudConnected=true;cloudRevision=data.updated_at;cloudConflict=false;cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');cloudLastPullAt=Date.now();accountRefreshViews();if(manual)accountStatus('Biblioteka u rifreskua nga cloud ✓','ok')}else if(manual)accountStatus('Ende nuk ka bibliotekë të ruajtur në cloud.','ok')}catch(e){cloudConnected=false;accountUI();if(manual)accountStatus('Rifreskimi dështoi: '+e.message,'error')}}
 /* 11.6 auth: one explicit submit mode; predictable confirmation and recovery. */
-let at116ResendBusy=false,at116ResendAt=0,at116PendingEmail='';
+let at116ResendBusy=false,at116ResendAt=0,at116ResetBusy=false,at116ResetAt=0,at116PendingEmail='';
+function at116EmailIssue(email){
+ if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return 'Shkruaj një adresë emaili të vlefshme.';
+ const domain=email.split('@')[1].toLowerCase();
+ const typos={'gmial.com':'gmail.com','gmai.com':'gmail.com','gmail.con':'gmail.com','gnail.com':'gmail.com','gmal.com':'gmail.com','outlok.com':'outlook.com','hotnail.com':'hotmail.com'};
+ return typos[domain]?'Kontrollo adresën: mos ke dashur të shkruash @'+typos[domain]+'? Korrigjoje përpara se të vazhdosh.':'';
+}
+function at116ShowPending(email){
+ at116PendingEmail=email;
+ $('at116-pending-address').textContent='Adresa: '+email;
+ $('at116-pending-email').hidden=false;
+}
+
 function at116AuthMessage(err,operation='login'){
  const code=String(err?.code||''),message=String(err?.message||'').toLowerCase(),status=Number(err?.status||0);
  if(code==='email_not_confirmed'||message.includes('email not confirmed'))return 'Emaili nuk është konfirmuar. Kontrollo Inbox/Spam ose ridërgo emailin e konfirmimit.';
  if(code==='over_email_send_rate_limit'||message.includes('rate limit')||status===429)return 'Serveri ka arritur kufirin e dërgimit të emaileve. Mos e përsërit kërkesën vazhdimisht; administratori duhet të kontrollojë kufirin dhe SMTP në Supabase.';
- if(code==='invalid_credentials')return 'Emaili ose fjalëkalimi nuk është i saktë. Nëse sapo u regjistrove, konfirmo emailin përpara hyrjes.';
+ if(code==='invalid_credentials')return 'Emaili ose fjalëkalimi nuk është i saktë. Nëse e ke krijuar llogarinë më parë, kliko “Harrova fjalëkalimin” në vend që të regjistrohesh përsëri.';
  if(code==='email_address_not_authorized'||message.includes('email address not authorized'))return 'Serveri nuk mund t’i dërgojë email kësaj adrese. Regjistrimi nuk përfundoi. Administratori duhet të aktivizojë SMTP të personalizuar në Supabase → Authentication → SMTP Settings.';
  if(code==='email_address_invalid')return 'Adresa e emailit nuk pranohet. Kontrollo emailin dhe provo përsëri.';
  if(code==='email_provider_disabled'||code==='email_address_not_authorized'||message.includes('error sending confirmation email')||message.includes('smtp'))return 'Emaili i konfirmimit nuk u dërgua nga serveri. Administratori duhet të kontrollojë SMTP dhe regjistrat e Supabase Auth.';
@@ -1010,7 +1022,7 @@ function at116AuthMessage(err,operation='login'){
  if(code==='user_already_exists')return 'Nëse e ke krijuar më parë llogarinë, hyr ose përdor rikuperimin e fjalëkalimit.';
  if(message.includes('failed to fetch')||message.includes('network'))return 'Lidhja me serverin nuk u krye. Kontrollo internetin dhe provo përsëri.';
  if(message.includes('supabase')||message.includes('databaza'))return 'Serveri i bibliotekës nuk u lidh. Llogaria mund të jetë krijuar; provo hyrjen pa u regjistruar përsëri.';
- return operation==='register'?'Regjistrimi nuk u përfundua. Kontrollo të dhënat dhe provo përsëri.':'Hyrja nuk u përfundua. Provo përsëri.';
+ return operation==='reset'?'Rikuperimi i fjalëkalimit nuk u përfundua. Provo më vonë ose kontakto administratorin.':operation==='register'?'Regjistrimi nuk u përfundua. Kontrollo të dhënat dhe provo përsëri.':'Hyrja nuk u përfundua. Provo përsëri.';
 }
 async function accountLogin(event){
  event?.preventDefault();if(accountBusy)return;
@@ -1018,14 +1030,14 @@ async function accountLogin(event){
  if(!email||!password){accountStatus('Plotëso emailin dhe fjalëkalimin.','error');return}
  accountBusy=true;$('account-login').disabled=true;
  try{const client=accountInitClient();const {data,error}=await client.auth.signInWithPassword({email,password});if(error)throw error;if(!data?.user)throw Error('Nuk u verifikua llogaria.');await accountOpenCloud(data.user);$('at116-pending-email').hidden=true;accountToggle(false);notify('Mirë se u ktheve, '+accountName()+'!')}
- catch(e){if(e?.code==='email_not_confirmed'||/email not confirmed/i.test(e.message||'')){at116PendingEmail=email;$('at116-pending-email').hidden=false}accountStatus(at116AuthMessage(e),'error')}
+ catch(e){if(e?.code==='email_not_confirmed'||/email not confirmed/i.test(e.message||'')){at116ShowPending(email)}else{$('at116-pending-email').hidden=true;at116PendingEmail=''}accountStatus(at116AuthMessage(e),'error')}
  finally{accountBusy=false;$('account-login').disabled=false}
 }
 async function accountRegister(){
  if(accountBusy)return;
  const email=$('account-email').value.trim().toLowerCase(),password=$('account-password').value,display_name=$('account-name').value.trim().slice(0,40),confirmPassword=$('at113-confirm-password')?.value||'';
  if(!window.ATMobile113?.signupReady?.()){window.ATMobile113?.signup?.(true);return}
- if(!$('account-email').checkValidity()){accountStatus('Shkruaj një adresë emaili të vlefshme.','error');return}
+ const emailIssue=at116EmailIssue(email);if(emailIssue||!$('account-email').checkValidity()){accountStatus(emailIssue||'Shkruaj një adresë emaili të vlefshme.','error');return}
  if(!display_name){accountStatus('Shkruaj emrin që dëshiron të shfaqet në profil.','error');return}
  if(password.length<10||!/[a-z]/i.test(password)||!/[0-9]/.test(password)){accountStatus('Përdor të paktën 10 karaktere, një shkronjë dhe një numër.','error');return}
  if(password!==confirmPassword){accountStatus('Fjalëkalimet nuk përputhen.','error');return}
@@ -1036,31 +1048,54 @@ async function accountRegister(){
   if(error)throw error;
   if(!data?.user)throw Error('Serveri nuk konfirmoi regjistrimin.');
   // Supabase may return an obfuscated existing user; never claim a fresh signup succeeded.
-  if(Array.isArray(data.user.identities)&&data.user.identities.length===0){at116PendingEmail=email;$('at116-pending-email').hidden=false;accountStatus('Nëse kjo adresë ka llogari, provo hyrjen ose rikuperimin e fjalëkalimit. Nëse pret konfirmim, mund të kërkosh ridërgim.','ok');return}
+  if(Array.isArray(data.user.identities)&&data.user.identities.length===0){at116PendingEmail='';$('at116-pending-email').hidden=true;window.ATMobile113?.signup?.(false);$('account-password').value='';$('at113-confirm-password').value='';accountStatus('Kjo adresë mund të jetë regjistruar më parë. Provo Hyr ose “Harrova fjalëkalimin”. Regjistrimi i përsëritur nuk krijon email të ri konfirmimi.','ok');return}
   if(data.session){await accountOpenCloud(data.user);$('at116-pending-email').hidden=true;accountToggle(false);notify('Llogaria u krijua ✓');return}
-  at116PendingEmail=email;$('at116-pending-email').hidden=false;
+  at116ShowPending(email);
   $('at113-confirm-password').value='';$('account-password').value='';
   accountStatus('Kërkesa u pranua nga serveri. Kontrollo Inbox/Spam për konfirmimin; kjo nuk garanton mbërritjen e emailit. Nëse nuk vjen, përdor Ridërgo ose kontakto administratorin për SMTP.','ok');
  }catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}
  finally{accountBusy=false;$('account-login').disabled=false}
 }
 async function accountResend(){
- const email=$('account-email').value.trim().toLowerCase()||at116PendingEmail;if(!email||at116ResendBusy)return;
- if(!$('account-email').checkValidity()){accountStatus('Korrigjo adresën e emailit para ridërgimit.','error');return}
- const wait=Math.ceil((at116ResendAt+60000-Date.now())/1000);if(wait>0){accountStatus('Provo ridërgimin pas '+wait+' sekondash.','error');return}
+ const email=($('account-email').value.trim().toLowerCase()||at116PendingEmail);
+ if(at116ResendBusy)return;
+ const issue=at116EmailIssue(email);if(issue){accountStatus(issue,'error');return}
+ if(!at116PendingEmail||email!==at116PendingEmail){$('at116-pending-email').hidden=true;accountStatus('Adresa ndryshoi. Regjistrohu ose provo Hyr me adresën e saktë para ridërgimit.','error');return}
+ const wait=Math.ceil((at116ResendAt+60000-Date.now())/1000);
+ if(wait>0){accountStatus('Provo ridërgimin pas '+wait+' sekondash.','error');return}
  at116ResendBusy=true;$('at116-resend-email').disabled=true;
- try{const {error}=await accountInitClient().auth.resend({type:'signup',email,options:{emailRedirectTo:accountRedirectURL()}});if(error)throw error;at116ResendAt=Date.now();at116PendingEmail=email;accountStatus('Serveri pranoi kërkesën e ridërgimit. Kontrollo Inbox/Spam. Nëse nuk vjen, administratori duhet të verifikojë dërgimin në SMTP.','ok')}
- catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}
+ try{
+  const {error}=await accountInitClient().auth.resend({type:'signup',email,options:{emailRedirectTo:accountRedirectURL()}});
+  if(error)throw error;
+  at116ResendAt=Date.now();
+  accountStatus('Kërkesa u pranua. Kontrollo Inbox/Spam për '+email+'. Nëse llogaria është konfirmuar tashmë, provo Hyr ose rikupero fjalëkalimin; pranimi nuk garanton mbërritjen e emailit.','ok');
+ }catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}
  finally{at116ResendBusy=false;$('at116-resend-email').disabled=false}
 }
 async function accountSaveRecoveredPassword(){const input=$('at1162-new-password'),confirm=$('at1162-confirm-password'),button=$('at1162-save-password');const password=input.value;if(password.length<10||!/[a-z]/i.test(password)||!/[0-9]/.test(password)){accountStatus('Fjalëkalimi i ri duhet të ketë të paktën 10 karaktere, një shkronjë dhe një numër.','error');return}if(password!==confirm.value){accountStatus('Fjalëkalimet e reja nuk përputhen.','error');return}button.disabled=true;try{const {data,error}=await accountInitClient().auth.updateUser({password});if(error)throw error;if(!data?.user)throw Error('Serveri nuk konfirmoi ndryshimin.');input.value='';confirm.value='';$('at1162-recovery-panel').hidden=true;accountStatus('Fjalëkalimi u ndryshua me sukses. Mund të vazhdosh me llogarinë tënde.','ok')}catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}finally{button.disabled=false}}
-async function accountReset(){const email=$('account-email').value.trim().toLowerCase();if(!email){accountStatus('Shkruaj emailin dhe pastaj shtyp Harrova fjalëkalimin.','error');return}if(!$('account-email').checkValidity()){accountStatus('Korrigjo adresën e emailit.','error');return}try{const {error}=await accountInitClient().auth.resetPasswordForEmail(email,{redirectTo:accountRedirectURL()});if(error)throw error;accountStatus('Nëse emaili ka llogari, udhëzimet e rikuperimit do të të vijnë aty.','ok')}catch(e){accountStatus(at116AuthMessage(e,'register'),'error')}}
+async function accountReset(){
+ const email=$('account-email').value.trim().toLowerCase(),button=$('account-reset');
+ const issue=at116EmailIssue(email);
+ if(issue||!$('account-email').checkValidity()){accountStatus(issue||'Korrigjo adresën e emailit.','error');return}
+ if(at116ResetBusy)return;
+ const wait=Math.ceil((at116ResetAt+60000-Date.now())/1000);
+ if(wait>0){accountStatus('Provo sërish rikuperimin pas '+wait+' sekondash.','error');return}
+ at116ResetBusy=true;button.disabled=true;
+ try{
+  const {error}=await accountInitClient().auth.resetPasswordForEmail(email,{redirectTo:accountRedirectURL()});
+  if(error)throw error;
+  at116ResetAt=Date.now();
+  $('at116-pending-email').hidden=true;at116PendingEmail='';
+  accountStatus('Nëse kjo adresë ka llogari, serveri pranoi kërkesën e rikuperimit. Kontrollo Inbox/Spam. Hap vetëm linkun më të fundit dhe vendos fjalëkalimin e ri.','ok');
+ }catch(e){accountStatus(at116AuthMessage(e,'reset'),'error')}
+ finally{at116ResetBusy=false;button.disabled=false}
+}
 async function accountLogout(){if(accountMode!=='cloud')return;if(cloudDirty){await accountPush(false);if(cloudDirty&&!confirm('Ka ndryshime të paruajtura në cloud. Mund t’i rifitosh nga ky kompjuter. Të dalësh gjithsesi?'))return}try{const {error}=await accountInitClient().auth.signOut();if(error)throw error}catch(e){accountStatus('Dalja dështoi: '+e.message,'error');return}clearTimeout(cloudTimer);accountMode='guest';accountUser=null;cloudConnected=false;cloudDirty=false;cloudRevision=null;cloudConflict=false;KEY=GUEST_KEY;state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};accountRefreshViews();document.body.classList.add('auth-required');accountToggle(true);accountStatus('Dole nga llogaria. Hyr me një tjetër ose krijo të re.','ok');notify('Dole nga llogaria ✓')}
 function accountCopyGuest(){if(accountMode!=='cloud')return;let guest;try{guest=JSON.parse(localStorage.getItem(GUEST_KEY)||'null')}catch{}if(!guest||!Array.isArray(guest.anime)||!guest.anime.length){accountStatus('Nuk u gjet bibliotekë lokale me anime për import.','error');return}if(!confirm(`Të zëvendësojmë bibliotekën e kësaj llogarie me ${guest.anime.length} anime nga versioni lokal? Eksporto më parë një kopje të të dhënave cloud.`))return;state=accountNormalizePayload(guest);save();render();renderHome();renderUpcoming();accountStatus('Biblioteka lokale u kopjua. Po sinkronizohet në cloud…','ok')}
-async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=recovery\b/.test(location.hash)||/\btype=recovery\b/.test(location.search);try{const c=accountGetConfig();$('account-project-url').value=c.url||'';$('account-project-key').value=c.key||'';if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user);authReturn=accountAuthReturnNotice()}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};render();renderHome();accountToggle(true);}accountUI();if(recoveryReturn&&accountMode==='cloud'){$('at1162-recovery-panel').hidden=false;accountToggle(true);accountStatus('Vendos një fjalëkalim të ri për llogarinë tënde.','ok')}else if(authReturn){if(accountMode==='cloud')notify(authReturn.message);else accountStatus(authReturn.message,authReturn.kind)}}}
+async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=recovery\b/.test(location.hash)||/\btype=recovery\b/.test(location.search);try{const c=accountGetConfig();$('account-project-url').value=c.url||'';$('account-project-key').value=c.key||'';if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user);authReturn=accountAuthReturnNotice()}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};render();renderHome();accountToggle(true);}accountUI();if(recoveryReturn&&accountMode==='cloud'){$('at1162-recovery-panel').hidden=false;accountToggle(true);accountStatus('Vendos një fjalëkalim të ri për llogarinë tënde.','ok')}else if(authReturn){if(accountMode==='cloud')notify(authReturn.kind==='error'?'Llogaria është aktive. Mund të vazhdosh; linku i vjetër nuk është më i nevojshëm.':authReturn.message);else accountStatus(authReturn.message,authReturn.kind)}}}
 $('at1162-save-password').addEventListener('click',accountSaveRecoveredPassword);
 $('account-top-btn').addEventListener('click',()=>accountToggle(true));$('account-sidebar-btn').addEventListener('click',()=>accountToggle(true));
-$('account-form').addEventListener('submit',e=>{e.preventDefault();return window.ATMobile113?.signupReady?.()?accountRegister():accountLogin(e)});$('at116-resend-email').addEventListener('click',accountResend);$('account-reset').addEventListener('click',accountReset);$('account-save-config').addEventListener('click',accountSetConfig);$('account-refresh').addEventListener('click',()=>accountPull(true));$('account-push').addEventListener('click',()=>accountPush(true));$('account-copy-guest').addEventListener('click',accountCopyGuest);$('account-logout').addEventListener('click',accountLogout);$('account-export').addEventListener('click',exportData);$('account-guest-backup').addEventListener('click',()=>{const current=state;try{const raw=localStorage.getItem(GUEST_KEY);if(raw){state=accountNormalizePayload(JSON.parse(raw));exportData();}else notify('Nuk ka bibliotekë të vjetër në këtë shfletues.')}catch(e){notify('Kopja rezervë nuk u hap.')}finally{state=current}});$('account-use-guest').addEventListener('click',()=>accountToggle(false));
+$('account-form').addEventListener('submit',e=>{e.preventDefault();return window.ATMobile113?.signupReady?.()?accountRegister():accountLogin(e)});$('account-email').addEventListener('input',()=>{if(at116PendingEmail&&$('account-email').value.trim().toLowerCase()!==at116PendingEmail){$('at116-pending-email').hidden=true;at116PendingEmail=''}});$('at116-resend-email').addEventListener('click',accountResend);$('account-reset').addEventListener('click',accountReset);$('account-save-config').addEventListener('click',accountSetConfig);$('account-refresh').addEventListener('click',()=>accountPull(true));$('account-push').addEventListener('click',()=>accountPush(true));$('account-copy-guest').addEventListener('click',accountCopyGuest);$('account-logout').addEventListener('click',accountLogout);$('account-export').addEventListener('click',exportData);$('account-guest-backup').addEventListener('click',()=>{const current=state;try{const raw=localStorage.getItem(GUEST_KEY);if(raw){state=accountNormalizePayload(JSON.parse(raw));exportData();}else notify('Nuk ka bibliotekë të vjetër në këtë shfletues.')}catch(e){notify('Kopja rezervë nuk u hap.')}finally{state=current}});$('account-use-guest').addEventListener('click',()=>accountToggle(false));
 window.addEventListener('focus',()=>{if(accountMode==='cloud'&&!cloudDirty&&!cloudSaving&&cloudLastSync&&Date.now()-cloudLastPullAt>90000)accountPull(false)});
  window.addEventListener('online',()=>{if(accountMode==='cloud'&&accountUser&&cloudDirty&&!cloudSaving&&!cloudConflict)void accountPush(false)});
 
