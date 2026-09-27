@@ -5,27 +5,35 @@ const hub=moduleAt('assets/pro-episode-hub-127.js','ATEpisodeHub127'),tv=moduleA
 const DAY=86400000,now=Date.parse('2026-09-27T12:00:00Z');
 const iso=t=>new Date(t).toISOString();
 function entry(id,status,age=0){return {id,title:id,status,createdAt:iso(now-age*DAY),updatedAt:iso(now),seasons:[{id:id+'-s1',watched:[1],total:5,episodes:[]}]}}
-test('12.7: a released unwatched episode of a completed title is promoted with a real broadcast date',()=>{
+test('12.7.3: completed title with a new episode appears inside regular watching, with no special category',()=>{
  const mentalist=entry('The Mentalist','completed',20),other=entry('Active Anime','watching',1);
  const recent=[{anime:mentalist,season:mentalist.seasons[0],n:2,when:now-3600000,watched:false,title:'New episode'}];
- const original=JSON.stringify([mentalist,other]),out=hub.classify([mentalist,other],[],recent,now);
- assert.equal(out.fresh.length,1);assert.equal(out.fresh[0].anime.title,'The Mentalist');
- assert.deepEqual(Array.from(out.active,x=>x.id),['Active Anime']);
- assert.equal(out.stale.length,0);
- assert.equal(JSON.stringify([mentalist,other]),original,'render grouping cannot change status, watched or metadata');
+ const before=JSON.stringify([mentalist,other]),out=hub.classify([mentalist,other],[],recent,now);
+ assert.equal(out.newEpisodes.size,1);assert.equal(out.newEpisodes.get(mentalist.id).n,2);
+ assert.deepEqual(Array.from(out.active,x=>x.id),['The Mentalist','Active Anime']);
+ assert.equal(out.stale.length,0);assert.equal(out.active.filter(a=>a.id===mentalist.id).length,1,'single ordinary card');
+ assert.equal(JSON.stringify([mentalist,other]),before,'render grouping cannot change status, watched or metadata');
 });
-test('12.7: NEW disappears after watching, or when release is in the future or older than a week',()=>{
- const a=entry('The Mentalist','completed',30),s=a.seasons[0];
- const aired={anime:a,season:s,n:2,when:now-DAY,watched:false};
- assert.equal(hub.classify([a],[],[aired],now).fresh.length,1);
+test('12.7.3: Re Zero is not NEW EP while Watching, even when airing today',()=>{
+ const reZero=entry('Re:Zero','watching',1),old=entry('The Mentalist','completed',30);
+ const recent=[{anime:reZero,season:reZero.seasons[0],n:2,when:now-1000,watched:false},
+  {anime:old,season:old.seasons[0],n:2,when:now-1000,watched:false}];
+ const out=hub.classify([reZero,old],[],recent,now);
+ assert.equal(out.newEpisodes.has(reZero.id),false);
+ assert.equal(out.newEpisodes.has(old.id),true);
+ assert.equal(out.active.some(x=>x.id===reZero.id),true);
+});
+test('12.7.3: watched, future, and older than a week never receive a NEW EP badge',()=>{
+ const a=entry('The Mentalist','completed',30),s=a.seasons[0],aired={anime:a,season:s,n:2,when:now-DAY,watched:false};
+ assert.equal(hub.classify([a],[],[aired],now).newEpisodes.size,1);
  s.watched.push(2);
- assert.equal(hub.classify([a],[],[aired],now).fresh.length,0,'watched episode is not NEW even when source event is stale');
+ assert.equal(hub.classify([a],[],[aired],now).newEpisodes.size,0,'watched event is no longer new');
  s.watched.pop();
- assert.equal(hub.classify([a],[],[{...aired,when:now+1000}],now).fresh.length,0);
- assert.equal(hub.classify([a],[],[{...aired,when:now-8*DAY}],now).fresh.length,0);
- assert.equal(hub.classify([a],[],[aired,{...aired}],now).fresh.length,1,'duplicate schedule dates collapse');
+ assert.equal(hub.classify([a],[],[{...aired,when:now+1000}],now).newEpisodes.size,0);
+ assert.equal(hub.classify([a],[],[{...aired,when:now-8*DAY}],now).newEpisodes.size,0);
+ assert.equal(hub.classify([a],[],[aired,{...aired}],now).newEpisodes.size,1,'duplicate release only one badge');
 });
-test('12.7: seven-day inactivity uses actual viewing, not catalog refreshed timestamps',()=>{
+test('12.7.3: seven-day inactivity uses viewing history, not catalog updates',()=>{
  const old=entry('Old Series','watching',20),active=entry('Active Series','watching',20);
  const history=[{id:old.id,action:'watched',date:iso(now-9*DAY)},{id:active.id,action:'season-watched',date:iso(now-DAY)}];
  let out=hub.classify([old,active],history,[],now);
@@ -34,12 +42,12 @@ test('12.7: seven-day inactivity uses actual viewing, not catalog refreshed time
  history.push({id:old.id,action:'watched',date:iso(now-5000)});
  out=hub.classify([old,active],history,[],now);
  assert.equal(out.stale.length,0);assert.deepEqual(Array.from(out.active,x=>x.id),['Old Series','Active Series']);
- assert.equal(old.status,'watching','UI grouping does not mutate library status');
+ assert.equal(old.status,'watching');
 });
-test('12.7: newly aired show stays priority even if its viewing history is old',()=>{
- const a=entry('Anime Old History','watching',50),recent=[{anime:a,season:a.seasons[0],n:2,when:now-3*DAY,watched:false}];
+test('12.7.3: returning completed title stays in regular active list despite old history',()=>{
+ const a=entry('Finished Series','completed',50),recent=[{anime:a,season:a.seasons[0],n:2,when:now-3*DAY,watched:false}];
  const out=hub.classify([a],[{id:a.id,date:iso(now-15*DAY),action:'watched'}],recent,now);
- assert.equal(out.fresh.length,1);assert.equal(out.active.length,0);assert.equal(out.stale.length,0);
+ assert.equal(out.newEpisodes.size,1);assert.equal(out.active.length,1);assert.equal(out.stale.length,0);
 });
 test('12.7: TVMaze discovery adds a new season without losing watched marks, rating or status',()=>{
  const a={id:'tvmaze-40',source:'TVMaze',sourceId:'40',status:'completed',rating:9,seasons:[{id:'tvmaze-40-s1',source:'TVMaze',sourceId:'40',imdbSeasonNumber:1,total:2,watched:[1,2],episodes:[{number:1,tvmazeEpisodeId:'4001',aired:'2024-01-01'},{number:2,tvmazeEpisodeId:'4002',aired:'2024-01-08'}]}]};
@@ -60,13 +68,13 @@ test('12.7: TVMaze catalog update never moves watched numbers when remote episod
 });
 test('12.7 mobile and cache integration of all release-first assets',()=>{
  const iphone=read('assets/pro-iphone.js'),app=read('assets/app.js'),sw=read('sw.js'),html=read('index.html'),css=read('assets/pro-episode-hub-127.css');
- assert.match(iphone,/ATEpisodeHub127\.classify/);assert.match(iphone,/at127-new-card/);assert.match(iphone,/at127-stale-head/);
+ assert.match(iphone,/ATEpisodeHub127\.classify/);assert.match(iphone,/at127-new-ep/);assert.match(iphone,/at127-stale-head/);assert.doesNotMatch(iphone,/at127-fresh-list/);
  assert.match(iphone,/ctx\.markEpisode\(a\.id,s\.id,n\);if\(s\.watched\.includes\(n\)\)/);
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  for(const file of ['pro-episode-hub-127.js','pro-tv-episodes-127.js','pro-episode-hub-127.css']){assert.match(html,new RegExp(file.replaceAll('.','\\.')));assert.match(sw,new RegExp(file.replaceAll('.','\\.')))}
- assert.match(css,/at127-new-pill/);assert.match(sw,/animetrack-shell-v1272-1/);
- assert.match(html,/AnimeTrack 12\.7\.2/);
+ assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1273-1/);
+ assert.match(html,/AnimeTrack 12\.7\.3/);
 });
 
 test('12.7.2 background TV checks preserve editable pages without bypassing cloud journal',()=>{

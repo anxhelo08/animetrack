@@ -42,7 +42,7 @@ const assert=require('node:assert/strict');
  await page.locator('[data-ios-action="recent-filter"][data-id="all"]').click();
  assert.equal(await page.locator('[data-ios-action="recent-filter"][data-id="all"]').getAttribute('aria-pressed'),'true');
  console.log('RELEASE_IPHONE_PASS');
- // 12.7: completed TV title with a newly aired episode goes into a priority NEW section.
+ // 12.7.3: only a completed title gets a small NEW EP badge on its ordinary Watching card.
  await page.evaluate(()=>{
   const data=window.ATMobile113.state(),old=new Date(Date.now()-12*86400000).toISOString(),aired=new Date(Date.now()-60*60000).toISOString();
   data.anime.push({
@@ -57,22 +57,25 @@ const assert=require('node:assert/strict');
   data.history.push({id:'stale127',seasonId:'old-s1',episode:1,action:'watched',date:old});
  });
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
- const priority=page.locator('#at-iphone-feed .at127-fresh-list .at127-new-card').filter({has:page.locator('[data-id="mental127"]')});
- assert.equal(await priority.count(),1,'completed TV title appears once with NEW priority');
- assert.match(await priority.innerText(),/NEW/);
- assert.match(await priority.innerText(),/Surprise Premiere/);
- assert.equal(await page.locator('#at-iphone-feed .at127-active-list [data-id="mental127"]').count(),0,'no duplicate in normal watch queue');
+ assert.equal(await page.locator('#at-iphone-feed .at127-fresh-list').count(),0,'No separate NEW category exists');
+ const mental=page.locator('#at-iphone-feed .at127-active-list article.at127-new-episode').filter({has:page.locator('[data-ios-action="details"][data-id="mental127"]')});
+ assert.equal(await mental.count(),1,'completed TV title has one normal card');
+ assert.match(await mental.innerText(),/NEW EP/);
+ assert.match(await mental.innerText(),/Surprise Premiere/);
+ const reZero=page.locator('#at-iphone-feed .at127-active-list article').filter({has:page.locator('[data-ios-action="details"][data-id="demo1"]')});
+ assert.equal(await reZero.count(),1,'ongoing anime stays in normal watch queue');
+ assert.doesNotMatch(await reZero.innerText(),/NEW EP/,'ongoing anime never receives a completed-show badge');
  assert.equal(await page.locator('#at-iphone-feed .at127-stale-list [data-id="stale127"]').count()>0,true,'seven-day inactivity is a separate section');
- assert.match(await page.locator('#at-iphone-feed .at127-stale-head').innerText(),/7\+ DITËSH/);
- await priority.locator('[data-ios-action="mark-recent"][data-id="mental127"]').click();
+ assert.match(await page.locator('#at-iphone-feed .at127-stale-head').innerText(),/7\\+ DITËSH/);
+ await mental.locator('[data-ios-action="mark-recent"][data-id="mental127"]').click();
  await page.waitForTimeout(130);
- assert.equal(await page.locator('#at-iphone-feed .at127-fresh-list [data-id="mental127"]').count(),0,'NEW disappears immediately after marking it seen');
- assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='mental127').status),'completed','normal completed status remains');
+ assert.equal(await page.locator('#at-iphone-feed .at127-new-episode').count(),0,'NEW EP badge disappears after marking it watched');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='mental127').status),'completed','completed status remains');
  await page.locator('#at-iphone-feed .at127-stale-list [data-ios-action="advance"][data-id="stale127"]').click();
  await page.waitForTimeout(130);
- assert.equal(await page.locator('#at-iphone-feed .at127-stale-list [data-id="stale127"]').count(),0,'watched activity removes title from inactive group');
+ assert.equal(await page.locator('#at-iphone-feed .at127-stale-list [data-id="stale127"]').count(),0,'watching returns title from inactive section');
  assert(await page.locator('#at-iphone-feed .at127-active-list [data-id="stale127"]').count()>0,'resumed title returns to active queue');
- console.log('EPISODE_HUB_127_IPHONE_PASS',JSON.stringify({newRelease:'The Mentalist',newCleared:true,staleRecovered:true}));
+ console.log('EPISODE_HUB_127_IPHONE_PASS',JSON.stringify({newRelease:'The Mentalist',normalCard:true,ongoingUnbadged:true,newCleared:true,staleRecovered:true}));
 
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
  assert(await page.locator('#at-iphone-feed .at115-day-summary').isVisible(),'Collapsible daily overview should be visible on iPhone');
@@ -83,7 +86,7 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('[data-ios-action="horizon"][data-id="30"]').getAttribute('aria-pressed'),'true');
  assert.equal(await page.locator('.at117-upcoming-action').count(),1,'Future episode is not a green watched check');
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
- await page.locator('#at-iphone-feed .at127-fresh-list [data-ios-action="mark-recent"][data-id="demo1"]').click();
+ await page.locator('#at-iphone-feed .at127-active-list [data-ios-action="advance"][data-id="demo1"]').click();
  await page.waitForTimeout(150);
  assert.match(await page.locator('#at-iphone-feed').innerText(),/E04/,'+1 should update episode');
  assert(await page.locator('[data-ios-action="undo"]').isVisible(),'recent episode should offer Undo');
