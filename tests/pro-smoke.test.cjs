@@ -50,7 +50,7 @@ test('personal discovery filters duplicates, opens preview and remembers hidden 
  rec.restore();assert.match(rec.render(),/Quiet Rain/);
  rec.setTab('movies');assert.match(rec.render(),/Nuk ka sugjerime/);
  rec.setTab('personal');rec.setLength('short');assert.match(rec.render(),/Astral Journey/);
- assert.ok([...store.keys()].some(k=>k.includes('animetrack_rec_prefs_v10')));
+ assert.ok([...store.keys()].some(k=>k.includes('animetrack_rec_prefs_v125')));
 });
 
 test('compact home cards and redesigned profile render on empty library',()=>{
