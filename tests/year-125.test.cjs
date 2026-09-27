@@ -28,7 +28,7 @@ test('12.5 sort: newest/oldest, missing years at the end and stable ties',()=>{
  assert.deepEqual(Array.from(api.sort(items,'year-new'),x=>x.id),['new-a','new-b','tv','old','unknown']);
  assert.deepEqual(Array.from(api.sort(items,'year-old'),x=>x.id),['old','tv','new-a','new-b','unknown']);
  assert.deepEqual(Array.from(api.sort(items,'updated'),x=>x.id),items.map(x=>x.id));
- assert.equal(JSON.stringify(items),before,'sorting may not change or persist the user's library');
+ assert.equal(JSON.stringify(items),before,'sorting may not change or persist the user library');
 });
 test('12.5 integration: one sorting control for anime and TV in both viewports',()=>{
  const read=p=>fs.readFileSync(path.join(root,p),'utf8');
