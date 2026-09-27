@@ -22,15 +22,16 @@ window.ATiPhone=function ATiPhone(ctx){
   return String(found?.title||found?.name||fallback);
  }
  function lastTouched(anime){return window.ATEpisodeHub127.lastTouched(anime,state().history||[])}
- function eligibleAnime(){
+ function eligibleAnime(releases=[]){
+  const returns=new Set(releases.filter(item=>item?.anime?.status==='completed'&&!item.watched&&!item.season?.watched?.includes(item.n)).map(item=>item.anime.id));
   return (state().anime||[]).filter(a=>{
-   try{return ['watching','waiting','completed'].includes(a?.status)&&!!ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a)}
+   try{return (['watching','waiting'].includes(a?.status)||(a?.status==='completed'&&returns.has(a.id)))&&!!ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a)}
    catch(err){console.warn('Skipping incomplete anime in iPhone feed',a?.id,err);return false}
   });
  }
  function splitWatch(releases=recentFeed()){
   const recent=(releases||[]).filter(item=>['watching','waiting','completed'].includes(item.anime?.status));
-  return window.ATEpisodeHub127.classify(eligibleAnime(),state().history||[],recent);
+  return window.ATEpisodeHub127.classify(eligibleAnime(recent),state().history||[],recent);
  }
  function watchHistory(){
   const seen=new Set();
@@ -77,7 +78,7 @@ window.ATiPhone=function ATiPhone(ctx){
   const {anime,season,n,when,watched,title}=item,url=poster(anime.cover||''),code=episodeCode(seasonIndex(anime,season),n);
   return `<article class="at114-card at114-watch-card at124-release-card ${priority?'at127-new-card':''} ${viewMode==='grid'?'is-grid':''}">
    <button type="button" class="at114-cover" data-ios-action="open-recent" data-id="${esc(anime.id)}" data-season="${esc(season.id)}" data-ep="${n}" aria-label="Hap episodin ${n} të ${esc(anime.title)}">${url?`<img src="${esc(url)}" loading="lazy" referrerpolicy="no-referrer" alt="Posteri i ${esc(anime.title)}">`:'<span>✦</span>'}<span class="at124-release-date">${esc(relativeDay(when))}</span></button>
-   <div class="at114-body"><span class="at124-release-status">${watched?'✓ I PARË':'<span class="at127-new-pill">NEW</span> SAPO DOLI'} · ${esc(relativeTime(when))}</span>
+   <div class="at114-body"><span class="at124-release-status">${watched?'✓ I PARË':'● SAPO DOLI'} · ${esc(relativeTime(when))}</span>
     <button type="button" class="at114-title-pill" data-ios-action="details" data-id="${esc(anime.id)}">${esc(anime.title)} <span>›</span></button>
     <button type="button" class="at114-copy" data-ios-action="open-recent" data-id="${esc(anime.id)}" data-season="${esc(season.id)}" data-ep="${n}"><strong class="at114-code">${esc(code)}</strong><span class="at114-episode-title">${esc(title)}</span><small class="at114-meta">Transmetuar ${esc(relativeDay(when))}, ${esc(relativeTime(when))}</small></button>
    </div>
@@ -94,20 +95,20 @@ window.ATiPhone=function ATiPhone(ctx){
   function actionButtonMarkup(kind,attrs=''){
   return `<button type="button" class="at114-check ${kind||''}" ${attrs}><span aria-hidden="true">${kind==='upcoming'?'↗':'✓'}</span></button>`;
  }
- function watchCard(anime,{stale=false}={}){
-  const nx=ctx.nextEpisode(anime);if(!nx)return'';
+ function watchCard(anime,{stale=false,release=null}={}){
+  const nx=release?{season:release.season,n:release.n}:ctx.nextEpisode(anime);if(!nx)return'';
   const seasonNo=seasonIndex(anime,nx.season),watched=ctx.count(anime),released=ctx.releasedTotal(anime),backlog=Math.max(0,released-watched),url=poster(anime.cover||''),title=episodeTitle(nx.season,nx.n),touched=lastTouched(anime);
-  return `<article class="at114-card at114-watch-card ${stale?'is-stale':''} ${viewMode==='grid'?'is-grid':''}">
-   <button type="button" class="at114-cover" data-ios-action="episode" data-id="${esc(anime.id)}" aria-label="Hap episodin e radhës për ${esc(anime.title)}">${url?`<img src="${esc(url)}" loading="lazy" referrerpolicy="no-referrer" alt="Posteri i ${esc(anime.title)}">`:'<span>✦</span>'}</button>
+  return `<article class="at114-card at114-watch-card ${stale?'is-stale':''} ${release?'at127-new-episode':''} ${viewMode==='grid'?'is-grid':''}">
+   <button type="button" class="at114-cover" data-ios-action="${release?'open-recent':'episode'}" data-id="${esc(anime.id)}" ${release?`data-season="${esc(nx.season.id)}" data-ep="${nx.n}"`:''} aria-label="Hap episodin e radhës për ${esc(anime.title)}">${url?`<img src="${esc(url)}" loading="lazy" referrerpolicy="no-referrer" alt="Posteri i ${esc(anime.title)}">`:'<span>✦</span>'}</button>
    <div class="at114-body">
     <button type="button" class="at114-title-pill" data-ios-action="details" data-id="${esc(anime.id)}">${esc(anime.title)} <span>›</span></button>
-    <button type="button" class="at114-copy" data-ios-action="episode" data-id="${esc(anime.id)}" aria-label="Vazhdo ${esc(anime.title)} me episodin ${nx.n}">
-     <strong class="at114-code">${episodeCode(seasonNo,nx.n)}${backlog>1?` <small>+${backlog-1}</small>`:''}</strong>
+    <button type="button" class="at114-copy" data-ios-action="${release?'open-recent':'episode'}" data-id="${esc(anime.id)}" ${release?`data-season="${esc(nx.season.id)}" data-ep="${nx.n}"`:''} aria-label="Vazhdo ${esc(anime.title)} me episodin ${nx.n}">
+     <strong class="at114-code">${episodeCode(seasonNo,nx.n)}${release?'<span class="at127-new-ep">NEW EP</span>':backlog>1?` <small>+${backlog-1}</small>`:''}</strong>
      <span class="at114-episode-title">${esc(title)}</span>
-     <small class="at114-meta">${stale?`Nuk e ke prekur prej ${Math.max(7,Math.floor((Date.now()-touched)/86400000))} ditësh`:`${watched}/${released} episode · ${ctx.percent(anime)}%`}</small>
+     <small class="at114-meta">${release?`Episodi i ri doli më ${esc(relativeDay(release.when))}`:stale?`Nuk e ke prekur prej ${Math.max(7,Math.floor((Date.now()-touched)/86400000))} ditësh`:`${watched}/${released} episode · ${ctx.percent(anime)}%`}</small>
     </button>
    </div>
-   ${actionButtonMarkup('pending',`data-ios-action="advance" data-id="${esc(anime.id)}" aria-label="Shëno episodin ${nx.n} si të parë"`)}
+   ${actionButtonMarkup('pending',release?`data-ios-action="mark-recent" data-id="${esc(anime.id)}" data-season="${esc(nx.season.id)}" data-ep="${nx.n}" aria-label="Shëno episodin e ri ${nx.n} si të parë"`:`data-ios-action="advance" data-id="${esc(anime.id)}" aria-label="Shëno episodin ${nx.n} si të parë"`)}
   </article>`;
  }
  function historyCard(item){
@@ -148,18 +149,16 @@ window.ATiPhone=function ATiPhone(ctx){
   return `<div class="at114-topbar"><div class="at114-top-tabs" role="tablist" aria-label="Episodet mobile"><button type="button" class="${tab==='watch'?'active':''}" data-ios-action="tab" data-id="watch" aria-selected="${tab==='watch'}">PËR T’U PARË</button><button type="button" class="${tab==='released'?'active':''}" data-ios-action="tab" data-id="released" aria-selected="${tab==='released'}">SAPO DOLËN ${recentCount?'<span class="at124-tab-badge">'+recentCount+'</span>':''}</button><button type="button" class="${tab==='upcoming'?'active':''}" data-ios-action="tab" data-id="upcoming" aria-selected="${tab==='upcoming'}">SË SHPEJTI</button></div><div class="at114-view-actions" role="group" aria-label="Ndrysho paraqitjen"><button type="button" class="${viewMode==='list'?'active':''}" data-ios-action="mode" data-id="list" aria-pressed="${viewMode==='list'}" aria-label="Pamja listë">◫</button><button type="button" class="${viewMode==='grid'?'active':''}" data-ios-action="mode" data-id="grid" aria-pressed="${viewMode==='grid'}" aria-label="Pamja grid">◧</button></div></div><p class="at114-tab-count" role="status" aria-live="polite">${tab==='watch'?`${watchCount} anime aktive në radhë`:tab==='released'?`${recentCount} episode të transmetuara gjatë 7 ditëve`:`${upcomingCount} episode të planifikuara`}</p>`;
  }
  function renderWatchSection(watch){
-  const {fresh,active,stale}=watch,history=watchHistory();
+  const {active,stale,newEpisodes}=watch,history=watchHistory();
   const listClass=`at114-list ${viewMode==='grid'?'is-grid':''}`;
-  const freshMarkup=fresh.slice(0,limit).map(item=>recentCard(item,{priority:true})).join('');
-  const activeMarkup=active.slice(0,limit).map(a=>watchCard(a)).join('');
+  const activeMarkup=active.slice(0,limit).map(a=>watchCard(a,{release:newEpisodes.get(a.id)||null})).join('');
   const staleMarkup=stale.slice(0,limit).map(a=>watchCard(a,{stale:true})).join('');
   const historyMarkup=history.slice(0,historyExpanded?Math.min(24,Math.max(limit,8)):2).map(historyCard).join('');
-  const helper=active.length+fresh.length<3?`<button type="button" class="at114-helper-card" data-ios-action="discover"><span class="at114-helper-icon">▣</span><span><strong>Fill my shows list</strong><small>Shto anime të reja dhe mbaje radhën plot.</small></span><i>›</i></button>`:'';
+  const helper=active.length<3?`<button type="button" class="at114-helper-card" data-ios-action="discover"><span class="at114-helper-icon">▣</span><span><strong>Fill my shows list</strong><small>Shto anime të reja dhe mbaje radhën plot.</small></span><i>›</i></button>`:'';
   const head=(title,count,extra='')=>`<div class="at127-section-head ${extra}"><div><h2>${title}</h2><span class="at127-count">${count}</span></div></div>`;
   return `${history.length?`<div class="at114-center-pill"><button type="button" data-ios-action="toggle-history" aria-expanded="${showHistory}">WATCH HISTORY</button></div>${showHistory?`<section class="${listClass} at114-history-list">${historyMarkup}</section>${history.length>2?`<button type="button" class="at114-history-more" data-ios-action="expand-history">${historyExpanded?'Shfaq më pak ↑':'Shfaq historikun e plotë ↓'}</button>`:''}`:''}`:''}
-   ${fresh.length?`${head('✦ EPISODE TË REJA',fresh.length,'at127-head-new')}<section class="${listClass} at127-fresh-list" aria-label="Episodet e reja të papara">${freshMarkup}</section>`:''}
    ${head('PO SHIKOJ',active.length)}
-   <section class="${listClass} at127-active-list" aria-label="Titujt që po shikon">${activeMarkup||`<div class="at127-empty-active">${fresh.length?'Episodet e reja janë shfaqur sipër.':'Asnjë episod aktiv për momentin. Shto një titull ose kontrollo premierat.'}</div>`}</section>
+   <section class="${listClass} at127-active-list" aria-label="Titujt që po shikon">${activeMarkup||'<div class="at127-empty-active">Asnjë episod aktiv për momentin. Shto një titull ose kontrollo premierat.</div>'}</section>
    ${helper}
    ${stale.length?`${head('S’KE PARË PREJ 7+ DITËSH',stale.length,'at127-stale-head')}<p class="at127-stale-note">Këta tituj mbeten te “Po shikoj” në bibliotekë; vetëm zhvendosen këtu. Pasi të shënosh një episod, kthehen sipër.</p><section class="${listClass} at114-stale-list at127-stale-list" aria-label="Titujt pa aktivitet prej shtatë ditësh">${staleMarkup}</section>`:''}`;
  }
@@ -194,7 +193,7 @@ window.ATiPhone=function ATiPhone(ctx){
   if(lastWatch&&!validUndo)lastWatch=null;
   const feedback=`<div class="at-ios-watch-feedback" role="status" aria-live="polite"><span class="at-ios-sync-dot ${syncing?'busy':saveInfo.dirty?'pending':''}" aria-hidden="true"></span><span>${esc(syncText)}</span>${validUndo?`<button type="button" data-ios-action="undo" aria-label="Zhbëj episodin ${lastWatch.n}">↶ Zhbëj EP ${lastWatch.n}</button>`:''}</div>`;
   const body=tab==='watch'?renderWatchSection(watch):tab==='released'?renderReleasedSection():renderUpcomingSection();
-  return `<section class="at-ios-shell at114-shell"><header class="at-ios-header"><div><span class="at-ios-kicker">ANIMETRACK · EPISODES</span><h1>${esc(new Date().getHours()<12?'Mirëmëngjes':new Date().getHours()<18?'Mirëdita':'Mirëmbrëma')}, ${esc(name)} <span>✦</span></h1><p>${watch.all.length?`${watch.all.length} anime me episode për të vazhduar.`:'Historia jote anime, në një vend.'}</p></div><button type="button" class="at124-mobile-search" data-at124-open="1" aria-label="Kërko në AnimeTrack">⌕</button><button class="at11-head-friends" type="button" data-pro-page="friends" aria-label="Kërko dhe shto miq" title="Miqtë">👥<span> Miqtë</span></button><button class="at-ios-bell" data-pro-page="notifications" type="button" aria-label="Hap njoftimet">🔔${unread?`<i>${Math.min(99,unread)}</i>`:''}</button></header>${installCard()}${feedback}${tools(watch.all.length,soon.length,recent.filter(x=>!x.watched).length)}${tab==='watch'?(ctx.dayBrief?.(true)||''):''}${body}${(tab==='watch'&&(watch.fresh.length>limit||watch.active.length>limit||watch.stale.length>limit))||(tab==='released'&&(recentFilter==='unseen'?recent.filter(x=>!x.watched).length:recent.length)>Math.max(limit,12))||(tab==='upcoming'&&soon.length>Math.max(limit,12))?'<button type="button" class="at-ios-more" data-ios-action="more">Shfaq më shumë ↓</button>':''}<div class="at-ios-end"><span>✦</span> Gjithçka që ke shënuar ruhet në bibliotekën tënde.</div></section>`;
+  return `<section class="at-ios-shell at114-shell"><header class="at-ios-header"><div><span class="at-ios-kicker">ANIMETRACK · EPISODES</span><h1>${esc(new Date().getHours()<12?'Mirëmëngjes':new Date().getHours()<18?'Mirëdita':'Mirëmbrëma')}, ${esc(name)} <span>✦</span></h1><p>${watch.all.length?`${watch.all.length} anime me episode për të vazhduar.`:'Historia jote anime, në një vend.'}</p></div><button type="button" class="at124-mobile-search" data-at124-open="1" aria-label="Kërko në AnimeTrack">⌕</button><button class="at11-head-friends" type="button" data-pro-page="friends" aria-label="Kërko dhe shto miq" title="Miqtë">👥<span> Miqtë</span></button><button class="at-ios-bell" data-pro-page="notifications" type="button" aria-label="Hap njoftimet">🔔${unread?`<i>${Math.min(99,unread)}</i>`:''}</button></header>${installCard()}${feedback}${tools(watch.all.length,soon.length,recent.filter(x=>!x.watched).length)}${tab==='watch'?(ctx.dayBrief?.(true)||''):''}${body}${(tab==='watch'&&(watch.active.length>limit||watch.stale.length>limit))||(tab==='released'&&(recentFilter==='unseen'?recent.filter(x=>!x.watched).length:recent.length)>Math.max(limit,12))||(tab==='upcoming'&&soon.length>Math.max(limit,12))?'<button type="button" class="at-ios-more" data-ios-action="more">Shfaq më shumë ↓</button>':''}<div class="at-ios-end"><span>✦</span> Gjithçka që ke shënuar ruhet në bibliotekën tënde.</div></section>`;
  }
  function mount(){
   const home=ctx.el('home-view');if(!home||ctx.el('at-iphone-feed'))return;
