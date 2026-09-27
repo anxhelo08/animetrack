@@ -19,7 +19,7 @@ test('12.6 local storage failure restores previous marker and does not claim suc
  assert.throws(()=>api.save(failing,key,{anime:[{id:2}]},'r1',true),/quota exceeded/);
  assert.equal(storage.getItem(api.pendingKey(key)),before);
  assert.equal(JSON.parse(storage.getItem(key)).anime[0].id,1);
- const newcomer={...storage,setItem:(k,v)=>{if(k===key)throw Error('quota exceeded');storage.setItem(k,v)}};
+ const newcomer={...storage,setItem:(k,v)=>{if(k==='animetrack_user_new')throw Error('quota exceeded');storage.setItem(k,v)}};
  assert.throws(()=>api.save(newcomer,'animetrack_user_new',{anime:[]},null,true),/quota exceeded/);
  assert.equal(storage.getItem(api.pendingKey('animetrack_user_new')),null);
 });
