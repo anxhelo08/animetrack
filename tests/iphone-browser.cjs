@@ -66,7 +66,7 @@ const assert=require('node:assert/strict');
  assert.equal(await reZero.count(),1,'ongoing anime stays in normal watch queue');
  assert.doesNotMatch(await reZero.innerText(),/NEW EP/,'ongoing anime never receives a completed-show badge');
  assert.equal(await page.locator('#at-iphone-feed .at127-stale-list [data-id="stale127"]').count()>0,true,'seven-day inactivity is a separate section');
- assert.match(await page.locator('#at-iphone-feed .at127-stale-head').innerText(),/7\\+ DITËSH/);
+ assert.match(await page.locator('#at-iphone-feed .at127-stale-head').innerText(),/7\+ DITËSH/);
  await mental.locator('[data-ios-action="mark-recent"][data-id="mental127"]').click();
  await page.waitForTimeout(130);
  assert.equal(await page.locator('#at-iphone-feed .at127-new-episode').count(),0,'NEW EP badge disappears after marking it watched');
