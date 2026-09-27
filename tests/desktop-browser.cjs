@@ -120,6 +120,8 @@ const assert=require('node:assert/strict');
  assert(await page.locator('#pro-content .at110-page').isVisible(),'My Lists should open');
  await page.locator('#at110-new-list').fill('My Weekend List');
  await page.locator('#at110-create-form button[type="submit"]').click();
+ try{await page.locator('.at110-list-top').waitFor({state:'visible',timeout:2500})}
+ catch(err){console.log('FILLER_COLLECTION_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({proView:document.querySelector('#pro-view')?.className,proText:document.querySelector('#pro-content')?.innerText.slice(0,650),input:document.querySelector('#at110-new-list')?.value,notice:document.querySelector('#toast')?.innerText,lists:window.ATMobile113.state().preferences.customLists,cloud:document.querySelector('#account-sync-pill')?.textContent}))));throw err}
  assert.match(await page.locator('.at110-list-top').innerText(),/My Weekend List/);
  await page.locator('[data-pro-action="collection-toggle"][data-id="demo7"]').first().click();
  assert.match(await page.locator('.at110-list-top').innerText(),/1 anime/);
