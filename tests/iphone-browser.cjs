@@ -42,6 +42,38 @@ const assert=require('node:assert/strict');
  await page.locator('[data-ios-action="recent-filter"][data-id="all"]').click();
  assert.equal(await page.locator('[data-ios-action="recent-filter"][data-id="all"]').getAttribute('aria-pressed'),'true');
  console.log('RELEASE_IPHONE_PASS');
+ // 12.7: completed TV title with a newly aired episode goes into a priority NEW section.
+ await page.evaluate(()=>{
+  const data=window.ATMobile113.state(),old=new Date(Date.now()-12*86400000).toISOString(),aired=new Date(Date.now()-60*60000).toISOString();
+  data.anime.push({
+   id:'mental127',title:'The Mentalist',source:'TVMaze',sourceId:'627',tvmazeId:'627',format:'TV_SERIES',year:2008,status:'completed',
+   cover:'',createdAt:old,updatedAt:new Date().toISOString(),seasons:[
+    {id:'mental-s1',title:'Sezoni 1',source:'TVMaze',sourceId:'627',total:2,watched:[1,2],episodes:[],releaseStatus:'FINISHED'},
+    {id:'mental-s2',title:'Sezoni 2',source:'TVMaze',sourceId:'627',total:1,watched:[],episodes:[{number:1,title:'Surprise Premiere',airedAt:aired}],releaseStatus:'RELEASING'}
+   ]
+  });
+  data.anime.push({id:'stale127',title:'Old Detective',status:'watching',cover:'',createdAt:old,updatedAt:new Date().toISOString(),
+   seasons:[{id:'old-s1',title:'Season 1',total:5,watched:[1],episodes:[],releaseStatus:'FINISHED'}]});
+  data.history.push({id:'stale127',seasonId:'old-s1',episode:1,action:'watched',date:old});
+ });
+ await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
+ const priority=page.locator('#at-iphone-feed .at127-fresh-list .at127-new-card').filter({has:page.locator('[data-id="mental127"]')});
+ assert.equal(await priority.count(),1,'completed TV title appears once with NEW priority');
+ assert.match(await priority.innerText(),/NEW/);
+ assert.match(await priority.innerText(),/Surprise Premiere/);
+ assert.equal(await page.locator('#at-iphone-feed .at127-active-list [data-id="mental127"]').count(),0,'no duplicate in normal watch queue');
+ assert.equal(await page.locator('#at-iphone-feed .at127-stale-list [data-id="stale127"]').count()>0,true,'seven-day inactivity is a separate section');
+ assert.match(await page.locator('#at-iphone-feed .at127-stale-head').innerText(),/7\+ DITËSH/);
+ await priority.locator('[data-ios-action="mark-recent"][data-id="mental127"]').click();
+ await page.waitForTimeout(130);
+ assert.equal(await page.locator('#at-iphone-feed .at127-fresh-list [data-id="mental127"]').count(),0,'NEW disappears immediately after marking it seen');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='mental127').status),'completed','normal completed status remains');
+ await page.locator('#at-iphone-feed .at127-stale-list [data-ios-action="advance"][data-id="stale127"]').click();
+ await page.waitForTimeout(130);
+ assert.equal(await page.locator('#at-iphone-feed .at127-stale-list [data-id="stale127"]').count(),0,'watched activity removes title from inactive group');
+ assert(await page.locator('#at-iphone-feed .at127-active-list [data-id="stale127"]').count()>0,'resumed title returns to active queue');
+ console.log('EPISODE_HUB_127_IPHONE_PASS',JSON.stringify({newRelease:'The Mentalist',newCleared:true,staleRecovered:true}));
+
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
  assert(await page.locator('#at-iphone-feed .at115-day-summary').isVisible(),'Collapsible daily overview should be visible on iPhone');
  assert.match(await page.locator('#at-iphone-feed .at115-day-summary').innerText(),/YOUR ANIME DAY/);
@@ -51,7 +83,7 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('[data-ios-action="horizon"][data-id="30"]').getAttribute('aria-pressed'),'true');
  assert.equal(await page.locator('.at117-upcoming-action').count(),1,'Future episode is not a green watched check');
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
- await page.locator('[data-ios-action="advance"][data-id="demo1"]').click();
+ await page.locator('#at-iphone-feed .at127-fresh-list [data-ios-action="mark-recent"][data-id="demo1"]').click();
  await page.waitForTimeout(150);
  assert.match(await page.locator('#at-iphone-feed').innerText(),/E04/,'+1 should update episode');
  assert(await page.locator('[data-ios-action="undo"]').isVisible(),'recent episode should offer Undo');
@@ -74,10 +106,10 @@ const assert=require('node:assert/strict');
  const postTapScale=await page.evaluate(()=>window.visualViewport?.scale||1);
  assert(postTapScale<1.05,'Double-tap should not enlarge the mobile screen: '+postTapScale);
  console.log('DOUBLE_TAP_SCALE',postTapScale);
- await page.locator('[data-ios-action="episode"][data-id="demo1"]').first().click();
+ await page.locator('[data-ios-action="open-recent"][data-id="demo1"]').first().click();
  if(!(await page.locator('#episode-detail-modal').isVisible())){
   await page.waitForTimeout(300);
-  if(!(await page.locator('#episode-detail-modal').isVisible()))await page.locator('[data-ios-action="episode"][data-id="demo1"]').first().click();
+  if(!(await page.locator('#episode-detail-modal').isVisible()))await page.locator('[data-ios-action="open-recent"][data-id="demo1"]').first().click();
  }
  await page.locator('#episode-detail-modal').waitFor({state:'visible',timeout:5000});
  assert(await page.locator('#episode-detail-modal').isVisible(),'iPhone Episode Hub should open');
@@ -129,27 +161,27 @@ const assert=require('node:assert/strict');
  assert.match(await page.locator('#detail-body').innerText(),/1 \/ 1 episode|1 \/ 2 episode/);
  await page.locator('#detail-modal [data-close="detail-modal"]').click();
  await page.locator('.at-mobile-nav [data-mobile-nav="library"]').click();
- assert(await page.locator('#anime-grid .anime-card[data-media="tv"]').isVisible(),'Dexter uses native anime card');
+ assert(await page.locator('#anime-grid .anime-card[data-media="tv"]').first().isVisible(),'Dexter uses native anime card');
  assert(await page.locator('#anime-grid .anime-card').count()>=2,'Unified library shows anime and TV');
  await page.locator('[data-media-filter="tv"]').click();
  assert.equal(await page.locator('#anime-grid .anime-card[data-media="anime"]:visible').count(),0,'TV filter hides anime');
  await page.locator('[data-media-filter="anime"]').click();
  assert.equal(await page.locator('#anime-grid .anime-card[data-media="tv"]:visible').count(),0,'Anime filter hides TV');
  await page.locator('[data-media-filter="all"]').click();
- assert(await page.locator('#anime-grid .anime-card[data-media="tv"]').isVisible(),'All restores TV');
+ assert(await page.locator('#anime-grid .anime-card[data-media="tv"]').first().isVisible(),'All restores TV');
  await page.locator('[data-at117-sort="title"]').click();
  assert(await page.locator('.at117-library-tools button.active').isVisible(),'Sort control must have active style');
  await page.evaluate(()=>{window.ATMobile113.state().anime.find(a=>a.id==='demo1').year=2024;});
  await page.locator('[data-at117-sort="year-new"]').click();
  assert.equal(await page.locator('#sort').inputValue(),'year-new');
  let years=await page.locator('#anime-grid .anime-card').evaluateAll(cards=>cards.filter(x=>!x.hidden).map(x=>x.dataset.releaseYear));
- assert.deepEqual(years.slice(0,2),['2024','2006'],'iPhone newest sort combines anime and TV by premiere');
+ assert.deepEqual(years.slice(0,3),['2024','2008','2006'],'iPhone newest sort combines anime and TV by premiere');
  assert(await page.locator('[data-at117-sort="year-new"]').getAttribute('class').then(x=>x.includes('active')));
  await page.locator('[data-at117-sort="year-old"]').click();
  assert.equal(await page.locator('#sort').inputValue(),'year-old');
  years=await page.locator('#anime-grid .anime-card').evaluateAll(cards=>cards.filter(x=>!x.hidden).map(x=>x.dataset.releaseYear));
- assert.deepEqual(years.slice(0,2),['2006','2024'],'iPhone oldest premiere first');
- console.log('YEAR_IPHONE_PASS',JSON.stringify({newest:['2024','2006'],oldest:['2006','2024']}));
+ assert.deepEqual(years.slice(0,3),['2006','2008','2024'],'iPhone oldest premiere first');
+ console.log('YEAR_IPHONE_PASS',JSON.stringify({newest:['2024','2008','2006'],oldest:['2006','2008','2024']}));
  await page.locator('[data-at117-sort="updated"]').click();
  await page.locator('[data-mobile-nav="home"]').click();
  assert(await page.locator('#at-iphone-feed').isVisible(),'Anime feed remains accessible after TV progress');

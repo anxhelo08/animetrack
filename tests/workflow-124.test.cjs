@@ -17,7 +17,7 @@ test('12.4 command search: anime, episodes, pages and online fallback without cl
 });
 test('12.4 mobile: recently aired is a distinct tab and keeps future dates out',async()=>{
  const realm={window:{matchMedia:()=>({matches:false})},navigator:{userAgent:'Android'},localStorage:{getItem:()=>null}};
- vm.runInNewContext(iphoneSource,realm);const now=Date.now();
+ vm.runInNewContext(read('assets/pro-episode-hub-127.js'),realm);vm.runInNewContext(iphoneSource,realm);const now=Date.now();
  const anime={id:'op',title:'One Piece',status:'watching',seasons:[{id:'s1',title:'Season 1',total:5,watched:[1],episodes:[{number:1,title:'Past watched'},{number:2,title:'Fresh episode'}]}]};
  const data={anime:[anime],history:[]},feed={innerHTML:''},calls=[];
  const ctx={esc:String,el:id=>id==='at-iphone-feed'?feed:null,state:()=>data,user:()=>({id:'test'}),accountName:()=> 'Anime Fan',count:()=>1,released:()=>5,releasedTotal:()=>5,percent:()=>20,nextEpisode:()=>({season:anime.seasons[0],n:2}),poster:()=>'',upcoming:()=>[],recentAiring:()=>[
@@ -41,5 +41,5 @@ test('12.4 markup: quick search and phone release controls are wired and escaped
  assert.match(css,/at124-command-panel/);assert.match(css,/at124-episode-mark/);assert.match(css,/at114-top-tabs/);
  assert.match(iphoneSource,/data-ios-action="recent-filter"/);assert.match(iphoneSource,/data-ios-action="open-recent"/);
  assert.match(commandSource,/esc\(x\.label\)/);assert.match(commandSource,/esc\(x\.desc\|\|''\)/);
- assert.match(sw,/animetrack-shell-v1260-1/);assert.match(html,/AnimeTrack 12\.6\.0/);
+ assert.match(sw,/animetrack-shell-v1270-1/);assert.match(html,/AnimeTrack 12\.7\.0/);
 });
