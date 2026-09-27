@@ -76,11 +76,33 @@ const assert=require('node:assert/strict');
  if(await recoverPanel.isVisible())await page.evaluate(()=>document.querySelector('#at128-storage-warning [data-at128-retry]')?.click());
  await recoverPanel.waitFor({state:'hidden',timeout:10000});
  assert(await recoverPanel.isHidden(),'quota recovery must clear once browser storage accepts writes again');
+ // 12.10 Jikan filler remains a viewing-independent yellow tag.
+ await page.route('https://api.jikan.moe/v4/anime/20/episodes?page=1',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:[
+  {mal_id:1,title:'Pilot',filler:false,recap:false},
+  {mal_id:2,title:'Main story',filler:false,recap:false},
+  {mal_id:3,title:'Training sidestory',filler:true,recap:false},
+  {mal_id:4,title:'Return to canon',filler:false,recap:false}
+ ],pagination:{has_next_page:false}})}));
+ await page.route('https://api.jikan.moe/v4/anime/20/episodes/3',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{mal_id:3,title:'Training sidestory',filler:true,recap:false,synopsis:'Bonus story'}})}));
+ await page.evaluate(()=>{const a=window.ATMobile113.state().anime.find(x=>x.id==='demo7');a.seasons[0].malId='20';a.seasons[0].loadedPages=[];});
  await page.locator('#at-home-lineup .at-h2-lineup-name[data-id="demo7"]').click();
  assert(await page.locator('#detail-modal').isVisible(),'Anime detail should open');
  assert.equal(await page.locator('#detail-body .at108-franchise').count(),0,'Franchise Hub must be absent');
  assert(await page.locator('#detail-body .season-scroller').isVisible(),'Native season selector remains');
  assert.equal(await page.locator('#detail-body .season-tab').count(),1);
+ await page.locator('#detail-body .ep-article.at1210-filler').waitFor({state:'visible',timeout:10000});
+ assert.match(await page.locator('#detail-body .ep-article.at1210-filler').innerText(),/FILLER/);
+ assert.equal(await page.locator('#detail-body .ep-article.at1210-filler .ep-toggle-btn').getAttribute('aria-pressed'),'false');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].watched.length),2,'metadata cannot change watched progress');
+ await page.locator('#detail-body .ep-info-btn[data-episode-number="3"]').click();
+ assert(await page.locator('#episode-detail-modal .at1210-chip.filler').isVisible(),'episode details show filler');
+ await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('normal');
+ assert.equal(await page.locator('#detail-body .ep-article.at1210-filler').count(),0,'manual override clears yellow');
+ await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('auto');
+ assert.equal(await page.locator('#detail-body .ep-article.at1210-filler').count(),1,'restoring provider restores yellow');
+ await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
+ console.log('FILLER_DESKTOP_PASS',JSON.stringify({filler:3,watchedIntact:true,manualOverride:true}));
+
  await page.locator('#detail-body .ep-info-btn').first().click();
  assert(await page.locator('#episode-detail-modal').isVisible(),'Episode Hub should open');
  assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible());
