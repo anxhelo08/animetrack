@@ -25,7 +25,7 @@ test('12.4 mobile: recently aired is a distinct tab and keeps future dates out',
   {animeId:'op',seasonId:'s1',localEpisode:2,when:now-7200000,seen:false},
   {animeId:'op',seasonId:'s1',localEpisode:3,when:now+3600000,seen:false}
  ],unreadCount:()=>0,watchSaveStatus:()=>({}),dayBrief:()=>'',openEpisode:(...v)=>calls.push(['open',...v]),markEpisode:(...v)=>calls.push(['mark',...v])};
- const m=realm.window.ATiPhone(ctx);await m.action('tab','released');assert.match(feed.innerHTML,/Sapo dolën/);
+ const m=realm.window.ATiPhone(ctx);m.refresh();await m.action('tab','released');assert.match(feed.innerHTML,/Sapo dolën/);
  assert.match(feed.innerHTML,/Fresh episode/);assert.doesNotMatch(feed.innerHTML,/Past watched/);assert.doesNotMatch(feed.innerHTML,/data-ep="3"/);
  await m.action('recent-filter','all');assert.match(feed.innerHTML,/Past watched/);assert.match(feed.innerHTML,/Fresh episode/);
  await m.action('open-recent','op',{dataset:{season:'s1',ep:'2'}});await m.action('mark-recent','op',{dataset:{season:'s1',ep:'2'}});
