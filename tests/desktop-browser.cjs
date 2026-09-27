@@ -92,6 +92,25 @@ const assert=require('node:assert/strict');
  await page.locator('#detail-body [data-tv-unified-add="watching"]').click();
  assert(await page.locator('#detail-body .season-tab').count()>0,'TV has native season tabs');
  await page.locator('#detail-modal [data-close="detail-modal"]').click();
+ // 12.5: anime and TV share the same first-premiere-year ordering.
+ await page.evaluate(()=>{
+  const entries=window.ATMobile113.state().anime;
+  entries.find(a=>a.id==='demo0').year=1999;
+  entries.find(a=>a.id==='demo1').year=2025;
+ });
+ await page.locator('#library-nav').click();
+ await page.locator('#sort').selectOption('year-new');
+ let rows=await page.locator('#anime-grid .anime-card').evaluateAll(cards=>cards.filter(x=>!x.hidden).map(x=>({year:x.dataset.releaseYear,media:x.dataset.media})));
+ assert.deepEqual(rows.slice(0,3).map(x=>x.year),['2025','2006','1999'],'newest premiere year first, TV and anime mixed');
+ assert.equal(rows.at(-1).year,'','titles without a premiere date remain last');
+ assert(await page.locator('#at125-sort-hint').isVisible(),'year-sort rule is explained');
+ await page.locator('#sort').selectOption('year-old');
+ rows=await page.locator('#anime-grid .anime-card').evaluateAll(cards=>cards.filter(x=>!x.hidden).map(x=>({year:x.dataset.releaseYear,media:x.dataset.media})));
+ assert.deepEqual(rows.slice(0,3).map(x=>x.year),['1999','2006','2025'],'oldest premiere year first');
+ assert.equal(rows.at(-1).year,'','unknown years remain last in ascending order');
+ await page.locator('#sort').selectOption('updated');
+ assert(await page.locator('#at125-sort-hint').isHidden());
+ console.log('YEAR_DESKTOP_PASS',JSON.stringify({newest:['2025','2006','1999'],oldest:['1999','2006','2025'],unknownLast:true}));
  await page.locator('#home-nav').click();
  assert(await page.locator('#at-home-main').isVisible(),'PC Home should remain available');
 
