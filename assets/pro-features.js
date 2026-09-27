@@ -40,7 +40,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   liveBusy=true;liveLastCheck=Date.now();document.body.classList.add('at-live-checking');renderHome();
   try{const result=await ctx.liveRefresh(force);modules.push.scheduleSync();return {status:result?.failed?'partial':'ok'}}
   catch(e){console.warn('Live refresh failed',e);return {status:'error'}}
-  finally{liveBusy=false;document.body.classList.remove('at-live-checking');render();renderHome()}
+  finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation'].includes(active))render();renderHome()}
  }
  function renderHome(){
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
@@ -149,7 +149,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    const work=[['profiles',()=>modules.profiles.load()],['friends',()=>modules.friends.load()],['moderation',()=>modules.moderation.load()],['notifications',()=>modules.notifications.refresh()],['recommendations',()=>modules.recommendations.refresh(false)]];
    void Promise.allSettled(work.map(async([name,fn])=>{
     try{await fn()}catch(err){console.warn('Account module '+name,err)}
-    finally{if(name==='profiles'||name==='friends'){render();renderHome()}}
+    finally{if(name==='profiles'||name==='friends'){if(!['collections','profile','friends','moderation'].includes(active))render();renderHome()}}
    }));
    render();renderHome();
    void modules.push.prepare().then(()=>modules.push.scheduleSync()).catch(console.warn);
