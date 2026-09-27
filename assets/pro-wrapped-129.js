@@ -48,18 +48,22 @@ window.ATWrapped129=(()=>{
   const addGenre=(ev,map,set)=>{const entry=byId.get(ev.id);let list=[];try{list=genres(entry)||[]}catch{}for(const g of list){const text=String(g||'').trim();if(!text)continue;map.set(text,(map.get(text)||0)+1);if(set)set.add(text.toLocaleLowerCase())}};
   for(const e of all){
    const day=keyDay(e.at),month=keyMonth(e.at),d=new Date(e.at),dow=(d.getDay()+6)%7,weekDay=new Date(d.getFullYear(),d.getMonth(),d.getDate()-(d.getDay()+6)%7).getTime(),week=keyDay(weekDay);
-   days.set(day,(days.get(day)||0)+1);recentDaily.set(day,(recentDaily.get(day)||0)+1);weeks.set(week,(weeks.get(week)||0)+1);months.set(month,(months.get(month)||0)+1);allTitles.add(e.id);addGenre(e,new Map(),allGenres);
+   days.set(day,(days.get(day)||0)+1);weeks.set(week,(weeks.get(week)||0)+1);months.set(month,(months.get(month)||0)+1);allTitles.add(e.id);addGenre(e,new Map(),allGenres);
   }
   for(const e of current){
    const a=byId.get(e.id),day=keyDay(e.at),month=keyMonth(e.at),dow=(new Date(e.at).getDay()+6)%7;
-   titleEvents.set(e.id,(titleEvents.get(e.id)||0)+1);daily.set(day,(daily.get(day)||0)+1);monthly.set(month,(monthly.get(month)||0)+1);weekday[dow]++;typeCounts[kind(a)]++;
+   titleEvents.set(e.id,(titleEvents.get(e.id)||0)+1);daily.set(day,(daily.get(day)||0)+1);recentDaily.set(day,(recentDaily.get(day)||0)+1);monthly.set(month,(monthly.get(month)||0)+1);weekday[dow]++;typeCounts[kind(a)]++;
    addGenre(e,genreEvents);
   }
-  const orderedDays=[...days.keys()].sort();let longest=0,run=0,previous=0;
-  for(const key of orderedDays){const stamp=dayTime(key);run=previous&&stamp-previous===DAY?run+1:1;longest=Math.max(longest,run);previous=stamp}
-  const today=keyDay(end),yesterday=keyDay(end-DAY),last=orderedDays.at(-1),activeStreak=last===today||last===yesterday?run:0;
+  function streak(source){
+   const keys=[...source.keys()].sort();let longest=0,run=0,previous=0;
+   for(const key of keys){const stamp=dayTime(key);run=previous&&stamp-previous===DAY?run+1:1;longest=Math.max(longest,run);previous=stamp}
+   const today=keyDay(end),yesterday=keyDay(end-DAY),last=keys.at(-1);
+   return {longest,active:last===today||last===yesterday?run:0};
+  }
+  const lifetimeStreak=streak(days),visibleStreak=streak(daily);
   const peak=top(days,1)[0]||['',0],maxWeek=top(weeks,1)[0]?.[1]||0,maxMonth=top(months,1)[0]?.[1]||0;
-  const metric={marked:totalMarked,completed,titles:allTitles.size,genres:allGenres.size,peak:peak[1],streak:longest,week:maxWeek,month:maxMonth};
+  const metric={marked:totalMarked,completed,titles:allTitles.size,genres:allGenres.size,peak:peak[1],streak:lifetimeStreak.longest,week:maxWeek,month:maxMonth};
   const badges=defs.map(([id,icon,name,description,target,measure])=>({id,icon,name,description,target,measure,value:Math.max(0,metric[measure]||0),unlocked:(metric[measure]||0)>=target}));
   const unlocked=badges.filter(b=>b.unlocked);
   const minutes=current.reduce((v,e)=>{const a=byId.get(e.id);return v+(isMovie(a)?100:kind(a)==='tv'?45:24)},0);
@@ -70,7 +74,7 @@ window.ATWrapped129=(()=>{
    titleCount:titleEvents.size,genreCount:genreEvents.size,days:daily.size,peak:top(daily,1)[0]||['',0],lifetimePeak:peak,weekday:names.map((label,i)=>({label,count:weekday[i]})),
    top:top(titleEvents,5).map(([id,count])=>({id,title:byId.get(id)?.title||'Titull',count,kind:kind(byId.get(id))})),
    genres:top(genreEvents,6).map(([label,count])=>({label,count})),daily14:previous14,monthly:top(monthly,12),
-   longestStreak:longest,activeStreak,allTitles:allTitles.size,badges,unlocked,media:typeCounts,
+   longestStreak:visibleStreak.longest,activeStreak:visibleStreak.active,lifetimeLongestStreak:lifetimeStreak.longest,allTitles:allTitles.size,badges,unlocked,media:typeCounts,
    hasHistory:all.length>0,earliest:all.reduce((n,e)=>Math.min(n,e.at),Infinity),recordNote:'Vetëm historiku i datuar; importet pa datë nuk numërohen si ditë shikimi.'};
  }
  function render(report,{badgeFilter='all'}={}){
@@ -91,7 +95,7 @@ window.ATWrapped129=(()=>{
     '<div class="at129-split"><section class="at129-panel"><span class="at129-eyebrow">PREFERENCAT</span><h3>Zhanret e tua</h3>'+(r.genres.length?r.genres.map(x=>'<div class="at129-genre"><div><span>'+esc(x.label)+'</span><b>'+fmt(x.count)+'</b></div><i><span style="width:'+Math.round(x.count/maxGenre*100)+'%"></span></i></div>').join(''):'<p class="at129-empty">Nuk ka zhanre të regjistruara për këtë periudhë.</p>')+'</section>'+
     '<section class="at129-panel"><span class="at129-eyebrow">NJË JAVË NË SHIFRA</span><h3>Kur shënon më shumë episode?</h3><div class="at129-weekdays">'+r.weekday.map(x=>'<div><span>'+esc(x.label.slice(0,3))+'</span><b>'+fmt(x.count)+'</b></div>').join('')+'</div><div class="at129-facts"><div><span>Anime / filma</span><b>'+fmt(r.media.anime)+' ep.</b></div><div><span>Seriale TV</span><b>'+fmt(r.media.tv)+' ep.</b></div></div></section></div>'+
     '</div>'+
-    '<section class="at129-achievements" id="at129-achievements"><header><div><span class="at129-eyebrow">YOUR TROPHY ROOM</span><h2>Arritjet e tua <span aria-hidden="true">✦</span></h2><p>Çdo ikonë fitohet nga progresi i bibliotekës ose nga historiku me datë — pa pikë të sajuara.</p></div><div class="at129-achievement-count"><strong>'+unlocked+'<small> / '+r.badges.length+'</small></strong><span>të zhbllokuara</span></div></header>'+
+    '<section class="at129-achievements" id="at129-achievements"><header><div><span class="at129-eyebrow">YOUR TROPHY ROOM</span><h2>Arritjet e tua <span aria-hidden="true">✦</span></h2><p>Arritje të përhershme nga gjithë biblioteka jote — nuk ndryshojnë kur filtron muajin apo llojin e titullit.</p></div><div class="at129-achievement-count"><strong>'+unlocked+'<small> / '+r.badges.length+'</small></strong><span>të zhbllokuara</span></div></header>'+
     '<div class="at129-badge-toolbar" role="group" aria-label="Filtro arritjet">'+[['all','Të gjitha'],['unlocked','Të fituara'],['locked','Për t’u fituar']].map(([id,label])=>'<button type="button" data-pro-action="wrapped-badges" data-id="'+id+'" aria-pressed="'+(badgeFilter===id)+'" class="'+(badgeFilter===id?'active':'')+'">'+label+'</button>').join('')+'</div>'+
     '<div class="at129-badge-grid">'+visible.map(b=>'<article class="at129-badge '+(b.unlocked?'earned':'locked')+'" aria-label="'+esc(b.name+(b.unlocked?', e fituar':', ende jo'))+'"><div class="at129-badge-icon" aria-hidden="true">'+b.icon+'</div><div class="at129-badge-body"><strong>'+esc(b.name)+'</strong><small>'+esc(b.description)+'</small><div class="at129-progress"><i style="width:'+Math.min(100,Math.round(b.value/b.target*100))+'%"></i></div><span>'+(b.unlocked?'✓ E FITUAR':fmt(Math.min(b.value,b.target))+' / '+fmt(b.target))+'</span></div></article>').join('')+'</div>'+
     '<p class="at129-disclaimer">Episode në bibliotekë dhe tituj të përfunduar maten nga gjendja aktuale. Rekordet ditore, javore dhe streak-u përdorin vetëm shënime me datë; importet pa datë nuk krijojnë arritje kohore. Kohëzgjatja është vlerësim, jo kohë e matur.</p></section>'+
