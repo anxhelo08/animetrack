@@ -37,6 +37,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   // Background refreshes must never replace a typed, unsubmitted collection name.
   // Explicit collection mutations still use ctx.rerender() and force a fresh view.
   if(!force&&active==='collections'&&$('at110-new-list')?.value.trim())return;
+  if(!force&&['profile','friends'].includes(active)&&$('pro-content')?.contains(document.activeElement)&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
   const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};$('pro-content').innerHTML=renderers[active]?.()||''}
  async function refreshLive(force=false){
   if(liveBusy)return {status:'busy'};
@@ -62,7 +63,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   }
   for(const [target,fn] of [['pro-home-recs',()=>modules.recommendations.home()],['pro-home-week',()=>modules.calendar.home()],['pro-home-inbox',()=>modules.notifications.home()]]){const node=$(target);if(node)try{node.innerHTML=fn()}catch(err){console.warn('Home widget recovery',target,err);node.innerHTML='<div class="at-pro-recovery"><p>Ky seksion nuk u ngarkua.</p><button type="button" data-home-action="retry-home">Riprovo ↻</button></div>'}}
  }
- ctx.rerender=()=>{render(true);renderHome()};
+ ctx.rerender=(force=false)=>{render(!!force);renderHome()};
  ctx.rerenderRecommendations=()=>{
   // Catalog network refreshes must never reset a form that the user is typing into
   // (e.g. personal collections, profile, login).
