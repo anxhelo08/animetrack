@@ -70,6 +70,23 @@ test('12.9 integrated Wrapped and profile have new assets, period actions, safe 
  assert.match(calendar,/ATWrapped129\.render/);assert.match(calendar,/wrapped-badges/);
  assert.match(html,/pro-wrapped-129\.js/);assert.match(html,/pro-wrapped-129\.css/);
  assert.match(sw,/pro-wrapped-129\.js/);assert.match(sw,/pro-wrapped-129\.css/);
- assert.match(sw,/animetrack-shell-v1290-1/);assert.match(html,/AnimeTrack 12\.9\.0/);
+ assert.match(sw,/animetrack-shell-v1291-1/);assert.match(html,/AnimeTrack 12\.9\.1/);
  assert.match(css,/@media\(max-width:760px\)/);
+});
+
+test('12.9.1 selected TV scope keeps daily heatmap and viewing streak TV-only while trophies remain lifetime-global',()=>{
+ const m=module(),f=fixture(),all=m.analyze({...f,period:'month',scope:'all'}),tv=m.analyze({...f,period:'month',scope:'tv'}),anime=m.analyze({...f,period:'month',scope:'anime'});
+ const sum=r=>r.daily14.reduce((n,x)=>n+x.count,0);
+ assert.equal(sum(all),16);assert.equal(sum(tv),3);assert.equal(sum(anime),13);
+ assert.equal(tv.days,3);assert.equal(tv.peak[1],1);assert.equal(tv.longestStreak,3,'TV streak is not inflated by anime dates');
+ assert.equal(all.longestStreak,7);assert.equal(anime.longestStreak,3,'anime days 20–22,26 are separate streaks');
+ assert.equal(tv.unlocked.some(x=>x.id==='day10'),true,'earned badges remain global lifetime achievements');
+ assert.match(m.render(tv),/Arritje të përhershme nga gjithë biblioteka/);
+});
+test('12.9.1 monthly scope does not leak prior-month activity into the last-14-day chart',()=>{
+ const m=module(),f=fixture(),now=new Date(2026,9,2,15),events=[{id:'a1',at:new Date(2026,8,30,14).getTime()},{id:'tv1',at:new Date(2026,9,1,14).getTime()}];
+ const current=m.analyze({...f,events,period:'month',scope:'tv',now});
+ assert.equal(current.events,1);assert.equal(current.daily14.reduce((n,x)=>n+x.count,0),1);
+ assert.equal(current.days,1);assert.equal(current.longestStreak,1);
+ assert.equal(m.analyze({...f,events,period:'month',scope:'anime',now}).events,0);
 });
