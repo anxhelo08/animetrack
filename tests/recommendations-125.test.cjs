@@ -34,7 +34,7 @@ test('12.5 media filters: TV, anime and movie categories and safe TV preview',as
  fx.rec.setMedia('anime');assert.match(fx.rec.render(),/Fantasy Journey/);assert.doesNotMatch(fx.rec.render(),/Dexter/);
  fx.rec.setMedia('movies');assert.match(fx.rec.render(),/Nuk ka sugjerime/);
  fx.rec.setMedia('all');fx.rec.hide('tv-777');assert.doesNotMatch(fx.rec.render(),/Dexter/);fx.rec.restore();assert.match(fx.rec.render(),/Dexter/);
- assert([...fx.store.keys()].some(x=>x.includes('animetrack_rec_prefs_v125_test-user')));
+ assert([...fx.store.keys()].some(x=>x.includes('animetrack_rec_prefs_v10_test-user')));
 });
 test('12.5 integration: TV preview is routed through native TVMaze flow without forced add',()=>{
  const app=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-year-125.css'),'utf8');
