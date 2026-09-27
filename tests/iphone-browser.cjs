@@ -145,6 +145,17 @@ const assert=require('node:assert/strict');
  assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible(),'Episode Hub should render mobile');
  assert(await page.locator('#episode-detail-modal .at124-episode-mark').isVisible(),'Sticky episode action should be visible');
  assert((await page.locator('#episode-detail-modal .at124-episode-mark').boundingBox()).height>=44,'Sticky action has touch-friendly height');
+ // 12.10 manual fallback is usable on mobile where no MAL episode mapping exists.
+ const beforeFiller=await page.evaluate(()=>window.ATMobile113.state().anime.find(x=>x.id==='demo1').seasons[0].watched.length);
+ const fillerPicker=page.locator('#episode-detail-modal [data-filler-manual]');
+ assert(await fillerPicker.isVisible(),'filler type selector available on phone');
+ assert((await fillerPicker.boundingBox()).height>=44,'mobile filler control is touch friendly');
+ await fillerPicker.selectOption('filler');
+ assert(await page.locator('#episode-detail-modal .at1210-chip.filler').isVisible(),'manual filler has yellow badge');
+ await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('auto');
+ assert.equal(await page.locator('#episode-detail-modal .at1210-chip.filler').count(),0,'unknown filler must not remain yellow');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(x=>x.id==='demo1').seasons[0].watched.length),beforeFiller,'label never changes viewing progress');
+ console.log('FILLER_IPHONE_PASS',JSON.stringify({manualFallback:true,watchedIntact:true}));
  await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="discussion"]').click();
  assert.equal(await page.locator('#ep-detail-body').getAttribute('data-at108-tab'),'discussion');
  await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="episode"]').click();

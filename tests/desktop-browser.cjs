@@ -76,11 +76,38 @@ const assert=require('node:assert/strict');
  if(await recoverPanel.isVisible())await page.evaluate(()=>document.querySelector('#at128-storage-warning [data-at128-retry]')?.click());
  await recoverPanel.waitFor({state:'hidden',timeout:10000});
  assert(await recoverPanel.isHidden(),'quota recovery must clear once browser storage accepts writes again');
+ // 12.10 Jikan filler remains a viewing-independent yellow tag.
+ await page.route('https://api.jikan.moe/v4/anime/20/episodes?page=1',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:[
+  {mal_id:1,title:'Pilot',filler:false,recap:false},
+  {mal_id:2,title:'Main story',filler:false,recap:false},
+  {mal_id:3,title:'Training sidestory',filler:true,recap:false},
+  {mal_id:4,title:'Return to canon',filler:false,recap:false}
+ ],pagination:{has_next_page:false}})}));
+ await page.route('https://api.jikan.moe/v4/anime/20/episodes/3',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{mal_id:3,title:'Training sidestory',filler:true,recap:false,synopsis:'Bonus story'}})}));
+ await page.evaluate(()=>{const a=window.ATMobile113.state().anime.find(x=>x.id==='demo7');a.seasons[0].malId='20';a.seasons[0].loadedPages=[1];a.seasons[0].episodes.push({number:3,title:'Cached episode, classification unknown',filler:false,recap:false});});
  await page.locator('#at-home-lineup .at-h2-lineup-name[data-id="demo7"]').click();
  assert(await page.locator('#detail-modal').isVisible(),'Anime detail should open');
  assert.equal(await page.locator('#detail-body .at108-franchise').count(),0,'Franchise Hub must be absent');
  assert(await page.locator('#detail-body .season-scroller').isVisible(),'Native season selector remains');
  assert.equal(await page.locator('#detail-body .season-tab').count(),1);
+ await page.locator('#detail-body .ep-article.at1210-filler').waitFor({state:'visible',timeout:10000});
+ assert.match(await page.locator('#detail-body .ep-article.at1210-filler').innerText(),/FILLER/);
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].fillerPagesChecked.includes(1)),true,'previously cached episode page is backfilled exactly once');
+ assert.equal(await page.locator('#detail-body .ep-article.at1210-filler .ep-toggle-btn').getAttribute('aria-pressed'),'false');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].watched.length),2,'metadata cannot change watched progress');
+ await page.locator('#detail-body .ep-info-btn[data-episode-number="3"]').click();
+ assert(await page.locator('#episode-detail-modal .at1210-chip.filler').isVisible(),'episode details show filler');
+ await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('normal');
+ assert.equal(await page.locator('#episode-detail-modal .at1210-chip.filler').count(),0,'manual override clears filler inside active detail');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].episodes.find(e=>e.number===3).fillerManual),false,'manual override persists');
+ await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('auto');
+ assert.equal(await page.locator('#episode-detail-modal .at1210-chip.filler').count(),1,'restoring Jikan status restores filler badge');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].episodes.find(e=>e.number===3).fillerManual),null);
+ await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
+ console.log('FILLER_DESKTOP_PASS',JSON.stringify({filler:3,watchedIntact:true,manualOverride:true}));
+
+ await page.locator('#at-home-lineup .at-h2-lineup-name[data-id="demo7"]').click();
+ await page.locator('#detail-body .ep-article.at1210-filler').waitFor({state:'visible'});
  await page.locator('#detail-body .ep-info-btn').first().click();
  assert(await page.locator('#episode-detail-modal').isVisible(),'Episode Hub should open');
  assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible());
@@ -94,6 +121,8 @@ const assert=require('node:assert/strict');
  assert(await page.locator('#pro-content .at110-page').isVisible(),'My Lists should open');
  await page.locator('#at110-new-list').fill('My Weekend List');
  await page.locator('#at110-create-form button[type="submit"]').click();
+ try{await page.locator('.at110-list-top').waitFor({state:'visible',timeout:2500})}
+ catch(err){console.log('FILLER_COLLECTION_DIAGNOSTIC',JSON.stringify(await page.evaluate(()=>({proView:document.querySelector('#pro-view')?.className,proText:document.querySelector('#pro-content')?.innerText.slice(0,650),input:document.querySelector('#at110-new-list')?.value,notice:document.querySelector('#toast')?.innerText,lists:window.ATMobile113.state().preferences.customLists,cloud:document.querySelector('#account-sync-pill')?.textContent}))));throw err}
  assert.match(await page.locator('.at110-list-top').innerText(),/My Weekend List/);
  await page.locator('[data-pro-action="collection-toggle"][data-id="demo7"]').first().click();
  assert.match(await page.locator('.at110-list-top').innerText(),/1 anime/);

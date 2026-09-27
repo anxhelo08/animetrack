@@ -41,5 +41,5 @@ test('12.4 markup: quick search and phone release controls are wired and escaped
  assert.match(css,/at124-command-panel/);assert.match(css,/at124-episode-mark/);assert.match(css,/at114-top-tabs/);
  assert.match(iphoneSource,/data-ios-action="recent-filter"/);assert.match(iphoneSource,/data-ios-action="open-recent"/);
  assert.match(commandSource,/esc\(x\.label\)/);assert.match(commandSource,/esc\(x\.desc\|\|''\)/);
- assert.match(sw,/animetrack-shell-v1291-1/);assert.match(html,/AnimeTrack 12\.9\.1/);
+ assert.match(sw,/animetrack-shell-v12100-1/);assert.match(html,/AnimeTrack 12\.10\.0/);
 });
