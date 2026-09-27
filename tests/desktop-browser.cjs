@@ -97,9 +97,11 @@ const assert=require('node:assert/strict');
  await page.locator('#detail-body .ep-info-btn[data-episode-number="3"]').click();
  assert(await page.locator('#episode-detail-modal .at1210-chip.filler').isVisible(),'episode details show filler');
  await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('normal');
- assert.equal(await page.locator('#detail-body .ep-article.at1210-filler').count(),0,'manual override clears yellow');
+ assert.equal(await page.locator('#episode-detail-modal .at1210-chip.filler').count(),0,'manual override clears filler inside active detail');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].episodes.find(e=>e.number===3).fillerManual),false,'manual override persists');
  await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('auto');
- assert.equal(await page.locator('#detail-body .ep-article.at1210-filler').count(),1,'restoring provider restores yellow');
+ assert.equal(await page.locator('#episode-detail-modal .at1210-chip.filler').count(),1,'restoring Jikan status restores filler badge');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].episodes.find(e=>e.number===3).fillerManual),null);
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
  console.log('FILLER_DESKTOP_PASS',JSON.stringify({filler:3,watchedIntact:true,manualOverride:true}));
 
