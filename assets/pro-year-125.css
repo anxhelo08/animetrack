@@ -13,3 +13,17 @@
  #anime-grid .at125-card-year{font-size:10px;margin-bottom:6px}
  #library-view .at125-year-hint{font-size:11px;margin:4px 0 12px}
 }
+
+/* 12.5 — consistent media selector without horizontal overflow on iPhone. */
+.pro-discovery-controls .at125-rec-media{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 19px}
+.pro-discovery-controls .at125-rec-media-btn{min-width:0;min-height:44px;padding:10px 12px;border:1px solid #64557f;border-radius:12px;background:#27243a;color:#ded7f1;font:inherit;font-size:12px;font-weight:800;cursor:pointer}
+.pro-discovery-controls .at125-rec-media-btn.active{background:linear-gradient(110deg,#8266d7,#654cae);border-color:#b3a0f3;color:#fff;box-shadow:0 4px 15px #5f42a440}
+.pro-discovery-controls .at125-rec-media-btn:focus-visible{outline:2px solid #e1d3ff;outline-offset:2px}
+.pro-rec .pro-rec-meta{overflow-wrap:anywhere}
+.pro-rec .pro-rec-actions button{min-height:44px}
+@media(max-width:760px){
+ .pro-discovery-controls .at125-rec-media{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:2px 0 18px}
+ .pro-discovery-controls .at125-rec-media-btn{min-height:46px;font-size:12px;padding:11px 6px}
+ .pro-rec .pro-rec-actions{display:flex;gap:8px}
+ .pro-rec .pro-rec-actions .pro-btn{min-width:0;min-height:47px;white-space:normal;line-height:1.25}
+}
