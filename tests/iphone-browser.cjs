@@ -46,7 +46,7 @@ const assert=require('node:assert/strict');
  await page.evaluate(()=>{
   const data=window.ATMobile113.state(),old=new Date(Date.now()-12*86400000).toISOString(),aired=new Date(Date.now()-60*60000).toISOString();
   data.anime.push({
-   id:'mental127',title:'The Mentalist',source:'TVMaze',sourceId:'627',tvmazeId:'627',format:'TV_SERIES',status:'completed',
+   id:'mental127',title:'The Mentalist',source:'TVMaze',sourceId:'627',tvmazeId:'627',format:'TV_SERIES',year:2008,status:'completed',
    cover:'',createdAt:old,updatedAt:new Date().toISOString(),seasons:[
     {id:'mental-s1',title:'Sezoni 1',source:'TVMaze',sourceId:'627',total:2,watched:[1,2],episodes:[],releaseStatus:'FINISHED'},
     {id:'mental-s2',title:'Sezoni 2',source:'TVMaze',sourceId:'627',total:1,watched:[],episodes:[{number:1,title:'Surprise Premiere',airedAt:aired}],releaseStatus:'RELEASING'}
@@ -175,13 +175,13 @@ const assert=require('node:assert/strict');
  await page.locator('[data-at117-sort="year-new"]').click();
  assert.equal(await page.locator('#sort').inputValue(),'year-new');
  let years=await page.locator('#anime-grid .anime-card').evaluateAll(cards=>cards.filter(x=>!x.hidden).map(x=>x.dataset.releaseYear));
- assert.deepEqual(years.slice(0,2),['2024','2006'],'iPhone newest sort combines anime and TV by premiere');
+ assert.deepEqual(years.slice(0,3),['2024','2008','2006'],'iPhone newest sort combines anime and TV by premiere');
  assert(await page.locator('[data-at117-sort="year-new"]').getAttribute('class').then(x=>x.includes('active')));
  await page.locator('[data-at117-sort="year-old"]').click();
  assert.equal(await page.locator('#sort').inputValue(),'year-old');
  years=await page.locator('#anime-grid .anime-card').evaluateAll(cards=>cards.filter(x=>!x.hidden).map(x=>x.dataset.releaseYear));
- assert.deepEqual(years.slice(0,2),['2006','2024'],'iPhone oldest premiere first');
- console.log('YEAR_IPHONE_PASS',JSON.stringify({newest:['2024','2006'],oldest:['2006','2024']}));
+ assert.deepEqual(years.slice(0,3),['2006','2008','2024'],'iPhone oldest premiere first');
+ console.log('YEAR_IPHONE_PASS',JSON.stringify({newest:['2024','2008','2006'],oldest:['2006','2008','2024']}));
  await page.locator('[data-at117-sort="updated"]').click();
  await page.locator('[data-mobile-nav="home"]').click();
  assert(await page.locator('#at-iphone-feed').isVisible(),'Anime feed remains accessible after TV progress');
