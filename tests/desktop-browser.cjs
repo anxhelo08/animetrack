@@ -84,7 +84,7 @@ const assert=require('node:assert/strict');
   {mal_id:4,title:'Return to canon',filler:false,recap:false}
  ],pagination:{has_next_page:false}})}));
  await page.route('https://api.jikan.moe/v4/anime/20/episodes/3',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{mal_id:3,title:'Training sidestory',filler:true,recap:false,synopsis:'Bonus story'}})}));
- await page.evaluate(()=>{const a=window.ATMobile113.state().anime.find(x=>x.id==='demo7');a.seasons[0].malId='20';a.seasons[0].loadedPages=[];});
+ await page.evaluate(()=>{const a=window.ATMobile113.state().anime.find(x=>x.id==='demo7');a.seasons[0].malId='20';a.seasons[0].loadedPages=[1];a.seasons[0].episodes.push({number:3,title:'Cached episode, classification unknown',filler:false,recap:false});});
  await page.locator('#at-home-lineup .at-h2-lineup-name[data-id="demo7"]').click();
  assert(await page.locator('#detail-modal').isVisible(),'Anime detail should open');
  assert.equal(await page.locator('#detail-body .at108-franchise').count(),0,'Franchise Hub must be absent');
@@ -92,6 +92,7 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('#detail-body .season-tab').count(),1);
  await page.locator('#detail-body .ep-article.at1210-filler').waitFor({state:'visible',timeout:10000});
  assert.match(await page.locator('#detail-body .ep-article.at1210-filler').innerText(),/FILLER/);
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].fillerPagesChecked.includes(1)),true,'previously cached episode page is backfilled exactly once');
  assert.equal(await page.locator('#detail-body .ep-article.at1210-filler .ep-toggle-btn').getAttribute('aria-pressed'),'false');
  assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].watched.length),2,'metadata cannot change watched progress');
  await page.locator('#detail-body .ep-info-btn[data-episode-number="3"]').click();
