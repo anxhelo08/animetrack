@@ -172,6 +172,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op==='preview-recommendation')return modules.recommendations.preview(b.dataset.key);
    if(op==='hide-recommendation')return modules.recommendations.hide(b.dataset.key);
    if(op==='restore-recommendations')return modules.recommendations.restore();
+   if(op==='rec-media')return modules.recommendations.setMedia(id);
    if(op==='rec-mood')return modules.recommendations.setMood(id);
    if(op==='rec-tab')return modules.recommendations.setTab(id);
    if(op==='rec-surprise')return modules.recommendations.surprise();
