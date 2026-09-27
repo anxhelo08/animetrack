@@ -14,7 +14,12 @@ const assert=require('node:assert/strict');
  };
  const stub='(()=>{const payload='+JSON.stringify(fixture)+';const chain=table=>{const q={};for(const name of ["select","eq","order","limit","in","not","or","insert","upsert","update","delete","range","neq","gte","lte","contains"])q[name]=()=>q;q.maybeSingle=async()=>({data:table==="anime_libraries"?{payload,updated_at:new Date().toISOString()}:null,error:null});q.single=q.maybeSingle;q.then=(yes,no)=>Promise.resolve({data:[],error:null}).then(yes,no);return q;};window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:"desktop-demo",email:"demo@example.com"}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain("rpc")})};})();';
  await page.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2*',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub}));
- await page.route('https://graphql.anilist.co',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{Page:{media:[],pageInfo:{hasNextPage:false}}}})}));
+ const seasonalMedia=[
+  {id:12801,idMal:12801,title:{romaji:'Parallel World',english:'Parallel World'},episodes:12,averageScore:83,format:'TV',genres:['Action','Fantasy'],description:'A new world.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12801',seasonYear:2026,startDate:{year:2026,month:9,day:3},tags:[{name:'Isekai',rank:95,isMediaSpoiler:false,isGeneralSpoiler:false}]},
+  {id:12802,idMal:12802,title:{romaji:'Hidden Truth',english:'Hidden Truth'},episodes:12,averageScore:81,format:'TV',genres:['Drama','Mystery'],description:'A mystery.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12802',seasonYear:2026,startDate:{year:2026,month:9,day:3},tags:[{name:'Thriller',rank:86,isMediaSpoiler:false,isGeneralSpoiler:false},{name:'Secret culprit',rank:100,isMediaSpoiler:true,isGeneralSpoiler:false}]},
+  {id:12803,idMal:12803,title:{romaji:'Sweet Days',english:'Sweet Days'},episodes:1,averageScore:75,format:'MOVIE',genres:['Romance','Slice of Life'],description:'A romance.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12803',seasonYear:2026,startDate:{year:2026,month:9,day:5},tags:[]}
+ ];
+ await page.route('https://graphql.anilist.co',route=>{const query=String(route.request().postDataJSON()?.query||'');const media=query.includes('$season:MediaSeason')?seasonalMedia:[];return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{Page:{media,pageInfo:{hasNextPage:false}}}})});});
  await page.route('https://api.tvmaze.com/search/shows?q=*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{score:1,show:{id:777,name:'Dexter',premiered:'2006-10-01',genres:['Drama'],image:null,url:'https://www.tvmaze.com/shows/777/dexter'}}])}));
  await page.route('https://api.tvmaze.com/shows/777',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:777,name:'Dexter',premiered:'2006-10-01',genres:['Drama'],image:null,url:'https://www.tvmaze.com/shows/777/dexter'})}));
  await page.route('https://api.tvmaze.com/shows/777/episodes?specials=1',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{id:7771,season:1,number:1,name:'Dexter',airdate:'2006-10-01',runtime:55}])}));
@@ -30,6 +35,26 @@ const assert=require('node:assert/strict');
  await page.locator('#detail-modal [data-close="detail-modal"]').first().click();
  assert(await page.locator('#at124-command').isHidden(),'Command palette closes after selection');
  console.log('COMMAND_DESKTOP_PASS');
+ // 12.8 seasonal catalog: real genre tags, source-backed filters and normal add actions.
+ await page.locator('#seasons-nav').click();
+ await page.locator('#season-catalog-grid .seasonal-tile').first().waitFor({timeout:10000});
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),3);
+ await page.locator('[data-at128-genre="Thriller"]').click();
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),1);
+ assert.match(await page.locator('#season-catalog-grid').innerText(),/Hidden Truth/);
+ assert.doesNotMatch(await page.locator('#season-catalog-grid').innerText(),/Parallel World/);
+ await page.locator('[data-at128-genre="Isekai"]').click();
+ assert.match(await page.locator('#season-catalog-grid').innerText(),/Parallel World/);
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),1);
+ await page.locator('[data-at128-genre="all"]').click();
+ await page.locator('#season-genre-search').fill('Sweet Days');
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),1);
+ await page.locator('#season-filter-reset').click();
+ assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),3);
+ assert.equal(await page.locator('[data-at128-genre="all"]').getAttribute('aria-pressed'),'true');
+ await page.locator('#home-nav').click();
+ console.log('SEASONAL_DESKTOP_PASS',JSON.stringify({results:3,genres:['Thriller','Isekai'],reset:true}));
+
  assert(await page.locator('#at-iphone-feed').isHidden(),'Phone feed must not replace PC Home');
  await page.locator('[data-home-action="more-watching"]').click();
  assert.equal(await page.locator('#at-home-lineup .at-h2-lineup-card').count(),8);
