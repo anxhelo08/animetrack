@@ -85,6 +85,30 @@ const assert=require('node:assert/strict');
  await page.locator('#detail-modal [data-close="detail-modal"]').click();
  await page.locator('#home-nav').click();
  assert(await page.locator('#at-home-main').isVisible(),'PC Home should remain available');
+
+ // Regression: a 1000+-episode series must reopen the actual latest season and 24-item page.
+ await page.evaluate(()=>{
+  const state=window.ATMobile113.state(),a=state.anime.find(x=>x.id==='demo0');
+  a.title='One Piece';a.source='';a.hydrated=true;
+  const season=(id,total,watched)=>({id,title:id.toUpperCase(),total,watched,episodes:[],releaseStatus:'FINISHED'});
+  a.seasons=[season('s1',25,Array.from({length:25},(_,i)=>i+1)),season('s2',25,Array.from({length:25},(_,i)=>i+1)),season('s3',75,Array.from({length:49},(_,i)=>i+1))];
+  state.history.push({id:a.id,seasonId:'s3',episode:49,action:'watched',date:new Date().toISOString()});
+ });
+ await page.locator('#library-nav').click();
+ await page.locator('#anime-grid [data-detail="demo0"]').first().click();
+ assert.equal(await page.locator('#detail-body .season-tab.active').getAttribute('data-season'),'s3','One Piece resumes season 3');
+ assert.match(await page.locator('#detail-body .episode-pages').innerText(),/Faqja 3/,'resume must navigate to episode 50 page');
+ assert(await page.locator('#detail-body [data-season-ep="s3"][data-ep="50"]').isVisible(),'next episode 50 should be on current page');
+ assert(await page.locator('#detail-body [data-at123-resume="demo0"]').isVisible(),'resume shortcut is available');
+ await page.locator('#detail-body .ep-info-btn').first().click();
+ assert(await page.locator('#ep-detail-body .at123-episode-layout').isVisible(),'desktop episode layout is present');
+ const desktopLayout=await page.locator('#ep-detail-body .at123-episode-layout').evaluate(el=>({display:getComputedStyle(el).display,columns:getComputedStyle(el).gridTemplateColumns}));
+ assert.equal(desktopLayout.display,'grid','desktop episode uses a dedicated two-column layout');
+ assert.equal(desktopLayout.columns.split(' ').length,2,'desktop has two episode columns');
+ await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
+ await page.locator('#detail-modal [data-close="detail-modal"]').click();
+ console.log('RESUME_DESKTOP_PASS',JSON.stringify({title:'One Piece',season:'s3',episode:50,page:3,layout:desktopLayout.display}));
+
  if(errors.length)throw Error('Desktop runtime errors: '+errors.join(' | '));
  console.log('DESKTOP_BROWSER_PASS',JSON.stringify({cards:8,search:'Mystery',advance:'EP4',undo:'EP3',navigation:'ok'}));
  await browser.close();
