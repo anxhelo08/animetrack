@@ -10,14 +10,14 @@ window.ATRecommendations=function ATRecommendations(ctx){
   ['emotion','💗','Emocion',['drama','romance','fantasy']]
  ];
  const LENGTHS=[['all','Çdo gjatësi'],['short','Deri 12 ep.'],['normal','13–26 ep.'],['long','27+ ep.'],['movie','Filma']];
- const TABS=[['personal','✨ Për ty'],['gems','💎 Nën radar'],['quick','⚡ Shiko shpejt'],['movies','🎬 Filma'],['surprise','🎲 Më surprizo']];
+ const TABS=[['personal','✨ Për ty'],['favorites','♥ Si të preferuarat'],['new','◈ Të viteve të fundit'],['gems','💎 Nën radar'],['quick','⚡ Shiko shpejt'],['movies','🎬 Filma'],['surprise','🎲 Më surprizo']];
  let owner='',candidates=[],items=[],loading=false,error='',mood='all',length='all',tab='personal',limit=12,hidden=new Set(),fetchedAt=0,surpriseIndex=0,profileName='',source='AniList',requestId=0;
  const storageKey=()=>`animetrack_recs_v10_${ctx.user()?.id||'guest'}`;
  const preferencesKey=()=>`animetrack_rec_prefs_v10_${ctx.user()?.id||'guest'}`;
  const getStore=key=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
  const setStore=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
  function profile(){
-  const taste=new Map(),negative=new Map(),faves=[];
+  const taste=new Map(),negative=new Map(),favoriteTaste=new Map(),faves=[];
   for(const a of ctx.state().anime||[]){
    const rating=Number(a.rating),hasRating=a.rating!=null&&Number.isFinite(rating)&&rating>0;
    const weight=(a.favorite?3.5:0)+(hasRating?Math.max(-2,(rating-5)*0.65):0.7)+(a.status==='completed'?0.3:0);
@@ -25,12 +25,13 @@ window.ATRecommendations=function ATRecommendations(ctx){
    for(const g of ctx.genres(a)){
     const key=String(g).toLowerCase().trim();
     if(!key)continue;
+    if(a.favorite||(hasRating&&rating>=8))favoriteTaste.set(key,(favoriteTaste.get(key)||0)+1);
     if(a.status==='dropped'&&hasRating&&rating<=4)negative.set(key,(negative.get(key)||0)+2);
     else taste.set(key,(taste.get(key)||0)+Math.max(0.2,weight));
    }
   }
   const best=[...taste].sort((a,b)=>b[1]-a[1]);
-  return {taste,negative,best,top:best.slice(0,4).map(x=>x[0]),faves:faves.slice(0,10),personal:best.length>0};
+  return {taste,negative,favoriteTaste,best,top:best.slice(0,4).map(x=>x[0]),faves:faves.slice(0,10),personal:best.length>0};
  }
  function known(){
   const ids=new Set(),roots=new Set();
@@ -89,7 +90,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
   return result.length>=12?result:arr;
  }
  function filtered(){
-  let data=items.slice(), selectedMood=MOODS.find(m=>m[0]===mood);
+  let data=items.slice(), selectedMood=MOODS.find(m=>m[0]===mood),p=profile();
   if(mood!=='all')data=data.filter(x=>x.rawGenres.some(g=>selectedMood[3].includes(g)));
   if(length!=='all')data=data.filter(x=>{
    if(length==='movie')return x.format==='MOVIE';
@@ -97,6 +98,8 @@ window.ATRecommendations=function ATRecommendations(ctx){
    const n=Number(x.total);
    return n>0&&(length==='short'?n<=12:length==='normal'?n>=13&&n<=26:n>=27);
   });
+  if(tab==='favorites'&&p.favoriteTaste.size)data=data.filter(x=>x.rawGenres.some(g=>p.favoriteTaste.has(g))).sort((a,b)=>b.rawGenres.reduce((sum,g)=>sum+(p.favoriteTaste.get(g)||0),0)-a.rawGenres.reduce((sum,g)=>sum+(p.favoriteTaste.get(g)||0),0)||b.rank-a.rank);
+  if(tab==='new')data=data.filter(x=>Number(x.year)>=new Date().getUTCFullYear()-2).sort((a,b)=>Number(b.year||0)-Number(a.year||0)||b.rank-a.rank);
   if(tab==='gems'){
    const pops=items.map(x=>x.popularity).filter(Boolean).sort((a,b)=>a-b);
    const ceiling=pops[Math.floor(pops.length*.48)]||50000;
@@ -122,11 +125,11 @@ window.ATRecommendations=function ATRecommendations(ctx){
  }
  function render(){
   const p=profile(),visible=filtered(),count=visible.length;
-  return `<section class="pro-hero pro-discovery-hero"><div><span class="pro-eyebrow">ANIMETRACK DISCOVERY · 10.0</span><h2>✨ Gjej animen tënde të radhës</h2><p>${p.personal?`Sugjerime nga ${esc(p.best.slice(0,3).map(x=>x[0]).join(' · '))}, notat dhe të preferuarat e tua.`:'Edhe nëse je i ri, mund të zbulosh anime me vlerësime të mira. Shto dhe vlerëso anime për rekomandime personale.'}</p><div class="pro-discovery-stats"><span>✦ ${items.length} tituj të përzgjedhur</span><span>◷ ${fetchedAt?new Date(fetchedAt).toLocaleDateString('sq-AL'):'Duke u përgatitur'}</span></div></div></section>
+  return `<section class="pro-hero pro-discovery-hero"><div><span class="pro-eyebrow">ANIMETRACK DISCOVERY · 12.3</span><h2>Gjej historinë tënde të radhës <span>✦</span></h2><p>${p.personal?`Sugjerime nga ${esc(p.best.slice(0,3).map(x=>x[0]).join(' · '))}, notat dhe të preferuarat e tua.`:'Edhe nëse je i ri, mund të zbulosh anime me vlerësime të mira. Shto dhe vlerëso anime për rekomandime personale.'}</p><div class="pro-discovery-stats"><span>✦ ${items.length} tituj të përzgjedhur</span><span>◷ ${fetchedAt?new Date(fetchedAt).toLocaleDateString('sq-AL'):'Duke u përgatitur'}</span></div></div></section>
   <section class="pro-panel pro-discovery-controls" aria-label="Personalizo rekomandimet"><div class="pro-row"><h3>Çfarë ke qejf sot?</h3><button class="pro-btn" data-pro-action="refresh-recommendations" ${loading?'disabled':''}>↻ ${loading?'Po kërkoj…':'Tituj të rinj'}</button></div>
-  <div class="pro-rec-chips">${MOODS.map(m=>`<button type="button" class="pro-rec-chip ${mood===m[0]?'active':''}" data-pro-action="rec-mood" data-id="${m[0]}" aria-pressed="${mood===m[0]}">${m[1]} ${m[2]}</button>`).join('')}</div>
+  <div class="at123-rec-helper"><strong>01 / Zgjidh atmosferën</strong><small>Filtrat ndryshojnë vetëm sugjerimet, jo bibliotekën.</small></div><div class="pro-rec-chips">${MOODS.map(m=>`<button type="button" class="pro-rec-chip ${mood===m[0]?'active':''}" data-pro-action="rec-mood" data-id="${m[0]}" aria-pressed="${mood===m[0]}">${m[1]} ${m[2]}</button>`).join('')}</div>
   <label class="pro-field pro-rec-length">Sa kohë ke?<select class="pro-select" id="pro-rec-length">${LENGTHS.map(l=>`<option value="${l[0]}" ${length===l[0]?'selected':''}>${l[1]}</option>`).join('')}</select></label>
-  <div class="pro-rec-chips pro-rec-tabs" role="group" aria-label="Kategoria e rekomandimeve">${TABS.map(t=>`<button type="button" class="pro-rec-chip ${tab===t[0]?'active':''}" data-pro-action="rec-tab" data-id="${t[0]}" aria-pressed="${tab===t[0]}">${t[1]}</button>`).join('')}</div></section>
+  <div class="at123-rec-helper"><strong>02 / Zbulo sipas shijes</strong><small>Ngjashmëri me të preferuarat, tituj të rinj dhe filma.</small></div><div class="pro-rec-chips pro-rec-tabs" role="group" aria-label="Kategoria e rekomandimeve">${TABS.map(t=>`<button type="button" class="pro-rec-chip ${tab===t[0]?'active':''}" data-pro-action="rec-tab" data-id="${t[0]}" aria-pressed="${tab===t[0]}">${t[1]}</button>`).join('')}</div></section>
   <div class="pro-row pro-rec-results"><div><h3>${esc(TABS.find(t=>t[0]===tab)?.[1]||'Për ty')}</h3><p class="pro-muted">${count} rezultate · Përputhja është tregues orientues nga shijet e tua, jo garanci.</p></div><div class="pro-actions">${hidden.size?`<button class="pro-btn" data-pro-action="restore-recommendations">Rikthe të fshehurat (${hidden.size})</button>`:''}${tab==='surprise'?'<button class="pro-btn primary" data-pro-action="rec-surprise">🎲 Tjetër surprizë</button>':''}</div></div>
   ${error?`<p class="pro-rec-error" role="status">${esc(error)} <button class="pro-btn" data-pro-action="refresh-recommendations">Provo përsëri</button></p>`:''}
   ${loading&&!items.length?'<div class="pro-rec-loading-grid"><div class="pro-loading"></div><div class="pro-loading"></div><div class="pro-loading"></div></div>':count?`<div class="pro-rec-grid">${visible.slice(0,limit).map(card).join('')}</div>${count>limit?'<div class="pro-rec-more"><button class="pro-btn primary" data-pro-action="more-recommendations">Shfaq më shumë ↓</button></div>':''}`:`<div class="pro-empty"><b>${loading?'Po kërkoj titujt…':'Nuk ka sugjerime për këta filtra.'}</b><p>Provo një humor tjetër, ndrysho gjatësinë ose rifresko katalogun.</p><button class="pro-btn primary" data-pro-action="reset-recommendation-filters">Hiq filtrat</button></div>`}
@@ -139,7 +142,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
   const src=ctx.poster(x.cover);
   return `<article class="at-home-pick"><button class="at-home-pick-art" type="button" data-pro-action="preview-recommendation" data-key="${esc(x.key)}" aria-label="Hap ${esc(x.title)}">${src?`<img src="${esc(src)}" alt="Posteri i ${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<span>✦</span>'}</button><div class="at-home-pick-info"><div class="at-home-pick-kicker"><span>${x.match==null?'ZBULIM I RI':'✦ '+x.match+'% PËRPUTHJE'}</span><b>★ ${x.score==null?'—':(Number(x.score)/10).toFixed(1)}</b></div><button class="at-home-pick-title" type="button" data-pro-action="preview-recommendation" data-key="${esc(x.key)}">${esc(x.title)}</button><p class="at-home-pick-description">${esc(short(x))}</p><small>${esc(x.year||'')} · ${esc(x.format==='MOVIE'?'Film':x.total?x.total+' episode':'Anime')} · ${esc(x.why.slice(0,1).join(''))}</small><div class="at-home-pick-actions"><button type="button" class="pro-btn primary" data-pro-action="add-recommendation" data-key="${esc(x.key)}">+ Në listë</button><button type="button" class="at-home-pick-more" data-pro-action="preview-recommendation" data-key="${esc(x.key)}">Detajet ↗</button></div></div></article>`;
  };
- return `<div class="at-home-rec-header"><div><span class="pro-eyebrow">CURATED FOR YOU</span><h3>✨ Rekomandime për ty</h3><p>${p.personal?'Zgjedhje nga zhanret dhe vlerësimet e tua.':'Zbulo diçka të re nga katalogu anime.'}</p></div><button class="pro-btn at-home-rec-discover" data-pro-page="recommendations">Eksploro të gjitha ↗</button></div>${featured.length?`<div class="at-home-rec-grid">${featured.map(tile).join('')}</div>`:'<div class="at-home-rec-empty"><span>✦</span><p>Rekomandimet po përgatiten sipas bibliotekës tënde.</p><button class="pro-btn" data-pro-page="recommendations">Hap zbulimet →</button></div>'}`;
+ return `<div class="at-home-rec-header at123-home-rec-header"><div><span class="pro-eyebrow">PERSONAL DISCOVERY / PËR TY</span><h3>Historitë që mund të të pëlqejnë <span>✦</span></h3><p>${p.personal?'Zgjedhje nga zhanret dhe vlerësimet e tua.':'Zbulo diçka të re nga katalogu anime.'}</p></div><button class="pro-btn at-home-rec-discover" data-pro-page="recommendations">Të gjitha rekomandimet ↗</button></div>${featured.length?`<div class="at-home-rec-grid at123-home-rec-grid">${featured.map(tile).join('')}</div>`:'<div class="at-home-rec-empty"><span>✦</span><p>Rekomandimet po përgatiten sipas bibliotekës tënde.</p><button class="pro-btn" data-pro-page="recommendations">Hap zbulimet →</button></div>'}`;
 }
  function trending(){return items.filter(x=>!ctx.inLibrary(x)).slice().sort((a,b)=>b.popularity-a.popularity).slice(0,8).map(x=>{const src=ctx.poster(x.cover);return `<button type="button" class="at117-trending-card" data-pro-action="preview-recommendation" data-key="${esc(x.key)}" aria-label="Hap ${esc(x.title)}">${src?`<img src="${esc(src)}" alt="Posteri i ${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<span>✦</span>'}<strong>${esc(x.title)}</strong><small>${x.score==null?'AniList':`★ ${(Number(x.score)/10).toFixed(1)}`} · ${Number(x.popularity).toLocaleString('sq-AL')} ndjekës në AniList</small></button>`}).join('')}
  function rerank(){items=uniqueRanked(candidates,profile());ctx.rerender()}

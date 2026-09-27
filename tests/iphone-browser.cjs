@@ -164,7 +164,30 @@ const assert=require('node:assert/strict');
   console.log('IPHONE_SAFE_AREA',width+'x'+height,JSON.stringify(safe));
  }
  await page.setViewportSize({width:390,height:844});
-  if(errors.length)throw Error('Browser JavaScript errors: '+errors.join(' | '));
+ 
+ // Realistic long-series resume and mobile-specific episode presentation.
+ await page.evaluate(()=>{
+  const state=window.ATMobile113.state(),a=state.anime.find(x=>x.id==='demo1');
+  a.title='One Piece';a.source='';a.hydrated=true;
+  const season=(id,total,watched)=>({id,title:id.toUpperCase(),total,watched,episodes:[],releaseStatus:'FINISHED'});
+  a.seasons=[season('s1',25,Array.from({length:25},(_,i)=>i+1)),season('s2',25,Array.from({length:25},(_,i)=>i+1)),season('s3',75,Array.from({length:49},(_,i)=>i+1))];
+  state.history.push({id:a.id,seasonId:'s3',episode:49,action:'watched',date:new Date().toISOString()});
+ });
+ await page.locator('.at-mobile-nav [data-mobile-nav="library"]').click();
+ await page.locator('#anime-grid [data-detail="demo1"]').first().click();
+ assert.equal(await page.locator('#detail-body .season-tab.active').getAttribute('data-season'),'s3','iPhone resumes One Piece season 3');
+ assert.match(await page.locator('#detail-body .episode-pages').innerText(),/Faqja 3/);
+ assert(await page.locator('#detail-body [data-season-ep="s3"][data-ep="50"]').isVisible(),'iPhone shows episode 50 without manual paging');
+ await page.locator('#detail-body .ep-info-btn').first().click();
+ assert(await page.locator('#ep-detail-body .at123-episode-layout').isVisible());
+ const phoneLayout=await page.locator('#ep-detail-body .at123-episode-layout').evaluate(el=>({display:getComputedStyle(el).display,direction:getComputedStyle(el).flexDirection,heroWidth:el.querySelector('.ep-detail-visual')?.getBoundingClientRect().width,viewport:innerWidth}));
+ assert.equal(phoneLayout.display,'flex');assert.equal(phoneLayout.direction,'column');
+ assert(phoneLayout.heroWidth>phoneLayout.viewport*.75,'mobile hero must be full width, not desktop thumbnail: '+JSON.stringify(phoneLayout));
+ console.log('RESUME_IPHONE_PASS',JSON.stringify({season:'s3',episode:50,page:3,layout:phoneLayout.display,heroWidth:phoneLayout.heroWidth}));
+ await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
+ if(await page.locator('#detail-modal').isVisible())await page.locator('#detail-modal .detail-back').click();
+
+ if(errors.length)throw Error('Browser JavaScript errors: '+errors.join(' | '));
  console.log('IPHONE_BROWSER_PASS',engine===webkit?'WebKit':'Chromium');
  await browser.close();
 })().catch(e=>{console.error(e);process.exit(1)});

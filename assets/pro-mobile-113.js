@@ -38,6 +38,11 @@ window.ATMobile113=(function(){
   copy.append(eyebrow||document.createElement('span'),name,meta);
   feature.append(hero,copy);
   const tabs=body.querySelector('.at108-episode-tabs');tabs?.after(feature);
+  const layout=document.createElement('div');layout.className='at123-episode-layout';
+  const story=document.createElement('div');story.className='at123-episode-story';
+  let child=feature.nextElementSibling;
+  while(child&&!child.matches('.v98-navline,.v98-personal,.v98-discussion')){const next=child.nextElementSibling;story.append(child);child=next}
+  feature.before(layout);layout.append(feature,story);
   const mark=body.querySelector('[data-episode-mark]');if(mark){mark.classList.add('at113-mark-button');mark.setAttribute('aria-label','Ndrysho statusin e episodit');}
  }
  function mountLibrary(){
