@@ -105,6 +105,8 @@ const assert=require('node:assert/strict');
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
  console.log('FILLER_DESKTOP_PASS',JSON.stringify({filler:3,watchedIntact:true,manualOverride:true}));
 
+ await page.locator('#at-home-lineup .at-h2-lineup-name[data-id="demo7"]').click();
+ await page.locator('#detail-body .ep-article.at1210-filler').waitFor({state:'visible'});
  await page.locator('#detail-body .ep-info-btn').first().click();
  assert(await page.locator('#episode-detail-modal').isVisible(),'Episode Hub should open');
  assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible());
