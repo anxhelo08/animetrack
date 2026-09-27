@@ -44,6 +44,13 @@ window.ATMobile113=(function(){
   while(child&&!child.matches('.v98-navline,.v98-personal,.v98-discussion')){const next=child.nextElementSibling;story.append(child);child=next}
   feature.before(layout);layout.append(feature,story);
   const mark=body.querySelector('[data-episode-mark]');if(mark){mark.classList.add('at113-mark-button');mark.setAttribute('aria-label','Ndrysho statusin e episodit');}
+  const dialog=$('episode-detail-modal')?.querySelector('.ep-detail-dialog');
+  dialog?.querySelector('.at124-episode-quickbar')?.remove();
+  if(dialog&&mark){
+   const bar=document.createElement('div');bar.className='at124-episode-quickbar';
+   const action=document.createElement('button');action.type='button';action.className='at124-episode-mark';action.dataset.episodeMark='1';action.textContent=mark.textContent;action.disabled=mark.disabled;action.setAttribute('aria-label',mark.textContent.trim());
+   bar.append(action);dialog.append(bar);
+  }
  }
  function mountLibrary(){
   const view=$('library-view'),strip=$('library-status-strip');if(!view||!strip||$('at113-library-head'))return;

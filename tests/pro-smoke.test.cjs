@@ -14,7 +14,7 @@ function load(extra={}){
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','ATCollections110','AnimeTrackPro','ATExperience112'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','assets/pro-airing-109.css','assets/pro-collections-110.css','assets/pro-ios-polish-1101.css','assets/pro-social-111.css','assets/pro-experience-112.css','assets/pro-daily-115.css','assets/pro-daily-115.js','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 12\.3/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
+test('site references every module, PWA resources, and source files exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8');for(const name of names)assert.ok(html.includes('/assets/'+name+'.js'),name);for(const p of ['assets/app.js','assets/app.css','assets/pro-features.css','assets/pro-visual-101.css','assets/pro-home-102.css','assets/pro-mobile-103.css','assets/pro-compact-104.css','assets/pro-iphone-105.css','assets/pro-desktop-106.css','assets/pro-quality-107.css','assets/pro-journey-108.css','assets/pro-airing-109.css','assets/pro-collections-110.css','assets/pro-ios-polish-1101.css','assets/pro-social-111.css','assets/pro-experience-112.css','assets/pro-daily-115.css','assets/pro-daily-115.js','manifest.webmanifest','sw.js','icon.svg'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 12\.4/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'assets/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/);assert.match(src,/data\.user\.identities\.length===0/);assert.match(src,/at116EmailIssue\(email\)/);assert.match(src,/resetPasswordForEmail/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -164,7 +164,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'assets/pro-features.js'),'utf8'),core=fs.readFileSync(path.join(root,'assets/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'assets/pro-compact-104.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudDirty&&!cloudSaving/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1230-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1240-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -186,7 +186,7 @@ test('iPhone feed uses same watch data and quick marking without duplicating lib
  const data={anime:[a],preferences:{},history:[]};let advanced='',opened='';
  c.state=()=>data;c.nextEpisode=()=>({season,n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.accountName=()=> 'Tester';c.markNext=id=>advanced=id;c.openEpisode=(id,s,n)=>opened=[id,s,n];c.recentAiring=()=>[];c.poster=()=>'';c.upcoming=()=>[];
  const feed=w.ATiPhone(c);const page=feed.render();
- assert.match(page,/TO WATCH/);assert.match(page,/S01 \| E03/);assert.match(page,/data-ios-action="advance"/);assert.match(page,/Fill my shows list/);assert.doesNotMatch(page,/dashboard personal/i);
+ assert.match(page,/PËR T’U PARË/);assert.match(page,/S01 \| E03/);assert.match(page,/data-ios-action="advance"/);assert.match(page,/Fill my shows list/);assert.doesNotMatch(page,/dashboard personal/i);
  feed.action('advance','a1');assert.equal(advanced,'a1');
  feed.action('episode','a1');assert.equal(JSON.stringify(opened),'["a1","s1",3]');
  feed.action('tab','upcoming');assert.match(feed.render(),/Nuk ka premiera në 7 ditët e ardhshme/);
@@ -342,7 +342,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  assert.match(index,/pro-smart-airing-109\.js/);assert.match(index,/pro-push-109\.js/);
  assert.match(index,/pro-airing-109\.css/);
- assert.match(sw,/animetrack-shell-v1230-1/);
+ assert.match(sw,/animetrack-shell-v1240-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -407,7 +407,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
  assert.match(html,/pro-ios-polish-1101\.css/);
  assert.match(sw,/pro-ios-polish-1101\.css/);
- assert.match(sw,/animetrack-shell-v1230-1/);
+ assert.match(sw,/animetrack-shell-v1240-1/);
  assert.match(html,/viewport-fit=cover/);
  assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
@@ -448,7 +448,7 @@ test('11.2 iPhone glance renders next released episode with a read-only list',()
  const w=load({navigator:{onLine:true,userAgent:'Desktop'},localStorage:{getItem:()=>null}}),c=context();
  c.state=()=>s;c.nextEpisode=a=>({season:a.seasons[0],n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.poster=()=>'';
  const html=w.ATiPhone(c).render();
- assert.match(html,/at114-topbar/);assert.match(html,/TO WATCH/);
+ assert.match(html,/at114-topbar/);assert.match(html,/PËR T’U PARË/);
  assert.match(html,/S01 \| E03/);assert.match(html,/data-ios-action="advance"/);
  assert.match(html,/Fill my shows list/);
  assert.deepEqual(s.anime[0].seasons[0].watched,[1,2]);
@@ -507,7 +507,7 @@ test('11.4 Upcoming uses scheduled releases and never marks unreleased episodes'
  const now=Date.now();let marked=0,opened='';
  c.state=()=>({anime:[anime],history:[],preferences:{}});c.nextEpisode=()=>({season,n:2});c.releasedTotal=()=>3;c.count=()=>1;c.percent=()=>33;c.poster=()=>'';c.accountName=()=>'Viewer';
  c.upcoming=()=>[{animeId:'a',title:'Anime Series',seasonId:'s',seasonEpisode:4,when:now+86400000}];c.openAnime=id=>opened=id;c.markEpisode=()=>marked++;
- const f=w.ATiPhone(c);f.render();await f.action('tab','upcoming');const html=f.render();assert.match(html,/UPCOMING/);assert.match(html,/S01 \| E04/);assert.match(html,/The Actual Episode Title/);
+ const f=w.ATiPhone(c);f.render();await f.action('tab','upcoming');const html=f.render();assert.match(html,/SË SHPEJTI/);assert.match(html,/S01 \| E04/);assert.match(html,/The Actual Episode Title/);
  assert.match(html,/Del/);assert.doesNotMatch(html,/data-ios-action="advance"/);
  await f.action('details','a');assert.equal(opened,'a');assert.equal(marked,0);
 });
@@ -529,7 +529,7 @@ test('11.4.1 watches ignored metadata update for seven-day inactivity and filter
 });
 test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
  const css=fs.readFileSync(path.join(root,'assets/pro-mobile-113.css'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
- assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1230-1/);
+ assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1240-1/);
 });
 
 test('11.5 daily experience uses shared library, real weekly history and existing episode actions',()=>{
@@ -675,7 +675,7 @@ test('11.8 TV resources, cloud normalization and mobile entry are wired',()=>{
  for(const file of ['pro-tv-118.js','pro-tv-118.css']){assert.match(html,new RegExp(file.replace('.','\\.')));assert.match(sw,new RegExp(file.replace('.','\\.')))}
  assert.match(app,/function normalizeTVShows/);assert.match(app,/ATTVUnified120\.migrate/);
  assert.doesNotMatch(pro,/data-mobile-nav="tv"/);assert.match(pro,/modules\.tv\.render/);
- assert.match(sw,/animetrack-shell-v1230-1/);
+ assert.match(sw,/animetrack-shell-v1240-1/);
 });
 
 test('11.9 unified library: TV totals, progress and content switch without changing anime',()=>{
@@ -689,7 +689,7 @@ test('11.9 unified library: TV totals, progress and content switch without chang
  assert.match(html,/data-media-filter="all"/);assert.match(html,/data-media-filter="anime"/);assert.match(html,/data-media-filter="tv"/);
  assert.match(core,/ATUnified119\?\.render/);assert.match(features,/modules\.day\.render\(true\)/);
  assert.match(features,/data-at119-add-tv/);assert.match(css,/\.at117-library-tools button\.active/);
- assert.match(sw,/pro-unified-119\.js/);assert.match(sw,/animetrack-shell-v1230-1/);
+ assert.match(sw,/pro-unified-119\.js/);assert.match(sw,/animetrack-shell-v1240-1/);
 });
 
 test('11.9.1 single catalog searches anime and TV, opens TV from results and retains one library',()=>{
@@ -731,7 +731,7 @@ test('12.0 shared UI, catalog, calendar and cloud migration are connected',()=>{
  assert.match(core,/at120-unified-tv-open/);assert.match(core,/data-media=/);
  assert.match(core,/function refreshUpcoming/);assert.match(core,/source:'TVmaze'/);
  assert.match(pro,/at120-unified-tv-open/);assert.match(html,/pro-tv-unified-120\.js/);
- assert.match(sw,/animetrack-shell-v1230-1/);
+ assert.match(sw,/animetrack-shell-v1240-1/);
 });
 
 test('12.0.1 TV search opens preview without forced library mutation',()=>{
