@@ -57,6 +57,14 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   for(const [target,fn] of [['pro-home-recs',()=>modules.recommendations.home()],['pro-home-week',()=>modules.calendar.home()],['pro-home-inbox',()=>modules.notifications.home()]]){const node=$(target);if(node)try{node.innerHTML=fn()}catch(err){console.warn('Home widget recovery',target,err);node.innerHTML='<div class="at-pro-recovery"><p>Ky seksion nuk u ngarkua.</p><button type="button" data-home-action="retry-home">Riprovo ↻</button></div>'}}
  }
  ctx.rerender=()=>{render();renderHome()};
+ ctx.rerenderRecommendations=()=>{
+  // Catalog network refreshes must never reset a form that the user is typing into
+  // (e.g. personal collections, profile, login).
+  if(active==='recommendations')render();
+  const node=$('pro-home-recs');
+  if(node)node.innerHTML=modules.recommendations.home();
+  if(window.matchMedia?.('(max-width:760px)').matches&&active==='')renderMobileDiscover();
+ };
  function init(){
   modules.experience.init();
   window.ATMobile113.init();
