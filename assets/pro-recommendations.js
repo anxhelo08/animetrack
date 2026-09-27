@@ -14,9 +14,10 @@ window.ATRecommendations=function ATRecommendations(ctx){
  const TABS=[['personal','✨ Për ty'],['favorites','♥ Si të preferuarat'],['new','◈ Të viteve të fundit'],['gems','💎 Nën radar'],['quick','⚡ Shiko shpejt'],['movies','🎬 Filma'],['surprise','🎲 Më surprizo']];
  let media='all',owner='',candidates=[],items=[],loading=false,error='',mood='all',length='all',tab='personal',limit=12,hidden=new Set(),fetchedAt=0,surpriseIndex=0,profileName='',source='AniList',requestId=0;
  const storageKey=()=>`animetrack_recs_v125_${ctx.user()?.id||'guest'}`;
- const preferencesKey=()=>`animetrack_rec_prefs_v125_${ctx.user()?.id||'guest'}`;
+ const preferencesKey=()=>`animetrack_rec_prefs_v10_${ctx.user()?.id||'guest'}`;
  const getStore=key=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
  const setStore=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
+ const redraw=()=>typeof ctx.rerenderRecommendations==='function'?ctx.rerenderRecommendations():ctx.rerender();
  function profile(){
   const taste=new Map(),negative=new Map(),favoriteTaste=new Map(),faves=[];
   for(const a of ctx.state().anime||[]){
@@ -84,7 +85,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
    if(!x?.key||!x.title||ctx.inLibrary(x))continue;
    const root=ctx.seriesRoot(x.title);
    if(k.roots.has(root)||hidden.has('series:'+root)||hidden.has(x.key))continue;
-   if(k.ids.has('al:'+x.sourceId)||(x.malId&&k.ids.has('mal:'+x.malId)))continue;
+   if(x.kind!=='tv'&&(k.ids.has('al:'+x.sourceId)||(x.malId&&k.ids.has('mal:'+x.malId))))continue;
    if(x.related?.some(r=>k.ids.has('al:'+r.id)||(r.malId&&k.ids.has('mal:'+r.malId))))continue;
    const ranked=candidateScore(x,p);
    const prior=groups.get(root);
@@ -163,7 +164,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  return `<div class="at-home-rec-header at123-home-rec-header"><div><span class="pro-eyebrow">PERSONAL DISCOVERY / PËR TY</span><h3>Historitë që mund të të pëlqejnë <span>✦</span></h3><p>${p.personal?'Zgjedhje nga zhanret dhe vlerësimet e tua.':'Zbulo diçka të re nga katalogu anime.'}</p></div><button class="pro-btn at-home-rec-discover" data-pro-page="recommendations">Të gjitha rekomandimet ↗</button></div>${picks.length?`<div class="at-home-rec-grid at123-home-rec-grid">${picks.map(tile).join('')}</div>`:'<div class="at-home-rec-empty"><span>✦</span><p>Rekomandimet po përgatiten sipas bibliotekës tënde.</p><button class="pro-btn" data-pro-page="recommendations">Hap zbulimet →</button></div>'}`;
 }
  function trending(){return items.filter(x=>x.kind!=='tv'&&!ctx.inLibrary(x)).slice().sort((a,b)=>b.popularity-a.popularity).slice(0,8).map(x=>{const src=ctx.poster(x.cover);return `<button type="button" class="at117-trending-card" data-pro-action="preview-recommendation" data-key="${esc(x.key)}" aria-label="Hap ${esc(x.title)}">${src?`<img src="${esc(src)}" alt="Posteri i ${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<span>✦</span>'}<strong>${esc(x.title)}</strong><small>${x.score==null?'AniList':`★ ${(Number(x.score)/10).toFixed(1)}`} · ${Number(x.popularity).toLocaleString('sq-AL')} ndjekës në AniList</small></button>`}).join('')}
- function rerank(){items=uniqueRanked(candidates,profile());ctx.rerender()}
+ function rerank(){items=uniqueRanked(candidates,profile());redraw()}
  function switchOwner(){
   const id=String(ctx.user()?.id||'guest');
   if(owner===id)return;
@@ -197,9 +198,9 @@ window.ATRecommendations=function ATRecommendations(ctx){
   switchOwner();if(loading)return;
   const id=requestId,stored=getStore(storageKey());
   if(!force&&stored&&Date.now()-stored.at<18*3600000&&Array.isArray(stored.candidates)){
-   candidates=stored.candidates;fetchedAt=stored.at;source='AniList · cache';error='';rerank();return;
+   candidates=stored.candidates;fetchedAt=stored.at;source=(candidates.some(x=>x.kind==='tv')?'AniList + TVMaze':'AniList')+' · cache';error='';rerank();return;
   }
-  loading=true;error='';ctx.rerender();
+  loading=true;error='';redraw();
   try{
    const p=profile(),genreNames=p.best.slice(0,4).map(([name])=>name.split(' ').map(w=>w[0].toUpperCase()+w.slice(1)).join(' '));
    const results=await Promise.allSettled([request(1,genreNames,['SCORE_DESC','POPULARITY_DESC']),request(2,genreNames,['SCORE_DESC','POPULARITY_DESC']),request(1,[],['TRENDING_DESC','POPULARITY_DESC']),requestTV(0),requestTV(24)]);
@@ -211,21 +212,21 @@ window.ATRecommendations=function ATRecommendations(ctx){
    candidates=[...media.map(itemFromRemote),...tv];fetchedAt=Date.now();source=(media.length?'AniList':'')+(media.length&&tv.length?' + ':'')+(tv.length?'TVMaze':'');setStore(storageKey(),{at:fetchedAt,candidates});
    if(results.some(r=>r.status==='rejected'))error='Disa rezultate nuk u ngarkuan. Po shfaqim titujt e disponueshëm.';
    rerank();
-  }catch(e){if(id!==requestId)return;error='Rekomandimet nuk u ngarkuan: '+String(e.message||e).slice(0,110);if(!items.length&&stored?.candidates){candidates=stored.candidates;fetchedAt=stored.at;source='AniList · cache';rerank()}}
-  finally{if(id===requestId){loading=false;ctx.rerender()}}
+  }catch(e){if(id!==requestId)return;error='Rekomandimet nuk u ngarkuan: '+String(e.message||e).slice(0,110);if(!items.length&&stored?.candidates){candidates=stored.candidates;fetchedAt=stored.at;source=(candidates.some(x=>x.kind==='tv')?'AniList + TVMaze':'AniList')+' · cache';rerank()}}
+  finally{if(id===requestId){loading=false;redraw()}}
  }
- function setMedia(value){if(!MEDIAS.some(x=>x[0]===value))return;media=value;limit=12;savePrefs();ctx.rerender()}
- function setMood(value){if(!MOODS.some(x=>x[0]===value))return;mood=value;limit=12;savePrefs();ctx.rerender()}
- function setLength(value){if(!LENGTHS.some(x=>x[0]===value))return;length=value;limit=12;savePrefs();ctx.rerender()}
- function setTab(value){if(!TABS.some(x=>x[0]===value))return;tab=value;limit=12;ctx.rerender()}
+ function setMedia(value){if(!MEDIAS.some(x=>x[0]===value))return;media=value;limit=12;savePrefs();redraw()}
+ function setMood(value){if(!MOODS.some(x=>x[0]===value))return;mood=value;limit=12;savePrefs();redraw()}
+ function setLength(value){if(!LENGTHS.some(x=>x[0]===value))return;length=value;limit=12;savePrefs();redraw()}
+ function setTab(value){if(!TABS.some(x=>x[0]===value))return;tab=value;limit=12;redraw()}
  function hide(key){const x=items.find(x=>x.key===key);if(!x)return;hidden.add('series:'+ctx.seriesRoot(x.title));savePrefs();rerank();ctx.toast('Nuk do ta sugjerojmë përsëri këtë seri.')}
  function restore(){hidden.clear();savePrefs();rerank()}
- function more(){limit=Math.min(100,limit+12);ctx.rerender()}
- function surprise(){surpriseIndex++;ctx.rerender()}
- function resetFilters(){mood='all';length='all';media='all';tab='personal';limit=12;savePrefs();ctx.rerender()}
+ function more(){limit=Math.min(100,limit+12);redraw()}
+ function surprise(){surpriseIndex++;redraw()}
+ function resetFilters(){mood='all';length='all';media='all';tab='personal';limit=12;savePrefs();redraw()}
  function preview(key){const x=items.find(x=>x.key===key);if(x)ctx.previewItem(x)}
  async function add(key){const x=items.find(x=>x.key===key);if(!x)return;await ctx.addItem(x);rerank()}
- function reset(){requestId++;owner='';candidates=[];items=[];loading=false;error='';ctx.rerender()}
+ function reset(){requestId++;owner='';candidates=[];items=[];loading=false;error='';redraw()}
  function onLibraryChange(){if(owner===String(ctx.user()?.id||'guest')&&candidates.length)rerank()}
  return {render,home,trending,refresh,add,preview,hide,restore,setMedia,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange};
 };
