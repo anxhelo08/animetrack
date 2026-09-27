@@ -1432,8 +1432,8 @@ const proContext={
   return false;
  },
  refreshDetail:id=>renderDetail(id),navigate:page=>setView(page),setLocalView:page=>{view=page},
- previewItem:item=>{v8PrepareCatalog(item);openCatalogPreview(item.key)},
- addItem:async item=>{v8PrepareCatalog(item);const id=await addCatalogItem(item.key,'planning');if(id)openDetail(id)}
+ previewItem:item=>{if(item.kind==='tv'){void openUnifiedTV(item.sourceId);return}v8PrepareCatalog(item);openCatalogPreview(item.key)},
+ addItem:async item=>{if(item.kind==='tv'){await openUnifiedTV(item.sourceId);return}v8PrepareCatalog(item);const id=await addCatalogItem(item.key,'planning');if(id)openDetail(id)}
 };
 window.ATMobile113.state=()=>state;
 const proApp=window.AnimeTrackPro(proContext);
