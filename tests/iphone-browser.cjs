@@ -42,6 +42,7 @@ const assert=require('node:assert/strict');
  await page.locator('[data-ios-action="recent-filter"][data-id="all"]').click();
  assert.equal(await page.locator('[data-ios-action="recent-filter"][data-id="all"]').getAttribute('aria-pressed'),'true');
  console.log('RELEASE_IPHONE_PASS');
+ await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
  assert(await page.locator('#at-iphone-feed .at115-day-summary').isVisible(),'Collapsible daily overview should be visible on iPhone');
  assert.match(await page.locator('#at-iphone-feed .at115-day-summary').innerText(),/YOUR ANIME DAY/);
  await page.locator('[data-ios-action="tab"][data-id="upcoming"]').click();
