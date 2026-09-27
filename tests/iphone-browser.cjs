@@ -168,6 +168,17 @@ const assert=require('node:assert/strict');
     await page.locator('[data-pro-action="collection-back"]').click();
     assert(await page.locator('#library-view').isVisible(),'Back to library should work on iPhone');
    }
+   if(tab==='profile'){
+    assert(await page.locator('#pro-content .at129-profile-preview').isVisible(),'Profile displays earned achievement icons');
+    await page.locator('#pro-content .at129-profile-preview [data-pro-page="wrapped"]').click();
+    assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped opens from iPhone profile');
+    assert.equal(await page.locator('#pro-content .at129-badge').count(),24,'Achievement collection renders on mobile');
+    await page.locator('[data-pro-action="wrapped-year"]').click();
+    assert.equal(await page.locator('[data-pro-action="wrapped-year"]').getAttribute('aria-pressed'),'true');
+    const fit=await page.evaluate(()=>({width:document.documentElement.scrollWidth,view:window.innerWidth}));
+    assert(fit.width<=fit.view+2,'Wrapped causes no horizontal overflow: '+JSON.stringify(fit));
+    console.log('WRAPPED_IPHONE_PASS',JSON.stringify({badges:24,layout:fit}));
+   }
    console.log('NAV_OK',tab);
  }
 
