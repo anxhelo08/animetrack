@@ -2,6 +2,7 @@
 window.AnimeTrackPro=function AnimeTrackPro(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,updateRequested=false;
+ let achievementsOwner='',achievementsKnown=null;
  const proPages=['notifications','recommendations','calendar','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>`<button type="button" class="pro-btn" data-pro-action="${esc(action)}" data-id="${esc(id)}">${esc(label)}</button>`;
  const modules={
@@ -31,7 +32,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function renderMobileDiscover(){const node=$('at117-mobile-discover');if(!node)return;const recs=modules.recommendations;node.innerHTML=`<section class="at128-mobile-season-link"><div><span>✦ KATALOGU SEZONAL</span><strong>Zbulo anime sipas zhanrit</strong><small>Drama · Thriller · Isekai · Fantasy</small></div><button type="button" data-at128-open-seasons>Shiko sezonet ↗</button></section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>✦ PËR TY</span><h3>Rekomanduar për ty</h3></div><button type="button" data-pro-page="recommendations">Të gjitha ›</button></div>${recs.home()}</section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>◈ ANILIST · POPULLARITETI</span><h3>Popullore për ty</h3></div></div><p class="at117-discover-note">Tituj nga zbulimet e tua, renditur sipas ndjekësve në AniList; jo statistika të AnimeTrack.</p><div class="at117-trending-row">${recs.trending()||'<p class="at117-discover-note">Po ngarkohen titujt nga katalogu…</p>'}</div></section>`}
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
- function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),wrapped:modules.calendar.wrapped,profile:modules.profiles.render,friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};$('pro-content').innerHTML=renderers[active]?.()||''}
+ function render(){if(!active)return;const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};$('pro-content').innerHTML=renderers[active]?.()||''}
  async function refreshLive(force=false){
   if(liveBusy)return {status:'busy'};
   if(document.visibilityState==='hidden')return {status:'hidden'};
@@ -129,7 +130,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   window.addEventListener('online',()=>void refreshLive(false));
   window.addEventListener('focus',()=>void refreshLive(false));
   setInterval(()=>{if(document.visibilityState==='visible'&&ctx.user())void modules.notifications.refresh()},5*60000);
-  renderHome();
+  trackAchievements(false);renderHome();
   void modules.recommendations.refresh(false);
  }
  function open(name){
@@ -151,15 +152,23 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
     try{await fn()}catch(err){console.warn('Account module '+name,err)}
     finally{if((name==='profiles'&&active==='profile')||(name==='friends'&&active==='friends'))render();if(name==='profiles'||name==='friends')renderHome()}
    }));
-   render();renderHome();
+   trackAchievements(false);render();renderHome();
    void modules.push.prepare().then(()=>modules.push.scheduleSync()).catch(console.warn);
    void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');
    if(handle&&ctx.user()){open('friends');await modules.friends.load();await modules.friends.openHandle(handle)}
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
+ function trackAchievements(announce=false){
+  const owner=ctx.user()?.id||'guest',current=modules.calendar.achievementIds();
+  if(achievementsOwner!==owner||!achievementsKnown){achievementsOwner=owner;achievementsKnown=new Set(current);return}
+  const earned=current.filter(id=>!achievementsKnown.has(id));
+  achievementsKnown=new Set(current);
+  if(announce&&earned.length)ctx.toast(earned.length===1?'🏅 Arritje e re! Shiko Trophy Room te Wrapped.':'🏅 '+earned.length+' arritje të reja! Shiko Wrapped.');
+ }
  function onStateChange(){
   modules.profiles.scheduleSnapshot();modules.recommendations.onLibraryChange();modules.push.scheduleSync();
+  trackAchievements(true);
   if(!['collections','profile','friends','moderation'].includes(active))render();renderHome();
   clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{if(document.visibilityState==='visible')void modules.notifications.refresh();else modules.notifications.badge()},450);
  }
