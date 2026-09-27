@@ -90,3 +90,12 @@
  .at123-resume-button{padding:12px}.at123-resume-button strong{font-size:12px}
 }
 @media(prefers-reduced-motion:reduce){.at123-resume-button,#at-home-releases .at123-release-card,#at-home-main .at-home-pick,#pro-content .pro-rec-v10{transition:none!important;transform:none!important}}
+
+/* Override legacy iPhone thumbnail rules with the dedicated full-width episode hero. */
+@media(max-width:760px){
+ body.at-ios-enabled #episode-detail-modal .at123-episode-layout .at113-episode-feature{display:flex!important;flex-direction:column!important;grid-template-columns:none!important;gap:0!important;padding:0!important;width:100%!important}
+ body.at-ios-enabled #episode-detail-modal .at123-episode-layout .at113-episode-feature .ep-detail-visual{width:100%!important;height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:16/9!important;border-radius:0!important}
+ body.at-ios-enabled #episode-detail-modal .at123-episode-layout .at113-episode-feature .ep-detail-visual img{width:100%!important;height:100%!important;max-height:none!important;object-fit:cover!important}
+ body.at-ios-enabled #episode-detail-modal .at123-episode-layout .at113-episode-copy{width:100%!important;padding:15px!important}
+ body.at-ios-enabled #episode-detail-modal .at123-episode-layout .at113-episode-copy .ep-detail-name{font-size:21px!important;line-height:1.25!important}
+}
