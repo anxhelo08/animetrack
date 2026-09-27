@@ -921,11 +921,18 @@ function v81EnhanceEpisodeRows(){
  const a=state.anime.find(x=>x.id===detailId);if(!a)return;
  for(const row of $('detail-body').querySelectorAll('.episode-list .ep-row')){
   const seasonId=row.dataset.seasonEp,n=Number(row.dataset.ep);const seen=row.classList.contains('watched');
-  const wrapper=document.createElement('div');wrapper.className='ep-article'+(seen?' seen':'');
+  const season=a.seasons.find(x=>x.id===seasonId),item=season?.episodes.find(e=>e.number===n),label=window.ATFiller1210.kind(item);
+  const wrapper=document.createElement('div');wrapper.className='ep-article'+(seen?' seen':'')+(label==='filler'?' at1210-filler':'')+(label==='recap'?' at1210-recap':'');
   const info=document.createElement('button');info.type='button';info.className='ep-info-btn';info.dataset.episodeDetail=a.id;info.dataset.episodeSeason=seasonId;info.dataset.episodeNumber=String(n);info.setAttribute('aria-label',`Shiko informacionet e episodit ${n}`);
-  const item=a.seasons.find(s=>s.id===seasonId)?.episodes.find(e=>e.number===n),still=validPoster(item?.image||'');info.innerHTML=(still?`<img class="v98-mini-still" src="${escapeHTML(still)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:'')+row.querySelector('.ep-num').outerHTML+row.querySelector('.ep-text').outerHTML+(item?.personalRating?`<span class="v98-episode-chips">★ ${item.personalRating}/10</span>`:'')+'<span class="ep-info-arrow" aria-hidden="true">›</span>';
+  const still=validPoster(item?.image||'');info.innerHTML=(still?`<img class="v98-mini-still" src="${escapeHTML(still)}" alt="" loading="lazy" referrerpolicy="no-referrer">`:'')+row.querySelector('.ep-num').outerHTML+row.querySelector('.ep-text').outerHTML+(label==='filler'?'<span class="at1210-chip filler">FILLER</span>':label==='recap'?'<span class="at1210-chip recap">RECAP</span>':'')+(item?.personalRating?`<span class="v98-episode-chips">★ ${item.personalRating}/10</span>`:'')+'<span class="ep-info-arrow" aria-hidden="true">›</span>';
   const toggle=document.createElement('button');toggle.type='button';toggle.className='ep-toggle-btn';toggle.dataset.seasonEp=seasonId;toggle.dataset.id=a.id;toggle.dataset.ep=String(n);toggle.setAttribute('aria-pressed',String(seen));toggle.textContent=seen?'✓ I parë':'+ Shëno';
   wrapper.append(info,toggle);row.replaceWith(wrapper);
+ }
+ const season=a.seasons.find(x=>x.id===activeSeasonId),list=$('detail-body').querySelector('.episode-list');
+ if(list&&!$('detail-body').querySelector('.at1210-legend')){
+  const legend=document.createElement('div');legend.className='at1210-legend';
+  legend.innerHTML='<span class="at1210-chip filler">FILLER</span><span>Episod i veçuar nga burimi; ✓ ruan shënimin e parë.</span>'+(window.ATFiller1210.validId(season?.malId)?'<button type="button" data-filler-refresh="1" data-id="'+escapeHTML(a.id)+'" data-season="'+escapeHTML(season.id)+'">↻ Përditëso etiketat</button>':'<small>Pa burim automatik për këtë sezon; mund ta shënosh manualisht.</small>');
+  list.before(legend);
  }
 }
 const v81PriorRenderDetail=renderDetail;
