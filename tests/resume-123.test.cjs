@@ -48,5 +48,5 @@ test('home and personal recommendation refresh are wired',()=>{
  const home=fs.readFileSync(path.join(root,'assets/pro-home.js'),'utf8'),rec=fs.readFileSync(path.join(root,'assets/pro-recommendations.js'),'utf8');
  assert.match(home,/at123-release-card/);assert.match(home,/data-home-action="open-release"/);assert.match(home,/data-home-action="mark-release"/);
  assert.match(rec,/favoriteTaste/);assert.match(rec,/tab==='favorites'/);assert.match(rec,/tab==='new'/);
- assert.match(rec,/data-pro-action="preview-recommendation"/);assert.match(rec,/data-pro-action="add-recommendation"/);
+ assert.match(rec,/data-pro-action="preview-recommendation"/);assert.match(rec,/preview-recommendation':'add-recommendation'/);
 });
