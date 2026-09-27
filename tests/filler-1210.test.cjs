@@ -49,6 +49,8 @@ test('UI and PWA integration preserve all existing routes',()=>{
  assert.doesNotMatch(app,/s\.episodes\.length>=s\.total\)return/);
  assert.match(app,/at1210-filler/);assert.match(app,/at1210-legend/);
  assert.match(app,/fillerManual:e\.fillerManual===true/);
+ assert.match(app,/fillerPagesChecked:/);
+ assert.match(app,/!force&&s\.fillerPagesChecked\?\.includes\(metadataPage\)/);
  assert.match(app,/data-filler-manual/);
  assert.match(css,/at1210-chip\.filler/);assert.match(css,/at1210-manual/);
  for(const file of ['pro-filler-1210.js','pro-filler-1210.css']){assert(html.includes('/assets/'+file));assert(sw.includes('/assets/'+file));}
