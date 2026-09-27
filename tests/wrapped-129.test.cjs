@@ -66,6 +66,7 @@ test('12.9 simple graphic share exports without new API calls or personal storag
 test('12.9 integrated Wrapped and profile have new assets, period actions, safe update cache',()=>{
  const feature=read('assets/pro-features.js'),calendar=read('assets/pro-calendar-wrapped.js'),html=read('index.html'),sw=read('sw.js'),css=read('assets/pro-wrapped-129.css');
  assert.match(feature,/achievementsMini/);assert.match(feature,/trackAchievements\(true\)/);
+ assert.match(feature,/function renderBackground\(\)/);assert.match(read('assets/app.js'),/proApp\.renderBackground\(\)/);
  assert.match(calendar,/ATWrapped129\.render/);assert.match(calendar,/wrapped-badges/);
  assert.match(html,/pro-wrapped-129\.js/);assert.match(html,/pro-wrapped-129\.css/);
  assert.match(sw,/pro-wrapped-129\.js/);assert.match(sw,/pro-wrapped-129\.css/);
