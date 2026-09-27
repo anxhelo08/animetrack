@@ -185,7 +185,7 @@ const assert=require('node:assert/strict');
  assert(phoneLayout.heroWidth>phoneLayout.viewport*.75,'mobile hero must be full width, not desktop thumbnail: '+JSON.stringify(phoneLayout));
  console.log('RESUME_IPHONE_PASS',JSON.stringify({season:'s3',episode:50,page:3,layout:phoneLayout.display,heroWidth:phoneLayout.heroWidth}));
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
- await page.locator('#detail-modal .detail-back').click();
+ if(await page.locator('#detail-modal').isVisible())await page.locator('#detail-modal .detail-back').click();
 
  if(errors.length)throw Error('Browser JavaScript errors: '+errors.join(' | '));
  console.log('IPHONE_BROWSER_PASS',engine===webkit?'WebKit':'Chromium');
