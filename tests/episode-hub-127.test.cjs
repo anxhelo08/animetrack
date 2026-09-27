@@ -61,7 +61,7 @@ test('12.7: TVMaze catalog update never moves watched numbers when remote episod
 test('12.7 mobile and cache integration of all release-first assets',()=>{
  const iphone=read('assets/pro-iphone.js'),app=read('assets/app.js'),sw=read('sw.js'),html=read('index.html'),css=read('assets/pro-episode-hub-127.css');
  assert.match(iphone,/ATEpisodeHub127\.classify/);assert.match(iphone,/at127-new-card/);assert.match(iphone,/at127-stale-head/);
- assert.match(iphone,/ctx\.markEpisode\(a\.id,s\.id,n\);refresh\(\)/);
+ assert.match(iphone,/ctx\.markEpisode\(a\.id,s\.id,n\);if\(s\.watched\.includes\(n\)\)/);
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  for(const file of ['pro-episode-hub-127.js','pro-tv-episodes-127.js','pro-episode-hub-127.css']){assert.match(html,new RegExp(file.replaceAll('.','\\.')));assert.match(sw,new RegExp(file.replaceAll('.','\\.')))}
