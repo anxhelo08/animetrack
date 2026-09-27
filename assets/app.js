@@ -1309,7 +1309,7 @@ function v96RecentEpisodes(limit=8){
  const cutoff=Date.now()-7*DAY,found=new Map(),library=new Map(state.anime.map(a=>[a.id,a]));
  const add=(x,season=null,n=null)=>{if(!x||x.when<cutoff||x.when>Date.now())return;const a=library.get(x.animeId);if(!a)return;let s=season||a.seasons.find(v=>v.id===x.seasonId)||null;const ep=Math.max(1,Number(n??x.seasonEpisode??x.episode)||1);if(!s&&x.source==='AniList')s=a.seasons.find(v=>v.sourceId&&x.url?.includes('/anime/'+v.sourceId))||null;if(!s)s=a.seasons.find(v=>releasedCount(v)>=ep)||a.seasons[0]||null;const key=a.id+':'+(s?.id||x.season||'')+':'+ep;if(found.has(key)&&Number(found.get(key).when)>=Number(x.when))return;found.set(key,{...x,anime:a,localSeason:s,localEpisode:ep,seen:!!s?.watched.includes(ep)})};
  for(const x of upcomingEntries)add(x);
- for(const a of state.anime.filter(a=>['watching','completed'].includes(a.status)))for(const s of a.seasons||[])for(const ep of s.episodes||[]){
+ for(const a of state.anime.filter(a=>['watching','waiting','completed'].includes(a.status)))for(const s of a.seasons||[])for(const ep of s.episodes||[]){
   const when=Date.parse(ep.airedAt||ep.aired||'');if(!Number.isFinite(when))continue;
   add({animeId:a.id,title:a.title,cover:a.cover,episode:ep.number,season:s.subtitle||s.title,seasonId:s.id,seasonEpisode:ep.number,when,source:'Datë episodi',url:a.sourceUrl||''},s,ep.number);
  }
@@ -1501,6 +1501,54 @@ v81OpenEpisode=function(id,seasonId,n){if($('detail-modal').classList.contains('
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-journey-action]');if(b)atJourney.action(b)});
 
 
+/* 12.7 — refresh tracked TV episode dates and newly aired seasons without changing watched marks. */
+let tv127RefreshBusy=false;
+async function refreshTrackedTV127(force=false){
+ if(tv127RefreshBusy||!navigator.onLine||accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||cloudConflict)return {updated:0};
+ const uid=accountUser.id,key=KEY+'_tv_episodes_127',clock=Date.now();
+ let checks={};try{checks=JSON.parse(localStorage.getItem(key)||'{}');if(!checks||typeof checks!=='object'||Array.isArray(checks))checks={}}catch{}
+ const showIds=new Set();
+ for(const a of state.anime.filter(a=>a.source==='TVMaze'&&['watching','waiting','completed'].includes(a.status))){
+  for(const id of [a.sourceId,a.tvmazeId,...(a.seasons||[]).filter(s=>String(s.source||'').toLowerCase()==='tvmaze').map(s=>s.sourceId)])if(/^\d{1,10}$/.test(String(id||'')))showIds.add(String(id));
+ }
+ const ids=[...showIds].filter(id=>force||clock-(Number(checks[id])||0)>24*60*60*1000).sort((a,b)=>(Number(checks[a])||0)-(Number(checks[b])||0)).slice(0,32);
+ if(!ids.length)return {updated:0};
+ tv127RefreshBusy=true;let updated=0,failed=0;
+ try{
+  for(let offset=0;offset<ids.length;offset+=3){
+   const results=await Promise.allSettled(ids.slice(offset,offset+3).map(async id=>{
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);
+    try{
+     const response=await fetch('https://api.tvmaze.com/shows/'+id+'/episodes?specials=1',{signal:controller.signal});
+     if(!response.ok)throw Error('TVMaze '+response.status);
+     const rows=await response.json();if(!Array.isArray(rows))throw Error('Episode list unavailable');
+     return {id,rows};
+    }finally{clearTimeout(timer)}
+   }));
+   for(let k=0;k<results.length;k++){
+    if(accountMode!=='cloud'||accountUser?.id!==uid||KEY!=='animetrack_user_'+uid)return {updated,failed};
+    const result=results[k],showId=ids[offset+k];
+    if(result.status!=='fulfilled'){failed++;console.warn('Tracked TV refresh failed',showId,result.reason);continue}
+    const entry=state.anime.find(a=>a.source==='TVMaze'&&(String(a.sourceId)===showId||String(a.tvmazeId)===showId||(a.seasons||[]).some(x=>String(x.sourceId)===showId)));
+    if(!entry){checks[showId]=Date.now();continue}
+    const before=JSON.stringify(entry),index=state.anime.indexOf(entry);
+    try{
+     if(window.ATTVEpisodes127.merge(entry,showId,result.value.rows,normSeason)){
+      syncTotals(entry);
+      entry.updatedAt=now();
+      if(!save()){state.anime[index]=JSON.parse(before);failed++;continue}
+      updated++;
+     }
+     checks[showId]=Date.now();
+    }catch(err){state.anime[index]=JSON.parse(before);failed++;console.warn('TV episode merge failed',showId,err)}
+   }
+  }
+  try{localStorage.setItem(key,JSON.stringify(checks))}catch(err){console.warn('TV refresh schedule not cached',err)}
+  if(updated){render();renderHome();renderUpcoming()}
+  return {updated,failed};
+ }finally{tv127RefreshBusy=false}
+}
+
 /* AnimeTrack 9.9 — composed feature modules. Core user library remains unchanged. */
 const proContext={
  el:$,esc:escapeHTML,state:()=>state,user:()=>accountUser,client:()=>accountInitClient(),
@@ -1515,7 +1563,7 @@ const proContext={
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
  markEpisode:(id,seasonId,n)=>requestEpisodeToggle(id,seasonId,n),
  refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
- liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.render();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
+ liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshTrackedTV127(force);await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.render();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
  canReload:()=>!cloudDirty&&!cloudSaving,
  watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict}),
@@ -1554,7 +1602,7 @@ let at113LastEpisodeKey='';const at113EpisodeRender=v81RenderEpisode;v81RenderEp
 const proPriorView=setView;setView=function(which){if(proApp.open(which))return;proApp.hide();proApp.syncMobile(which);return proPriorView(which)};
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id);const a=state.anime.find(x=>x.id===id),resume=a&&window.ATResume123.resolve(a,state.history,releasedCount),root=$('detail-body');if(!resume||!root)return;const season=a.seasons.find(s=>s.id===resume.seasonId),top=root.querySelector('.seasons-topline');if(!season||!top)return;const button=document.createElement('button');button.type='button';button.className='at123-resume-button';button.dataset.at123Resume=id;button.innerHTML='<span class="at123-resume-icon">▶</span><span><small>VAZHDO NGA KU E LE</small><strong>'+escapeHTML(season.title)+' · Episodi '+resume.episode+'</strong></span><span aria-hidden="true">→</span>';top.after(button)};
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-at123-resume]');if(!b)return;const a=state.anime.find(x=>x.id===b.dataset.at123Resume),pos=a&&window.ATResume123.resolve(a,state.history,releasedCount);if(!pos)return;activeSeasonId=pos.seasonId;episodePage=pos.page;renderDetail(a.id);void loadSeasonEpisodes(a.id,pos.seasonId,pos.page);$('detail-body').querySelector('[data-season-ep][data-ep="'+pos.episode+'"]')?.scrollIntoView({block:'center',behavior:'smooth'})});
-const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);void proApp.onAccount().catch(e=>console.warn('Optional account features',e))};
+const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);void proApp.onAccount().catch(e=>console.warn('Optional account features',e));if(navigator.onLine)void refreshTrackedTV127(false).catch(e=>console.warn('Tracked TV check failed',e))};
 const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
 const proPriorSave=save;save=function(){const result=proPriorSave();if(result)try{proApp.onStateChange()}catch(err){console.warn('Feature refresh after save failed',err)}return result};
 
