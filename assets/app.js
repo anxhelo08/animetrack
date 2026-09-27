@@ -1536,7 +1536,10 @@ async function refreshTrackedTV127(force=false){
      if(window.ATTVEpisodes127.merge(entry,showId,result.value.rows,normSeason)){
       syncTotals(entry);
       entry.updatedAt=now();
-      if(!save()){state.anime[index]=JSON.parse(before);failed++;continue}
+      // TV metadata refresh must not rebuild an active form (collections/profile).
+      // Persist with the same account journal, but do not fire the full onStateChange renderer.
+      let stored=false;try{window.ATSync126.save(localStorage,KEY,state,cloudRevision,true);accountQueueSave();stored=true}catch(err){console.warn('TV metadata persistence failed',err)}
+      if(!stored){state.anime[index]=JSON.parse(before);failed++;continue}
       updated++;
      }
      checks[showId]=Date.now();
