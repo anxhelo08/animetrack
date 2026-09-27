@@ -1002,7 +1002,7 @@ async function accountOpenCloud(user){
  try{const response=await client.from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();if(response.error)throw response.error;data=response.data}
  catch(error){readError=error;if(!cached)throw Error('Leximi nga databaza dështoi dhe nuk ka kopje lokale për këtë llogari: '+error.message)}
  document.body.classList.remove('auth-required');
- accountUser=user;accountMode='cloud';KEY=key;
+ accountUser=user;accountMode='cloud';KEY='animetrack_user_'+uid;
  cloudBaseKnown=!readError;cloudConnected=!readError;cloudConflict=false;cloudLastPullAt=readError?0:Date.now();
  cloudRevision=readError?(window.ATSync126.revision(localStorage,key)||journal?.baseRevision||null):(data?.updated_at||null);
  cloudLastSync=readError?'Kopje lokale · pa lidhje':data?.updated_at?new Date(data.updated_at).toLocaleString('sq-AL'):'Llogari e re';
