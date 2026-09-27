@@ -78,10 +78,10 @@ const assert=require('node:assert/strict');
  const postTapScale=await page.evaluate(()=>window.visualViewport?.scale||1);
  assert(postTapScale<1.05,'Double-tap should not enlarge the mobile screen: '+postTapScale);
  console.log('DOUBLE_TAP_SCALE',postTapScale);
- await page.locator('[data-ios-action="episode"][data-id="demo1"]').first().click();
+ await page.locator('#at-iphone-feed .at127-fresh-list [data-ios-action="open-recent"][data-id="demo1"]').first().click();
  if(!(await page.locator('#episode-detail-modal').isVisible())){
   await page.waitForTimeout(300);
-  if(!(await page.locator('#episode-detail-modal').isVisible()))await page.locator('[data-ios-action="episode"][data-id="demo1"]').first().click();
+  if(!(await page.locator('#episode-detail-modal').isVisible()))await page.locator('#at-iphone-feed .at127-fresh-list [data-ios-action="open-recent"][data-id="demo1"]').first().click();
  }
  await page.locator('#episode-detail-modal').waitFor({state:'visible',timeout:5000});
  assert(await page.locator('#episode-detail-modal').isVisible(),'iPhone Episode Hub should open');
