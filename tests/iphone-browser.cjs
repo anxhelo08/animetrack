@@ -173,7 +173,7 @@ const assert=require('node:assert/strict');
   a.seasons=[season('s1',25,Array.from({length:25},(_,i)=>i+1)),season('s2',25,Array.from({length:25},(_,i)=>i+1)),season('s3',75,Array.from({length:49},(_,i)=>i+1))];
   state.history.push({id:a.id,seasonId:'s3',episode:49,action:'watched',date:new Date().toISOString()});
  });
- await page.locator('[data-mobile-nav="library"]').click();
+ await page.locator('.at-mobile-nav [data-mobile-nav="library"]').click();
  await page.locator('#anime-grid [data-detail="demo1"]').first().click();
  assert.equal(await page.locator('#detail-body .season-tab.active').getAttribute('data-season'),'s3','iPhone resumes One Piece season 3');
  assert.match(await page.locator('#detail-body .episode-pages').innerText(),/Faqja 3/);
