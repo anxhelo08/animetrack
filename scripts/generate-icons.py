@@ -4,6 +4,8 @@ import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+PUBLIC = ROOT / 'public'
+PUBLIC.mkdir(parents=True, exist_ok=True)
 
 def polygon(x, y, points):
     inside = False
@@ -53,6 +55,6 @@ def draw(size):
     return data
 
 for pixels, name in [(180,'apple-touch-icon.png'),(192,'icon-192.png'),(512,'icon-512.png')]:
-    dest = ROOT/name
+    dest = PUBLIC/name
     dest.write_bytes(draw(pixels))
     print(f'{name}: {dest.stat().st_size} bytes')

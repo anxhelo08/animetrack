@@ -1,0 +1,48 @@
+import "./styles/index.css";
+
+const waitForSupabase=async()=>{
+  const deadline=Date.now()+12000;
+  while(!window.supabase?.createClient&&Date.now()<deadline)await new Promise(r=>setTimeout(r,25));
+  if(!window.supabase?.createClient)throw new Error('Supabase SDK failed to load');
+};
+
+await import("./config.js");
+await waitForSupabase();
+await import("./modules/recommendations.js");
+await import("./modules/wrapped.js");
+await import("./modules/calendar-wrapped.js");
+await import("./modules/profiles.js");
+await import("./modules/friends.js");
+await import("./modules/import-library.js");
+await import("./modules/moderation.js");
+await import("./modules/notifications.js");
+await import("./modules/rewatch.js");
+await import("./modules/home.js");
+await import("./modules/episode-hub.js");
+await import("./modules/iphone.js");
+await import("./modules/daily.js");
+await import("./modules/journey.js");
+await import("./modules/smart-airing.js");
+await import("./modules/push.js");
+await import("./modules/collections.js");
+await import("./modules/experience.js");
+await import("./modules/mobile.js");
+await import("./modules/tv.js");
+await import("./modules/features.js");
+await import("./modules/tv-unified.js");
+await import("./modules/unified.js");
+await import("./modules/resume.js");
+await import("./modules/command.js");
+await import("./modules/year.js");
+await import("./modules/sync.js");
+await import("./modules/storage.js");
+await import("./modules/seasonal.js");
+await import("./modules/tv-episodes.js");
+await import("./modules/filler.js");
+await import("./modules/franchise.js");
+await import("./modules/cloud-local.js");
+await import("./modules/provider-bridge.js");
+await import("./modules/franchise-engine.js");
+await import("./modules/movies.js");
+await import("./modules/cross-sync.js");
+await import("./app.js");

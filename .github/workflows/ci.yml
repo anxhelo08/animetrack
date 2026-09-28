@@ -1,0 +1,84 @@
+name: AnimeTrack CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: animetrack-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-unit:
+    name: Build + unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned toolchain
+        run: npm install --no-audit --no-fund
+      - name: Unit tests and Vite production build
+        run: npm test
+      - name: Verify content-hashed production assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          grep -Eq '/assets/[^" ]+\.[A-Za-z0-9_-]{6,}\.(js|css)' dist/index.html
+          ! grep -Eq 'pro-[a-z-]+-[0-9]+\.(js|css)' dist/index.html
+      - name: Package tested release source
+        id: package
+        shell: bash
+        run: |
+          LABEL=$(node -p "require('./package.json').releaseLabel || require('./package.json').version")
+          ZIP="AnimeTrack-${LABEL}.zip"
+          zip -r "$ZIP" . -x ".git/*" "node_modules/*" "playwright-report/*" "test-results/*" "$ZIP"
+          echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: animetrack-release
+          path: ${{ steps.package.outputs.zip }}
+          if-no-files-found: error
+          retention-days: 30
+
+  e2e:
+    name: E2E · ${{ matrix.project }}
+    runs-on: ubuntu-latest
+    needs: build-unit
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: desktop-chromium
+            browser: chromium
+          - project: iphone-chromium
+            browser: chromium
+          - project: iphone-webkit
+            browser: webkit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned toolchain
+        run: npm install --no-audit --no-fund
+      - name: Build production bundle
+        run: npm run build
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Run Playwright Test
+        run: npx playwright test --project=${{ matrix.project }}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-${{ matrix.project }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
