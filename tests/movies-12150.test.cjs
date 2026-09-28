@@ -25,7 +25,7 @@ test('12.15.2 Wikidata movie details work without any API key',async()=>{
 });
 
 test('12.15.2 zero-key Cinemeta search returns rich IMDb-ID cards with posters',async()=>{
- const api=load(async url=>{url=String(url);assert.match(url,/v3-cinemeta\.strem\.io\/catalog\/movie\/top\/search=/);return response({metas:[{id:'tt4154796',type:'movie',name:'Avengers: Endgame',releaseInfo:'2019',poster:'https://img.example/endgame.jpg',background:'https://img.example/bg.jpg',imdbRating:'8.4',description:'After the devastating events.'}]})});
+ const api=load(async url=>{url=String(url);assert.match(url,/\/api\/cinemeta\?mode=search&q=/);return response({metas:[{id:'tt4154796',type:'movie',name:'Avengers: Endgame',releaseInfo:'2019',poster:'https://img.example/endgame.jpg',background:'https://img.example/bg.jpg',imdbRating:'8.4',description:'After the devastating events.'}]})});
  const r=await api.search('Avengers Endgame',{});assert.equal(r.provider,'IMDb/Cinemeta');assert.equal(r.items[0].imdbId,'tt4154796');assert.equal(r.items[0].title,'Avengers: Endgame');assert.match(r.items[0].cover,/endgame\.jpg/);assert.equal(r.items[0].score,84);
 });
 test('12.15.2 zero-key Cinemeta can surface Obsession with IMDb identity and poster',async()=>{
@@ -33,6 +33,12 @@ test('12.15.2 zero-key Cinemeta can surface Obsession with IMDb identity and pos
  const r=await api.search('Obsession',{});assert.equal(r.provider,'IMDb/Cinemeta');assert.equal(r.items[0].imdbId,'tt37287335');assert.match(r.items[0].cover,/obsession\.jpg/);
 });
 test('12.15.2 Cinemeta details provide rich metadata without API keys',async()=>{
- const api=load(async url=>{url=String(url);assert.match(url,/meta\/movie\/tt37287335\.json/);return response({meta:{id:'tt37287335',type:'movie',name:'Obsession',year:2025,released:'2026-05-15T00:00:00.000Z',poster:'https://img.example/obsession.jpg',background:'https://img.example/obsession-bg.jpg',description:'A sinister enchantment ensues.',runtime:'109 min',genres:['Horror','Romance','Thriller'],director:['Curry Barker'],cast:['Michael Johnston','Inde Navarrette'],imdbRating:'7.8'}})});
+ const api=load(async url=>{url=String(url);assert.match(url,/\/api\/cinemeta\?mode=meta&id=tt37287335/);return response({meta:{id:'tt37287335',type:'movie',name:'Obsession',year:2025,released:'2026-05-15T00:00:00.000Z',poster:'https://img.example/obsession.jpg',background:'https://img.example/obsession-bg.jpg',description:'A sinister enchantment ensues.',runtime:'109 min',genres:['Horror','Romance','Thriller'],director:['Curry Barker'],cast:['Michael Johnston','Inde Navarrette'],imdbRating:'7.8'}})});
  const d=await api.details({source:'Cinemeta',sourceId:'tt37287335',imdbId:'tt37287335',title:'Obsession'},{});assert.equal(d.source,'Cinemeta');assert.equal(d.runtime,109);assert.match(d.genre,/Horror/);assert.match(d.cast,/Inde Navarrette/);assert.equal(d.imdbRating,7.8);assert.match(d.backdrop,/obsession-bg/);
+});
+
+test('12.15.2 Cinemeta browser requests use the same-origin proxy and the proxy is host-locked',()=>{
+ const helper=read('assets/pro-movies-12150.js'),api=read('api/cinemeta.js');
+ assert.match(helper,/\/api\/cinemeta\?mode=search/);assert.match(helper,/\/api\/cinemeta\?mode=meta/);assert.doesNotMatch(helper,/fetch\('https:\/\/v3-cinemeta\.strem\.io/);
+ assert.match(api,/https:\/\/v3-cinemeta\.strem\.io\/catalog\/movie\/top\/search=/);assert.match(api,/https:\/\/v3-cinemeta\.strem\.io\/meta\/movie\//);assert.match(api,/\^tt\\d\+\$/);assert.doesNotMatch(api,/req\.query\.url|targetUrl/);
 });

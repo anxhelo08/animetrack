@@ -30,7 +30,7 @@ window.ATMovies12150=(()=>{
  }
 
  async function searchCinemeta(q,signal){
-  const url='https://v3-cinemeta.strem.io/catalog/movie/top/search='+encodeURIComponent(q)+'.json';
+  const url='/api/cinemeta?mode=search&q='+encodeURIComponent(q);
   const r=await fetch(url,{signal,headers:{Accept:'application/json'}});if(!r.ok)throw Error('Cinemeta HTTP '+r.status);const j=await r.json();
   return (j.metas||[]).filter(x=>x&&/^tt\d+$/.test(String(x.id||''))&&String(x.type||'movie')==='movie').slice(0,18).map(m=>({
    kind:'movie',key:'movie-cinemeta-'+m.id,source:'Cinemeta',sourceId:String(m.id),tmdbId:'',imdbId:String(m.id),
@@ -42,7 +42,7 @@ window.ATMovies12150=(()=>{
  }
  async function cinemetaDetails(item,{omdbKey='',signal}={}){
   const imdbId=String(item?.imdbId||item?.sourceId||'');if(!/^tt\d+$/.test(imdbId))throw Error('IMDb ID i pavlefshëm.');
-  const r=await fetch('https://v3-cinemeta.strem.io/meta/movie/'+encodeURIComponent(imdbId)+'.json',{signal,headers:{Accept:'application/json'}});
+  const r=await fetch('/api/cinemeta?mode=meta&id='+encodeURIComponent(imdbId),{signal,headers:{Accept:'application/json'}});
   if(!r.ok)throw Error('Cinemeta HTTP '+r.status);const j=await r.json(),m=j.meta;if(!m||!m.id)throw Error('Cinemeta nuk ktheu metadata.');
   let omdb=null;try{omdb=await omdbDetails(imdbId,omdbKey,signal)}catch(err){console.warn('OMDb enrichment failed',err)}
   const rating=Number(omdb?.imdbRating??m.imdbRating),votes=Number(String(omdb?.imdbVotes||'').replace(/,/g,''));
