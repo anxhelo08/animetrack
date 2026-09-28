@@ -51,12 +51,12 @@ test('13.0 integration prevents blind offline overwrite and auto-activates the q
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountApplyRemoteRecord\(record\)/);assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);
  assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
  assert.match(app,/if\(accountUser\?\.id!==uid\|\|JSON\.stringify\(state\)!==prior\)/);
- assert.match(sw,/animetrack-shell-v1300-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
+ assert.match(sw,/animetrack-shell-v1310-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
  assert.match(sw,/then\(\(\)=>self\.skipWaiting\(\)\)/);
  assert.match(sw,/c\.match\(url\.pathname\)/);
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
  assert.match(features,/if\(!updateRequested\)return/);
- assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 13\.0\.0/);
+ assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 13\.1\.0/);
 });
 
 test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{

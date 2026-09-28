@@ -1,8 +1,17 @@
-# AnimeTrack 13.0.0 — Online-first Performance
+# AnimeTrack 13.1.0 — Franchise Timeline 2.0
 
-**Versioni i kodit:** 13.0.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 13.1.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
+
+## AnimeTrack 13.1.0 · Franchise Timeline 2.0
+- Franchise Timeline ka pamje të re lineare me çdo sezon, film, OVA dhe special në rend publikimi.
+- Çdo pjesë ka rating personal direkt në timeline, progres, datë publikimi dhe score komuniteti.
+- Përmbledhja e franchise-s tregon mesataren e pjesëve të vlerësuara dhe pjesën me notën më të lartë.
+- Story Arcs mund të krijohen manualisht me interval episodesh, rating dhe shënim; klikimi te arc-u të çon direkt te episodi i parë.
+- Arc ratings dhe season ratings ruhen në payload-in compact të Supabase dhe sinkronizohen PC ↔ mobile.
+- Rindërtimi i franchise-s TV ruan arc ratings dhe rating-un e çdo sezoni.
+- Versioni i Franchise Schema kalon në 13.1.0 që strukturat ekzistuese të kontrollohen pa humbur progresin.
 
 ## AnimeTrack 13.0.0 · Online-first Performance
 - Supabase mbetet kopja kanonike e llogarisë, por payload-i online tani ruan vetëm state-in personal dhe metadata minimale që duhen për bibliotekën. Metadata e rëndë e episodeve rigjenerohet sipas nevojës.

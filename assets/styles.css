@@ -2913,3 +2913,68 @@ body.at128-storage-blocked{overflow:hidden}
 /* Source: assets/pro-movies-12150.css */
 /* AnimeTrack 12.15 — Movies */
 .at150-provider{margin-top:10px;border:1px solid #39374f;border-radius:12px;background:#161721;padding:9px 11px}.at150-provider summary{cursor:pointer;font-size:11px;font-weight:800;color:#d6d1e7}.at150-provider-grid{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:9px;margin-top:10px;align-items:end}.at150-provider-grid label{display:grid;gap:5px;font-size:10px;color:#aaa3bf}.at150-provider-grid input{min-height:38px;border-radius:9px;border:1px solid #49445e;background:#10111a;color:#fff;padding:0 10px}.at150-provider-grid>div{display:flex;gap:6px}.at150-provider-grid small{grid-column:1/-1;color:#8e889f;line-height:1.5}.at150-movie-result .catalog-type{background:#2c203e}.at150-movie-hero{position:relative;overflow:hidden;border-radius:15px}.at150-backdrop{position:absolute;inset:0 0 auto 0;height:250px;background-size:cover;background-position:center;opacity:.72;pointer-events:none}.at150-preview-top,.at150-movie-detail{position:relative;z-index:1;padding-top:18px}.at150-meta{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}.at150-movie-facts>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.at150-movie-facts span{display:grid;gap:3px;padding:10px;border:1px solid #343246;border-radius:10px;background:#171823;font-size:11px;color:#c8c3d4}.at150-movie-facts b{font-size:9px;letter-spacing:.08em;color:#9887d5;text-transform:uppercase}.at150-watch-stat{display:flex;gap:8px;align-items:baseline;margin-top:10px;color:#aaa3bb}.at150-watch-stat b{font-size:24px;color:#d7c8ff}.at150-notes{width:100%;min-height:100px;margin-bottom:8px;border-radius:10px;border:1px solid #403b54;background:#11121a;color:#eee;padding:10px;resize:vertical}.at150-collection-strip{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px}.at150-collection-card{min-width:130px;max-width:130px;text-align:left;border:1px solid #37334c;background:#171822;color:#fff;border-radius:11px;padding:7px;cursor:pointer}.at150-collection-card img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;margin-bottom:6px}.at150-collection-card strong,.at150-collection-card small{display:block}.at150-collection-card strong{font-size:10px;line-height:1.3}.at150-collection-card small{font-size:9px;color:#9991aa;margin-top:3px}.at150-attribution{font-size:9px;color:#777184;margin-top:12px}.at150-home-movie .progress{display:none}@media(max-width:680px){.at150-provider-grid{grid-template-columns:1fr}.at150-provider-grid small{grid-column:1}.at150-movie-facts>div{grid-template-columns:1fr}.at150-backdrop{height:190px}.at150-preview-top,.at150-movie-detail{padding-top:8px}}
+
+/* Source: assets/pro-franchise-131.css */
+/* AnimeTrack 13.1 — Franchise Timeline 2.0 */
+.at131-franchise{margin:18px 0 20px;padding:18px;border:1px solid rgba(166,139,251,.24);border-radius:20px;background:linear-gradient(180deg,rgba(28,26,43,.96),rgba(18,18,29,.94));box-shadow:0 18px 48px rgba(0,0,0,.18)}
+.at131-head{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(300px,.8fr);gap:18px;align-items:start}
+.at131-head h4,.at131-arcs h4{margin:4px 0 6px;font-size:1.1rem}
+.at131-head p,.at131-arcs p{margin:0;color:var(--muted);line-height:1.5}
+.at131-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.at131-summary>span{display:flex;min-width:0;min-height:86px;flex-direction:column;justify-content:center;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.035)}
+.at131-summary small{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.at131-summary b{font-size:1.05rem;margin-top:4px}
+.at131-summary em{font-style:normal;color:var(--muted);font-size:.72rem;margin-top:2px}
+.at131-summary .at131-best{font-size:.82rem;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.at131-track{position:relative;margin-top:16px;display:flex;gap:10px;overflow-x:auto;padding:6px 2px 10px;scroll-snap-type:x proximity}
+.at131-track:before{content:"";position:absolute;left:32px;right:32px;top:34px;height:2px;background:linear-gradient(90deg,rgba(165,139,251,.3),rgba(82,223,239,.3));pointer-events:none}
+.at131-part{position:relative;z-index:1;flex:0 0 250px;scroll-snap-align:start;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(17,17,27,.96);padding:8px;transition:transform .18s ease,border-color .18s ease,background .18s ease}
+.at131-part:hover{transform:translateY(-2px);border-color:rgba(165,139,251,.42)}
+.at131-part.active{border-color:rgba(82,223,239,.66);background:linear-gradient(180deg,rgba(38,34,58,.98),rgba(19,21,32,.98));box-shadow:0 0 0 1px rgba(82,223,239,.12) inset}
+.at131-open{width:100%;display:grid;grid-template-columns:auto auto minmax(0,1fr);gap:9px;align-items:start;border:0;background:transparent;color:inherit;text-align:left;padding:4px;cursor:pointer}
+.at131-step{display:grid;place-items:center;width:28px;height:28px;border-radius:999px;background:rgba(165,139,251,.16);border:1px solid rgba(165,139,251,.25);font-size:.72rem;font-weight:800}
+.at131-icon{font-size:1.1rem;line-height:28px}
+.at131-copy{min-width:0;display:flex;flex-direction:column}
+.at131-copy strong{font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.at131-copy small,.at131-copy em{font-size:.71rem;color:var(--muted);font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+.at131-rate,.at131-score{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;padding:7px 8px;border-radius:11px;background:rgba(255,255,255,.035);font-size:.72rem}
+.at131-rate span,.at131-score small{color:var(--muted)}
+.at131-rate select{max-width:116px;min-height:34px;border-radius:9px}
+.at131-score b{font-size:.8rem}
+.at131-legacy-tabs{opacity:.78}
+.at131-arcs{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08)}
+.at131-arc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.at131-arc-count{flex:0 0 auto;border:1px solid rgba(165,139,251,.2);background:rgba(165,139,251,.1);border-radius:999px;padding:6px 10px;font-size:.72rem}
+.at131-arc-list{display:grid;gap:8px;margin-top:12px}
+.at131-arc{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:8px;align-items:center;padding:9px;border:1px solid rgba(255,255,255,.08);border-radius:13px;background:rgba(255,255,255,.025)}
+.at131-arc-open{min-width:0;text-align:left;border:0;background:transparent;color:inherit;cursor:pointer;display:flex;flex-direction:column;padding:4px}
+.at131-arc-open strong{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.at131-arc-open small{font-size:.72rem;color:var(--muted);margin-top:2px}
+.at131-arc label{display:flex;align-items:center;gap:7px;font-size:.72rem;color:var(--muted)}
+.at131-arc select{min-height:34px;max-width:116px;border-radius:9px}
+.at131-arc-edit,.at131-arc-delete{min-width:38px;min-height:38px;padding:0}
+.at131-arc-delete{font-size:1.1rem}
+.at131-arc-add{display:grid;grid-template-columns:minmax(180px,1fr) auto auto auto;gap:8px;align-items:end;margin-top:12px;padding:10px;border-radius:14px;background:rgba(165,139,251,.055);border:1px dashed rgba(165,139,251,.2)}
+.at131-arc-add>input,.at131-arc-add label input{min-height:42px;border-radius:10px}
+.at131-arc-add label{display:flex;flex-direction:column;gap:4px;color:var(--muted);font-size:.7rem}
+.at131-arc-add label input{width:88px}
+.at131-empty{padding:14px;border:1px dashed rgba(255,255,255,.09);border-radius:12px;text-align:center}
+@media(max-width:900px){
+ .at131-head{grid-template-columns:1fr}
+ .at131-summary{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:620px){
+ .at131-franchise{margin:14px -4px 18px;padding:14px;border-radius:16px}
+ .at131-summary{grid-template-columns:1fr 1fr}
+ .at131-summary>span:last-child{grid-column:1/-1}
+ .at131-part{flex-basis:226px}
+ .at131-arc{grid-template-columns:minmax(0,1fr) auto auto}
+ .at131-arc label{grid-column:1/2}
+ .at131-arc-edit,.at131-arc-delete{grid-row:1}
+ .at131-arc-edit{grid-column:2}
+ .at131-arc-delete{grid-column:3}
+ .at131-arc-add{grid-template-columns:1fr 1fr}
+ .at131-arc-add>input,.at131-arc-add>button{grid-column:1/-1}
+ .at131-arc-add label input{width:100%}
+}
+

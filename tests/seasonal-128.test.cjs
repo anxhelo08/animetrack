@@ -55,10 +55,10 @@ test('12.8 seasonal UI, mobile entry, provider queries and bounded regenerative 
  assert.match(app,/Object\.entries\(v8SeasonCache\)\.filter/);
  assert.match(features,/data-at128-open-seasons/);assert.match(features,/ctx\.navigate\('seasons'\)/);
  assert.match(css,/at128-season-search/);assert.match(css,/min-height:44px/);
- assert.match(sw,/animetrack-shell-v1300-1/);
+ assert.match(sw,/animetrack-shell-v1310-1/);
  assert.match(sw,/pro-seasonal-128\.js/);assert.match(sw,/styles\.css/);
- assert.match(html,/AnimeTrack 13\.0\.0/);
- assert.equal(JSON.parse(read('package.json')).version,'13.0.0');
+ assert.match(html,/AnimeTrack 13\.1\.0/);
+ assert.equal(JSON.parse(read('package.json')).version,'13.1.0');
 });
 test('12.8 auth/storage and PWA update protection stay enabled',()=>{
  const app=read('assets/app.js'),sw=read('sw.js'),storage=read('assets/pro-storage-1274.js');
