@@ -54,10 +54,14 @@ window.ATProviderBridge12124=(()=>{
   const titleStrong=!!(e.exact||e.family)||e.similarity>=.9;
   if(!titleStrong)return false;
   const key=e.exact||e.family||'',short=words(key).length<=1||key.length<7;
-  const sameYear=e.yearDiff===0,closeDate=e.days!=null&&e.days<=45;
+  const sameYear=e.yearDiff===0,closeDate=e.days!=null&&e.days<=45,corroborated=closeDate||e.genres>0||e.totalEqual;
   if(short)return closeDate||(sameYear&&(e.genres>0||e.totalEqual));
-  if(e.exact||e.family)return e.yearDiff==null||sameYear||closeDate||e.genres>0;
-  return sameYear&&(closeDate||e.genres>0||e.totalEqual);
+  if(e.exact)return e.yearDiff==null||sameYear||closeDate||e.genres>0;
+  // A franchise-root match alone is intentionally weaker than an exact alias.
+  // It must be backed by date/genre/episode evidence so sequels and spin-offs
+  // with a shared root do not disappear from search.
+  if(e.family)return (sameYear||e.yearDiff==null)&&corroborated;
+  return sameYear&&corroborated;
  }
  function dedupeSearchResults(items){
   const rows=Array.isArray(items)?items:[];
