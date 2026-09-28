@@ -1,10 +1,12 @@
-/* AnimeTrack 12.12: shared franchise/timeline helpers for anime + TV series. */
+/* AnimeTrack 12.12.1: shared franchise/timeline helpers for anime + TV series. */
 (function(g){'use strict';
  const canonical=s=>String(s||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
  const format=value=>{const raw=String(value||'TV').trim().toUpperCase().replace(/[\s-]+/g,'_');if(raw==='FILM'||raw==='MOVIE')return'MOVIE';if(raw==='TV_SPECIAL')return'SPECIAL';return raw||'TV'};
  const ANIME_PARTS=new Set(['TV','TV_SHORT','ONA','OVA','MOVIE','SPECIAL']);
  const supportedAnimePart=value=>ANIME_PARTS.has(format(value));
- const mainRelation=value=>['PREQUEL','SEQUEL'].includes(String(value||'').toUpperCase());
+ const FRANCHISE_RELATIONS=new Set(['PREQUEL','SEQUEL','ALTERNATIVE','SUMMARY','COMPILATION','CONTAINS','PARENT']);
+ const mainRelation=value=>FRANCHISE_RELATIONS.has(String(value||'').toUpperCase());
+ const familyTitleKeys=values=>{const out=new Set(),add=value=>{const raw=String(value||'').replace(/\s+/g,' ').trim();if(!raw)return;const candidates=[raw];const colon=raw.split(/\s*[:：]\s*/,2)[0];if(colon&&colon!==raw)candidates.push(colon);const dash=raw.split(/\s+[—–-]\s+/,2)[0];if(dash&&dash!==raw)candidates.push(dash);for(let item of candidates){let key=canonical(item).replace(/\b(?:the )?(?:movie|film)\b$/,'').replace(/\b(?:season|part|cour)\s*\d+$/,'').trim();if(key.length>=4)out.add(key)}};for(const value of Array.isArray(values)?values:[values])add(value);return [...out]};
  const releaseKey=part=>{const exact=String(part?.releaseStart||'');if(/^\d{4}-\d{2}-\d{2}$/.test(exact))return exact;const year=Number(part?.year)||9999;return String(year).padStart(4,'0')+'-12-31'};
  const sortParts=parts=>(Array.isArray(parts)?parts:[]).slice().sort((a,b)=>releaseKey(a).localeCompare(releaseKey(b))||(Number(a?.sourceId)||0)-(Number(b?.sourceId)||0)||String(a?.subtitle||'').localeCompare(String(b?.subtitle||'')));
  function labels(parts){
@@ -20,5 +22,5 @@
   return canonical(dash||raw);
  }
  function tvFamilyName(key,items){const list=Array.isArray(items)?items:[];const exact=list.find(x=>canonical(x?.title)===key);if(exact?.title)return exact.title;const first=String(list[0]?.title||key||'Serial').trim();return first.split(/\s*:\s*/)[0].split(/\s+[—–-]\s+/)[0].trim()||first}
- g.ATFranchise1212={canonical,format,supportedAnimePart,mainRelation,releaseKey,sortParts,labels,tvFamilyKey,tvFamilyName};
+ g.ATFranchise1212={canonical,format,supportedAnimePart,mainRelation,familyTitleKeys,releaseKey,sortParts,labels,tvFamilyKey,tvFamilyName};
 })(window);

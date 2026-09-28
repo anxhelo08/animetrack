@@ -5,7 +5,18 @@ const ctx={window:{},String,Number,Set,Array};vm.runInNewContext(read('assets/pr
 test('anime franchise timeline supports TV, films, OVA and specials but not unrelated media formats',()=>{
  for(const fmt of ['TV','TV_SHORT','ONA','OVA','MOVIE','SPECIAL','Movie','TV Special'])assert.equal(f.supportedAnimePart(fmt),true,fmt);
  for(const fmt of ['MANGA','MUSIC','NOVEL'])assert.equal(f.supportedAnimePart(fmt),false,fmt);
- assert.equal(f.mainRelation('PREQUEL'),true);assert.equal(f.mainRelation('SEQUEL'),true);assert.equal(f.mainRelation('SIDE_STORY'),false);
+ assert.equal(f.mainRelation('PREQUEL'),true);assert.equal(f.mainRelation('SEQUEL'),true);assert.equal(f.mainRelation('ALTERNATIVE'),true);assert.equal(f.mainRelation('SUMMARY'),true);assert.equal(f.mainRelation('COMPILATION'),true);assert.equal(f.mainRelation('SIDE_STORY'),false);assert.equal(f.mainRelation('SPIN_OFF'),false);
+});
+
+
+
+test('12.12.1 alternate English and romaji franchise names share stable family keys',()=>{
+ const english=Array.from(f.familyTitleKeys(['Demon Slayer: Kimetsu no Yaiba']));
+ const romaji=Array.from(f.familyTitleKeys(['Kimetsu no Yaiba']));
+ assert.ok(english.includes('demon slayer'));
+ assert.ok(english.includes('demon slayer kimetsu no yaiba'));
+ assert.ok(romaji.includes('kimetsu no yaiba'));
+ assert.ok(Array.from(f.familyTitleKeys(['One Piece Film: Red'])).includes('one piece'));
 });
 
 test('JJK-style movie sits between seasons by real release date and does not steal season numbering',()=>{
@@ -40,10 +51,10 @@ test('TV family grouping is generic instead of hard-coded to Dexter',()=>{
 test('12.12 integration exposes one update action and caches the new helper',()=>{
  const app=read('assets/app.js'),tv=read('assets/pro-tv-118.js'),html=read('index.html'),sw=read('sw.js'),pkg=JSON.parse(read('package.json'));
  assert.doesNotThrow(()=>new vm.Script(app));assert.doesNotThrow(()=>new vm.Script(tv));
- assert.match(app,/isFranchiseFormat/);assert.match(app,/PREQUEL','SEQUEL/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
+ assert.match(app,/isFranchiseFormat/);assert.match(app,/strictSeriesOverlap/);assert.match(app,/franchiseTitleKeys/);assert.match(app,/FRANCHISE_SCHEMA='12\.12\.1'/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
  assert.doesNotMatch(app,/Ndarja si serial \(TV\)/);
  assert.match(tv,/function refreshShow/);assert.match(tv,/SERIA E PLOTË/);assert.doesNotMatch(tv,/dexterTitles/);
- assert.match(html,/pro-franchise-1212\.js/);assert.match(html,/AnimeTrack 12\.12\.0/);
- assert.match(sw,/animetrack-shell-v12120-1/);assert.match(sw,/pro-franchise-1212\.js/);
- assert.equal(pkg.version,'12.12.0');
+ assert.match(html,/pro-franchise-1212\.js/);assert.match(html,/AnimeTrack 12\.12\.1/);
+ assert.match(sw,/animetrack-shell-v12121-1/);assert.match(sw,/pro-franchise-1212\.js/);
+ assert.equal(pkg.version,'12.12.1');
 });
