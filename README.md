@@ -1,6 +1,6 @@
-# AnimeTrack 12.15.2 — Franchise Timeline
+# AnimeTrack 12.15.3 — Franchise Timeline
 
-**Versioni i kodit:** 12.15.2. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 12.15.3. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
 
@@ -133,29 +133,33 @@ Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodiki
 - Fortifikimi RPC: `supabase/migrations/20260926154500_private_friend_rpc_hardening_112.sql` zhvendos implementimin me privilegje në skemë private dhe mban vetëm wrapper-at SECURITY INVOKER në API-n publike.
 
 
-## 12.15.2 · Cloud-first storage
+## 12.15.3 · Cloud-first storage
 Kur përdoruesi është i loguar, Supabase është kopja kanonike e bibliotekës. iPhone/PC ruan vetëm një recovery snapshot kompakt me progresin dhe të dhënat personale; metadata e episodeve që mund të shkarkohet sërish nuk kopjohet në localStorage.
 
 
-## 12.15.2 · One franchise, one card
+## 12.15.3 · One franchise, one card
 Anime franchises are deduplicated across AniList/MAL and TVMaze. AniList/MAL define season/movie chronology; TVMaze progress is bridged into that canonical timeline instead of creating another library card. Movies remain Film entries and never increment season numbering.
 
 
-## 12.15.2 · Canonical Franchise Engine
+## 12.15.3 · Canonical Franchise Engine
 Anime franchise structure now comes only from AniList relation IDs (with MAL only as a fallback metadata provider). Live-action TV franchise membership comes from Wikidata, while regular seasons/episodes come from TVMaze. TV specials never become numbered seasons. Global TV season numbering continues across sequel/revival shows in release order.
 
 
-## 12.15.2 · Season Focus & Personal Timeline
+## 12.15.3 · Season Focus & Personal Timeline
 Kur hap një titull, rreshti i sezoneve qendrohet automatikisht te pjesa ku ke mbetur dhe shfaq etiketën ‘KU E LE’. Çdo sezon/film mund të fshihet në mënyrë të kthyeshme nga timeline-i personal; pjesët e fshehura nuk numërohen në progres, sezonet ose episodin tjetër. Çdo pjesë shfaq përshkrimin e vet kur metadata është e disponueshme.
 
 
-## 12.15.2 · Movies
+## 12.15.3 · Movies
 Live-action movies are now a third first-class media type beside Anime and TV. TMDB is preferred when a local Read Access Token is configured; OMDb is the fallback. Movies use Watched / Plan to Watch, personal rating, favorites, notes, rewatch count, IMDb/TMDB ratings, runtime, director/cast and TMDB collection timelines. Movie watches sync with the same per-account Supabase library without inflating anime/TV episode counters.
 
 
-## 12.15.2 · Movie search fallback
+## 12.15.3 · Movie search fallback
 Movie search no longer requires a TMDB or OMDb credential. When neither provider is configured, or a configured provider returns no result, AnimeTrack searches Wikidata's public MediaWiki API and can save those movies as normal first-class movie entries. Exact titles such as Avengers: Endgame therefore appear even on a fresh device. TMDB and OMDb remain optional enrichment providers.
 
 
-## 12.15.2 · Rich IMDb-ID movie fallback
+## 12.15.3 · Rich IMDb-ID movie fallback
 Cinemeta is now the primary zero-key movie discovery source. It searches a large catalog keyed by IMDb IDs and provides posters, backgrounds, years, ratings and descriptions without requiring user credentials. Provider order is TMDB (when configured) → Cinemeta/IMDb ID → OMDb (when configured) → Wikidata. IMDb IDs remain the stable movie identity for deduplication.
+
+
+## 12.15.3 · Cross-device cloud sync
+Movie and library changes now use the existing Supabase Realtime publication for `anime_libraries`. A change saved on PC triggers a quiet pull on an already-open iPhone session, and vice versa. Movie add/watch/rewatch/rating/note actions request an immediate cloud flush instead of relying only on the generic delayed queue. Focus, pageshow, visibility return and a 30-second foreground safety poll provide fallback recovery when Realtime is interrupted. No database migration is required.

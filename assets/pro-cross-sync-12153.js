@@ -1,0 +1,20 @@
+/* AnimeTrack 12.15.3 — cross-device Supabase Realtime helper. */
+window.ATCrossSync12153=(()=>{
+ 'use strict';
+ function start(client,userId,onRemote){
+  const uid=String(userId||'').trim();
+  if(!uid||!client||typeof client.channel!=='function'||typeof onRemote!=='function')return null;
+  const channel=client.channel('animetrack-library-'+uid);
+  if(!channel||typeof channel.on!=='function')return null;
+  channel.on('postgres_changes',{event:'*',schema:'public',table:'anime_libraries',filter:'user_id=eq.'+uid},payload=>onRemote(payload));
+  if(typeof channel.subscribe==='function')channel.subscribe();
+  return channel;
+ }
+ function stop(client,channel){
+  if(!channel)return false;
+  try{if(client&&typeof client.removeChannel==='function'){client.removeChannel(channel);return true}}catch{}
+  try{if(typeof channel.unsubscribe==='function'){channel.unsubscribe();return true}}catch{}
+  return false;
+ }
+ return {start,stop};
+})();

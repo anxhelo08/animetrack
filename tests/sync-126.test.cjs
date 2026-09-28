@@ -43,7 +43,7 @@ test('12.6 account records remain isolated and invalid journals refuse silent re
  assert.equal(api.pending(storage,'animetrack_user_two').invalid,true);
  assert.throws(()=>api.save(storage,'animetrack_user_two',{anime:[]},'new',true),/Journal lokal/);
 });
-test('12.15.2 integration prevents blind offline overwrite and auto-activates the quota recovery worker once',()=>{
+test('12.15.3 integration prevents blind offline overwrite and auto-activates the quota recovery worker once',()=>{
  const app=read('assets/app.js'),sw=read('sw.js'),features=read('assets/pro-features.js'),html=read('index.html');
  assert.match(app,/ATSync126\.save\(localStorage,KEY,accountLocalSnapshot\(state\),cloudRevision/);
  assert.match(app,/ATSync126\.remoteStatus\(accountCompact\(cached\),journal,data,payload=>accountCompact\(accountNormalizePayload\(payload\)\)\)/);
@@ -56,4 +56,19 @@ test('12.15.2 integration prevents blind offline overwrite and auto-activates th
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
  assert.match(features,/if\(!updateRequested\)return/);
  assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 12\.15\.2/);
+});
+
+test('12.15.3 realtime helper subscribes only to the signed-in user library row',()=>{
+ const code=read('assets/pro-cross-sync-12153.js'),ctx={window:{}};vm.runInNewContext(code,ctx);const api=ctx.window.ATCrossSync12153;
+ let event=null,opts=null,callback=null,subscribed=false,removed=false;
+ const channel={on:(e,o,cb)=>{event=e;opts=o;callback=cb;return channel},subscribe:()=>{subscribed=true;return channel}};
+ const client={channel:name=>{assert.equal(name,'animetrack-library-user-123');return channel},removeChannel:ch=>{assert.equal(ch,channel);removed=true}};
+ let payload=null;const returned=api.start(client,'user-123',p=>payload=p);
+ assert.equal(returned,channel);assert.equal(event,'postgres_changes');assert.equal(opts.table,'anime_libraries');assert.equal(opts.filter,'user_id=eq.user-123');assert.equal(subscribed,true);
+ callback({new:{updated_at:'2026-09-28T18:00:00Z'}});assert.equal(payload.new.updated_at,'2026-09-28T18:00:00Z');assert.equal(api.stop(client,channel),true);assert.equal(removed,true);
+});
+test('12.15.3 app has realtime plus focus/visibility/poll fallbacks',()=>{
+ const app=read('assets/app.js'),html=read('index.html'),sw=read('sw.js');
+ assert.match(app,/function accountStartRealtime/);assert.match(app,/accountStartRealtime\(uid\)/);assert.match(app,/visibilitychange/);assert.match(app,/pageshow/);assert.match(app,/30000/);
+ assert.match(html,/pro-cross-sync-12153\.js/);assert.match(sw,/pro-cross-sync-12153\.js/);
 });
