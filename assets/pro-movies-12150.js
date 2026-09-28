@@ -1,14 +1,22 @@
-/* AnimeTrack 12.15.0 — live-action movie catalog.
+/* AnimeTrack 12.15.1 — live-action movie catalog.
    TMDB is primary when a local Read Access Token is configured.
-   OMDb is a fallback when its existing personal key is configured. */
+   OMDb is a richer fallback when its existing personal key is configured.
+   Wikidata is the zero-key fallback so movie search always works. */
 window.ATMovies12150=(()=>{
  'use strict';
  const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
- const year=v=>{const n=Number(String(v||'').slice(0,4));return n>=1880&&n<=2200?n:null};
+ const year=v=>{const m=String(v||'').match(/(?:18|19|20|21)\d{2}/),n=m?Number(m[0]):null;return n>=1880&&n<=2200?n:null};
  const poster=p=>p?(/^https?:\/\//.test(String(p))?String(p):'https://image.tmdb.org/t/p/w500'+p):'';
  const backdrop=p=>p?(/^https?:\/\//.test(String(p))?String(p):'https://image.tmdb.org/t/p/w1280'+p):'';
  const tmdbUrl=id=>'https://www.themoviedb.org/movie/'+encodeURIComponent(id);
  const auth=t=>({accept:'application/json',Authorization:'Bearer '+String(t||'').trim()});
+ const wdApi=params=>'https://www.wikidata.org/w/api.php?'+new URLSearchParams({...params,format:'json',origin:'*'});
+ const wdUrl=id=>'https://www.wikidata.org/wiki/'+encodeURIComponent(id);
+ const commonsFile=name=>name?'https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(name)+'?width=500':'';
+ const filmDescription=s=>{const d=String(s||'').toLowerCase();return (/\bfilm\b|\bmovie\b|motion picture|documentary/.test(d))&&!/\bfilm series\b|\bmovie series\b|\btelevision series\b|\btv series\b/.test(d)};
+ function claim(entity,pid){return entity?.claims?.[pid]?.[0]?.mainsnak?.datavalue?.value??null}
+ function claimTime(entity,pid){const v=claim(entity,pid);return typeof v?.time==='string'?v.time.replace(/^\+/,'').slice(0,10):''}
+ function claimAmount(entity,pid){const v=claim(entity,pid),n=Number(v?.amount);return Number.isFinite(n)?Math.max(0,Math.round(n)):0}
  async function searchTMDB(q,token,signal){
   const url='https://api.themoviedb.org/3/search/movie?'+new URLSearchParams({query:q,include_adult:'false',language:'en-US',page:'1'});
   const r=await fetch(url,{headers:auth(token),signal});if(!r.ok)throw Error('TMDB HTTP '+r.status);
@@ -21,17 +29,32 @@ window.ATMovies12150=(()=>{
   if(j.Response==='False')return [];
   return (j.Search||[]).slice(0,12).map(m=>({kind:'movie',key:'movie-omdb-'+m.imdbID,source:'OMDb',sourceId:String(m.imdbID||''),tmdbId:'',imdbId:String(m.imdbID||''),title:m.Title||'Film',english:'',year:year(m.Year),releaseDate:'',cover:poster(m.Poster==='N/A'?'':m.Poster),backdrop:'',genre:'',synopsis:'',score:null,format:'MOVIE',sourceUrl:m.imdbID?'https://www.imdb.com/title/'+m.imdbID+'/':''}));
  }
+ async function searchWikidata(q,signal){
+  const r=await fetch(wdApi({action:'wbsearchentities',search:q,language:'en',uselang:'en',type:'item',limit:'20'}),{signal,headers:{Accept:'application/json'}});
+  if(!r.ok)throw Error('Wikidata HTTP '+r.status);const j=await r.json();
+  return (j.search||[]).filter(x=>x&&/^Q\d+$/.test(String(x.id||''))&&filmDescription(x.description)).slice(0,14).map(x=>({kind:'movie',key:'movie-wikidata-'+x.id,source:'Wikidata',sourceId:String(x.id),tmdbId:'',imdbId:'',title:String(x.label||x.display?.label?.value||'Film'),english:'',year:year(x.description),releaseDate:'',cover:'',backdrop:'',genre:'',synopsis:clean(x.description).slice(0,700),score:null,format:'MOVIE',sourceUrl:wdUrl(x.id)}));
+ }
  async function search(q,{tmdbToken='',omdbKey='',signal}={}){
   const query=String(q||'').trim();if(query.length<2)return {items:[],provider:'',authNeeded:false};
-  if(String(tmdbToken).trim()){try{return {items:await searchTMDB(query,tmdbToken,signal),provider:'TMDB',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('TMDB movie search failed',err)}}
-  if(String(omdbKey).trim()){try{return {items:await searchOMDb(query,omdbKey,signal),provider:'OMDb',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('OMDb movie search failed',err)}}
-  return {items:[],provider:'',authNeeded:true};
+  if(String(tmdbToken).trim()){try{const items=await searchTMDB(query,tmdbToken,signal);if(items.length)return {items,provider:'TMDB',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('TMDB movie search failed',err)}}
+  if(String(omdbKey).trim()){try{const items=await searchOMDb(query,omdbKey,signal);if(items.length)return {items,provider:'OMDb',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('OMDb movie search failed',err)}}
+  try{return {items:await searchWikidata(query,signal),provider:'Wikidata',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('Wikidata movie search failed',err);return {items:[],provider:'Wikidata',authNeeded:false}}
  }
  async function omdbDetails(imdbId,key,signal){
   if(!imdbId||!key)return null;const url='https://www.omdbapi.com/?'+new URLSearchParams({apikey:key,i:imdbId,plot:'full'});
   const r=await fetch(url,{signal});if(!r.ok)throw Error('OMDb HTTP '+r.status);const j=await r.json();if(j.Response==='False')return null;return j;
  }
+ async function wikidataDetails(item,{omdbKey='',signal}={}){
+  const id=String(item?.sourceId||'');if(!/^Q\d+$/.test(id))throw Error('Wikidata ID i pavlefshëm.');
+  const r=await fetch(wdApi({action:'wbgetentities',ids:id,props:'claims|labels|descriptions',languages:'en'}),{signal,headers:{Accept:'application/json'}});
+  if(!r.ok)throw Error('Wikidata HTTP '+r.status);const j=await r.json(),e=j.entities?.[id];if(!e||e.missing!==undefined)throw Error('Filmi nuk u gjet në Wikidata.');
+  const imdbId=String(claim(e,'P345')||''),releaseDate=claimTime(e,'P577'),image=String(claim(e,'P18')||''),label=e.labels?.en?.value||item.title||'Film',description=e.descriptions?.en?.value||item.synopsis||'';
+  let omdb=null;try{omdb=await omdbDetails(imdbId,omdbKey,signal)}catch(err){console.warn('OMDb enrichment failed',err)}
+  const rating=Number(omdb?.imdbRating),votes=Number(String(omdb?.imdbVotes||'').replace(/,/g,''));
+  return {kind:'movie',source:'Wikidata',sourceId:id,tmdbId:'',imdbId,title:omdb?.Title||label,originalTitle:'',year:year(releaseDate)||year(omdb?.Year)||item.year||null,releaseDate,runtime:Number(String(omdb?.Runtime||'').match(/\d+/)?.[0])||claimAmount(e,'P2047'),genre:String(omdb?.Genre==='N/A'?'':omdb?.Genre||''),cover:poster(omdb?.Poster==='N/A'?'':omdb?.Poster)||commonsFile(image)||item.cover||'',backdrop:'',synopsis:clean(omdb?.Plot&&omdb.Plot!=='N/A'?omdb.Plot:description).slice(0,1800),director:String(omdb?.Director==='N/A'?'':omdb?.Director||''),cast:String(omdb?.Actors==='N/A'?'':omdb?.Actors||''),communityScore:null,communitySource:'Wikidata',imdbRating:Number.isFinite(rating)?rating:null,imdbVotes:Number.isFinite(votes)?votes:0,sourceUrl:wdUrl(id),collectionId:'',collectionName:''};
+ }
  async function details(item,{tmdbToken='',omdbKey='',signal}={}){
+  if(item?.source==='Wikidata')return wikidataDetails(item,{omdbKey,signal});
   if(item?.source==='TMDB'&&String(tmdbToken).trim()){
    const url='https://api.themoviedb.org/3/movie/'+encodeURIComponent(item.sourceId)+'?'+new URLSearchParams({language:'en-US',append_to_response:'credits,external_ids'});
    const r=await fetch(url,{headers:auth(tmdbToken),signal});if(!r.ok)throw Error('TMDB HTTP '+r.status);const m=await r.json();
