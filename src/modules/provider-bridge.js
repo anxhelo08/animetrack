@@ -8,30 +8,56 @@ window.ATProviderBridge12124=(()=>{
  const isTVMaze=a=>a?.source==='TVMaze'||String(a?.id||'').startsWith('tvmaze-')||(a?.seasons||[]).some(s=>String(s?.source||'').toLowerCase()==='tvmaze');
  const isCanonical=a=>!isTVMaze(a)&&((['AniList','MyAnimeList'].includes(a?.source))||(a?.seasons||[]).some(s=>['AniList','MyAnimeList'].includes(s?.source)));
  const titleValues=a=>[a?.title,a?.english,...(a?.aliases||[]),...(a?.synonyms||[]),...(a?.seasons||[]).flatMap(s=>[s?.subtitle,...(s?.aliases||[])])].filter(Boolean);
+ const exactKeys=a=>new Set(titleValues(a).map(canon).filter(x=>x.length>=2));
  const keys=a=>new Set(familyKeys(titleValues(a)).filter(x=>x.length>=4));
+ const words=s=>canon(s).split(/\s+/).filter(Boolean);
+ const tokenSimilarity=(a,b)=>{const x=new Set(words(a)),y=new Set(words(b));if(!x.size||!y.size)return 0;let same=0;for(const token of x)if(y.has(token))same++;return same/Math.max(x.size,y.size)};
+ const bestTokenSimilarity=(a,b)=>{let best=0;for(const x of exactKeys(a))for(const y of exactKeys(b))best=Math.max(best,tokenSimilarity(x,y));return best};
+ const genreKeys=a=>{const raw=[...(Array.isArray(a?.genres)?a.genres:[]),...String(a?.genre||'').split(',')];return new Set(raw.map(canon).filter(Boolean))};
+ const genreOverlap=(a,b)=>{const x=genreKeys(a),y=genreKeys(b);let n=0;for(const key of x)if(y.has(key))n++;return n};
+ const releaseDate=a=>{const direct=String(a?.releaseStart||a?.premiered||'').slice(0,10);if(/^\d{4}-\d{2}-\d{2}$/.test(direct))return direct;const dates=(a?.seasons||[]).map(s=>String(s?.releaseStart||s?.aired||'').slice(0,10)).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)).sort();return dates[0]||''};
+ const dateDistance=(a,b)=>{const x=releaseDate(a),y=releaseDate(b);if(!x||!y)return null;return Math.abs(Date.parse(x)-Date.parse(y))/86400000};
+ const totalEpisodes=a=>{const parts=isTVMaze(a)?tvParts(a):canonicalTV(a);if(parts.length)return parts.reduce((n,p)=>n+(Number(p?.total)||0),0);return Math.max(0,Number(a?.total)||0)};
+ function identityEvidence(a,b){
+  const ax=exactKeys(a),bx=exactKeys(b),ak=keys(a),bk=keys(b);
+  let exact='',family='';
+  for(const key of ax)if(bx.has(key)){exact=key;break}
+  for(const key of ak)if(bk.has(key)){family=key;break}
+  const similarity=bestTokenSimilarity(a,b),ay=firstYear(a),by=firstYear(b),yearDiff=ay&&by?Math.abs(ay-by):null,days=dateDistance(a,b),genres=genreOverlap(a,b),at=totalEpisodes(a),bt=totalEpisodes(b);
+  return {exact,family,similarity,yearDiff,days,genres,totalEqual:!!(at&&bt&&at===bt),aTotal:at,bTotal:bt};
+ }
  const tvParts=a=>(a?.seasons||[]).filter(s=>fmt(s?.format)==='TV'&&Number(s?.total)>0).slice().sort((a,b)=>(Number(a?.imdbSeasonNumber)||Number(String(a?.id||'').match(/(?:-s|-)(\d+)$/)?.[1])||999)-(Number(b?.imdbSeasonNumber)||Number(String(b?.id||'').match(/(?:-s|-)(\d+)$/)?.[1])||999));
  const canonicalTV=a=>(a?.seasons||[]).filter(s=>['TV','TV_SHORT','ONA'].includes(fmt(s?.format))&&Number(s?.total)>0).slice().sort((a,b)=>String(a?.releaseStart||a?.year||'9999').localeCompare(String(b?.releaseStart||b?.year||'9999'))||(Number(a?.sourceId)||0)-(Number(b?.sourceId)||0));
  const firstYear=a=>{const years=(a?.seasons||[]).map(s=>Number(String(s?.releaseStart||'').slice(0,4))||Number(s?.year)||0).filter(Boolean);return years.length?Math.min(...years):(Number(a?.year)||0)};
  const cumulative=parts=>{let n=0;return parts.map(p=>(n+=Number(p?.total)||0));};
  function compatible(tv,anime){
   const t=tvParts(tv),c=canonicalTV(anime);if(!t.length||!c.length)return false;
+  const e=identityEvidence(tv,anime);
+  if(e.yearDiff!=null&&e.yearDiff>2)return false;
+  if(!e.exact&&!e.family&&e.similarity<.9)return false;
   const tBounds=cumulative(t),cBounds=new Set(cumulative(c)),tTotal=tBounds.at(-1)||0,cTotal=[...cBounds].at(-1)||0;
   if(!tTotal||!cTotal||tTotal>cTotal)return false;
-  // Some providers split one anime cour into multiple seasons (Zenki is 25+26 on TVMaze
-  // but one 51-episode season on AniList). Equal cumulative totals are safe even when
-  // internal provider season boundaries differ; absolute episode mapping handles the split.
+  // Provider season boundaries are metadata, not identity. When cumulative episode
+  // totals agree, a 1-season source and a multi-season source can still be one anime.
   if(tTotal!==cTotal&&!tBounds.every(x=>cBounds.has(x)))return false;
-  const ty=firstYear(tv),cy=firstYear(anime);if(ty&&cy&&Math.abs(ty-cy)>2)return false;
-  const tk=keys(tv),ck=keys(anime);return [...tk].some(k=>ck.has(k));
+  // Short/generic titles need extra corroboration to avoid merging unrelated shows.
+  const key=e.exact||e.family||'',short=words(key).length<=1||key.length<7;
+  if(short&&!e.totalEqual&&!e.genres&&!(e.days!=null&&e.days<=45))return false;
+  return true;
  }
  function searchEquivalent(anime,tv){
   if(!anime||!tv)return false;
   const af=fmt(anime?.format),tf=fmt(tv?.format);
   if(!['TV','TV_SHORT','ONA'].includes(af)||tf!=='TV')return false;
-  const ay=Number(anime?.year)||0,ty=Number(tv?.year)||0;
-  if(ay&&ty&&Math.abs(ay-ty)>1)return false;
-  const ak=keys(anime),tk=keys(tv);
-  return [...ak].some(k=>tk.has(k));
+  const e=identityEvidence(anime,tv);
+  if(e.yearDiff!=null&&e.yearDiff>1)return false;
+  const titleStrong=!!(e.exact||e.family)||e.similarity>=.9;
+  if(!titleStrong)return false;
+  const key=e.exact||e.family||'',short=words(key).length<=1||key.length<7;
+  const sameYear=e.yearDiff===0,closeDate=e.days!=null&&e.days<=45;
+  if(short)return closeDate||(sameYear&&(e.genres>0||e.totalEqual));
+  if(e.exact||e.family)return e.yearDiff==null||sameYear||closeDate||e.genres>0;
+  return sameYear&&(closeDate||e.genres>0||e.totalEqual);
  }
  function dedupeSearchResults(items){
   const rows=Array.isArray(items)?items:[];
@@ -65,5 +91,5 @@ window.ATProviderBridge12124=(()=>{
   return{changed:true,history:out};
  }
  function repair(library,history=[]){const list=[...(library||[])],removed=[],bridged=[];let hist=[...(history||[])];for(const tv of [...list].filter(isTVMaze)){const canonical=findCanonical(tv,list);if(!canonical)continue;const result=bridge(canonical,tv,hist);if(!result.changed)continue;hist=result.history;removed.push(tv.id);bridged.push({from:tv.id,to:canonical.id,title:canonical.title});const idx=list.indexOf(tv);if(idx>=0)list.splice(idx,1)}return{library:list,history:hist,removed,bridged,changed:removed.length>0}}
- return{fmt,isTVMaze,isCanonical,keys,tvParts,canonicalTV,compatible,searchEquivalent,dedupeSearchResults,findCanonical,bridge,repair};
+ return{fmt,isTVMaze,isCanonical,keys,exactKeys,identityEvidence,tvParts,canonicalTV,compatible,searchEquivalent,dedupeSearchResults,findCanonical,bridge,repair};
 })();
