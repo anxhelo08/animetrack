@@ -1278,8 +1278,8 @@ async function accountPush(showResult=true){
    const baseline=await table.select('payload,updated_at').eq('user_id',uid).maybeSingle();
    if(baseline.error)throw baseline.error;
    if(accountUser?.id!==uid||accountMode!=='cloud')return;
-   const local=state,record=window.ATSync126.pending(localStorage,KEY);
-   const check=window.ATSync126.remoteStatus(local,record,baseline.data,accountNormalizePayload);
+   const local=accountCompact(state),record=window.ATSync126.pending(localStorage,KEY);
+   const check=window.ATSync126.remoteStatus(local,record,baseline.data,payload=>accountCompact(accountNormalizePayload(payload)));
    if(check==='same'){
     cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;cloudConnected=true;cloudConflict=false;cloudDirty=false;
     try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}
@@ -1299,15 +1299,15 @@ async function accountPush(showResult=true){
   if(!result.data?.updated_at)throw Object.assign(Error('Cloud ka një version tjetër të bibliotekës.'),{cloudConflict:true});
   if(accountUser?.id!==uid)return;
   cloudRevision=result.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudConnected=true;cloudLastSync=new Date().toLocaleString('sq-AL');
-  const changed=JSON.stringify(state)!==JSON.stringify(payload);cloudDirty=changed;
+  const changed=JSON.stringify(accountCompact(state))!==JSON.stringify(payload);cloudDirty=changed;
   try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,changed)}catch(err){console.warn('Cloud journal update failed',err)}
-  if(changed)cloudTimer=setTimeout(()=>accountPush(false),1200);
+  if(changed)cloudTimer=setTimeout(()=>accountPush(false),180);
   if(showResult)accountStatus('Ruajtur në cloud ✓ · '+cloudLastSync,'ok');
  }catch(e){if(accountUser?.id===uid){
   cloudConnected=false;cloudDirty=true;
   if(e.cloudConflict){cloudConflict=true;accountStatus('Konflikt i sigurt: një pajisje tjetër ka ruajtur një version më të ri. Progresi lokal nuk u fshi. Zgjidh Rifresko ose Ruaj në cloud për ta zgjidhur.','error')}
   else {accountStatus('Nuk u sinkronizua: '+e.message+' · Ruajtja lokale për llogarinë tënde mbetet.','error');if(showResult)notify('Cloud nuk u lidh. Provo përsëri.');clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>{if(accountMode==='cloud'&&accountUser?.id===uid&&cloudDirty&&!cloudSaving&&!cloudConflict&&navigator.onLine)void accountPush(false)},30000)}
- }}finally{cloudSaving=false;accountUI();if(cloudRealtimePending&&!cloudDirty&&!cloudConflict)accountScheduleRemotePull(140)}
+ }}finally{cloudSaving=false;accountUI();if(cloudRealtimePending&&!cloudDirty&&!cloudConflict)accountScheduleRemotePull(40)}
 }
 
 let quietCloudPullBusy=false;
