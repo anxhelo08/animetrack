@@ -344,7 +344,7 @@ function seriesRootTitle(title){
 }
 function seriesHasSeasonSuffix(title){return seriesRootTitle(title)!==canonicalTitle(title)}
 function isSeriesFormat(format){return ['TV','TV_SHORT','ONA','TV_SERIES'].includes(mediaFormat(format))}
-function isFranchiseFormat(format){return mediaFormat(format)==='TV_SERIES'||(window.ATFranchise1212?.supportedAnimePart(format)??['TV','TV_SHORT','ONA','OVA','MOVIE','SPECIAL'].includes(mediaFormat(format)))}
+function isFranchiseFormat(format){return window.ATFranchise1212?.supportedAnimePart(format)??['TV','TV_SHORT','ONA','OVA','MOVIE','SPECIAL'].includes(mediaFormat(format))}
 function seasonNumberFor(a,s){if(!a||!s)return 0;const idx=a.seasons.indexOf(s);if(idx<0)return 0;return a.seasons.slice(0,idx+1).filter(x=>isSeriesFormat(x.format)).length}
 function partProgressLabel(a,s,n){const f=mediaFormat(s?.format);if(f==='MOVIE')return `${s.title||'Film'} · #${n}`;const sn=seasonNumberFor(a,s);return sn?`S${sn} E${n}`:`${s?.title||'Pjesa'} · #${n}`}
 function timelineSort(seasons){return window.ATFranchise1212?.sortParts(seasons)||seasons.slice().sort((a,b)=>String(a.releaseStart||a.year||'9999').localeCompare(String(b.releaseStart||b.year||'9999')))}
