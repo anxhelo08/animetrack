@@ -16,3 +16,6 @@
 - PC ↔ mobile Realtime vazhdon të përdorë payload-in compact.
 - Rindërtimi i TV franchise ruan `myRating` dhe `arcRatings`.
 - Nuk kërkohet migrim i databazës; të dhënat janë brenda payload-it ekzistues.
+
+## Deployment
+- Production target: Vercel main (`animetrack-flax.vercel.app`).
