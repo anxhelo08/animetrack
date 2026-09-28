@@ -9,7 +9,7 @@ window.ATCloudLocal12123=(()=>{
   const out={};
   for(const key of fields){
    const v=value?.[key];
-   if(v===undefined||v===null||v==='')continue;
+   if(v===undefined)continue;
    out[key]=v;
   }
   return out;
@@ -90,7 +90,7 @@ window.ATCloudLocal12123=(()=>{
   const episodes=[];
   for(const ep of richEpisodes.values()){
    const n=Number(ep.number);
-   episodes.push({...ep,...(remoteEpisodes.get(n)||{})});
+   episodes.push({...ep,myNote:'',personalRating:null,fillerManual:null,...(remoteEpisodes.get(n)||{})});
    remoteEpisodes.delete(n);
   }
   for(const ep of remoteEpisodes.values())episodes.push(ep);
