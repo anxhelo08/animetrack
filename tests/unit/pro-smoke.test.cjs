@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
-const names=['recommendations','wrapped','calendar-wrapped','profiles','friends','moderation','notifications','rewatch','home','seasonal','episode-hub','filler','franchise','iphone','tv-episodes','tv','tv-unified','unified','daily','journey','smart-airing','push','collections','experience','features'];
+const names=['recommendations','wrapped','calendar-wrapped','diary','profiles','friends','moderation','notifications','rewatch','home','seasonal','episode-hub','filler','franchise','iphone','tv-episodes','tv','tv-unified','unified','daily','journey','smart-airing','push','collections','experience','features'];
 function load(extra={}){
  const sandbox={window:{},console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
@@ -615,7 +615,7 @@ test('11.6 profile onboarding creates private handle for newly confirmed account
 
 test('11.6.1 mobile profile uses real library data and keeps email confirmation',()=>{const p=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),a=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),h=fs.readFileSync(path.join(root,'index.html'),'utf8'),c=fs.readFileSync(path.join(root,'src/styles/mobile-profile.css'),'utf8');for(const v of ['at1161-profile','at1161-posters','at1161-metrics','profile-anime'])assert.match(p,new RegExp(v));assert.match(a,/email_address_not_authorized/);assert.match(a,/identities\.length===0/);assert.match(a,/nuk garanton mbërritjen/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(c,/safe-area-inset-bottom/);});
 
-test('11.6.2 signup uses canonical production redirect and handles consumed links safely',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/ANIMETRACK_AUTH_REDIRECT='https:\/\/animetrack-flax\.vercel\.app\/'/);assert.match(src,/emailRedirectTo:accountRedirectURL\(\)/);assert.match(src,/redirectTo:accountRedirectURL\(\)/);assert.match(src,/otp_expired/);assert.match(src,/provo Hyr/);assert.match(html,/AnimeTrack 13\.1/)});
+test('11.6.2 signup uses canonical production redirect and handles consumed links safely',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/ANIMETRACK_AUTH_REDIRECT='https:\/\/animetrack-flax\.vercel\.app\/'/);assert.match(src,/emailRedirectTo:accountRedirectURL\(\)/);assert.match(src,/redirectTo:accountRedirectURL\(\)/);assert.match(src,/otp_expired/);assert.match(src,/provo Hyr/);assert.match(html,/AnimeTrack 13\.2/)});
 
 test('11.6.3 password recovery uses authenticated updateUser and requires matching strong password',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/auth\.updateUser\(\{password\}\)/);assert.match(src,/recoveryReturn&&accountMode==='cloud'/);assert.match(src,/password!==confirm\.value/);for(const id of ['at1162-recovery-panel','at1162-new-password','at1162-confirm-password','at1162-save-password'])assert.match(html,new RegExp(id))});
 
