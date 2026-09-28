@@ -16,7 +16,7 @@ test('12.15.3 app separates Movies from Anime and TV and keeps credentials local
  assert.match(unified,/const isMovie=/);assert.match(unified,/movie:movies\.length/);assert.match(html,/data-media-filter="movie"/);assert.match(html,/tmdb-token-input/);assert.match(sw,/pro-movies-12150\.js/);assert.equal(pkg.version,'12.15.3');
 });
 test('12.15.3 zero-key search falls back to Wikidata and finds Avengers Endgame',async()=>{
- const api=load(async url=>{url=String(url);assert.match(url,/wikidata\.org\/w\/api\.php/);assert.match(url,/wbsearchentities/);return response({search:[{id:'Q23781129',label:'Avengers: Endgame',description:'2019 film directed by Anthony and Joe Russo'},{id:'Q123',label:'Avengers',description:'Marvel Comics superhero team'}]})});
+ const api=load(async url=>{url=String(url);if(url.includes('/api/cinemeta?mode=search'))return response({metas:[]});assert.match(url,/wikidata\.org\/w\/api\.php/);assert.match(url,/wbsearchentities/);return response({search:[{id:'Q23781129',label:'Avengers: Endgame',description:'2019 film directed by Anthony and Joe Russo'},{id:'Q123',label:'Avengers',description:'Marvel Comics superhero team'}]})});
  const r=await api.search('Avengers Endgame',{});assert.equal(r.provider,'Wikidata');assert.equal(r.items.length,1);assert.equal(r.items[0].title,'Avengers: Endgame');assert.equal(r.items[0].year,2019);assert.equal(r.items[0].sourceId,'Q23781129');
 });
 test('12.15.3 Wikidata movie details work without any API key',async()=>{

@@ -3,7 +3,7 @@ const root=path.resolve(__dirname,'..'),read=p=>fs.readFileSync(path.join(root,p
 test('12.14 season UX persists hidden parts and excludes them from resume/progress helpers',()=>{
  const app=read('assets/app.js'),resume=read('assets/pro-resume-123.js'),css=read('assets/styles.css'),pkg=JSON.parse(read('package.json'));
  assert.match(app,/hidden:raw\?\.hidden===true/);assert.match(app,/function visibleSeasons/);assert.match(app,/function setSeasonHidden/);assert.match(app,/Pjesë të fshehura/);assert.match(app,/at140-resume-chip/);assert.match(app,/at140-season-description/);
- assert.match(resume,/\.filter\(s=>!s\.hidden\)/);assert.match(css,/\.at140-resume-chip/);assert.match(css,/\.at140-hidden-parts/);assert.equal(pkg.version,'12.15.2');
+ assert.match(resume,/\.filter\(s=>!s\.hidden\)/);assert.match(css,/\.at140-resume-chip/);assert.match(css,/\.at140-hidden-parts/);assert.equal(pkg.version,'12.15.3');
 });
 test('12.14 resume selects the next visible season and never a hidden part',()=>{
  const sandbox={window:{}};vm.runInNewContext(read('assets/pro-resume-123.js'),sandbox);const api=sandbox.window.ATResume123;
