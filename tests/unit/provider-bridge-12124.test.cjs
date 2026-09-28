@@ -35,8 +35,8 @@ test('12.15.3 app treats movies as timeline parts, never as season-number increm
 
 test('13.1.b Zenki search dedupes AniList and TVMaze into one result',()=>{
  const api=load();
- const anime={key:'al-1573',source:'AniList',sourceId:'1573',title:'Kishin Douji ZENKI',english:'Zenki',aliases:['Kishin Douji ZENKI','Zenki','Legend of Zenki','Demon Prince Zenki'],format:'TV',year:1995,total:51};
- const tv={kind:'tv',key:'tv-31784',source:'TVMaze',sourceId:31784,title:'Zenki',format:'TV_SERIES',year:1995};
+ const anime={key:'al-1573',source:'AniList',sourceId:'1573',title:'Kishin Douji ZENKI',english:'Zenki',aliases:['Kishin Douji ZENKI','Zenki','Legend of Zenki','Demon Prince Zenki'],format:'TV',year:1995,releaseStart:'1995-01-09',genres:['Action','Adventure'],total:51};
+ const tv={kind:'tv',key:'tv-31784',source:'TVMaze',sourceId:31784,title:'Zenki',format:'TV_SERIES',year:1995,releaseStart:'1995-01-09',genres:['Action','Adventure']};
  assert.equal(api.searchEquivalent(anime,tv),true);
  const out=api.dedupeSearchResults([anime,tv]);
  assert.equal(out.length,1);assert.equal(out[0].key,'al-1573');
