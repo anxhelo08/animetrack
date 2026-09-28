@@ -1136,13 +1136,13 @@ function accountUI(){
  $('account-stat-episodes').textContent=state.anime.reduce((v,a)=>v+(isLiveMovie(a)?0:count(a)),0);
  const name=accountMode==='cloud'?accountName():'Hyr / Regjistrohu';
  $('account-display-name').textContent=name;
- $('account-display-subtitle').textContent=accountMode==='cloud'?(accountUser.email||'Llogari cloud'):'Biblioteka lokale · nuk sinkronizohet mes pajisjeve';
+ $('account-display-subtitle').textContent=accountMode==='cloud'?(accountUser.email||'Llogari online'):'Biblioteka lokale · nuk sinkronizohet mes pajisjeve';
  $('account-top-name').textContent=name;
  $('account-side-label').textContent=accountMode==='cloud'?name+' · Cloud':'Hyr / Regjistrohu';
  $('account-top-avatar').textContent=$('account-avatar').textContent=name.slice(0,1).toUpperCase()||'A';
  const badge=$('account-sync-pill');
- badge.textContent=accountMode!=='cloud'?'Local':cloudMirrorUnavailable?'Hapësirë plot':cloudConflict?'Konflikt':cloudSaving?'Po ruhet…':!navigator.onLine?'Offline':cloudDirty?'Në pritje':cloudConnected?'Cloud ✓':'Cloud !';
- badge.title=accountMode!=='cloud'?'Hyr për sinkronizim':cloudMirrorUnavailable?'Cloud u hap; recovery copy lokale nuk u ruajt ende':cloudConflict?'Ka ndryshime të ndryshme në pajisje dhe cloud':cloudSaving?'Po ruhet në cloud':cloudDirty?'Progresi është ruajtur në pajisje dhe pret cloud':cloudConnected?'Biblioteka është sinkronizuar':'Cloud nuk është lidhur';
+ badge.textContent=accountMode!=='cloud'?'Local':cloudMirrorUnavailable?'Hapësirë plot':cloudConflict?'Konflikt':cloudSaving?'Po ruhet…':!navigator.onLine?'Offline':cloudDirty?'Në pritje':cloudConnected?'Online ✓':'Online !';
+ badge.title=accountMode!=='cloud'?'Hyr për sinkronizim':cloudMirrorUnavailable?'Cloud u hap; recovery copy lokale nuk u ruajt ende':cloudConflict?'Ka ndryshime të ndryshme në pajisje dhe cloud':cloudSaving?'Po ruhet në cloud':cloudDirty?'Progresi është ruajtur në pajisje dhe pret cloud':cloudConnected?'Biblioteka është online dhe e sinkronizuar':'Lidhja online nuk është aktive';
  $('account-cloud-user').classList.toggle('hidden',accountMode!=='cloud');
  $('account-guest-user').classList.toggle('hidden',accountMode==='cloud');
  if(accountMode==='cloud'){
