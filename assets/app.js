@@ -2,7 +2,7 @@
 let KEY='animetrack_v1';
 const STATUS={watching:'Po shikoj',completed:'Përfunduar',planning:'Në listë',paused:'Në pauzë',dropped:'E lënë'};
 const $=id=>document.getElementById(id);
-let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false,cloudRealtimeChannel=null,cloudRealtimeUID='',cloudRealtimePending=false,cloudRealtimeTimer=null;
+let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false,cloudRealtimeChannel=null,cloudRealtimeUID='',cloudRealtimePending=false,cloudRealtimeTimer=null,cloudRealtimeRecord=null;
 let state=load(),filter='all',search='',sort='updated',detailId=null,episodePage=0,activeSeasonId=null,toastTimeout,selectedGenre='all';
 let view='home', previewKey=null, pendingEpisode=null, airingWindow=7, upcomingEntries=[], upcomingFailures=0, upcomingCheckedAt=0, upcomingBusy=false;
 const FRANCHISE_SCHEMA='12.14.0';
@@ -190,6 +190,7 @@ function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isAr
 function accountCompact(value){return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value):value}
 function accountLocalSnapshot(value=state){return accountMode==='cloud'&&accountUser?accountCompact(value):value}
 function accountMergeRecovery(remote,local){return window.ATCloudLocal12123?.merge?window.ATCloudLocal12123.merge(remote,local):local}
+function accountHydrateRemote(remote,rich=state){return window.ATCloudLocal12123?.hydrate?window.ATCloudLocal12123.hydrate(remote,rich):remote}
 function save(){try{const localSnapshot=accountLocalSnapshot(state),result=window.ATStorage1274.save(localStorage,KEY,localSnapshot,cloudRevision,accountMode==='cloud'&&!!accountUser,window.ATSync126);if(!result.ok){if(accountMode==='cloud'){cloudMirrorUnavailable=true;cloudDirty=true;accountUI()}notify('Kopja lokale e rikuperimit nuk u ruajt. Eksporto kopje rezervë dhe provo përsëri.');return false}if(cloudMirrorUnavailable){cloudMirrorUnavailable=false;accountUI()}if(accountMode==='cloud'&&accountUser)accountQueueSave();return true}catch(e){notify('Ruajtja dështoi. Eksporto kopje rezervë.');console.error(e);return false}}
 function notify(message){const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('show'),2800)}
 function cover(a,cls){const url=validPoster(a.cover);return `<div class="${cls}">${url?`<img src="${escapeHTML(url)}" alt="Posteri i ${escapeHTML(a.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />`:''}</div>`}
@@ -1160,7 +1161,7 @@ function accountRedirectURL(){return location.protocol==='https:'?(location.host
 function accountAuthReturnNotice(){const hash=new URLSearchParams(location.hash.replace(/^#/,'')),query=new URLSearchParams(location.search);const error=hash.get('error_code')||query.get('error_code')||hash.get('error')||query.get('error');if(error){const msg=/otp_expired|access_denied|invalid_token|token/i.test(error)?'Linku i konfirmimit ka skaduar ose është përdorur. Nëse e ke konfirmuar tashmë emailin, provo Hyr. Përndryshe kërko Ridërgo.':'Konfirmimi nuk u përfundua. Provo hyrjen ose ridërgo emailin.';if(history.replaceState)history.replaceState(null,'',location.pathname);return {message:msg,kind:'error'}}if(hash.has('access_token')||query.has('code')){if(history.replaceState)history.replaceState(null,'',location.pathname);return {message:'Emaili u verifikua. Je lidhur me llogarinë; nëse të kërkohet, hyr me fjalëkalimin tënd.',kind:'ok'}}return null}
 function accountInitClient(){if(cloudClient)return cloudClient;const {url,key}=accountGetConfig();if(!url||!key){throw Error('Së pari konfiguro Project URL dhe Publishable key te ⚙ Konfiguro databazën.')}if(!window.supabase?.createClient)throw Error('Biblioteka Supabase nuk u ngarkua. Kontrollo internetin ose përdor versionin e publikuar HTTPS.');cloudClient=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});return cloudClient}
 function accountStopRealtime(){
- clearTimeout(cloudRealtimeTimer);cloudRealtimeTimer=null;cloudRealtimePending=false;cloudRealtimeUID='';
+ clearTimeout(cloudRealtimeTimer);cloudRealtimeTimer=null;cloudRealtimePending=false;cloudRealtimeRecord=null;cloudRealtimeUID='';
  const channel=cloudRealtimeChannel;cloudRealtimeChannel=null;if(!channel)return;
  try{window.ATCrossSync12153?.stop(accountInitClient(),channel)}catch(err){console.warn('Realtime cleanup failed',err)}
 }
