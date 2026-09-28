@@ -30,9 +30,9 @@ test('13.0 realtime hydration treats remote personal state as authoritative but 
 test('13.0 cloud-first module, compact writes and PWA revision are wired before app boot',()=>{
  const html=read('index.html'),sw=read('sw.js'),app=read('assets/app.js'),pkg=JSON.parse(read('package.json'));
  assert(html.indexOf('/assets/pro-cloud-local-12123.js')<html.indexOf('/assets/app.js'));
- assert.match(sw,/pro-cloud-local-12123\.js/);assert.match(sw,/animetrack-shell-v1300-1/);
+ assert.match(sw,/pro-cloud-local-12123\.js/);assert.match(sw,/animetrack-shell-v1310-1/);
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountHydrateRemote\(remote,state\)/);assert.match(app,/accountApplyRemoteRecord/);
  assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);assert.match(app,/accountMergeRecovery\(remote,cached\)/);
  assert.match(app,/canReload:\(\)=>!cloudSaving&&!\(cloudDirty&&cloudMirrorUnavailable\)/);
- assert.equal(pkg.version,'13.0.0');assert.match(html,/AnimeTrack 13\.0\.0/);
+ assert.equal(pkg.version,'13.1.0');assert.match(html,/AnimeTrack 13\.1\.0/);
 });
