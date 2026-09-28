@@ -140,6 +140,20 @@ test('desktop regression',async({browser},testInfo)=>{
  assert(await page.locator('[data-smart-reminder]').count()>0,'Desktop per-event reminder must be available');
  await page.locator('[data-smart-reminder]').first().selectOption('30');
  assert.equal(await page.locator('[data-smart-reminder]').first().inputValue(),'30');
+ // 13.2: Personal Diary uses the same dated watch history.
+ await page.locator('#pro-nav-diary').click();
+ await page.locator('#pro-content .at132-diary').waitFor({state:'visible',timeout:3000});
+ assert(await page.locator('#pro-content [data-pro-action="diary-edit"]').count()>0,'Desktop Diary should render editable watch entries');
+ const diaryBefore=await page.locator('#pro-content .at132-entry').count();
+ await page.locator('#pro-content [data-pro-action="diary-edit"]').first().click();
+ await page.locator('#at132-diary-dialog').waitFor({state:'visible',timeout:3000});
+ await page.locator('#at132-diary-note').fill('Desktop diary smoke note');
+ await page.locator('#at132-diary-rating').selectOption('8.5');
+ await page.locator('#at132-diary-form button[type="submit"]').click();
+ await page.locator('#at132-diary-dialog').waitFor({state:'hidden',timeout:3000});
+ assert.equal(await page.locator('#pro-content .at132-entry').count(),diaryBefore);
+ assert.match(await page.locator('#pro-content .at132-entry').first().innerText(),/Desktop diary smoke note/);
+ console.log('DIARY_DESKTOP_PASS',JSON.stringify({entries:diaryBefore,rating:8.5}));
  // 12.9: Desktop Wrapped and Trophy Room.
  await page.locator('#pro-nav-wrapped').click();
  assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped 12.9 renders on desktop');
