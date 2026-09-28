@@ -56,9 +56,9 @@ test('UI and PWA integration preserve all existing routes',()=>{
  assert.match(app,/!force&&s\.fillerPagesChecked\?\.includes\(metadataPage\)/);
  assert.match(app,/data-filler-manual/);
  assert.match(css,/at1210-chip\.filler/);assert.match(css,/at1210-manual/);
- for(const file of ['pro-filler-1210.js','pro-filler-1210.css']){assert(html.includes('/assets/'+file));assert(sw.includes('/assets/'+file));}
- assert.match(sw,/animetrack-shell-v12102-1/);assert.match(html,/AnimeTrack 12\.10\.2/);
- assert.equal(JSON.parse(read('package.json')).version,'12.10.2');
+ for(const file of ['pro-filler-1210.js','pro-filler-1210.css']){assert(html.includes('/assets/'+(file.endsWith('.css')?'styles.css':file)));assert(sw.includes('/assets/'+(file.endsWith('.css')?'styles.css':file)));}
+ assert.match(sw,/animetrack-shell-v12110-1/);assert.match(html,/AnimeTrack 12\.11\.0/);
+ assert.equal(JSON.parse(read('package.json')).version,'12.11.0');
 });
 
 test('12.10.2 Jikan pages are marked complete only when all flags are present',()=>{

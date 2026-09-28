@@ -50,10 +50,10 @@ test('12.6 integration prevents blind offline overwrite and only activates PWA u
  assert.match(app,/if\(!cloudBaseKnown&&!overwrite\)/);
  assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
  assert.match(app,/if\(accountUser\?\.id!==uid\|\|JSON\.stringify\(state\)!==prior\)/);
- assert.match(sw,/animetrack-shell-v12102-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
+ assert.match(sw,/animetrack-shell-v12110-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
  assert.doesNotMatch(sw,/c\.addAll\(SHELL\)\)\);self\.skipWaiting/);
  assert.match(sw,/c\.match\(url\.pathname\)/);
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
  assert.match(features,/if\(!updateRequested\)return/);
- assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 12\.10\.2/);
+ assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 12\.11\.0/);
 });

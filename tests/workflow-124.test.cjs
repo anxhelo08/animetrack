@@ -34,12 +34,12 @@ test('12.4 mobile: recently aired is a distinct tab and keeps future dates out',
 });
 test('12.4 markup: quick search and phone release controls are wired and escaped',()=>{
  const html=read('index.html'),app=read('assets/app.js'),mobile=read('assets/pro-mobile-113.js'),css=read('assets/pro-workflow-124.css'),sw=read('sw.js');
- for(const file of ['pro-command-124.js','pro-workflow-124.css'])assert.match(html,new RegExp(file.replaceAll('.','\\.')));
- for(const file of ['pro-command-124.js','pro-workflow-124.css'])assert.match(sw,new RegExp(file.replaceAll('.','\\.')));
+ for(const file of ['pro-command-124.js','pro-workflow-124.css'])assert.match(html,new RegExp((file.endsWith('.css')?'styles.css':file).replaceAll('.','\\.')));
+ for(const file of ['pro-command-124.js','pro-workflow-124.css'])assert.match(sw,new RegExp((file.endsWith('.css')?'styles.css':file).replaceAll('.','\\.')));
  assert.match(app,/ATCommand124/);assert.match(app,/modalReturnFocus/);assert.match(app,/e\.key!=='Tab'/);
  assert.match(mobile,/at124-episode-quickbar/);assert.match(mobile,/action\.dataset\.episodeMark='1'/);
  assert.match(css,/at124-command-panel/);assert.match(css,/at124-episode-mark/);assert.match(css,/at114-top-tabs/);
  assert.match(iphoneSource,/data-ios-action="recent-filter"/);assert.match(iphoneSource,/data-ios-action="open-recent"/);
  assert.match(commandSource,/esc\(x\.label\)/);assert.match(commandSource,/esc\(x\.desc\|\|''\)/);
- assert.match(sw,/animetrack-shell-v12102-1/);assert.match(html,/AnimeTrack 12\.10\.2/);
+ assert.match(sw,/animetrack-shell-v12110-1/);assert.match(html,/AnimeTrack 12\.11\.0/);
 });

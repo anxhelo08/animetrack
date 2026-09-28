@@ -47,7 +47,7 @@ test('12.8 AniList tag handling removes spoiler tags and low-confidence tags',()
 });
 test('12.8 seasonal UI, mobile entry, provider queries and bounded regenerative caches',()=>{
  const app=read('assets/app.js'),html=read('index.html'),features=read('assets/pro-features.js'),sw=read('sw.js'),css=read('assets/pro-seasonal-128.css');
- for(const ref of ['season-genres','season-genre-search','season-filter-reset','pro-seasonal-128.css','pro-seasonal-128.js'])assert(html.includes(ref),ref);
+ for(const ref of ['season-genres','season-genre-search','season-filter-reset','pro-seasonal-128.css','pro-seasonal-128.js'])assert(html.includes(ref.endsWith('.css')?'styles.css':ref),ref);
  assert(html.indexOf('/assets/pro-seasonal-128.js')<html.indexOf('/assets/app.js'));
  assert.match(app,/ATSeasonal128\.list/);assert.match(app,/ATSeasonal128\.safeTags/);
  assert.match(app,/tags\{name rank isMediaSpoiler isGeneralSpoiler\}/);
@@ -55,10 +55,10 @@ test('12.8 seasonal UI, mobile entry, provider queries and bounded regenerative 
  assert.match(app,/Object\.entries\(v8SeasonCache\)\.filter/);
  assert.match(features,/data-at128-open-seasons/);assert.match(features,/ctx\.navigate\('seasons'\)/);
  assert.match(css,/at128-season-search/);assert.match(css,/min-height:44px/);
- assert.match(sw,/animetrack-shell-v12102-1/);
- assert.match(sw,/pro-seasonal-128\.js/);assert.match(sw,/pro-seasonal-128\.css/);
- assert.match(html,/AnimeTrack 12\.10\.2/);
- assert.equal(JSON.parse(read('package.json')).version,'12.10.2');
+ assert.match(sw,/animetrack-shell-v12110-1/);
+ assert.match(sw,/pro-seasonal-128\.js/);assert.match(sw,/styles\.css/);
+ assert.match(html,/AnimeTrack 12\.11\.0/);
+ assert.equal(JSON.parse(read('package.json')).version,'12.11.0');
 });
 test('12.8 auth/storage and PWA update protection stay enabled',()=>{
  const app=read('assets/app.js'),sw=read('sw.js'),storage=read('assets/pro-storage-1274.js');

@@ -72,9 +72,9 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(iphone,/ctx\.markEpisode\(a\.id,s\.id,n\);if\(s\.watched\.includes\(n\)\)/);
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
- for(const file of ['pro-episode-hub-127.js','pro-tv-episodes-127.js','pro-episode-hub-127.css']){assert.match(html,new RegExp(file.replaceAll('.','\\.')));assert.match(sw,new RegExp(file.replaceAll('.','\\.')))}
- assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v12102-1/);
- assert.match(html,/AnimeTrack 12\.10\.2/);
+ for(const file of ['pro-episode-hub-127.js','pro-tv-episodes-127.js','pro-episode-hub-127.css']){assert.match(html,new RegExp((file.endsWith('.css')?'styles.css':file).replaceAll('.','\\.')));assert.match(sw,new RegExp((file.endsWith('.css')?'styles.css':file).replaceAll('.','\\.')))}
+ assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v12110-1/);
+ assert.match(html,/AnimeTrack 12\.11\.0/);
 });
 
 test('12.7.2 background TV checks preserve editable pages without bypassing cloud journal',()=>{

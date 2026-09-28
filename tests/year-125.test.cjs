@@ -36,8 +36,8 @@ test('12.5 integration: one sorting control for anime and TV in both viewports',
  assert.match(html,/value="year-new"/);assert.match(html,/value="year-old"/);
  assert.match(mobile,/data-at117-sort="year-new"/);assert.match(mobile,/data-at117-sort="year-old"/);
  assert.match(core,/ATLibraryYear125\.sort\(anime,sort\)/);assert.match(core,/data-release-year=/);
- assert.match(html,/pro-year-125\.js/);assert.match(html,/pro-year-125\.css/);
- assert.match(sw,/pro-year-125\.js/);assert.match(sw,/pro-year-125\.css/);
- assert.match(sw,/animetrack-shell-v12102-1/);assert.match(html,/AnimeTrack 12\.10\.2/);
+ assert.match(html,/pro-year-125\.js/);assert.match(html,/styles\.css/);
+ assert.match(sw,/pro-year-125\.js/);assert.match(sw,/styles\.css/);
+ assert.match(sw,/animetrack-shell-v12110-1/);assert.match(html,/AnimeTrack 12\.11\.0/);
  assert.match(core,/\$\('at125-sort-hint'\)\.hidden/);
 });

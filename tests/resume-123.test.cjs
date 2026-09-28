@@ -42,7 +42,7 @@ test('detail and episode UI use the new shared data but separate desktop/mobile 
  assert.match(css,/grid-template-columns:minmax\(0,1\.05fr\) minmax\(0,\.95fr\)/);
  assert.match(css,/\.at123-episode-layout\{display:flex;flex-direction:column/);
  assert.match(html,/pro-resume-123\.js/);
- assert.match(html,/pro-refresh-123\.css/);
+ assert.match(html,/styles\.css/);
 });
 test('home and personal recommendation refresh are wired',()=>{
  const home=fs.readFileSync(path.join(root,'assets/pro-home.js'),'utf8'),rec=fs.readFileSync(path.join(root,'assets/pro-recommendations.js'),'utf8');
