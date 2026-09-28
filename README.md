@@ -1,8 +1,19 @@
-# AnimeTrack 13.1.0 — Franchise Timeline 2.0
+# AnimeTrack 13.1.a — Project Architecture Cleanup
 
-**Versioni i kodit:** 13.1.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni publik:** 13.1.a · **package version:** 13.1.1. Progresi i përdoruesve dhe skema e Supabase nuk ndryshohen nga ky refactor.
+
+13.1.a është një release infrastrukture: funksionet e AnimeTrack 13.1 mbeten të njëjta, ndërsa repo kalon në build modern me Vite, asset-e me content hash, strukturë `src/` → `dist/`, E2E vetëm me Playwright dhe një histori të vetme në `CHANGELOG.md`.
 
 ### Përditësimet aktuale
+
+## AnimeTrack 13.1.a · Build & Repository Cleanup
+- Vite 8 prodhon automatikisht JavaScript/CSS me content hash; nuk përdoren më emra burimi si `pro-storage-1274.css` ose `pro-movies-12150.js`.
+- Kodi që editohet jeton në `src/`; `dist/` është output i gjeneruar dhe nuk ruhet në Git.
+- Browser E2E përdor vetëm Playwright Test për desktop Chromium, iPhone Chromium dhe iPhone WebKit/Safari.
+- CI është reduktuar në `ci.yml` plus workflow-in manual të ikonave.
+- Të gjithë `RELEASE_*.md` janë konsoliduar në `CHANGELOG.md` sipas Keep a Changelog.
+- Mekanizmi historik `.release/*.b64` është hequr; ishte mekanizëm Git patch, jo runtime OTA. Git history ruan release-et e vjetra pa mbajtur payload-e Base64 aktive.
+- Service Worker nuk liston më chunk-et me emra manualë; cache-on asset-et e hash-uara në runtime.
 
 ## AnimeTrack 13.1.0 · Franchise Timeline 2.0
 - Franchise Timeline ka pamje të re lineare me çdo sezon, film, OVA dhe special në rend publikimi.
@@ -109,13 +120,15 @@ Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari d
 - Nuk ndryshon databazën ose progresin e përdoruesit; përfshin të gjithë 11.0 dhe heqjen e Franchise Hub.
 
 ## Arkitektura
-`index.html`: struktura e faqes dhe ngarkimi i moduleve.  
-`assets/app.js` / `assets/app.css`: aplikacioni ekzistues, i nxjerrë nga skedari monolitik pa ndryshuar përmbajtjen.  
-`assets/pro-*.js` / `assets/pro-features.css` / `assets/pro-visual-101.css` / `assets/pro-home-102.css`: funksionet e reja si module të pavarura.  
-`manifest.webmanifest`, `sw.js`, `icon.svg`: instalimi dhe cache-i i skeletit të faqes.  
-`tests/pro-smoke.test.cjs`: prova të moduleve, strukturës dhe sintaksës.
+`src/`: kodi burimor i aplikacionit. `src/app.js` është core-i, `src/modules/` mban veçoritë dhe `src/styles/` mban CSS burimor.  
+`src/main.js`: entrypoint i Vite; ngarkon CSS, konfigurimin, modulet dhe në fund core-in në rendin e kërkuar.  
+`public/`: skedarë statikë që kopjohen pa transformim (`sw.js`, manifest dhe ikonat PWA).  
+`dist/`: build-i i prodhimit i gjeneruar nga Vite me `assets/<name>.<content-hash>.js/css`; nuk komitohet në repository.  
+`tests/unit/`: regresione të shpejta Node. `tests/e2e/`: Playwright Test për desktop dhe iPhone Chromium/WebKit.  
+`CHANGELOG.md`: burimi i vetëm i historikut të release-eve.  
+`.github/workflows/ci.yml`: unit + build + matrix E2E + paketimi i ZIP-it të testuar.
 
-Për testet lokale: `npm test` (Node 20+; nuk ka varësi npm).
+Për zhvillim lokal: `npm install`, pastaj `npm run dev`. Për verifikim: `npm test` dhe `npm run test:e2e`. Build-i final krijohet me `npm run build`.
 
 ## Ruajtja dhe siguria
 Supabase Auth dhe RLS ndajnë bibliotekat personale. Profili nis privat; lista e përmbledhur ndahet publikisht vetëm pas aktivizimit nga përdoruesi ose me miqësinë e pranuar. Komentet dhe raportimet ruhen në tabela të veçanta. Në HTML ka vetëm publishable key; **mos vendos kurrë service-role/secret key në repo**.
@@ -145,7 +158,7 @@ Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodiki
 - Miqtë: kutia “Kopjo ftesën”, kërkimi i saktë i username-it privat përmes RPC me output minimal, ftesë private me kërkesë eksplicite dhe pa shpërndarë snapshot, bio ose email; kërkimi i gjerë mbetet vetëm për profile publike. Respektohen kërkesat ekzistuese/refuzimet.
 - Offline: njoftim i qartë kur humbet lidhja, pa pretenduar se cloud është sinkronizuar; version PWA cache `v1120-1`.
 - Skedari i migrimit për ftesat private është `supabase/migrations/20260926153000_private_friend_invites_112.sql`. **Është aplikuar dhe verifikuar në projektin Supabase të lidhur (26.09.2026); për një projekt tjetër, ekzekuto migrimet sipas radhës.** Versioni më i vjetër mbetet i përdorshëm për kërkesat publike pa migrimin. RLS e bibliotekave dhe të dhënat ekzistuese nuk ndryshohen.
-- `npm test` verifikon 11.2 dhe regresionet e mëparshme. Shiko `tests/iphone-browser.cjs`/`tests/desktop-browser.cjs` për teste browser kur mjedisi mbështet Chromium/WebKit.
+- `npm test` verifikon 11.2 dhe regresionet e mëparshme. E2E moderne janë te `tests/e2e/` dhe ekzekutohen me `npm run test:e2e` në Playwright.
 - Ky ZIP është release source; publikimi në Vercel është hap më vete dhe nuk nënkuptohet nga ndryshimi i versionit në skedarë.
 
 - Fortifikimi RPC: `supabase/migrations/20260926154500_private_friend_rpc_hardening_112.sql` zhvendos implementimin me privilegje në skemë private dhe mban vetëm wrapper-at SECURITY INVOKER në API-n publike.
