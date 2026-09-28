@@ -1,6 +1,6 @@
-# AnimeTrack 12.10.1 — Anime, TV dhe Episode Hub
+# AnimeTrack 12.10.2 — Anime, TV dhe Episode Hub
 
-**Versioni i kodit:** 12.10.1. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 12.10.2. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
 
