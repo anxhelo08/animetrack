@@ -1,4 +1,4 @@
-/* AnimeTrack 12.12.1: shared franchise/timeline helpers for anime + TV series. */
+/* AnimeTrack 12.12.2: shared franchise/timeline helpers for anime + TV series. */
 (function(g){'use strict';
  const canonical=s=>String(s||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
  const format=value=>{const raw=String(value||'TV').trim().toUpperCase().replace(/[\s-]+/g,'_');if(raw==='FILM'||raw==='MOVIE')return'MOVIE';if(raw==='TV_SPECIAL')return'SPECIAL';return raw||'TV'};

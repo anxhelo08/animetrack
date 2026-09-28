@@ -1,6 +1,6 @@
-# AnimeTrack 12.12.1 — Franchise Timeline
+# AnimeTrack 12.12.2 — Franchise Timeline
 
-**Versioni i kodit:** 12.12.1. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 12.12.2. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
 

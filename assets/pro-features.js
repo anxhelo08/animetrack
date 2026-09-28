@@ -195,7 +195,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
   try{
    if(op==='dismiss-update'){$('at-pwa-update')?.remove();return}
-   if(op==='reload-update'){if(ctx.canReload&&!ctx.canReload()){ctx.toast('Progresi lokal është ende në pritje ose ka konflikt. Sinkronizo ose eksporto kopje rezervë para përditësimit.');return}if(pwaRegistration?.waiting){updateRequested=true;pwaRegistration.waiting.postMessage({type:'SKIP_WAITING'});return}location.reload();return}
+   if(op==='reload-update'){if(ctx.canReload&&!ctx.canReload()){ctx.toast('Ruajtja është ende aktive ose kopja lokale nuk është ruajtur në mënyrë të sigurt. Provo përsëri pas pak ose eksporto kopje rezervë.');return}if(pwaRegistration?.waiting){updateRequested=true;pwaRegistration.waiting.postMessage({type:'SKIP_WAITING'});return}location.reload();return}
    if(op==='install'){if(/iPhone|iPad|iPod/.test(navigator.userAgent)){const d=$('at-ios-install-guide');if(d){d.hidden=false;d.showModal?.()}return}if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Safari → Share → Add to Home Screen.');return}
    if(op==='recommendations'){ctx.navigate('recommendations');return}
    if(op==='add-recommendation')return await modules.recommendations.add(b.dataset.key);

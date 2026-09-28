@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id);
 let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false;
 let state=load(),filter='all',search='',sort='updated',detailId=null,episodePage=0,activeSeasonId=null,toastTimeout,selectedGenre='all';
 let view='home', previewKey=null, pendingEpisode=null, airingWindow=7, upcomingEntries=[], upcomingFailures=0, upcomingCheckedAt=0, upcomingBusy=false;
-const FRANCHISE_SCHEMA='12.12.1';
+const FRANCHISE_SCHEMA='12.12.2';
 function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function validPoster(s){try{const u=new URL(s);return ['https:','http:'].includes(u.protocol)?u.href:'';}catch{return '';}}
 function uuid(){return (globalThis.crypto&&crypto.randomUUID)?crypto.randomUUID():'anime-'+Date.now()+'-'+Math.random().toString(36).slice(2);}
@@ -1679,7 +1679,7 @@ const proContext={
  refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
  liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshTrackedTV127(force);await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.renderBackground();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
- canReload:()=>!cloudDirty&&!cloudSaving,
+ canReload:()=>!cloudSaving&&!cloudMirrorUnavailable,
  watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict}),
  syncReminderJobs:()=>proApp.modules.push.scheduleSync(),
  openDiscussion:key=>{
