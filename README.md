@@ -1,6 +1,6 @@
-# AnimeTrack 13.0.0 — Online-first Performance
+# AnimeTrack 13.1.0 — Franchise Timeline 2.0
 
-**Versioni i kodit:** 13.0.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 13.1.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
 
