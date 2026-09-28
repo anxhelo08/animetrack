@@ -1321,9 +1321,9 @@ async function accountPullQuiet(){
   cloudLastPullAt=Date.now();
   if(!data?.payload)return false;
   const remote=accountNormalizePayload(data.payload);
-  if(JSON.stringify(remote)===JSON.stringify(state)){cloudRevision=data.updated_at;cloudBaseKnown=true;return false;}
+  if(JSON.stringify(accountCompact(remote))===JSON.stringify(accountCompact(state))){cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConnected=true;return false;}
   if(cloudDirty||cloudSaving)return false;
-  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(remote)));cloudMirrorUnavailable=!mirror.ok;state=remote;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
+  const next=accountHydrateRemote(remote,state);const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
   cloudConnected=true;cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');
   render();renderHome();renderUpcoming();proApp.renderBackground();void proApp.modules.notifications.refresh();
   proApp.modules.recommendations.onLibraryChange();accountUI();return true;
@@ -1340,8 +1340,8 @@ async function accountPull(manual=false){
   if(error)throw error;
   if(accountUser?.id!==uid||JSON.stringify(state)!==prior){if(manual)accountStatus('Biblioteka ndryshoi gjatë shkarkimit; nuk e zëvendësuam kopjen lokale.','error');return}
   if(data?.payload){
-   const remote=accountNormalizePayload(data.payload);
-   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(remote)));cloudMirrorUnavailable=!mirror.ok;state=remote;
+   const remote=accountNormalizePayload(data.payload),next=accountHydrateRemote(remote,state);
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
    cloudDirty=false;cloudConnected=true;cloudBaseKnown=true;cloudRevision=data.updated_at;cloudConflict=false;
    cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');cloudLastPullAt=Date.now();
    if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}
