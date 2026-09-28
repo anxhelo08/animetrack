@@ -1,9 +1,12 @@
-# AnimeTrack 12.10.2 — Anime, TV dhe Episode Hub
+# AnimeTrack 12.12.0 — Franchise Timeline
 
-**Versioni i kodit:** 12.10.2. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 12.12.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
 
+- Franchise Timeline: sezonet, filmat, OVA-t dhe specialet kryesore të lidhura me PREQUEL/SEQUEL bashkohen në një kartë dhe renditen sipas datës së publikimit.
+- “Përditëso serinë”: zëvendëson ndarjen e paqartë si TV dhe ruan progresin gjatë rindërtimit të serisë.
+- Seriale TV: familjet me të njëjtin titull bazë (p.sh. Dexter + vazhdimet) grupohen automatikisht dhe kanë rifreskim nga TVMaze.
 - Sezonet: pamje moderne me filtra realë AniList për Drama, Thriller, Isekai dhe zhanre të tjera.
 - Anime Wrapped: pamje e re, statistika sipas periudhës dhe medalje për arritje të mbështetura te historiku personal.
 - Episode filler: shenjë e verdhë vetëm kur klasifikimi vjen nga të dhëna Jikan të verifikuara ose përcaktohet manualisht; statusi i panjohur nuk shënohet automatikisht si kanonik.
