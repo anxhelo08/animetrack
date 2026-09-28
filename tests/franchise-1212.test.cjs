@@ -51,7 +51,7 @@ test('TV family grouping is generic instead of hard-coded to Dexter',()=>{
 test('12.12 integration exposes one update action and caches the new helper',()=>{
  const app=read('assets/app.js'),tv=read('assets/pro-tv-118.js'),html=read('index.html'),sw=read('sw.js'),pkg=JSON.parse(read('package.json'));
  assert.doesNotThrow(()=>new vm.Script(app));assert.doesNotThrow(()=>new vm.Script(tv));
- assert.match(app,/isFranchiseFormat/);assert.match(app,/strictSeriesOverlap/);assert.match(app,/franchiseTitleKeys/);assert.match(app,/FRANCHISE_SCHEMA='12\.14\.0'/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
+ assert.match(app,/isFranchiseFormat/);assert.match(app,/strictSeriesOverlap/);assert.match(app,/franchiseTitleKeys/);assert.match(app,/FRANCHISE_SCHEMA='13\.1\.0'/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
  assert.doesNotMatch(app,/Ndarja si serial \(TV\)/);
  assert.match(tv,/function refreshShow/);assert.match(tv,/SERIA E PLOTË/);assert.doesNotMatch(tv,/dexterTitles/);
  assert.match(html,/pro-franchise-1212\.js/);assert.match(html,/AnimeTrack 13\.1\.0/);
