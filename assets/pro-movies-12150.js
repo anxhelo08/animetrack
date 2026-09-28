@@ -1,7 +1,6 @@
-/* AnimeTrack 12.15.1 — live-action movie catalog.
-   TMDB is primary when a local Read Access Token is configured.
-   OMDb is a richer fallback when its existing personal key is configured.
-   Wikidata is the zero-key fallback so movie search always works. */
+/* AnimeTrack 12.15.2 — live-action movie catalog.
+   TMDB is primary when configured. Cinemeta is the rich zero-key IMDb-ID catalog.
+   OMDb enriches when configured. Wikidata is the final zero-key fallback. */
 window.ATMovies12150=(()=>{
  'use strict';
  const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
@@ -29,6 +28,36 @@ window.ATMovies12150=(()=>{
   if(j.Response==='False')return [];
   return (j.Search||[]).slice(0,12).map(m=>({kind:'movie',key:'movie-omdb-'+m.imdbID,source:'OMDb',sourceId:String(m.imdbID||''),tmdbId:'',imdbId:String(m.imdbID||''),title:m.Title||'Film',english:'',year:year(m.Year),releaseDate:'',cover:poster(m.Poster==='N/A'?'':m.Poster),backdrop:'',genre:'',synopsis:'',score:null,format:'MOVIE',sourceUrl:m.imdbID?'https://www.imdb.com/title/'+m.imdbID+'/':''}));
  }
+
+ async function searchCinemeta(q,signal){
+  const url='https://v3-cinemeta.strem.io/catalog/movie/top/search='+encodeURIComponent(q)+'.json';
+  const r=await fetch(url,{signal,headers:{Accept:'application/json'}});if(!r.ok)throw Error('Cinemeta HTTP '+r.status);const j=await r.json();
+  return (j.metas||[]).filter(x=>x&&/^tt\d+$/.test(String(x.id||''))&&String(x.type||'movie')==='movie').slice(0,18).map(m=>({
+   kind:'movie',key:'movie-cinemeta-'+m.id,source:'Cinemeta',sourceId:String(m.id),tmdbId:'',imdbId:String(m.id),
+   title:String(m.name||m.title||'Film'),english:'',year:year(m.releaseInfo||m.year||m.released),releaseDate:String(m.released||'').slice(0,10),
+   cover:poster(m.poster||''),backdrop:backdrop(m.background||m.banner||''),genre:Array.isArray(m.genres)?m.genres.join(', '):String(m.genre||''),
+   synopsis:clean(m.description).slice(0,700),score:Number.isFinite(Number(m.imdbRating))?Math.round(Number(m.imdbRating)*10):null,
+   format:'MOVIE',sourceUrl:'https://www.imdb.com/title/'+m.id+'/'
+  }));
+ }
+ async function cinemetaDetails(item,{omdbKey='',signal}={}){
+  const imdbId=String(item?.imdbId||item?.sourceId||'');if(!/^tt\d+$/.test(imdbId))throw Error('IMDb ID i pavlefshëm.');
+  const r=await fetch('https://v3-cinemeta.strem.io/meta/movie/'+encodeURIComponent(imdbId)+'.json',{signal,headers:{Accept:'application/json'}});
+  if(!r.ok)throw Error('Cinemeta HTTP '+r.status);const j=await r.json(),m=j.meta;if(!m||!m.id)throw Error('Cinemeta nuk ktheu metadata.');
+  let omdb=null;try{omdb=await omdbDetails(imdbId,omdbKey,signal)}catch(err){console.warn('OMDb enrichment failed',err)}
+  const rating=Number(omdb?.imdbRating??m.imdbRating),votes=Number(String(omdb?.imdbVotes||'').replace(/,/g,''));
+  const directors=Array.isArray(m.director)?m.director.join(', '):String(m.director||omdb?.Director||'');
+  const actors=Array.isArray(m.cast)?m.cast.join(', '):String(m.cast||omdb?.Actors||'');
+  const genres=Array.isArray(m.genres)?m.genres.join(', '):String(m.genre||omdb?.Genre||'');
+  const runtimeRaw=m.runtime||omdb?.Runtime||'',runtime=Number(String(runtimeRaw).match(/\d+/)?.[0])||0;
+  const released=String(m.released||m.releaseInfo||'').slice(0,10);
+  return {kind:'movie',source:'Cinemeta',sourceId:imdbId,tmdbId:'',imdbId,title:m.name||item.title||omdb?.Title||'Film',originalTitle:'',
+   year:year(m.year||m.releaseInfo||m.released||omdb?.Year),releaseDate:/^\d{4}-\d{2}-\d{2}/.test(released)?released:'',
+   runtime,genre:genres,cover:poster(m.poster||((omdb?.Poster&&omdb.Poster!=='N/A')?omdb.Poster:''))||item.cover||'',backdrop:backdrop(m.background||m.banner||''),
+   synopsis:clean(m.description||omdb?.Plot).slice(0,1800),director:directors,cast:actors,communityScore:Number.isFinite(rating)?Math.round(rating*10):null,
+   communitySource:'IMDb',imdbRating:Number.isFinite(rating)?rating:null,imdbVotes:Number.isFinite(votes)?votes:0,
+   sourceUrl:'https://www.imdb.com/title/'+imdbId+'/',collectionId:'',collectionName:''};
+ }
  async function searchWikidata(q,signal){
   const r=await fetch(wdApi({action:'wbsearchentities',search:q,language:'en',uselang:'en',type:'item',limit:'20'}),{signal,headers:{Accept:'application/json'}});
   if(!r.ok)throw Error('Wikidata HTTP '+r.status);const j=await r.json();
@@ -37,6 +66,7 @@ window.ATMovies12150=(()=>{
  async function search(q,{tmdbToken='',omdbKey='',signal}={}){
   const query=String(q||'').trim();if(query.length<2)return {items:[],provider:'',authNeeded:false};
   if(String(tmdbToken).trim()){try{const items=await searchTMDB(query,tmdbToken,signal);if(items.length)return {items,provider:'TMDB',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('TMDB movie search failed',err)}}
+  try{const items=await searchCinemeta(query,signal);if(items.length)return {items,provider:'IMDb/Cinemeta',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('Cinemeta movie search failed',err)}
   if(String(omdbKey).trim()){try{const items=await searchOMDb(query,omdbKey,signal);if(items.length)return {items,provider:'OMDb',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('OMDb movie search failed',err)}}
   try{return {items:await searchWikidata(query,signal),provider:'Wikidata',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('Wikidata movie search failed',err);return {items:[],provider:'Wikidata',authNeeded:false}}
  }
@@ -54,6 +84,7 @@ window.ATMovies12150=(()=>{
   return {kind:'movie',source:'Wikidata',sourceId:id,tmdbId:'',imdbId,title:omdb?.Title||label,originalTitle:'',year:year(releaseDate)||year(omdb?.Year)||item.year||null,releaseDate,runtime:Number(String(omdb?.Runtime||'').match(/\d+/)?.[0])||claimAmount(e,'P2047'),genre:String(omdb?.Genre==='N/A'?'':omdb?.Genre||''),cover:poster(omdb?.Poster==='N/A'?'':omdb?.Poster)||commonsFile(image)||item.cover||'',backdrop:'',synopsis:clean(omdb?.Plot&&omdb.Plot!=='N/A'?omdb.Plot:description).slice(0,1800),director:String(omdb?.Director==='N/A'?'':omdb?.Director||''),cast:String(omdb?.Actors==='N/A'?'':omdb?.Actors||''),communityScore:null,communitySource:'Wikidata',imdbRating:Number.isFinite(rating)?rating:null,imdbVotes:Number.isFinite(votes)?votes:0,sourceUrl:wdUrl(id),collectionId:'',collectionName:''};
  }
  async function details(item,{tmdbToken='',omdbKey='',signal}={}){
+  if(item?.source==='Cinemeta')return cinemetaDetails(item,{omdbKey,signal});
   if(item?.source==='Wikidata')return wikidataDetails(item,{omdbKey,signal});
   if(item?.source==='TMDB'&&String(tmdbToken).trim()){
    const url='https://api.themoviedb.org/3/movie/'+encodeURIComponent(item.sourceId)+'?'+new URLSearchParams({language:'en-US',append_to_response:'credits,external_ids'});

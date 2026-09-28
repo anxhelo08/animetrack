@@ -10,7 +10,7 @@ test('anime franchise timeline supports TV, films, OVA and specials but not unre
 
 
 
-test('12.15.1 alternate English and romaji franchise names share stable family keys',()=>{
+test('12.15.2 alternate English and romaji franchise names share stable family keys',()=>{
  const english=Array.from(f.familyTitleKeys(['Demon Slayer: Kimetsu no Yaiba']));
  const romaji=Array.from(f.familyTitleKeys(['Kimetsu no Yaiba']));
  assert.ok(english.includes('demon slayer'));
@@ -54,7 +54,7 @@ test('12.12 integration exposes one update action and caches the new helper',()=
  assert.match(app,/isFranchiseFormat/);assert.match(app,/strictSeriesOverlap/);assert.match(app,/franchiseTitleKeys/);assert.match(app,/FRANCHISE_SCHEMA='12\.14\.0'/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
  assert.doesNotMatch(app,/Ndarja si serial \(TV\)/);
  assert.match(tv,/function refreshShow/);assert.match(tv,/SERIA E PLOTË/);assert.doesNotMatch(tv,/dexterTitles/);
- assert.match(html,/pro-franchise-1212\.js/);assert.match(html,/AnimeTrack 12\.15\.1/);
- assert.match(sw,/animetrack-shell-v12151-1/);assert.match(sw,/pro-franchise-1212\.js/);
- assert.equal(pkg.version,'12.15.1');
+ assert.match(html,/pro-franchise-1212\.js/);assert.match(html,/AnimeTrack 12\.15\.2/);
+ assert.match(sw,/animetrack-shell-v12152-1/);assert.match(sw,/pro-franchise-1212\.js/);
+ assert.equal(pkg.version,'12.15.2');
 });
