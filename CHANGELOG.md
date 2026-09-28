@@ -10,6 +10,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The
 
 _Public release label: **13.1.a**._
 
+### Fixed
+- Global search now collapses AniList/MAL and TVMaze representations of the same anime into one canonical result.
+- Cross-provider matching now handles provider season splits when cumulative episode totals match (for example Zenki: TVMaze 25+26 vs AniList 51).
+- Existing TVMaze duplicate cards can be repaired into the canonical AniList/MAL card without losing watched progress.
+
+
 ### Changed
 - Migrated the frontend build to Vite 8 with content-hashed production assets.
 - Moved editable application code into `src/` and generated production output into `dist/`.

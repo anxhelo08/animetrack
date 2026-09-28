@@ -506,9 +506,9 @@ function repairLocalAnimeDuplicates(){
  return {changed};
 }
 
-function inLibrary(item){if(item.kind==='tv')return state.anime.find(a=>a.source==='TVMaze'&&(a.sourceId===String(item.sourceId)||a.seasons.some(s=>s.sourceId===String(item.sourceId))));if(item.kind==='movie')return state.anime.find(a=>isLiveMovie(a)&&((item.tmdbId&&a.tmdbId===String(item.tmdbId))||(item.imdbId&&a.imdbId===String(item.imdbId))||(a.source===item.source&&a.sourceId===String(item.sourceId))));return state.anime.find(a=>a.seasons.some(s=>(s.source===item.source&&s.sourceId===String(item.sourceId))||(item.malId&&s.malId===String(item.malId)))||(a.source===item.source&&a.sourceId===String(item.sourceId))||(item.malId&&a.malId===String(item.malId)))}
-function mapAniList(a){return {malId:String(a.idMal||''),key:'al-'+a.id,source:'AniList',sourceId:String(a.id),title:a.title?.romaji||a.title?.english||a.title?.native||'Pa titull',english:a.title?.english||'',total:a.episodes||0,year:a.seasonYear||a.startDate?.year||null,genre:(a.genres||[]).join(', '),cover:a.coverImage?.large||'',synopsis:textOnly(a.description),score:a.averageScore,format:mediaFormat(a.format||'ANIME'),sourceUrl:a.siteUrl||''}}
-function mapJikan(a){return {malId:String(a.mal_id||''),key:'mal-'+a.mal_id,source:'MyAnimeList',sourceId:String(a.mal_id),title:a.title||a.title_english||'Pa titull',english:a.title_english||'',total:a.episodes||0,year:a.year||a.aired?.prop?.from?.year||null,genre:(a.genres||[]).map(g=>g.name).join(', '),cover:a.images?.jpg?.large_image_url||a.images?.jpg?.image_url||'',synopsis:textOnly(a.synopsis),score:a.score?Math.round(a.score*10):null,format:mediaFormat(a.type||'ANIME'),sourceUrl:a.url||''}}
+function inLibrary(item){if(item.kind==='tv'){const exact=state.anime.find(a=>a.source==='TVMaze'&&(a.sourceId===String(item.sourceId)||a.seasons.some(s=>s.sourceId===String(item.sourceId))));if(exact)return exact;const bridge=window.ATProviderBridge12124;return bridge?.searchEquivalent?state.anime.find(a=>!bridge.isTVMaze(a)&&bridge.searchEquivalent(a,item)):null}if(item.kind==='movie')return state.anime.find(a=>isLiveMovie(a)&&((item.tmdbId&&a.tmdbId===String(item.tmdbId))||(item.imdbId&&a.imdbId===String(item.imdbId))||(a.source===item.source&&a.sourceId===String(item.sourceId))));return state.anime.find(a=>a.seasons.some(s=>(s.source===item.source&&s.sourceId===String(item.sourceId))||(item.malId&&s.malId===String(item.malId)))||(a.source===item.source&&a.sourceId===String(item.sourceId))||(item.malId&&a.malId===String(item.malId)))}
+function mapAniList(a){const aliases=[a.title?.romaji,a.title?.english,a.title?.native,...(a.synonyms||[])].filter(Boolean);return {malId:String(a.idMal||''),key:'al-'+a.id,source:'AniList',sourceId:String(a.id),title:a.title?.romaji||a.title?.english||a.title?.native||'Pa titull',english:a.title?.english||'',aliases:[...new Set(aliases)].slice(0,20),total:a.episodes||0,year:a.seasonYear||a.startDate?.year||null,genre:(a.genres||[]).join(', '),cover:a.coverImage?.large||'',synopsis:textOnly(a.description),score:a.averageScore,format:mediaFormat(a.format||'ANIME'),sourceUrl:a.siteUrl||''}}
+function mapJikan(a){const aliases=[a.title,a.title_english,a.title_japanese,...(a.title_synonyms||[]),...(a.titles||[]).map(x=>x?.title)].filter(Boolean);return {malId:String(a.mal_id||''),key:'mal-'+a.mal_id,source:'MyAnimeList',sourceId:String(a.mal_id),title:a.title||a.title_english||'Pa titull',english:a.title_english||'',aliases:[...new Set(aliases)].slice(0,20),total:a.episodes||0,year:a.year||a.aired?.prop?.from?.year||null,genre:(a.genres||[]).map(g=>g.name).join(', '),cover:a.images?.jpg?.large_image_url||a.images?.jpg?.image_url||'',synopsis:textOnly(a.synopsis),score:a.score?Math.round(a.score*10):null,format:mediaFormat(a.type||'ANIME'),sourceUrl:a.url||''}}
 async function fetchAniList(q,page,signal){const response=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query:API_QUERY,variables:{search:q,page}}),signal});if(!response.ok)throw Error('AniList: HTTP '+response.status);const json=await response.json();if(json.errors?.length)throw Error(json.errors[0].message||'AniList error');const data=json.data?.Page;if(!data)throw Error('Përgjigje e paplotë');return {items:(data.media||[]).map(mapAniList),hasNext:!!data.pageInfo?.hasNextPage,provider:'AniList'}}
 async function fetchJikan(q,page,signal){const url='https://api.jikan.moe/v4/anime?'+new URLSearchParams({q,page:String(page),limit:'12',sfw:'true'});const response=await fetch(url,{signal});if(!response.ok)throw Error('MyAnimeList: HTTP '+response.status);const json=await response.json();return {items:(json.data||[]).map(mapJikan),hasNext:!!json.pagination?.has_next_page,provider:'MyAnimeList'}}
 function clearCatalog(){catalogRequest++;clearTimeout(catalogTimer);catalogController?.abort();catalogController=null;catalogItems=[];catalogQuery='';catalogPage=0;catalogProvider='';catalogHasNext=false;catalogBusy=false;$('catalog-grid').innerHTML='';$('catalog-more').classList.add('hidden');$('catalog-state').textContent='Shkruaj të paktën 2 shkronja për të kërkuar në katalog.';renderTopResults()}
@@ -528,8 +528,10 @@ async function searchCatalog(q,page=1){
  if(token!==catalogRequest||controller.signal.aborted)return;
  const animeOK=animeResult.status==='fulfilled',tvOK=tvResult.status==='fulfilled';
  if(animeOK){catalogProvider=animeResult.value.provider;catalogHasNext=animeResult.value.hasNext}else catalogHasNext=false;
- const prior=new Set(catalogItems.map(a=>a.key));
- for(const item of [...(animeOK?animeResult.value.items:[]),...(tvOK?tvResult.value:[])])if(!prior.has(item.key)){catalogItems.push(item);prior.add(item.key)}
+ const incoming=[...(animeOK?animeResult.value.items:[]),...(tvOK?tvResult.value:[])];
+ const combined=[...catalogItems,...incoming],dedupe=window.ATProviderBridge12124?.dedupeSearchResults;
+ const providerSafe=dedupe?dedupe(combined):combined,prior=new Set();catalogItems=[];
+ for(const item of providerSafe)if(!prior.has(item.key)){catalogItems.push(item);prior.add(item.key)}
  catalogBusy=false;
  if(!animeOK&&!tvOK){$('catalog-state').textContent='Kërkimi online nuk u lidh. Provo përsëri.';renderCatalog();return}
  const sources=[animeOK?catalogProvider:null,tvOK?'TVMaze':null].filter(Boolean).join(' + ');
@@ -541,7 +543,8 @@ async function openUnifiedTV(id){
  const n=Number(id);if(!Number.isInteger(n)||n<1||openingTVPreview)return;
  const found=state.anime.find(a=>a.source==='TVMaze'&&(a.sourceId===String(n)||a.seasons.some(s=>s.sourceId===String(n))));
  if(found){openDetail(found.id);return}
- const item=catalogItems.find(x=>x.kind==='tv'&&Number(x.sourceId)===n);
+ const item=catalogItems.find(x=>x.kind==='tv'&&Number(x.sourceId)===n),canonical=item?inLibrary(item):null;
+ if(canonical&&!window.ATProviderBridge12124?.isTVMaze?.(canonical)){openDetail(canonical.id);return}
  openingTVPreview=true;
  try{
   const [showResponse,epResponse]=await Promise.all([fetch('https://api.tvmaze.com/shows/'+n),fetch('https://api.tvmaze.com/shows/'+n+'/episodes')]);

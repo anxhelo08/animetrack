@@ -32,3 +32,26 @@ test('12.15.3 Jujutsu Kaisen movie-root card matches TVMaze series by canonical 
  const result=api.repair([tv,al],[]);assert.equal(result.library.length,1);assert.equal(result.library[0].title,'Jujutsu Kaisen');assert.equal(result.library[0].format,'TV');assert.equal(result.library[0].seasons.some(x=>x.id==='m0'),true);
 });
 test('12.15.3 app treats movies as timeline parts, never as season-number increments',()=>{const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),sw=read('public/sw.js'),pkg=JSON.parse(read('package.json'));assert.match(app,/function seasonNumberFor/);assert.match(app,/partProgressLabel/);assert.match(app,/repairProviderDuplicates/);assert(main.indexOf('./modules/provider-bridge.js')<main.indexOf('./app.js'));assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.equal(pkg.version,'13.1.1')});
+
+test('13.1.b Zenki search dedupes AniList and TVMaze into one result',()=>{
+ const api=load();
+ const anime={key:'al-1573',source:'AniList',sourceId:'1573',title:'Kishin Douji ZENKI',english:'Zenki',aliases:['Kishin Douji ZENKI','Zenki','Legend of Zenki','Demon Prince Zenki'],format:'TV',year:1995,total:51};
+ const tv={kind:'tv',key:'tv-31784',source:'TVMaze',sourceId:31784,title:'Zenki',format:'TV_SERIES',year:1995};
+ assert.equal(api.searchEquivalent(anime,tv),true);
+ const out=api.dedupeSearchResults([anime,tv]);
+ assert.equal(out.length,1);assert.equal(out[0].key,'al-1573');
+});
+test('13.1.b Zenki library repair accepts provider season split 25+26 vs AniList 51',()=>{
+ const api=load();
+ const tv={id:'tvmaze-31784',title:'Zenki',source:'TVMaze',format:'TV_SERIES',year:1995,seasons:[
+  {id:'tv-z1',subtitle:'Zenki',source:'TVMaze',sourceId:'31784',format:'TV',total:25,watched:seq(25),year:1995,episodes:[]},
+  {id:'tv-z2',subtitle:'Zenki',source:'TVMaze',sourceId:'31784',format:'TV',total:26,watched:[1,2],year:1995,episodes:[]}
+ ]};
+ const al={id:'al-1573-card',title:'Kishin Douji ZENKI',source:'AniList',sourceId:'1573',format:'TV',year:1995,status:'watching',seasons:[
+  {id:'al-1573',subtitle:'Zenki',aliases:['Kishin Douji ZENKI','Zenki','Legend of Zenki','Demon Prince Zenki'],source:'AniList',sourceId:'1573',format:'TV',total:51,watched:[],releaseStart:'1995-01-09',episodes:[]}
+ ]};
+ assert.equal(api.compatible(tv,al),true);
+ const result=api.repair([tv,al],[]);
+ assert.equal(result.library.length,1);assert.equal(result.library[0].id,'al-1573-card');
+ assert.deepEqual(Array.from(result.library[0].seasons[0].watched),[...seq(25),26,27]);
+});

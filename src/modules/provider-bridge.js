@@ -7,8 +7,8 @@ window.ATProviderBridge12124=(()=>{
  const familyKeys=values=>window.ATFranchise1212?.familyTitleKeys?.(values)||[...new Set((Array.isArray(values)?values:[values]).map(canon).filter(x=>x.length>=4))];
  const isTVMaze=a=>a?.source==='TVMaze'||String(a?.id||'').startsWith('tvmaze-')||(a?.seasons||[]).some(s=>String(s?.source||'').toLowerCase()==='tvmaze');
  const isCanonical=a=>!isTVMaze(a)&&((['AniList','MyAnimeList'].includes(a?.source))||(a?.seasons||[]).some(s=>['AniList','MyAnimeList'].includes(s?.source)));
- const titleValues=a=>[a?.title,...(a?.seasons||[]).flatMap(s=>[s?.subtitle,...(s?.aliases||[])])].filter(Boolean);
- const keys=a=>new Set(familyKeys(titleValues(a)).filter(x=>x.length>=6));
+ const titleValues=a=>[a?.title,a?.english,...(a?.aliases||[]),...(a?.synonyms||[]),...(a?.seasons||[]).flatMap(s=>[s?.subtitle,...(s?.aliases||[])])].filter(Boolean);
+ const keys=a=>new Set(familyKeys(titleValues(a)).filter(x=>x.length>=4));
  const tvParts=a=>(a?.seasons||[]).filter(s=>fmt(s?.format)==='TV'&&Number(s?.total)>0).slice().sort((a,b)=>(Number(a?.imdbSeasonNumber)||Number(String(a?.id||'').match(/(?:-s|-)(\d+)$/)?.[1])||999)-(Number(b?.imdbSeasonNumber)||Number(String(b?.id||'').match(/(?:-s|-)(\d+)$/)?.[1])||999));
  const canonicalTV=a=>(a?.seasons||[]).filter(s=>['TV','TV_SHORT','ONA'].includes(fmt(s?.format))&&Number(s?.total)>0).slice().sort((a,b)=>String(a?.releaseStart||a?.year||'9999').localeCompare(String(b?.releaseStart||b?.year||'9999'))||(Number(a?.sourceId)||0)-(Number(b?.sourceId)||0));
  const firstYear=a=>{const years=(a?.seasons||[]).map(s=>Number(String(s?.releaseStart||'').slice(0,4))||Number(s?.year)||0).filter(Boolean);return years.length?Math.min(...years):(Number(a?.year)||0)};
@@ -17,9 +17,26 @@ window.ATProviderBridge12124=(()=>{
   const t=tvParts(tv),c=canonicalTV(anime);if(!t.length||!c.length)return false;
   const tBounds=cumulative(t),cBounds=new Set(cumulative(c)),tTotal=tBounds.at(-1)||0,cTotal=[...cBounds].at(-1)||0;
   if(!tTotal||!cTotal||tTotal>cTotal)return false;
-  if(!tBounds.every(x=>cBounds.has(x)))return false;
+  // Some providers split one anime cour into multiple seasons (Zenki is 25+26 on TVMaze
+  // but one 51-episode season on AniList). Equal cumulative totals are safe even when
+  // internal provider season boundaries differ; absolute episode mapping handles the split.
+  if(tTotal!==cTotal&&!tBounds.every(x=>cBounds.has(x)))return false;
   const ty=firstYear(tv),cy=firstYear(anime);if(ty&&cy&&Math.abs(ty-cy)>2)return false;
   const tk=keys(tv),ck=keys(anime);return [...tk].some(k=>ck.has(k));
+ }
+ function searchEquivalent(anime,tv){
+  if(!anime||!tv)return false;
+  const af=fmt(anime?.format),tf=fmt(tv?.format);
+  if(!['TV','TV_SHORT','ONA'].includes(af)||tf!=='TV')return false;
+  const ay=Number(anime?.year)||0,ty=Number(tv?.year)||0;
+  if(ay&&ty&&Math.abs(ay-ty)>1)return false;
+  const ak=keys(anime),tk=keys(tv);
+  return [...ak].some(k=>tk.has(k));
+ }
+ function dedupeSearchResults(items){
+  const rows=Array.isArray(items)?items:[];
+  const anime=rows.filter(x=>x?.kind!=='tv'&&x?.kind!=='movie'&&['TV','TV_SHORT','ONA'].includes(fmt(x?.format)));
+  return rows.filter(x=>x?.kind!=='tv'||!anime.some(a=>searchEquivalent(a,x)));
  }
  function findCanonical(tv,library){const matches=(library||[]).filter(a=>a!==tv&&isCanonical(a)&&compatible(tv,a));return matches.length===1?matches[0]:null}
  function segments(parts){let at=0;return parts.map(part=>{const start=at+1,end=at+(Number(part.total)||0);at=end;return{part,start,end}})}
@@ -48,5 +65,5 @@ window.ATProviderBridge12124=(()=>{
   return{changed:true,history:out};
  }
  function repair(library,history=[]){const list=[...(library||[])],removed=[],bridged=[];let hist=[...(history||[])];for(const tv of [...list].filter(isTVMaze)){const canonical=findCanonical(tv,list);if(!canonical)continue;const result=bridge(canonical,tv,hist);if(!result.changed)continue;hist=result.history;removed.push(tv.id);bridged.push({from:tv.id,to:canonical.id,title:canonical.title});const idx=list.indexOf(tv);if(idx>=0)list.splice(idx,1)}return{library:list,history:hist,removed,bridged,changed:removed.length>0}}
- return{fmt,isTVMaze,isCanonical,keys,tvParts,canonicalTV,compatible,findCanonical,bridge,repair};
+ return{fmt,isTVMaze,isCanonical,keys,tvParts,canonicalTV,compatible,searchEquivalent,dedupeSearchResults,findCanonical,bridge,repair};
 })();
