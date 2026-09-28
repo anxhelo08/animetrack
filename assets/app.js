@@ -1786,8 +1786,6 @@ const proPriorLogout=accountLogout;accountLogout=async function(){await proPrior
 const proPriorSave=save;save=function(){const result=proPriorSave();if(result)try{proApp.onStateChange()}catch(err){console.warn('Feature refresh after save failed',err)}return result};
 
 render();renderUpcoming();renderHome();setView('home');v8LoadSeason(1);accountBoot();
-})();
-
 
 // AnimeTrack 12.14 — season resume focus, reversible hidden parts and season descriptions.
 function at140SeasonDescription(s){return String(s?.synopsis||'').replace(/\s+/g,' ').trim()}
@@ -1801,7 +1799,7 @@ function at140EnhanceSeasonUX(id){
  const partsPill=[...root.querySelectorAll('.detail-content .pill')].at(-1);if(partsPill&&/pjesë/.test(partsPill.textContent||''))partsPill.textContent=`${visible.length} pjesë${hidden.length?' · '+hidden.length+' fshehur':''}`;
  const banner=root.querySelector('.season-banner');if(banner&&active){
   const actions=banner.querySelector('.season-actions');if(actions&&!actions.querySelector('[data-season-hide]')&&visible.length>1){const hide=document.createElement('button');hide.type='button';hide.className='ghost at140-hide-part';hide.dataset.seasonHide=active.id;hide.dataset.id=a.id;hide.textContent='⊘ Fshih këtë pjesë';hide.title='Nuk fshin progresin; vetëm e heq nga timeline-i dhe llogaritjet.';actions.appendChild(hide)}
-  const desc=at140SeasonDescription(active);if(desc&&!banner.querySelector('.at140-season-description')){const box=document.createElement('div');box.className='at140-season-description';box.innerHTML=`<span>RRETH KËSAJ PJese</span><p>${escapeHTML(desc)}</p>${active.sourceUrl?`<a href="${escapeHTML(active.sourceUrl)}" target="_blank" rel="noopener noreferrer">Burimi ↗</a>`:''}`;banner.appendChild(box)}
+  const desc=at140SeasonDescription(active);if(desc&&!banner.querySelector('.at140-season-description')){const box=document.createElement('div');box.className='at140-season-description';box.innerHTML=`<span>RRETH KËSAJ PJESË</span><p>${escapeHTML(desc)}</p>${active.sourceUrl?`<a href="${escapeHTML(active.sourceUrl)}" target="_blank" rel="noopener noreferrer">Burimi ↗</a>`:''}`;banner.appendChild(box)}
  }
  const scroller=root.querySelector('.season-scroller');if(scroller&&hidden.length&&!root.querySelector('.at140-hidden-parts')){const details=document.createElement('details');details.className='at140-hidden-parts';details.innerHTML=`<summary>👁 Pjesë të fshehura (${hidden.length})</summary><div>${hidden.map(x=>`<button type="button" class="ghost" data-season-restore="${escapeHTML(x.id)}" data-id="${escapeHTML(a.id)}"><strong>${escapeHTML(x.title)}</strong><small>${escapeHTML(x.subtitle||formatLabel(x.format))}</small><span>Rikthe</span></button>`).join('')}</div>`;scroller.after(details)}
  const activeTab=tabs.find(tab=>tab.dataset.season===active?.id);if(scroller&&activeTab&&!activeTab.hidden)requestAnimationFrame(()=>{const left=Math.max(0,activeTab.offsetLeft-(scroller.clientWidth-activeTab.offsetWidth)/2);scroller.scrollTo({left,behavior:'smooth'})});
@@ -1809,3 +1807,4 @@ function at140EnhanceSeasonUX(id){
 }
 const at140PriorRenderDetail=renderDetail;renderDetail=function(id){at140PriorRenderDetail(id);at140EnhanceSeasonUX(id)};
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.seasonHide)setSeasonHidden(b.dataset.id,b.dataset.seasonHide,true);if(b.dataset.seasonRestore)setSeasonHidden(b.dataset.id,b.dataset.seasonRestore,false)});
+})();
