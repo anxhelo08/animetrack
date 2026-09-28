@@ -1,8 +1,17 @@
-# AnimeTrack 12.15.3 — Franchise Timeline
+# AnimeTrack 13.0.0 — Online-first Performance
 
-**Versioni i kodit:** 12.15.3. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 13.0.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
+
+## AnimeTrack 13.0.0 · Online-first Performance
+- Supabase mbetet kopja kanonike e llogarisë, por payload-i online tani ruan vetëm state-in personal dhe metadata minimale që duhen për bibliotekën. Metadata e rëndë e episodeve rigjenerohet sipas nevojës.
+- Shkrimi PC/iPhone nis pas ~120 ms në vend të debounce-it 1.1 s dhe përdor payload compact për upload.
+- Kur Realtime dërgon një rresht të plotë nën limitin e payload-it, pajisja tjetër aplikon ndryshimin direkt nga WebSocket pa bërë një GET të dytë të gjithë bibliotekës.
+- Metadata e pasur që ekziston tashmë në pajisje ruhet gjatë një update-i Realtime; progresi, statuset, ratings, notes, favorites, lists dhe history nga cloud mbeten autoritative.
+- Script-et e faqes janë deferred dhe faqja bën preconnect me Supabase/CDN; Service Worker 13.0 nuk dështon i gjithë instalimi nëse një asset opsional nuk mund të precache-ohet.
+- Formati i vjetër 12.x lexohet normalisht. Pas shkrimit të parë nga 13.0, biblioteka kalon automatikisht në payload-in compact të ri.
+
 
 - Franchise Timeline: sezonet, filmat, OVA-t dhe specialet kryesore të lidhura me PREQUEL/SEQUEL bashkohen në një kartë dhe renditen sipas datës së publikimit.
 - “Përditëso serinë”: zëvendëson ndarjen e paqartë si TV dhe ruan progresin gjatë rindërtimit të serisë.
