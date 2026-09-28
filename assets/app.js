@@ -1897,6 +1897,75 @@ const at150PriorRender=render;render=function(){const x=at150PriorRender();at150
 const at150PriorHome=renderHome;renderHome=function(){const x=at150PriorHome();at150UpdateStats();return x};
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.moviePreview)void at150OpenMovieByKey(b.dataset.moviePreview);if(b.dataset.movieAdd)at150AddMovie(b.dataset.movieAdd);if(b.dataset.movieSeen)at150SetMovieSeen(b.dataset.movieSeen,'seen');if(b.dataset.movieRewatch)at150SetMovieSeen(b.dataset.movieRewatch,'rewatch');if(b.dataset.movieUnwatch)at150SetMovieSeen(b.dataset.movieUnwatch,'unwatch');if(b.dataset.movieSaveNotes)at150SaveNotes(b.dataset.movieSaveNotes);if(b.dataset.movieTmdbId)void at150OpenTMDBMovie(b.dataset.movieTmdbId);if(b.id==='tmdb-save-token')at150SetTMDB();if(b.id==='tmdb-clear-token'){localStorage.removeItem(TMDB_TOKEN_STORAGE);$('tmdb-token-input').value='';at150ProviderBadge();notify('TMDB u hoq nga kjo pajisje.')}});
 document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-movie-rating]')){const a=state.anime.find(x=>x.id===el.dataset.movieRating);if(!a)return;a.rating=el.value===''?null:Number(el.value);a.updatedAt=now();if(save())at150FlushCloud();render();renderHome();renderDetail(a.id)}});
+
+/* AnimeTrack 13.1 — Franchise Timeline 2.0 + per-part / arc ratings. */
+function at131RatedArcs(a){
+ const arcs=[];for(const s of visibleSeasons(a))for(const arc of s.arcRatings||[]){const rating=Number(arc?.rating);if(Number.isFinite(rating)&&rating>0)arcs.push({season:s,arc,rating})}
+ if(!arcs.length)return {count:0,average:null,best:null};
+ const average=arcs.reduce((n,x)=>n+x.rating,0)/arcs.length,best=arcs.slice().sort((x,y)=>y.rating-x.rating)[0];
+ return {count:arcs.length,average:Math.round(average*10)/10,best};
+}
+function at131PartMeta(s){return window.ATFranchise1212?.partMeta?.(s)||{icon:'◆',label:formatLabel(s?.format),date:String(s?.releaseStart||'').slice(0,10),year:s?.year||null}}
+function at131TimelineHTML(a){
+ const parts=timelineSort(visibleSeasons(a)),summary=window.ATFranchise1212?.ratingSummary?.(parts)||{count:0,average:null,best:null},arcs=at131RatedArcs(a);
+ const best=summary.best?escapeHTML(summary.best.title)+' · ★ '+Number(summary.best.rating).toFixed(1):'—';
+ return `<section class="at131-franchise" aria-label="Franchise Timeline 2.0">
+  <div class="at131-head"><div><span class="eyebrow">FRANCHISE TIMELINE 2.0</span><h4>Historia e plotë, në rend publikimi</h4><p>Vlerëso çdo sezon, film, OVA ose special veçmas. Arc-et e tua ruhen në llogari dhe sinkronizohen mes pajisjeve.</p></div>
+   <div class="at131-summary">
+    <span><small>Mesatarja e pjesëve</small><b>${summary.average==null?'—':'★ '+summary.average.toFixed(1)}</b><em>${summary.count}/${parts.length} të vlerësuara</em></span>
+    <span><small>Arc ratings</small><b>${arcs.average==null?'—':'★ '+arcs.average.toFixed(1)}</b><em>${arcs.count} arc${arcs.count===1?'':'e'}</em></span>
+    <span><small>Pjesa më e vlerësuar</small><b class="at131-best">${best}</b></span>
+   </div>
+  </div>
+  <div class="at131-track">${parts.map((part,index)=>{const meta=at131PartMeta(part),released=releasedCount(part),done=released>0&&part.watched.length>=released,active=part.id===activeSeasonId;return `
+   <article class="at131-part ${active?'active':''}" data-at131-part-card="${escapeHTML(part.id)}">
+    <button type="button" class="at131-open" data-at131-part="${escapeHTML(part.id)}" data-id="${escapeHTML(a.id)}">
+     <span class="at131-step">${String(index+1).padStart(2,'0')}</span><span class="at131-icon">${meta.icon}</span>
+     <span class="at131-copy"><strong>${escapeHTML(part.title||meta.label+' '+(index+1))}</strong><small>${escapeHTML(part.subtitle||meta.label)} · ${escapeHTML(meta.date||String(meta.year||'Data ?'))}</small><em>${part.watched.length}/${released||part.total||0} ${mediaFormat(part.format)==='MOVIE'?'film':'episode'}${done?' · ✓':''}</em></span>
+    </button>
+    <label class="at131-rate"><span>Nota ime</span><select data-at131-part-rating="${escapeHTML(part.id)}" data-id="${escapeHTML(a.id)}" aria-label="Vlerësimi për ${escapeHTML(part.title||meta.label)}">${ratingOptions(part.myRating)}</select></label>
+    <div class="at131-score"><small>Komuniteti</small><b>${part.communityScore!=null?'★ '+(part.communityScore/10).toFixed(1):'—'}</b></div>
+   </article>`}).join('')}</div>
+ </section>`;
+}
+function at131ArcHTML(a,s){
+ const arcs=(Array.isArray(s.arcRatings)?s.arcRatings:[]).slice().sort((x,y)=>Number(x.start)-Number(y.start)||String(x.name).localeCompare(String(y.name)));
+ return `<section class="at131-arcs"><div class="at131-arc-head"><div><span class="eyebrow">STORY ARCS · ${escapeHTML(s.title)}</span><h4>Vlerësimet e arc-eve të mia</h4><p>Ndaji episodet në arc-e sipas mënyrës si do t'i mbash mend. Nuk ndryshon progresin.</p></div><span class="at131-arc-count">${arcs.length} arc${arcs.length===1?'':'e'}</span></div>
+ <div class="at131-arc-list">${arcs.length?arcs.map(arc=>`<article class="at131-arc" data-at131-arc-row="${escapeHTML(arc.id)}"><button type="button" class="at131-arc-open" data-at131-arc-open="${escapeHTML(arc.id)}" data-id="${escapeHTML(a.id)}" data-season="${escapeHTML(s.id)}"><strong>${escapeHTML(arc.name)}</strong><small>Ep. ${arc.start}${arc.end!==arc.start?'–'+arc.end:''}</small></button><label>Nota<select data-at131-arc-rating="${escapeHTML(arc.id)}" data-id="${escapeHTML(a.id)}" data-season="${escapeHTML(s.id)}">${ratingOptions(arc.rating)}</select></label><button type="button" class="ghost at131-arc-edit" data-at131-arc-edit="${escapeHTML(arc.id)}" data-id="${escapeHTML(a.id)}" data-season="${escapeHTML(s.id)}">✎</button><button type="button" class="ghost at131-arc-delete" data-at131-arc-delete="${escapeHTML(arc.id)}" data-id="${escapeHTML(a.id)}" data-season="${escapeHTML(s.id)}">×</button></article>`).join(''):'<p class="at131-empty">Ende pa arc-e. Shto të parin poshtë.</p>'}</div>
+ <div class="at131-arc-add"><input data-at131-arc-name maxlength="120" placeholder="Emri i arc-ut, p.sh. Shibuya Incident"><label>Nga ep.<input data-at131-arc-start type="number" min="1" max="10000" value="1" inputmode="numeric"></label><label>Deri ep.<input data-at131-arc-end type="number" min="1" max="10000" value="${Math.max(1,releasedCount(s)||s.total||1)}" inputmode="numeric"></label><button type="button" class="primary" data-at131-arc-add="${escapeHTML(s.id)}" data-id="${escapeHTML(a.id)}">+ Shto arc</button></div>
+ </section>`;
+}
+function at131EnhanceDetail(id){
+ const a=state.anime.find(x=>x.id===id),root=$('detail-body');if(!a||!root||isLiveMovie(a))return;
+ const topline=root.querySelector('.seasons-topline'),scroller=root.querySelector('.season-scroller'),active=a.seasons.find(x=>x.id===activeSeasonId);
+ if(topline&&!root.querySelector('.at131-franchise'))topline.insertAdjacentHTML('afterend',at131TimelineHTML(a));
+ if(scroller)scroller.classList.add('at131-legacy-tabs');
+ if(active){const banner=root.querySelector('.season-banner');if(banner&&!banner.querySelector('.at131-arcs'))banner.insertAdjacentHTML('beforeend',at131ArcHTML(a,active))}
+}
+function at131OpenPart(id,seasonId){
+ const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId&&!x.hidden);if(!s)return;
+ activeSeasonId=s.id;const resume=window.ATResume123.resolve(a,state.history,releasedCount);episodePage=resume?.seasonId===s.id?resume.page:0;renderDetail(id);void loadSeasonEpisodes(id,s.id,episodePage);
+}
+function at131AddArc(id,seasonId){
+ const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId),root=$('detail-body');if(!a||!s||!root)return;
+ const name=String(root.querySelector('[data-at131-arc-name]')?.value||'').replace(/\s+/g,' ').trim().slice(0,120),start=Number(root.querySelector('[data-at131-arc-start]')?.value),end=Number(root.querySelector('[data-at131-arc-end]')?.value),limit=s.total||Math.max(releasedCount(s),start,end);
+ if(!name){notify('Vendos emrin e arc-ut.');return}if(!Number.isInteger(start)||!Number.isInteger(end)||start<1||end<start||end>Math.max(1,limit)){notify('Kontrollo intervalin e episodeve të arc-ut.');return}
+ const before=JSON.parse(JSON.stringify(s.arcRatings||[]));s.arcRatings=[...(s.arcRatings||[]),window.ATFranchise1212.normalizeArc({id:'arc-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7),name,start,end,rating:null},(s.arcRatings||[]).length)];a.updatedAt=now();
+ if(!save()){s.arcRatings=before;return}renderDetail(id);notify('Arc-u u shtua ✓');
+}
+function at131EditArc(id,seasonId,arcId){
+ const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId),arc=s?.arcRatings?.find(x=>x.id===arcId);if(!a||!s||!arc)return;
+ const old=JSON.parse(JSON.stringify(arc)),name=prompt('Emri i arc-ut:',arc.name);if(name===null)return;const start=prompt('Episodi i parë:',String(arc.start));if(start===null)return;const end=prompt('Episodi i fundit:',String(arc.end));if(end===null)return;const note=prompt('Shënim i shkurtër (opsionale):',arc.note||'');if(note===null)return;
+ const next=window.ATFranchise1212.normalizeArc({...arc,name,start:Number(start),end:Number(end),note},0),limit=s.total||10000;if(!next.name||next.start<1||next.end<next.start||next.end>limit){notify('Të dhënat e arc-ut nuk janë të vlefshme.');return}
+ Object.assign(arc,next);a.updatedAt=now();if(!save()){Object.assign(arc,old);return}renderDetail(id);notify('Arc-u u përditësua ✓');
+}
+function at131DeleteArc(id,seasonId,arcId){
+ const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId);if(!a||!s)return;const before=JSON.parse(JSON.stringify(s.arcRatings||[]));s.arcRatings=(s.arcRatings||[]).filter(x=>x.id!==arcId);a.updatedAt=now();if(!save()){s.arcRatings=before;return}renderDetail(id);notify('Arc-u u hoq.');
+}
+const at131PriorDetail=renderDetail;renderDetail=function(id){const result=at131PriorDetail(id);at131EnhanceDetail(id);return result};
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.at131Part)at131OpenPart(b.dataset.id,b.dataset.at131Part);if(b.dataset.at131ArcAdd)at131AddArc(b.dataset.id,b.dataset.at131ArcAdd);if(b.dataset.at131ArcEdit)at131EditArc(b.dataset.id,b.dataset.season,b.dataset.at131ArcEdit);if(b.dataset.at131ArcDelete)at131DeleteArc(b.dataset.id,b.dataset.season,b.dataset.at131ArcDelete);if(b.dataset.at131ArcOpen){const a=state.anime.find(x=>x.id===b.dataset.id),s=a?.seasons.find(x=>x.id===b.dataset.season),arc=s?.arcRatings?.find(x=>x.id===b.dataset.at131ArcOpen);if(a&&s&&arc){activeSeasonId=s.id;episodePage=Math.floor((arc.start-1)/24);renderDetail(a.id);void loadSeasonEpisodes(a.id,s.id,episodePage);requestAnimationFrame(()=>$('detail-body').querySelector('[data-season-ep][data-ep="'+arc.start+'"]')?.scrollIntoView({block:'center',behavior:'smooth'}))}}});
+document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-at131-part-rating]')){const a=state.anime.find(x=>x.id===el.dataset.id);if(a)setPersonalRating(a,el.value,el.dataset.at131PartRating)}if(el.matches('[data-at131-arc-rating]')){const a=state.anime.find(x=>x.id===el.dataset.id),s=a?.seasons.find(x=>x.id===el.dataset.season),arc=s?.arcRatings?.find(x=>x.id===el.dataset.at131ArcRating);if(!a||!s||!arc)return;const before=arc.rating;arc.rating=el.value===''?null:Math.max(.5,Math.min(10,Number(el.value)||.5));a.updatedAt=now();if(!save()){arc.rating=before;return}renderDetail(a.id);notify('Vlerësimi i arc-ut u ruajt ✓')}});
+
 at150ProviderBadge();
 
 })();
