@@ -57,11 +57,11 @@ test('UI and PWA integration preserve all existing routes',()=>{
  assert.match(app,/data-filler-manual/);
  assert.match(css,/at1210-chip\.filler/);assert.match(css,/at1210-manual/);
  for(const file of ['pro-filler-1210.js','pro-filler-1210.css']){assert(html.includes('/assets/'+file));assert(sw.includes('/assets/'+file));}
- assert.match(sw,/animetrack-shell-v12101-1/);assert.match(html,/AnimeTrack 12\.10\.1/);
- assert.equal(JSON.parse(read('package.json')).version,'12.10.1');
+ assert.match(sw,/animetrack-shell-v12102-1/);assert.match(html,/AnimeTrack 12\.10\.2/);
+ assert.equal(JSON.parse(read('package.json')).version,'12.10.2');
 });
 
-test('12.10.1 Jikan pages are marked complete only when all flags are present',()=>{
+test('12.10.2 Jikan pages are marked complete only when all flags are present',()=>{
  const full=[{mal_id:1,filler:false,recap:false},{mal_id:2,filler:true,recap:false}];
  assert.equal(f.pageVerified(full),true);
  assert.equal(f.pageVerified([]),false,'empty page is retried rather than cached');
@@ -79,7 +79,7 @@ test('12.10.1 Jikan pages are marked complete only when all flags are present',(
  assert.equal(f.storedPageVerified(shared,1,true),true,'shared MAL pages verify only their own in-range episode numbers');
  assert.equal(f.storedPageVerified(shared,2,true),false);
 });
-test('12.10.1 transient and partial API results do not permanently suppress retries or invent canon',()=>{
+test('12.10.2 transient and partial API results do not permanently suppress retries or invent canon',()=>{
  const app=read('assets/app.js'),src=read('assets/pro-filler-1210.js');
  assert.match(app,/fillerPageRetryUntil\.set\(key,Date\.now\(\)\+6\*60\*60\*1000\)/);
  assert.match(app,/fillerPageRetryUntil\.set\(key,Date\.now\(\)\+30\*60\*1000\)/);

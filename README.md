@@ -1,4 +1,16 @@
-# AnimeTrack 11.2 — Anime Universe Pro
+# AnimeTrack 12.10.2 — Anime, TV dhe Episode Hub
+
+**Versioni i kodit:** 12.10.2. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+
+### Përditësimet aktuale
+
+- Sezonet: pamje moderne me filtra realë AniList për Drama, Thriller, Isekai dhe zhanre të tjera.
+- Anime Wrapped: pamje e re, statistika sipas periudhës dhe medalje për arritje të mbështetura te historiku personal.
+- Episode filler: shenjë e verdhë vetëm kur klasifikimi vjen nga të dhëna Jikan të verifikuara ose përcaktohet manualisht; statusi i panjohur nuk shënohet automatikisht si kanonik.
+- Biblioteka dhe cloud: ruajtje lokale e sigurt, journal për ndryshimet në pritje, mbrojtje nga fshirja e cache-it të progresit dhe rifreskim pa prishur format.
+- PC dhe iPhone: teste automatike të funksioneve kryesore para publikimit.
+
+---
 
 Aplikacion personal për ndjekjen e animeve, episodeve dhe filmave, me llogari dhe bibliotekë cloud.
 
