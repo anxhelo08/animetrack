@@ -13,7 +13,7 @@ test('12.15.3 TMDB details expose runtime, director, cast, IMDb and collection',
 test('12.15.3 app separates Movies from Anime and TV and keeps credentials local',()=>{
  const app=read('src/app.js'),unified=read('src/modules/unified.js'),html=read('index.html'),main=read('src/main.js'),sw=read('public/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.match(app,/function isLiveMovie/);assert.match(app,/TMDB_TOKEN_STORAGE/);assert.match(app,/movie-watched/);assert.match(app,/movie-rewatched/);assert.match(app,/at150RenderMovieDetail/);assert.match(app,/source:\['AniList','MyAnimeList','TVMaze','TMDB','OMDb','Cinemeta','Wikidata'\]/);
- assert.match(unified,/const isMovie=/);assert.match(unified,/movie:movies\.length/);assert.match(html,/data-media-filter="movie"/);assert.match(html,/tmdb-token-input/);assert.match(main,/modules\/movies\.js/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.equal(pkg.version,'13.1.1');
+ assert.match(unified,/const isMovie=/);assert.match(unified,/movie:movies\.length/);assert.match(html,/data-media-filter="movie"/);assert.match(html,/tmdb-token-input/);assert.match(main,/modules\/movies\.js/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.equal(pkg.version,'13.2.0');
 });
 test('12.15.3 zero-key search falls back to Wikidata and finds Avengers Endgame',async()=>{
  const api=load(async url=>{url=String(url);if(url.includes('/api/cinemeta?mode=search'))return response({metas:[]});assert.match(url,/wikidata\.org\/w\/api\.php/);assert.match(url,/wbsearchentities/);return response({search:[{id:'Q23781129',label:'Avengers: Endgame',description:'2019 film directed by Anthony and Joe Russo'},{id:'Q123',label:'Avengers',description:'Marvel Comics superhero team'}]})});

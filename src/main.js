@@ -11,6 +11,7 @@ await waitForSupabase();
 await import("./modules/recommendations.js");
 await import("./modules/wrapped.js");
 await import("./modules/calendar-wrapped.js");
+await import("./modules/diary.js");
 await import("./modules/profiles.js");
 await import("./modules/friends.js");
 await import("./modules/import-library.js");
