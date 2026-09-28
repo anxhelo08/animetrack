@@ -1257,7 +1257,7 @@ async function accountOpenCloud(user){
  else accountStatus('Biblioteka u shkarkua nga cloud · '+cloudLastSync,'ok');
 }
 
-function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudDirty=true;cloudConnected=false;accountUI();clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>accountPush(false),1100)}
+function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudDirty=true;cloudConnected=false;accountUI();clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>accountPush(false),120)}
 
 async function accountPush(showResult=true){
  if(accountMode!=='cloud'||!accountUser||cloudSaving)return;
@@ -1291,7 +1291,7 @@ async function accountPush(showResult=true){
    }
    cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;
   }
-  const payload=JSON.parse(JSON.stringify(state));let result;
+  const payload=accountCompact(state);let result;
   if(overwrite)result=await table.upsert({user_id:uid,payload},{onConflict:'user_id'}).select('updated_at').maybeSingle();
   else if(cloudRevision)result=await table.update({payload}).eq('user_id',uid).eq('updated_at',cloudRevision).select('updated_at').maybeSingle();
   else result=await table.insert({user_id:uid,payload}).select('updated_at').maybeSingle();
