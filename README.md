@@ -1,6 +1,6 @@
-# AnimeTrack 12.12.2 — Franchise Timeline
+# AnimeTrack 12.12.3 — Franchise Timeline
 
-**Versioni i kodit:** 12.12.2. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 12.12.3. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
 
@@ -131,3 +131,7 @@ Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodiki
 - Ky ZIP është release source; publikimi në Vercel është hap më vete dhe nuk nënkuptohet nga ndryshimi i versionit në skedarë.
 
 - Fortifikimi RPC: `supabase/migrations/20260926154500_private_friend_rpc_hardening_112.sql` zhvendos implementimin me privilegje në skemë private dhe mban vetëm wrapper-at SECURITY INVOKER në API-n publike.
+
+
+## 12.12.3 · Cloud-first storage
+Kur përdoruesi është i loguar, Supabase është kopja kanonike e bibliotekës. iPhone/PC ruan vetëm një recovery snapshot kompakt me progresin dhe të dhënat personale; metadata e episodeve që mund të shkarkohet sërish nuk kopjohet në localStorage.
