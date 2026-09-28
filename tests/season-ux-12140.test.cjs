@@ -12,6 +12,6 @@ test('12.14 resume selects the next visible season and never a hidden part',()=>
  assert.equal(out.seasonId,'s2');assert.equal(out.episode,2);
 });
 test('12.14 season metadata includes descriptions and hidden TV choice survives rebuild',()=>{
- const app=read('assets/app.js'),engine=read('assets/pro-franchise-engine-12130.js');
- assert.match(app,/description\(asHtml:false\)/);assert.match(read('assets/pro-cloud-local-12123.js'),/delete season\.synopsis/);assert.match(app,/synopsis:m\.description/);assert.match(app,/synopsis:full\.synopsis/);assert.match(engine,/synopsis:String\(show\.summary/);assert.match(engine,/hidden:old\?\.hidden===true/);
+ const app=read('assets/app.js'),engine=read('assets/pro-franchise-engine-12130.js'),cloud=read('assets/pro-cloud-local-12123.js');
+ assert.match(app,/description\(asHtml:false\)/);assert.match(cloud,/const SEASON_FIELDS=/);assert.doesNotMatch(cloud,/SEASON_FIELDS=\[[^\]]*'synopsis'/);assert.match(app,/synopsis:m\.description/);assert.match(app,/synopsis:full\.synopsis/);assert.match(engine,/synopsis:String\(show\.summary/);assert.match(engine,/hidden:old\?\.hidden===true/);
 });
