@@ -12,7 +12,7 @@ test('12.15.1 TMDB details expose runtime, director, cast, IMDb and collection',
 });
 test('12.15.1 app separates Movies from Anime and TV and keeps credentials local',()=>{
  const app=read('assets/app.js'),unified=read('assets/pro-unified-119.js'),html=read('index.html'),sw=read('sw.js'),pkg=JSON.parse(read('package.json'));
- assert.match(app,/function isLiveMovie/);assert.match(app,/TMDB_TOKEN_STORAGE/);assert.match(app,/movie-watched/);assert.match(app,/movie-rewatched/);assert.match(app,/at150RenderMovieDetail/);assert.match(app,/source:\['AniList','MyAnimeList','TVMaze','TMDB','OMDb'\]/);
+ assert.match(app,/function isLiveMovie/);assert.match(app,/TMDB_TOKEN_STORAGE/);assert.match(app,/movie-watched/);assert.match(app,/movie-rewatched/);assert.match(app,/at150RenderMovieDetail/);assert.match(app,/source:\['AniList','MyAnimeList','TVMaze','TMDB','OMDb','Wikidata'\]/);
  assert.match(unified,/const isMovie=/);assert.match(unified,/movie:movies\.length/);assert.match(html,/data-media-filter="movie"/);assert.match(html,/tmdb-token-input/);assert.match(sw,/pro-movies-12150\.js/);assert.equal(pkg.version,'12.15.1');
 });
 test('12.15.1 zero-key search falls back to Wikidata and finds Avengers Endgame',async()=>{
