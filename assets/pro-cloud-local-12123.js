@@ -22,6 +22,8 @@ window.ATCloudLocal12123=(()=>{
    anime.seasons=(Array.isArray(anime.seasons)?anime.seasons:[]).map(season=>{
     delete season.loadedPages;
     delete season.fillerPagesChecked;
+    delete season.synopsis;
+    delete season.sourceUrl;
     season.episodes=(Array.isArray(season.episodes)?season.episodes:[]).map(compactEpisode).filter(Boolean);
     return season;
    });

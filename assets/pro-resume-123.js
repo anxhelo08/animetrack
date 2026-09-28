@@ -1,7 +1,7 @@
 /* Resume from the most recent valid watched episode without writing to storage. */
 window.ATResume123=(()=>{
  function resolve(a,history,released){
-  const seasons=Array.isArray(a?.seasons)?a.seasons:[];if(!seasons.length)return null;
+  const seasons=(Array.isArray(a?.seasons)?a.seasons:[]).filter(s=>!s.hidden);if(!seasons.length)return null;
   let anchor=null;
   for(let i=(Array.isArray(history)?history.length:0)-1;i>=0;i--){
    const h=history[i],s=seasons.find(x=>x.id===h?.seasonId);
