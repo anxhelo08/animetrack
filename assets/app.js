@@ -1165,9 +1165,16 @@ function accountStopRealtime(){
  const channel=cloudRealtimeChannel;cloudRealtimeChannel=null;if(!channel)return;
  try{window.ATCrossSync12153?.stop(accountInitClient(),channel)}catch(err){console.warn('Realtime cleanup failed',err)}
 }
-function accountScheduleRemotePull(delay=120){
+function accountScheduleRemotePull(delay=80){
  clearTimeout(cloudRealtimeTimer);
- cloudRealtimeTimer=setTimeout(()=>{cloudRealtimeTimer=null;if(accountMode!=='cloud'||!accountUser)return;if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;return}cloudRealtimePending=false;void accountPullQuiet()},Math.max(0,Number(delay)||0));
+ cloudRealtimeTimer=setTimeout(()=>{
+  cloudRealtimeTimer=null;if(accountMode!=='cloud'||!accountUser)return;
+  if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;return}
+  cloudRealtimePending=false;
+  const record=cloudRealtimeRecord;cloudRealtimeRecord=null;
+  if(record?.payload&&accountApplyRemoteRecord(record))return;
+  void accountPullQuiet();
+ },Math.max(0,Number(delay)||0));
 }
 function accountStartRealtime(uid){
  if(!uid||accountMode!=='cloud')return;accountStopRealtime();
@@ -1175,15 +1182,34 @@ function accountStartRealtime(uid){
   const client=accountInitClient();cloudRealtimeUID=uid;
   cloudRealtimeChannel=window.ATCrossSync12153?.start(client,uid,payload=>{
    if(accountMode!=='cloud'||accountUser?.id!==uid)return;
-   const revision=String(payload?.new?.updated_at||payload?.old?.updated_at||'');
+   const record=payload?.new&&typeof payload.new==='object'?payload.new:null;
+   const revision=String(record?.updated_at||payload?.old?.updated_at||'');
    if(revision&&revision===cloudRevision)return;
-   if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;return}
-   accountScheduleRemotePull(100);
+   if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;if(record?.payload)cloudRealtimeRecord=record;return}
+   if(record?.payload&&accountApplyRemoteRecord(record))return;
+   accountScheduleRemotePull(60);
   })||null;
  }catch(err){console.warn('Realtime library sync unavailable',err)}
 }
 
 function accountNormalizePayload(data){if(!data||!Array.isArray(data.anime))throw Error('Biblioteka online ka format të pavlefshëm.');const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);return {anime:merged.anime,tvShows:[],history:Array.isArray(data.history)?data.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(data.preferences)}}
+function accountApplyRemoteRecord(record){
+ if(!record?.payload||accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||accountBusy)return false;
+ const revision=String(record.updated_at||'');
+ if(revision&&revision===cloudRevision){cloudConnected=true;return true}
+ try{
+  const remote=accountNormalizePayload(record.payload),next=accountHydrateRemote(remote,state);
+  const same=JSON.stringify(accountCompact(remote))===JSON.stringify(accountCompact(state));
+  cloudRevision=revision||cloudRevision;cloudBaseKnown=true;cloudConnected=true;cloudConflict=false;cloudLastPullAt=Date.now();
+  if(revision)cloudLastSync=new Date(revision).toLocaleString('sq-AL');
+  if(!same){
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
+   render();renderHome();renderUpcoming();proApp?.renderBackground?.();void proApp?.modules?.notifications?.refresh?.();proApp?.modules?.recommendations?.onLibraryChange?.();
+  }
+  if(!cloudMirrorUnavailable)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Realtime revision cache unavailable',err)}
+  accountUI();return true;
+ }catch(err){console.warn('Realtime payload apply failed',err);return false}
+}
 function accountRefreshViews(){filter='all';search='';$('search').value='';$('global-search').value='';if(typeof clearCatalog==='function')clearCatalog();render();renderHome();renderUpcoming();setView('home');accountUI()}
 
 async function accountOpenCloud(user){
