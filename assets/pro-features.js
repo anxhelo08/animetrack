@@ -129,7 +129,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   });
   document.addEventListener('input',e=>{if(e.target?.id==='at118-query')modules.tv.input(e.target.value)});
   document.addEventListener('keydown',e=>{if(e.target?.id==='at118-query'&&e.key==='Enter'){e.preventDefault();void modules.tv.searchNow()}});
-  let pcSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at-pc-watch-search')return;clearTimeout(pcSearchTimer);pcSearchTimer=setTimeout(()=>{const current=$('at-pc-watch-search');if(!current)return;const value=current.value,caret=current.selectionStart,focused=document.activeElement===current;modules.home.search(value);const next=$('at-pc-watch-search');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});
+  let pcSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at-pc-watch-search')return;const value=e.target.value,caret=e.target.selectionStart,focused=document.activeElement===e.target;clearTimeout(pcSearchTimer);pcSearchTimer=setTimeout(()=>{if(!$('home-view')||$('home-view').classList.contains('hidden'))return;modules.home.search(value);const next=$('at-pc-watch-search');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});
   // Active-tab polling only. The upstream anime schedules are not a push feed.
   liveTimer=setInterval(()=>{if(document.visibilityState==='visible')void refreshLive(false)},10*60000);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refreshLive(false)});
