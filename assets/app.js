@@ -2,7 +2,7 @@
 let KEY='animetrack_v1';
 const STATUS={watching:'Po shikoj',completed:'Përfunduar',planning:'Në listë',paused:'Në pauzë',dropped:'E lënë'};
 const $=id=>document.getElementById(id);
-let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false,cloudRealtimeChannel=null,cloudRealtimeUID='',cloudRealtimePending=false,cloudRealtimeTimer=null;
+let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false,cloudRealtimeChannel=null,cloudRealtimeUID='',cloudRealtimePending=false,cloudRealtimeTimer=null,cloudRealtimeRecord=null;
 let state=load(),filter='all',search='',sort='updated',detailId=null,episodePage=0,activeSeasonId=null,toastTimeout,selectedGenre='all';
 let view='home', previewKey=null, pendingEpisode=null, airingWindow=7, upcomingEntries=[], upcomingFailures=0, upcomingCheckedAt=0, upcomingBusy=false;
 const FRANCHISE_SCHEMA='12.14.0';
@@ -190,6 +190,7 @@ function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isAr
 function accountCompact(value){return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value):value}
 function accountLocalSnapshot(value=state){return accountMode==='cloud'&&accountUser?accountCompact(value):value}
 function accountMergeRecovery(remote,local){return window.ATCloudLocal12123?.merge?window.ATCloudLocal12123.merge(remote,local):local}
+function accountHydrateRemote(remote,rich=state){return window.ATCloudLocal12123?.hydrate?window.ATCloudLocal12123.hydrate(remote,rich):remote}
 function save(){try{const localSnapshot=accountLocalSnapshot(state),result=window.ATStorage1274.save(localStorage,KEY,localSnapshot,cloudRevision,accountMode==='cloud'&&!!accountUser,window.ATSync126);if(!result.ok){if(accountMode==='cloud'){cloudMirrorUnavailable=true;cloudDirty=true;accountUI()}notify('Kopja lokale e rikuperimit nuk u ruajt. Eksporto kopje rezervë dhe provo përsëri.');return false}if(cloudMirrorUnavailable){cloudMirrorUnavailable=false;accountUI()}if(accountMode==='cloud'&&accountUser)accountQueueSave();return true}catch(e){notify('Ruajtja dështoi. Eksporto kopje rezervë.');console.error(e);return false}}
 function notify(message){const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('show'),2800)}
 function cover(a,cls){const url=validPoster(a.cover);return `<div class="${cls}">${url?`<img src="${escapeHTML(url)}" alt="Posteri i ${escapeHTML(a.title)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />`:''}</div>`}
@@ -1135,13 +1136,13 @@ function accountUI(){
  $('account-stat-episodes').textContent=state.anime.reduce((v,a)=>v+(isLiveMovie(a)?0:count(a)),0);
  const name=accountMode==='cloud'?accountName():'Hyr / Regjistrohu';
  $('account-display-name').textContent=name;
- $('account-display-subtitle').textContent=accountMode==='cloud'?(accountUser.email||'Llogari cloud'):'Biblioteka lokale · nuk sinkronizohet mes pajisjeve';
+ $('account-display-subtitle').textContent=accountMode==='cloud'?(accountUser.email||'Llogari online'):'Biblioteka lokale · nuk sinkronizohet mes pajisjeve';
  $('account-top-name').textContent=name;
  $('account-side-label').textContent=accountMode==='cloud'?name+' · Cloud':'Hyr / Regjistrohu';
  $('account-top-avatar').textContent=$('account-avatar').textContent=name.slice(0,1).toUpperCase()||'A';
  const badge=$('account-sync-pill');
- badge.textContent=accountMode!=='cloud'?'Local':cloudMirrorUnavailable?'Hapësirë plot':cloudConflict?'Konflikt':cloudSaving?'Po ruhet…':!navigator.onLine?'Offline':cloudDirty?'Në pritje':cloudConnected?'Cloud ✓':'Cloud !';
- badge.title=accountMode!=='cloud'?'Hyr për sinkronizim':cloudMirrorUnavailable?'Cloud u hap; recovery copy lokale nuk u ruajt ende':cloudConflict?'Ka ndryshime të ndryshme në pajisje dhe cloud':cloudSaving?'Po ruhet në cloud':cloudDirty?'Progresi është ruajtur në pajisje dhe pret cloud':cloudConnected?'Biblioteka është sinkronizuar':'Cloud nuk është lidhur';
+ badge.textContent=accountMode!=='cloud'?'Local':cloudMirrorUnavailable?'Hapësirë plot':cloudConflict?'Konflikt':cloudSaving?'Po ruhet…':!navigator.onLine?'Offline':cloudDirty?'Në pritje':cloudConnected?'Online ✓':'Online !';
+ badge.title=accountMode!=='cloud'?'Hyr për sinkronizim':cloudMirrorUnavailable?'Cloud u hap; recovery copy lokale nuk u ruajt ende':cloudConflict?'Ka ndryshime të ndryshme në pajisje dhe cloud':cloudSaving?'Po ruhet në cloud':cloudDirty?'Progresi është ruajtur në pajisje dhe pret cloud':cloudConnected?'Biblioteka është online dhe e sinkronizuar':'Lidhja online nuk është aktive';
  $('account-cloud-user').classList.toggle('hidden',accountMode!=='cloud');
  $('account-guest-user').classList.toggle('hidden',accountMode==='cloud');
  if(accountMode==='cloud'){
@@ -1160,13 +1161,20 @@ function accountRedirectURL(){return location.protocol==='https:'?(location.host
 function accountAuthReturnNotice(){const hash=new URLSearchParams(location.hash.replace(/^#/,'')),query=new URLSearchParams(location.search);const error=hash.get('error_code')||query.get('error_code')||hash.get('error')||query.get('error');if(error){const msg=/otp_expired|access_denied|invalid_token|token/i.test(error)?'Linku i konfirmimit ka skaduar ose është përdorur. Nëse e ke konfirmuar tashmë emailin, provo Hyr. Përndryshe kërko Ridërgo.':'Konfirmimi nuk u përfundua. Provo hyrjen ose ridërgo emailin.';if(history.replaceState)history.replaceState(null,'',location.pathname);return {message:msg,kind:'error'}}if(hash.has('access_token')||query.has('code')){if(history.replaceState)history.replaceState(null,'',location.pathname);return {message:'Emaili u verifikua. Je lidhur me llogarinë; nëse të kërkohet, hyr me fjalëkalimin tënd.',kind:'ok'}}return null}
 function accountInitClient(){if(cloudClient)return cloudClient;const {url,key}=accountGetConfig();if(!url||!key){throw Error('Së pari konfiguro Project URL dhe Publishable key te ⚙ Konfiguro databazën.')}if(!window.supabase?.createClient)throw Error('Biblioteka Supabase nuk u ngarkua. Kontrollo internetin ose përdor versionin e publikuar HTTPS.');cloudClient=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});return cloudClient}
 function accountStopRealtime(){
- clearTimeout(cloudRealtimeTimer);cloudRealtimeTimer=null;cloudRealtimePending=false;cloudRealtimeUID='';
+ clearTimeout(cloudRealtimeTimer);cloudRealtimeTimer=null;cloudRealtimePending=false;cloudRealtimeRecord=null;cloudRealtimeUID='';
  const channel=cloudRealtimeChannel;cloudRealtimeChannel=null;if(!channel)return;
  try{window.ATCrossSync12153?.stop(accountInitClient(),channel)}catch(err){console.warn('Realtime cleanup failed',err)}
 }
-function accountScheduleRemotePull(delay=120){
+function accountScheduleRemotePull(delay=80){
  clearTimeout(cloudRealtimeTimer);
- cloudRealtimeTimer=setTimeout(()=>{cloudRealtimeTimer=null;if(accountMode!=='cloud'||!accountUser)return;if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;return}cloudRealtimePending=false;void accountPullQuiet()},Math.max(0,Number(delay)||0));
+ cloudRealtimeTimer=setTimeout(()=>{
+  cloudRealtimeTimer=null;if(accountMode!=='cloud'||!accountUser)return;
+  if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;return}
+  cloudRealtimePending=false;
+  const record=cloudRealtimeRecord;cloudRealtimeRecord=null;
+  if(record?.payload&&accountApplyRemoteRecord(record))return;
+  void accountPullQuiet();
+ },Math.max(0,Number(delay)||0));
 }
 function accountStartRealtime(uid){
  if(!uid||accountMode!=='cloud')return;accountStopRealtime();
@@ -1174,15 +1182,34 @@ function accountStartRealtime(uid){
   const client=accountInitClient();cloudRealtimeUID=uid;
   cloudRealtimeChannel=window.ATCrossSync12153?.start(client,uid,payload=>{
    if(accountMode!=='cloud'||accountUser?.id!==uid)return;
-   const revision=String(payload?.new?.updated_at||payload?.old?.updated_at||'');
+   const record=payload?.new&&typeof payload.new==='object'?payload.new:null;
+   const revision=String(record?.updated_at||payload?.old?.updated_at||'');
    if(revision&&revision===cloudRevision)return;
-   if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;return}
-   accountScheduleRemotePull(100);
+   if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;if(record?.payload)cloudRealtimeRecord=record;return}
+   if(record?.payload&&accountApplyRemoteRecord(record))return;
+   accountScheduleRemotePull(60);
   })||null;
  }catch(err){console.warn('Realtime library sync unavailable',err)}
 }
 
 function accountNormalizePayload(data){if(!data||!Array.isArray(data.anime))throw Error('Biblioteka online ka format të pavlefshëm.');const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);return {anime:merged.anime,tvShows:[],history:Array.isArray(data.history)?data.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(data.preferences)}}
+function accountApplyRemoteRecord(record){
+ if(!record?.payload||accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||accountBusy)return false;
+ const revision=String(record.updated_at||'');
+ if(revision&&revision===cloudRevision){cloudConnected=true;return true}
+ try{
+  const remote=accountNormalizePayload(record.payload),next=accountHydrateRemote(remote,state);
+  const same=JSON.stringify(accountCompact(remote))===JSON.stringify(accountCompact(state));
+  cloudRevision=revision||cloudRevision;cloudBaseKnown=true;cloudConnected=true;cloudConflict=false;cloudLastPullAt=Date.now();
+  if(revision)cloudLastSync=new Date(revision).toLocaleString('sq-AL');
+  if(!same){
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
+   render();renderHome();renderUpcoming();proApp?.renderBackground?.();void proApp?.modules?.notifications?.refresh?.();proApp?.modules?.recommendations?.onLibraryChange?.();
+  }
+  if(!cloudMirrorUnavailable)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Realtime revision cache unavailable',err)}
+  accountUI();return true;
+ }catch(err){console.warn('Realtime payload apply failed',err);return false}
+}
 function accountRefreshViews(){filter='all';search='';$('search').value='';$('global-search').value='';if(typeof clearCatalog==='function')clearCatalog();render();renderHome();renderUpcoming();setView('home');accountUI()}
 
 async function accountOpenCloud(user){
@@ -1230,7 +1257,7 @@ async function accountOpenCloud(user){
  else accountStatus('Biblioteka u shkarkua nga cloud · '+cloudLastSync,'ok');
 }
 
-function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudDirty=true;cloudConnected=false;accountUI();clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>accountPush(false),1100)}
+function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudDirty=true;cloudConnected=false;accountUI();clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>accountPush(false),120)}
 
 async function accountPush(showResult=true){
  if(accountMode!=='cloud'||!accountUser||cloudSaving)return;
@@ -1251,8 +1278,8 @@ async function accountPush(showResult=true){
    const baseline=await table.select('payload,updated_at').eq('user_id',uid).maybeSingle();
    if(baseline.error)throw baseline.error;
    if(accountUser?.id!==uid||accountMode!=='cloud')return;
-   const local=state,record=window.ATSync126.pending(localStorage,KEY);
-   const check=window.ATSync126.remoteStatus(local,record,baseline.data,accountNormalizePayload);
+   const local=accountCompact(state),record=window.ATSync126.pending(localStorage,KEY);
+   const check=window.ATSync126.remoteStatus(local,record,baseline.data,payload=>accountCompact(accountNormalizePayload(payload)));
    if(check==='same'){
     cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;cloudConnected=true;cloudConflict=false;cloudDirty=false;
     try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}
@@ -1264,7 +1291,7 @@ async function accountPush(showResult=true){
    }
    cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;
   }
-  const payload=JSON.parse(JSON.stringify(state));let result;
+  const payload=accountCompact(state);let result;
   if(overwrite)result=await table.upsert({user_id:uid,payload},{onConflict:'user_id'}).select('updated_at').maybeSingle();
   else if(cloudRevision)result=await table.update({payload}).eq('user_id',uid).eq('updated_at',cloudRevision).select('updated_at').maybeSingle();
   else result=await table.insert({user_id:uid,payload}).select('updated_at').maybeSingle();
@@ -1272,15 +1299,15 @@ async function accountPush(showResult=true){
   if(!result.data?.updated_at)throw Object.assign(Error('Cloud ka një version tjetër të bibliotekës.'),{cloudConflict:true});
   if(accountUser?.id!==uid)return;
   cloudRevision=result.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudConnected=true;cloudLastSync=new Date().toLocaleString('sq-AL');
-  const changed=JSON.stringify(state)!==JSON.stringify(payload);cloudDirty=changed;
+  const changed=JSON.stringify(accountCompact(state))!==JSON.stringify(payload);cloudDirty=changed;
   try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,changed)}catch(err){console.warn('Cloud journal update failed',err)}
-  if(changed)cloudTimer=setTimeout(()=>accountPush(false),1200);
+  if(changed)cloudTimer=setTimeout(()=>accountPush(false),180);
   if(showResult)accountStatus('Ruajtur në cloud ✓ · '+cloudLastSync,'ok');
  }catch(e){if(accountUser?.id===uid){
   cloudConnected=false;cloudDirty=true;
   if(e.cloudConflict){cloudConflict=true;accountStatus('Konflikt i sigurt: një pajisje tjetër ka ruajtur një version më të ri. Progresi lokal nuk u fshi. Zgjidh Rifresko ose Ruaj në cloud për ta zgjidhur.','error')}
   else {accountStatus('Nuk u sinkronizua: '+e.message+' · Ruajtja lokale për llogarinë tënde mbetet.','error');if(showResult)notify('Cloud nuk u lidh. Provo përsëri.');clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>{if(accountMode==='cloud'&&accountUser?.id===uid&&cloudDirty&&!cloudSaving&&!cloudConflict&&navigator.onLine)void accountPush(false)},30000)}
- }}finally{cloudSaving=false;accountUI();if(cloudRealtimePending&&!cloudDirty&&!cloudConflict)accountScheduleRemotePull(140)}
+ }}finally{cloudSaving=false;accountUI();if(cloudRealtimePending&&!cloudDirty&&!cloudConflict)accountScheduleRemotePull(40)}
 }
 
 let quietCloudPullBusy=false;
@@ -1294,9 +1321,9 @@ async function accountPullQuiet(){
   cloudLastPullAt=Date.now();
   if(!data?.payload)return false;
   const remote=accountNormalizePayload(data.payload);
-  if(JSON.stringify(remote)===JSON.stringify(state)){cloudRevision=data.updated_at;cloudBaseKnown=true;return false;}
+  if(JSON.stringify(accountCompact(remote))===JSON.stringify(accountCompact(state))){cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConnected=true;return false;}
   if(cloudDirty||cloudSaving)return false;
-  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(remote)));cloudMirrorUnavailable=!mirror.ok;state=remote;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
+  const next=accountHydrateRemote(remote,state);const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
   cloudConnected=true;cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');
   render();renderHome();renderUpcoming();proApp.renderBackground();void proApp.modules.notifications.refresh();
   proApp.modules.recommendations.onLibraryChange();accountUI();return true;
@@ -1313,8 +1340,8 @@ async function accountPull(manual=false){
   if(error)throw error;
   if(accountUser?.id!==uid||JSON.stringify(state)!==prior){if(manual)accountStatus('Biblioteka ndryshoi gjatë shkarkimit; nuk e zëvendësuam kopjen lokale.','error');return}
   if(data?.payload){
-   const remote=accountNormalizePayload(data.payload);
-   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(remote)));cloudMirrorUnavailable=!mirror.ok;state=remote;
+   const remote=accountNormalizePayload(data.payload),next=accountHydrateRemote(remote,state);
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
    cloudDirty=false;cloudConnected=true;cloudBaseKnown=true;cloudRevision=data.updated_at;cloudConflict=false;
    cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');cloudLastPullAt=Date.now();
    if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}

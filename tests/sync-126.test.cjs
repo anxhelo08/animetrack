@@ -43,22 +43,23 @@ test('12.6 account records remain isolated and invalid journals refuse silent re
  assert.equal(api.pending(storage,'animetrack_user_two').invalid,true);
  assert.throws(()=>api.save(storage,'animetrack_user_two',{anime:[]},'new',true),/Journal lokal/);
 });
-test('12.15.3 integration prevents blind offline overwrite and auto-activates the quota recovery worker once',()=>{
+test('13.0 integration prevents blind offline overwrite and auto-activates the quota recovery worker once',()=>{
  const app=read('assets/app.js'),sw=read('sw.js'),features=read('assets/pro-features.js'),html=read('index.html');
  assert.match(app,/ATSync126\.save\(localStorage,KEY,accountLocalSnapshot\(state\),cloudRevision/);
  assert.match(app,/ATSync126\.remoteStatus\(accountCompact\(cached\),journal,data,payload=>accountCompact\(accountNormalizePayload\(payload\)\)\)/);
  assert.match(app,/if\(!cloudBaseKnown&&!overwrite\)/);
+ assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountApplyRemoteRecord\(record\)/);assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);
  assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
  assert.match(app,/if\(accountUser\?\.id!==uid\|\|JSON\.stringify\(state\)!==prior\)/);
- assert.match(sw,/animetrack-shell-v12153-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
+ assert.match(sw,/animetrack-shell-v1300-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
  assert.match(sw,/then\(\(\)=>self\.skipWaiting\(\)\)/);
  assert.match(sw,/c\.match\(url\.pathname\)/);
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
  assert.match(features,/if\(!updateRequested\)return/);
- assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 12\.15\.3/);
+ assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 13\.0\.0/);
 });
 
-test('12.15.3 realtime helper subscribes only to the signed-in user library row',()=>{
+test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{
  const code=read('assets/pro-cross-sync-12153.js'),ctx={window:{}};vm.runInNewContext(code,ctx);const api=ctx.window.ATCrossSync12153;
  let event=null,opts=null,callback=null,subscribed=false,removed=false;
  const channel={on:(e,o,cb)=>{event=e;opts=o;callback=cb;return channel},subscribe:()=>{subscribed=true;return channel}};
@@ -67,7 +68,7 @@ test('12.15.3 realtime helper subscribes only to the signed-in user library row'
  assert.equal(returned,channel);assert.equal(event,'postgres_changes');assert.equal(opts.table,'anime_libraries');assert.equal(opts.filter,'user_id=eq.user-123');assert.equal(subscribed,true);
  callback({new:{updated_at:'2026-09-28T18:00:00Z'}});assert.equal(payload.new.updated_at,'2026-09-28T18:00:00Z');assert.equal(api.stop(client,channel),true);assert.equal(removed,true);
 });
-test('12.15.3 app has realtime plus focus/visibility/poll fallbacks',()=>{
+test('13.0 app has realtime plus focus/visibility/poll fallbacks',()=>{
  const app=read('assets/app.js'),html=read('index.html'),sw=read('sw.js');
  assert.match(app,/function accountStartRealtime/);assert.match(app,/accountStartRealtime\(uid\)/);assert.match(app,/visibilitychange/);assert.match(app,/pageshow/);assert.match(app,/30000/);
  assert.match(html,/pro-cross-sync-12153\.js/);assert.match(sw,/pro-cross-sync-12153\.js/);

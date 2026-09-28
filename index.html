@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#101017" /><meta name="color-scheme" content="dark" /><meta name="apple-mobile-web-app-title" content="AnimeTrack" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23a58bfb%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2352dfef%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2217%22%20fill%3D%22%23171625%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%2254%22%20height%3D%2254%22%20rx%3D%2215%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Cpath%20d%3D%22M13%2043%2026%2018h8l13%2025h-9l-3-6H25l-3%206zm15-12h5l-3-7z%22%20fill%3D%22%23171625%22%2F%3E%3Cpath%20d%3D%22m42%2018%209%206-9%206z%22%20fill%3D%22%23171625%22%2F%3E%3C%2Fsvg%3E" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-<title>AnimeTrack 12.15.3 — Anime, TV & Movies</title>
-<link rel="manifest" href="/manifest.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>AnimeTrack 13.0.0 — Anime, TV & Movies</title>
+<link rel="manifest" href="/manifest.webmanifest"><link rel="preconnect" href="https://kwherbtspqirfrehqlfd.supabase.co" crossorigin><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 
 
@@ -51,7 +51,7 @@
 <div class="home-status-grid" id="home-status-grid" aria-label="Listat e animeve"></div>
 <div class="home-section-head"><div><span class="eyebrow">VAZHDO NGA KU E LE</span><h3>E fundit që ke parë</h3></div><button class="ghost" id="home-last-history" type="button">Historiku ↓</button></div>
 <div class="last-watch-feature" id="home-last-watched"></div>
-<div class="home-hero"><div><span class="eyebrow">DASHBOARD • MY ANIME UNIVERSE</span><h2>Gjithçka që po ndjek, në një vend ✦</h2><p>Vazhdo nga ku e le, zbulo episodet e sapotransmetuara dhe ndiq sezonet e konfirmuara në një dashboard personal.</p><div class="home-hero-actions"><button class="primary" id="home-search-btn">⌕ Kërko anime</button><button class="ghost" id="home-random">◇ Zgjidh nga lista ime</button></div></div><div class="home-orb">AT<span>10.4.1</span></div></div><div class="home-stats"><div><strong id="home-anime-count">0</strong><span>Tituj gjithsej</span></div><div><strong id="home-ep-count">0</strong><span>Episode të parë</span></div><div><strong id="home-movie-count">0</strong><span>Filma në bibliotekë</span></div><div><strong id="home-watching-count">0</strong><span>Po shikoj</span></div><div><strong id="home-fav-count">0</strong><span>Të preferuarat</span></div></div><div class="home-section-head"><div><span class="eyebrow">PËR TY</span><h3>Vazhdo shikimin</h3></div><button class="ghost" id="home-go-library">Biblioteka →</button></div><div class="home-card-grid" id="home-continue"></div>
+<div class="home-hero"><div><span class="eyebrow">DASHBOARD • MY ANIME UNIVERSE</span><h2>Gjithçka që po ndjek, në një vend ✦</h2><p>Vazhdo nga ku e le, zbulo episodet e sapotransmetuara dhe ndiq sezonet e konfirmuara në një dashboard personal.</p><div class="home-hero-actions"><button class="primary" id="home-search-btn">⌕ Kërko anime</button><button class="ghost" id="home-random">◇ Zgjidh nga lista ime</button></div></div><div class="home-orb">AT<span>13.0</span></div></div><div class="home-stats"><div><strong id="home-anime-count">0</strong><span>Tituj gjithsej</span></div><div><strong id="home-ep-count">0</strong><span>Episode të parë</span></div><div><strong id="home-movie-count">0</strong><span>Filma në bibliotekë</span></div><div><strong id="home-watching-count">0</strong><span>Po shikoj</span></div><div><strong id="home-fav-count">0</strong><span>Të preferuarat</span></div></div><div class="home-section-head"><div><span class="eyebrow">PËR TY</span><h3>Vazhdo shikimin</h3></div><button class="ghost" id="home-go-library">Biblioteka →</button></div><div class="home-card-grid" id="home-continue"></div>
 <div class="home-section-head"><div><span class="eyebrow">NJË KLIKIM</span><h3>Episodet që ke për të parë</h3><p class="home-helper">Zgjidh episodin e radhës ose hap sezonin e duhur.</p></div><button class="ghost" data-go-status="watching">Watching →</button></div>
 <div class="watch-next-list" id="home-watch-next"></div>
 <div class="home-section-head" id="home-history-title"><div><span class="eyebrow">VAZHDO NGA KU E LE</span><h3>5 animet e fundit që ke parë</h3></div><button class="ghost" data-go-status="all">Hap bibliotekën →</button></div>
@@ -157,28 +157,28 @@
 <div class="modal-backdrop confirm-backdrop" id="season-confirm-modal" role="presentation"><div class="modal confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="season-confirm-title"><div class="modal-header"><h2 id="season-confirm-title">Të shënohen edhe sezonet e mëparshme?</h2><button class="x" data-close="season-confirm-modal" aria-label="Anulo">×</button></div><div class="modal-body"><p id="season-confirm-copy"></p><div class="confirm-buttons"><button class="primary" id="season-confirm-all">✓ Ky sezon + të mëparshmit</button><button class="ghost" id="season-confirm-only">Vetëm ky sezon</button><button class="ghost" id="season-confirm-cancel">Anulo</button></div></div></div></div>
 <div class="modal-backdrop" id="episode-detail-modal" role="presentation"><div class="modal ep-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="ep-detail-heading"><div class="modal-header"><div><span class="eyebrow">DETAJET E EPISODIT</span><h2 id="ep-detail-heading">Episodi</h2></div><button class="x" data-close="episode-detail-modal" aria-label="Mbyll detajet e episodit">×</button></div><div class="modal-body" id="ep-detail-body"></div></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="/assets/config.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
-<script src="/assets/pro-recommendations.js"></script>
-<script src="/assets/pro-wrapped-129.js"></script><script src="/assets/pro-calendar-wrapped.js"></script>
-<script src="/assets/pro-profiles.js"></script>
-<script src="/assets/pro-friends.js"></script>
-<script src="/assets/pro-import-116.js"></script>
-<script src="/assets/pro-moderation.js"></script>
-<script src="/assets/pro-notifications.js"></script>
-<script src="/assets/pro-rewatch.js"></script>
-<script src="/assets/pro-home.js"></script>
-<script src="/assets/pro-episode-hub-127.js"></script><script src="/assets/pro-iphone.js"></script><script src="/assets/pro-daily-115.js"></script>
-<script src="/assets/pro-journey-108.js"></script>
-<script src="/assets/pro-smart-airing-109.js"></script>
-<script src="/assets/pro-push-109.js"></script>
-<script src="/assets/pro-collections-110.js"></script>
-<script src="/assets/pro-experience-112.js"></script>
-<script src="/assets/pro-mobile-113.js"></script>
-<script src="/assets/pro-tv-118.js"></script>
-<script src="/assets/pro-features.js"></script>
-<script src="/assets/pro-tv-unified-120.js"></script>
-<script src="/assets/pro-unified-119.js"></script>
-<script src="/assets/pro-resume-123.js"></script><script src="/assets/pro-command-124.js"></script><script src="/assets/pro-year-125.js"></script><script src="/assets/pro-sync-126.js"></script><script src="/assets/pro-storage-1274.js"></script><script src="/assets/pro-seasonal-128.js"></script><script src="/assets/pro-tv-episodes-127.js"></script><script src="/assets/pro-filler-1210.js"></script><script src="/assets/pro-franchise-1212.js"></script><script src="/assets/pro-cloud-local-12123.js"></script><script src="/assets/pro-provider-bridge-12124.js"></script><script src="/assets/pro-franchise-engine-12130.js"></script><script src="/assets/pro-movies-12150.js"></script><script src="/assets/pro-cross-sync-12153.js"></script><script src="/assets/app.js"></script>
+<script defer src="/assets/config.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
+<script defer src="/assets/pro-recommendations.js"></script>
+<script defer src="/assets/pro-wrapped-129.js"></script><script defer src="/assets/pro-calendar-wrapped.js"></script>
+<script defer src="/assets/pro-profiles.js"></script>
+<script defer src="/assets/pro-friends.js"></script>
+<script defer src="/assets/pro-import-116.js"></script>
+<script defer src="/assets/pro-moderation.js"></script>
+<script defer src="/assets/pro-notifications.js"></script>
+<script defer src="/assets/pro-rewatch.js"></script>
+<script defer src="/assets/pro-home.js"></script>
+<script defer src="/assets/pro-episode-hub-127.js"></script><script defer src="/assets/pro-iphone.js"></script><script defer src="/assets/pro-daily-115.js"></script>
+<script defer src="/assets/pro-journey-108.js"></script>
+<script defer src="/assets/pro-smart-airing-109.js"></script>
+<script defer src="/assets/pro-push-109.js"></script>
+<script defer src="/assets/pro-collections-110.js"></script>
+<script defer src="/assets/pro-experience-112.js"></script>
+<script defer src="/assets/pro-mobile-113.js"></script>
+<script defer src="/assets/pro-tv-118.js"></script>
+<script defer src="/assets/pro-features.js"></script>
+<script defer src="/assets/pro-tv-unified-120.js"></script>
+<script defer src="/assets/pro-unified-119.js"></script>
+<script defer src="/assets/pro-resume-123.js"></script><script defer src="/assets/pro-command-124.js"></script><script defer src="/assets/pro-year-125.js"></script><script defer src="/assets/pro-sync-126.js"></script><script defer src="/assets/pro-storage-1274.js"></script><script defer src="/assets/pro-seasonal-128.js"></script><script defer src="/assets/pro-tv-episodes-127.js"></script><script defer src="/assets/pro-filler-1210.js"></script><script defer src="/assets/pro-franchise-1212.js"></script><script defer src="/assets/pro-cloud-local-12123.js"></script><script defer src="/assets/pro-provider-bridge-12124.js"></script><script defer src="/assets/pro-franchise-engine-12130.js"></script><script defer src="/assets/pro-movies-12150.js"></script><script defer src="/assets/pro-cross-sync-12153.js"></script><script defer src="/assets/app.js"></script>
 </body>
 </html>

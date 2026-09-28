@@ -54,7 +54,7 @@ test('12.12 integration exposes one update action and caches the new helper',()=
  assert.match(app,/isFranchiseFormat/);assert.match(app,/strictSeriesOverlap/);assert.match(app,/franchiseTitleKeys/);assert.match(app,/FRANCHISE_SCHEMA='12\.14\.0'/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
  assert.doesNotMatch(app,/Ndarja si serial \(TV\)/);
  assert.match(tv,/function refreshShow/);assert.match(tv,/SERIA E PLOTË/);assert.doesNotMatch(tv,/dexterTitles/);
- assert.match(html,/pro-franchise-1212\.js/);assert.match(html,/AnimeTrack 12\.15\.3/);
- assert.match(sw,/animetrack-shell-v12153-1/);assert.match(sw,/pro-franchise-1212\.js/);
- assert.equal(pkg.version,'12.15.3');
+ assert.match(html,/pro-franchise-1212\.js/);assert.match(html,/AnimeTrack 13\.0\.0/);
+ assert.match(sw,/animetrack-shell-v1300-1/);assert.match(sw,/pro-franchise-1212\.js/);
+ assert.equal(pkg.version,'13.0.0');
 });

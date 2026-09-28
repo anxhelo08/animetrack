@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "AnimeTrack — Anime & Episode Tracker",
+  "name": "AnimeTrack — Anime, TV & Movie Tracker",
   "short_name": "AnimeTrack",
-  "description": "Ndiq episodet, kalendarin dhe bibliotekën tënde anime si aplikacion në iPhone.",
+  "description": "Ndiq anime, seriale TV, filma, episode, kalendar dhe progresin tënd me sinkronizim online mes pajisjeve.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
