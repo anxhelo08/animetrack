@@ -48,8 +48,8 @@ test('12.7.4 persistent recovery gate is wired before app, and no site-data rese
  const html=read('index.html'),sw=read('sw.js'),core=read('assets/app.js'),css=read('assets/pro-storage-1274.css'),pkg=JSON.parse(read('package.json'));
  assert.match(html,/pro-storage-1274\.js/);assert.match(html,/styles\.css/);
  assert(html.indexOf('/assets/pro-storage-1274.js')<html.indexOf('/assets/app.js'));
- assert.match(sw,/animetrack-shell-v1300-1/);assert.match(sw,/pro-storage-1274\.js/);
- assert.equal(pkg.version,'13.0.0');
+ assert.match(sw,/animetrack-shell-v1310-1/);assert.match(sw,/pro-storage-1274\.js/);
+ assert.equal(pkg.version,'13.1.0');
  assert.match(core,/cloudMirrorUnavailable=!mirror\.ok/);assert.match(core,/data-at128-export/);
  assert.match(core,/const pending=cloudDirty/);assert.match(core,/ATStorage1274\.save\(localStorage,KEY,localSnapshot,cloudRevision,true/);
  assert.doesNotMatch(core,/localStorage\.clear\(/);
