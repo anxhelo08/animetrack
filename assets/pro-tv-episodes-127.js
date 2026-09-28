@@ -18,7 +18,7 @@ window.ATTVEpisodes127=(()=>{
    const seasonId='tvmaze-'+id+'-s'+sn;
    let season=entry.seasons.find(s=>s.id===seasonId||(s.source==='TVmaze'&&String(s.sourceId)===id&&Number(s.imdbSeasonNumber||Number(String(s.id).split('-').at(-1)))===sn));
    if(!season){
-    const candidate={id:seasonId,title:'Sezoni '+sn,subtitle:entry.title,total:Math.max(...unique.map(ep=>ep.number)),watched:[],source:'TVMaze',sourceId:id,format:'TV_SERIES',imdbSeasonNumber:sn,episodes:unique};
+    const sameShow=entry.seasons.find(s=>String(s.sourceId)===id),globalNo=entry.seasons.filter(s=>String(s.format||'').toUpperCase().replace(/[\s-]+/g,'_')==='TV_SERIES').length+1;const candidate={id:seasonId,title:'Sezoni '+globalNo,subtitle:(sameShow?.subtitle?String(sameShow.subtitle).split(' · Sezoni ')[0]:entry.title)+(sn>1?' · Sezoni '+sn:''),total:Math.max(...unique.map(ep=>ep.number)),watched:[],source:'TVMaze',sourceId:id,format:'TV_SERIES',imdbSeasonNumber:sn,episodes:unique};
     entry.seasons.push(normalizeSeason(candidate,entry.seasons.length));changed=true;continue;
    }
    const byNumber=new Map((season.episodes||[]).map(ep=>[Number(ep.number),ep]));

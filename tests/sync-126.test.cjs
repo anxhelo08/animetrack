@@ -43,17 +43,17 @@ test('12.6 account records remain isolated and invalid journals refuse silent re
  assert.equal(api.pending(storage,'animetrack_user_two').invalid,true);
  assert.throws(()=>api.save(storage,'animetrack_user_two',{anime:[]},'new',true),/Journal lokal/);
 });
-test('12.12.4 integration prevents blind offline overwrite and auto-activates the quota recovery worker once',()=>{
+test('12.13.0 integration prevents blind offline overwrite and auto-activates the quota recovery worker once',()=>{
  const app=read('assets/app.js'),sw=read('sw.js'),features=read('assets/pro-features.js'),html=read('index.html');
  assert.match(app,/ATSync126\.save\(localStorage,KEY,accountLocalSnapshot\(state\),cloudRevision/);
  assert.match(app,/ATSync126\.remoteStatus\(accountCompact\(cached\),journal,data,payload=>accountCompact\(accountNormalizePayload\(payload\)\)\)/);
  assert.match(app,/if\(!cloudBaseKnown&&!overwrite\)/);
  assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
  assert.match(app,/if\(accountUser\?\.id!==uid\|\|JSON\.stringify\(state\)!==prior\)/);
- assert.match(sw,/animetrack-shell-v12124-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
+ assert.match(sw,/animetrack-shell-v12130-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
  assert.match(sw,/then\(\(\)=>self\.skipWaiting\(\)\)/);
  assert.match(sw,/c\.match\(url\.pathname\)/);
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
  assert.match(features,/if\(!updateRequested\)return/);
- assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 12\.12\.4/);
+ assert.match(html,/pro-sync-126\.js/);assert.match(html,/AnimeTrack 12\.13\.0/);
 });

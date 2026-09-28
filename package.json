@@ -1,6 +1,6 @@
 {
   "name": "animetrack",
-  "version": "12.12.4",
+  "version": "12.13.0",
   "private": true,
   "scripts": {
     "test": "node scripts/build-styles.cjs --check && node --test tests/*.test.cjs",

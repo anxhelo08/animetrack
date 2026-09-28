@@ -1,8 +1,7 @@
-/* AnimeTrack 12.0 — TVMaze titles use the exact anime library schema.
-   Legacy tvShows are converted without discarding watched episode IDs. */
+/* AnimeTrack 12.13 — TVMaze shows use the anime library schema.
+   Cross-show franchise grouping is handled only by ATFranchiseEngine12130. */
 window.ATTVUnified120=(()=>{
- const dexterNames=['Dexter','Dexter: New Blood','Dexter: Original Sin','Dexter: Resurrection'];
- const isDexter=title=>dexterNames.some(n=>n.toLowerCase()===String(title||'').trim().toLowerCase());
+ const isDexter=()=>false; // legacy export only; no title-specific merge rules remain.
  const isTV=a=>a?.source==='TVMaze'||a?.format==='TV_SERIES'||String(a?.id||'').startsWith('tvmaze-');
  const validDate=v=>/^\d{4}-\d{2}-\d{2}$/.test(String(v||''))?String(v):'';
  const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
@@ -10,7 +9,7 @@ window.ATTVUnified120=(()=>{
  function convert(raw){
   if(!raw||!Number.isInteger(Number(raw.sourceId))||Number(raw.sourceId)<1)return null;
   const showId=Number(raw.sourceId),title=String(raw.title||'Serial TV').slice(0,180);
-  const seasons=(raw.seasons||[]).map(x=>{
+  const seasons=(raw.seasons||[]).filter(x=>Number(x.number)>0).map(x=>{
    const seasonNo=Number(x.number)||0,episodes=(x.episodes||[]).filter(e=>Number(e.id)>0).map((e,i)=>({
     number:Number(e.number)>0?Number(e.number):i+1,title:String(e.title||'Episodi '+(i+1)).slice(0,220),
     aired:validDate(e.airdate),airedAt:validDate(e.airdate)?validDate(e.airdate)+'T12:00:00Z':'',
@@ -19,14 +18,14 @@ window.ATTVUnified120=(()=>{
    const unique=new Map(episodes.map(e=>[e.number,e]));
    const sorted=[...unique.values()],total=sorted.length?Math.max(...sorted.map(e=>e.number)):0;
    const watched=sorted.filter(e=>(raw.watched||[]).map(Number).includes(Number(e.tvmazeEpisodeId))).map(e=>e.number);
-   return {id:'tvmaze-'+showId+'-s'+seasonNo,title:(isDexter(title)?title+' · ':'')+(seasonNo===0?'Speciale':'Sezoni '+seasonNo),subtitle:title,total,watched,source:'TVMaze',sourceId:String(showId),format:'TV_SERIES',year:raw.year||null,releaseStatus:'',episodes:sorted,imdbSeasonNumber:seasonNo};
+   return {id:'tvmaze-'+showId+'-s'+seasonNo,title:'Sezoni '+seasonNo,subtitle:title,total,watched,source:'TVMaze',sourceId:String(showId),format:'TV_SERIES',year:raw.year||null,releaseStatus:'',episodes:sorted,imdbSeasonNumber:seasonNo};
   }).filter(s=>s.total>0).sort((a,b)=>Number(a.id.split('-s').pop())-Number(b.id.split('-s').pop()));
   if(!seasons.length)seasons.push({id:'tvmaze-'+showId+'-s1',title:'Sezoni 1',subtitle:title,total:0,watched:[],source:'TVMaze',sourceId:String(showId),format:'TV_SERIES',episodes:[]});
   return {id:'tvmaze-'+showId,title,status:raw.status||'planning',format:'TV_SERIES',source:'TVMaze',sourceId:String(showId),tvmazeId:String(showId),tvmazeLoaded:true,hydrated:true,cover:poster(raw.image),year:raw.year||null,genre:(raw.genres||[]).join(', '),synopsis:clean(raw.summary),sourceUrl:raw.url||'',rating:null,communityScore:raw.rating?Math.round(Number(raw.rating)*10):null,communitySource:'TVMaze',createdAt:raw.updatedAt||new Date().toISOString(),updatedAt:raw.updatedAt||new Date().toISOString(),seasons};
  }
  function merge(anime,raw,normalize){
   const incoming=convert(raw);if(!incoming)return {anime,entry:null,changed:false};
-  const list=anime.slice(),existing=list.find(a=>isTV(a)&&(a.id===incoming.id||a.seasons?.some(s=>incoming.seasons.some(x=>x.id===s.id))||(isDexter(a.title)&&isDexter(incoming.title))));
+  const list=anime.slice(),existing=list.find(a=>isTV(a)&&(a.id===incoming.id||a.seasons?.some(s=>incoming.seasons.some(x=>x.id===s.id))));
   if(!existing){list.push(normalize(incoming));return {anime:list,entry:list[list.length-1],changed:true}}
   let changed=false;
   const ids=new Set(existing.seasons.map(s=>s.id));
@@ -39,7 +38,7 @@ window.ATTVUnified120=(()=>{
     current.watched=[...prior].sort((a,b)=>a-b);
     current.total=Math.max(current.total,season.total);
    }}
-  if(isDexter(existing.title)&&incoming.title==='Dexter'){existing.title='Dexter';if(incoming.cover)existing.cover=incoming.cover;changed=true}if(changed){existing.seasons.sort((a,b)=>{const ax=Number(a.sourceId),bx=Number(b.sourceId);return ax-bx||Number(a.id.split('-s').pop())-Number(b.id.split('-s').pop())});existing.updatedAt=new Date().toISOString()}
+  if(changed){existing.seasons.sort((a,b)=>{const ax=Number(a.sourceId),bx=Number(b.sourceId);return ax-bx||Number(a.id.split('-s').pop())-Number(b.id.split('-s').pop())});existing.updatedAt=new Date().toISOString()}
   const idx=list.indexOf(existing);list[idx]=normalize(existing);return {anime:list,entry:list[idx],changed};
  }
  function migrate(anime,legacy,normalize){let result=anime.slice(),changed=false;for(const show of legacy||[]){const next=merge(result,show,normalize);result=next.anime;changed=changed||next.changed}return {anime:result,tvShows:[],changed}}

@@ -1,6 +1,6 @@
-# AnimeTrack 12.12.4 — Franchise Timeline
+# AnimeTrack 12.13.0 — Franchise Timeline
 
-**Versioni i kodit:** 12.12.4. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
+**Versioni i kodit:** 12.13.0. Progresi është privat për çdo llogari. Përpara se të përdorësh veçori të reja, verifiko versionin në faqen publike dhe përditëso PWA nga njoftimi brenda aplikacionit.
 
 ### Përditësimet aktuale
 
@@ -133,9 +133,13 @@ Deploy i kodit nuk duhet të fshijë bibliotekat; për siguri eksporto periodiki
 - Fortifikimi RPC: `supabase/migrations/20260926154500_private_friend_rpc_hardening_112.sql` zhvendos implementimin me privilegje në skemë private dhe mban vetëm wrapper-at SECURITY INVOKER në API-n publike.
 
 
-## 12.12.4 · Cloud-first storage
+## 12.13.0 · Cloud-first storage
 Kur përdoruesi është i loguar, Supabase është kopja kanonike e bibliotekës. iPhone/PC ruan vetëm një recovery snapshot kompakt me progresin dhe të dhënat personale; metadata e episodeve që mund të shkarkohet sërish nuk kopjohet në localStorage.
 
 
-## 12.12.4 · One franchise, one card
+## 12.13.0 · One franchise, one card
 Anime franchises are deduplicated across AniList/MAL and TVMaze. AniList/MAL define season/movie chronology; TVMaze progress is bridged into that canonical timeline instead of creating another library card. Movies remain Film entries and never increment season numbering.
+
+
+## 12.13.0 · Canonical Franchise Engine
+Anime franchise structure now comes only from AniList relation IDs (with MAL only as a fallback metadata provider). Live-action TV franchise membership comes from Wikidata, while regular seasons/episodes come from TVMaze. TV specials never become numbered seasons. Global TV season numbering continues across sequel/revival shows in release order.
