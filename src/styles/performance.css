@@ -1,0 +1,25 @@
+/* AnimeTrack 13.5.2 — scroll/render performance.
+   Skip paint/layout work for cards that are far outside the viewport. */
+@supports (content-visibility:auto){
+  .anime-card,
+  .at118-card,
+  .at128-card,
+  .at129-card{
+    content-visibility:auto;
+    contain-intrinsic-size:260px 340px;
+  }
+}
+
+@media(max-width:760px){
+  .anime-card,
+  .at118-card{
+    contain:layout style;
+  }
+
+  /* Sticky blur is costly on iOS/WebKit while the modal is scrolling. */
+  body.at-ios-enabled #episode-detail-modal .at108-episode-tabs{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    background:#191a2f!important;
+  }
+}

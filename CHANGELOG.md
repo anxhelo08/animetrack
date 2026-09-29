@@ -2,9 +2,23 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.5.1` / package version `13.5.1`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.5.2` / package version `13.5.2`.
 
 ## [Unreleased]
+
+## [13.5.2] - 2026-09-29
+
+_Public release label: **13.5.2**._
+
+### Fixed
+- TVMaze seasons can no longer lose visible remaining episodes when incomplete or foreign airing metadata appears. Known historical season totals remain available instead of being demoted to “Në pritje”.
+- TVMaze entries are never passed through the MAL/Jikan franchise hydrator using a TVMaze source ID.
+- Episode release metadata from AniList/Jikan is ignored for TVMaze seasons; TVMaze episode dates remain the authority.
+
+### Performance
+- Lazy posters decode asynchronously and use low fetch priority to reduce main-thread image work.
+- Offscreen library/home/TV cards use content-visibility/containment where supported.
+- Mobile episode tabs no longer use a live backdrop blur while scrolling.
 
 ## [13.5.1] - 2026-09-29
 

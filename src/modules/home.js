@@ -26,7 +26,7 @@ window.ATHome=function ATHome(ctx){
   const eligible=ordered();
   return eligible.find(a=>a.id===selection)||qids().map(byId).find(a=>a&&a.status==='watching'&&next(a))||eligible[0]||anime().filter(a=>a.status==='planning')[0]||null;
  }
- function img(a,cls=''){const url=poster(a);return url?`<img class="${cls}" loading="lazy" referrerpolicy="no-referrer" src="${esc(url)}" alt="Posteri i ${esc(a.title)}">`:`<span class="at-h2-poster-empty">✦</span>`}
+ function img(a,cls=''){const url=poster(a);return url?`<img class="${cls}" loading="lazy" decoding="async" fetchpriority="low" referrerpolicy="no-referrer" src="${esc(url)}" alt="Posteri i ${esc(a.title)}">`:`<span class="at-h2-poster-empty">✦</span>`}
  function mount(home,recommend,dash){
   if(ctx.el('at-home-main'))return;
   const main=document.createElement('div');main.id='at-home-main';main.innerHTML='<div id="at-home-top"></div><div class="at-h2-top-grid"><section id="at-home-focus" aria-label="Vazhdo shikimin"></section><section id="at-home-session" aria-label="Lista e shikimit"></section></div><section id="at-home-lineup"></section><section id="at-home-releases"></section><section id="at-home-discovery"></section><section id="at-home-brief"></section><section id="at-home-seasons"></section>';
