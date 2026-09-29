@@ -51,7 +51,7 @@ test('12.8 AniList tag handling removes spoiler tags and low-confidence tags',()
  assert.deepEqual(Array.from(tags),['Isekai','Thriller']);
 });
 test('12.8 seasonal UI, mobile entry, provider queries and bounded regenerative caches',()=>{
- const app=read('src/app.js'),html=read('index.html'),features=read('src/modules/features.js'),main=read('src/main.js'),styles=read('src/styles/index.css'),sw=read('public/sw.js'),css=read('src/styles/seasonal.css');
+ const app=read('src/app.js'),html=read('index.html'),features=read('src/modules/features.js'),main=read('src/main.js'),styles=read('src/styles/index.css'),sw=read('src/sw.js'),css=read('src/styles/seasonal.css');
  for(const ref of ['season-genres','season-genre-search','season-filter-reset'])assert(html.includes(ref),ref);assert.match(main,/modules\/seasonal\.js/);assert.match(styles,/seasonal\.css/);
  assert(main.indexOf('./modules/seasonal.js')<main.indexOf('./app.js'));
  assert.match(app,/ATSeasonal128\.list/);assert.match(app,/ATSeasonal128\.safeTags/);
@@ -60,13 +60,13 @@ test('12.8 seasonal UI, mobile entry, provider queries and bounded regenerative 
  assert.match(app,/Object\.entries\(v8SeasonCache\)\.filter/);
  assert.match(features,/data-at128-open-seasons/);assert.match(features,/ctx\.navigate\('seasons'\)/);
  assert.match(css,/at128-season-search/);assert.match(css,/min-height:44px/);
- assert.match(sw,/animetrack-shell-v1352-1/);
+ assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);
  assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
  assert.match(html,/AnimeTrack 13\.5\.2/);
- assert.equal(JSON.parse(read('package.json')).version,'13.5.2');
+ assert.equal(JSON.parse(read('package.json')).version,'13.6.0');
 });
 test('12.8 auth/storage and PWA update protection stay enabled',()=>{
- const app=read('src/app.js'),sw=read('public/sw.js'),storage=read('src/modules/storage.js');
+ const app=read('src/app.js'),sw=read('src/sw.js'),storage=read('src/modules/storage.js');
  assert.match(app,/ATStorage1274\.save\(localStorage,KEY,localSnapshot,cloudRevision/);
  assert.match(app,/ATSync126\.remoteStatus/);
  assert.match(app,/cloudMirrorUnavailable=!mirror\.ok/);
