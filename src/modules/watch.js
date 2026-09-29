@@ -129,7 +129,7 @@ window.ATWatch133=function ATWatch133(ctx){
   };
   select.addEventListener('change',()=>{setRegion(select.value,false);void paint(false)});
   section.querySelector('[data-at133-refresh]')?.addEventListener('click',()=>void paint(true));
-  section.addEventListener('click',e=>{if(!e.target.closest('[data-at133-settings]'))return;ctx.closeDetail?.();ctx.navigate('explore');requestAnimationFrame(()=>{const d=document.getElementById('movie-provider-settings');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'};document.getElementById('tmdb-token-input')?.focus()}})});
+  section.addEventListener('click',e=>{if(!e.target.closest('[data-at133-settings]'))return;ctx.closeDetail?.();ctx.navigate('explore');requestAnimationFrame(()=>{const d=document.getElementById('movie-provider-settings');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('tmdb-token-input')?.focus()}})});
   await paint(false);
  }
  function peek(anime,part){return cacheRead(cacheKey(anime,part,region()))}
