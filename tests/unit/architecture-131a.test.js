@@ -10,7 +10,7 @@ const walk=dir=>fs.existsSync(dir)?fs.readdirSync(dir,{withFileTypes:true}).flat
 
 test('13.1.a uses Vite source/dist architecture and content hashes',()=>{
  const pkg=JSON.parse(read('package.json')),vite=read('vite.config.mjs'),html=read('index.html'),main=read('src/main.js');
- assert.equal(pkg.version,'13.5.2');assert.equal(pkg.releaseLabel,'13.5.2');assert.equal(pkg.devDependencies.vite,'8.3.1');
+ assert.equal(pkg.version,'13.6.0');assert.equal(pkg.releaseLabel,'13.6.0');assert.equal(pkg.devDependencies.vite,'8.3.1');
  assert.match(vite,/outDir:'dist'/);assert.match(vite,/\[name\]\.\[hash\]\.js/);assert.match(vite,/\[name\]\.\[hash\]\[extname\]/);
  assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotMatch(html,/\/assets\/pro-/);
  assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(main,/import\("\.\/modules\/movies\.js"\)/);assert.match(main,/import\("\.\/app\.js"\)/);
@@ -34,5 +34,5 @@ test('13.1.a standardizes browser E2E on Playwright Test',()=>{
 
 test('13.1.a keeps GitHub Actions focused and service worker hash-friendly',()=>{
  const workflows=walk(path.join(root,'.github/workflows')).filter(p=>/\.ya?ml$/.test(p));assert.equal(workflows.length,2);assert.ok(workflows.some(p=>p.endsWith('ci.yml')));assert.ok(workflows.some(p=>p.endsWith('generate-ios-icons.yml')));
- const sw=read('public/sw.js');assert.match(sw,/url\.pathname\.startsWith\('\/assets\/'\)/);assert.doesNotMatch(sw,/pro-[a-z-]+-\d+\.js/);
+ const sw=read('src/sw.js');assert.match(sw,/url\.pathname\.startsWith\('\/assets\/'\)/);assert.doesNotMatch(sw,/pro-[a-z-]+-\d+\.js/);
 });
