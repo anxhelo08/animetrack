@@ -160,7 +160,7 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
  await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="episode"]').click();
  assert.equal(await page.locator('#ep-detail-body').getAttribute('data-at108-tab'),'episode');
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
- for(const [tab,selector] of [['explore','#explore-view'],['library','#library-view'],['profile','#pro-view'],['home','#at-iphone-feed']]){
+ for(const [tab,selector] of [['explore','#explore-view'],['library','#library-view'],['diary','#pro-view'],['profile','#pro-view'],['home','#at-iphone-feed']]){
    await page.locator('[data-mobile-nav="'+tab+'"]').click();
    await page.waitForTimeout(70);
    const el=page.locator(selector);
@@ -177,6 +177,17 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
     assert.match(await page.locator('.at110-list-top').innerText(),/1 anime/);
     await page.locator('[data-pro-action="collection-back"]').click();
     assert(await page.locator('#library-view').isVisible(),'Back to library should work on iPhone');
+   }
+   if(tab==='diary'){
+    const diary=page.locator('#pro-content .at132-diary');
+    await diary.waitFor({state:'visible',timeout:3000});
+    assert(await page.locator('#pro-content [data-pro-action="diary-edit"]').count()>0,'Diary should expose editable watch entries');
+    await page.locator('#pro-content [data-pro-action="diary-edit"]').first().click();
+    await page.locator('#at132-diary-dialog').waitFor({state:'visible',timeout:3000});
+    assert(await page.locator('#at132-diary-date').inputValue(),'Diary editor keeps the watch date');
+    await page.locator('#at132-diary-dialog [data-at132-close]').first().click();
+    await page.locator('#at132-diary-dialog').waitFor({state:'hidden',timeout:3000});
+    console.log('DIARY_IPHONE_PASS');
    }
    if(tab==='profile'){
     assert(await page.locator('#pro-content .at129-profile-preview').isVisible(),'Profile displays earned achievement icons');
@@ -254,6 +265,7 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
   assert(sheet.nav>=44,'Bottom navigation should be usable at '+width+'x'+height);
   assert.equal(sheet.touch,'manipulation');
   await page.locator('#at-iphone-feed [data-ios-action="details"][data-id="demo1"]').first().click();
+  await page.locator('#detail-modal').waitFor({state:'visible',timeout:3000});
   assert(await page.locator('#detail-modal').isVisible(),'Anime details must be visible at '+width);
   const safe=await page.evaluate(()=>{
    const back=document.querySelector('#detail-modal .detail-back'),

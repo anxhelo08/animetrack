@@ -2,9 +2,26 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The public label `13.1.a` maps to package version `13.1.1`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.2` / package version `13.2.0`.
 
 ## [Unreleased]
+
+## [13.2.0] - 2026-09-29
+
+_Public release label: **13.2**._
+
+### Added
+- Personal Diary generated from dated episode, movie and rewatch activity.
+- Diary entry editing for date/time, private per-watch rating and private note.
+- Filters by media type, first watch/rewatch, month and text search.
+- Diary summary metrics and a 30-day activity heatmap.
+- Fifth mobile navigation tab for Diary.
+
+### Changed
+- New watch-history records now receive stable event IDs so Diary edits remain addressable across cloud sync.
+- Anime rewatch episode records preserve Diary note/rating metadata.
+- Diary date edits feed the existing Statistics and Wrapped calculations instead of maintaining a second activity database.
+
 
 ## [13.1.1] - 2026-09-28
 

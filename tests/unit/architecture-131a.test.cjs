@@ -5,7 +5,7 @@ const walk=dir=>fs.existsSync(dir)?fs.readdirSync(dir,{withFileTypes:true}).flat
 
 test('13.1.a uses Vite source/dist architecture and content hashes',()=>{
  const pkg=JSON.parse(read('package.json')),vite=read('vite.config.mjs'),html=read('index.html'),main=read('src/main.js');
- assert.equal(pkg.version,'13.1.1');assert.equal(pkg.releaseLabel,'13.1.a');assert.equal(pkg.devDependencies.vite,'8.3.1');
+ assert.equal(pkg.version,'13.2.0');assert.equal(pkg.releaseLabel,'13.2');assert.equal(pkg.devDependencies.vite,'8.3.1');
  assert.match(vite,/outDir:'dist'/);assert.match(vite,/\[name\]\.\[hash\]\.js/);assert.match(vite,/\[name\]\.\[hash\]\[extname\]/);
  assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotMatch(html,/\/assets\/pro-/);
  assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(main,/import\("\.\/modules\/movies\.js"\)/);assert.match(main,/import\("\.\/app\.js"\)/);

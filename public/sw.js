@@ -1,4 +1,4 @@
-const VERSION='animetrack-shell-v131a-1';
+const VERSION='animetrack-shell-v1320-1';
 const STATIC_CACHE=`${VERSION}-static`;
 const RUNTIME_CACHE=`${VERSION}-runtime`;
 const CORE=['/','/index.html','/manifest.webmanifest','/icon.svg','/icon-192.png','/icon-512.png','/apple-touch-icon.png'];

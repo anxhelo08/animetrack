@@ -18,7 +18,7 @@ window.ATRewatch=function ATRewatch(ctx){
    const s={id:ctx.uuid(),startedAt:new Date().toISOString(),completedAt:'',episodes:[]};a.rewatches.push(s);a.activeRewatchId=s.id;
   }else if(op==='rewatch-next'){
    const s=session(a),nx=s&&next(a,s);if(!nx){ctx.toast('Nuk ka episode të tjera të transmetuara.');return}
-   s.episodes.push({seasonId:nx.season.id,number:nx.n,date:new Date().toISOString()});
+   s.episodes.push({eventId:ctx.uuid(),seasonId:nx.season.id,number:nx.n,date:new Date().toISOString(),diaryNote:'',diaryRating:null});
   }else if(op==='rewatch-finish'){
    const s=session(a);if(!s)return;s.completedAt=new Date().toISOString();a.activeRewatchId='';
   }

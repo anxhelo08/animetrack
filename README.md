@@ -1,10 +1,21 @@
-# AnimeTrack 13.1.a — Project Architecture Cleanup
+# AnimeTrack 13.2 — Diary
 
-**Versioni publik:** 13.1.a · **package version:** 13.1.1. Progresi i përdoruesve dhe skema e Supabase nuk ndryshohen nga ky refactor.
+**Versioni publik:** 13.2 · **package version:** 13.2.0. Diary përdor historikun ekzistues dhe sinkronizohet me të njëjtën bibliotekë cloud.
 
-13.1.a është një release infrastrukture: funksionet e AnimeTrack 13.1 mbeten të njëjta, ndërsa repo kalon në build modern me Vite, asset-e me content hash, strukturë `src/` → `dist/`, E2E vetëm me Playwright dhe një histori të vetme në `CHANGELOG.md`.
+13.2 shton Diary si kronologji personale për episodet, filmat dhe rewatches, me datë/orë, rating të hyrjes, shënim privat, filtra dhe aktivitet 30-ditor. Të dhënat ruhen brenda historikut/rewatch records ekzistuese, pa tabelë të re.
 
 ### Përditësimet aktuale
+
+## AnimeTrack 13.2 · Diary
+- Diary ndërtohet automatikisht nga episodet, filmat dhe rewatches që regjistron si të parë.
+- Hyrjet grupohen sipas ditës dhe tregojnë sezonin/episodin, orën, first watch/rewatch dhe media type.
+- Çdo hyrje mund të ketë rating 0.5–10, shënim privat dhe datë/orë të korrigjueshme.
+- Filtra për Anime / Seriale TV / Filma, First Watch / Rewatch, muaj dhe kërkim me tekst.
+- Përmbledhje me aktivitetin e muajit, ditët aktive, mesataren e rating-eve dhe kohën e përafërt, plus heatmap 30-ditor.
+- Ndryshimi i datës në Diary përditëson Statistikat dhe Wrapped sepse përdoret i njëjti historik kanonik.
+- Diary është i disponueshëm si faqe desktop dhe si tab i pestë në navigimin mobile.
+- Metadata e Diary ruhet në payload-in ekzistues cloud, kështu që PC ↔ mobile sinkronizohet pa migrim databaze.
+
 
 ## AnimeTrack 13.1.a · Build & Repository Cleanup
 - Vite 8 prodhon automatikisht JavaScript/CSS me content hash; nuk përdoren më emra burimi si `pro-storage-1274.css` ose `pro-movies-12150.js`.
