@@ -53,7 +53,7 @@ test('12.7.4 persistent recovery gate is wired before app, and no site-data rese
  const html=read('index.html'),sw=read('src/sw.js'),core=read('src/app.js'),css=read('src/styles/tracking-media.css'),pkg=JSON.parse(read('package.json'));
  const main=read('src/main.js');assert.match(main,/modules\/storage\.js/);assert.match(main,/styles\/index\.css/);assert(main.indexOf('./modules/storage.js')<main.indexOf('./app.js'));
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.equal(pkg.version,'13.6.0');
+ assert.equal(pkg.version,'13.7.0');
  assert.match(core,/cloudMirrorUnavailable=!mirror\.ok/);assert.match(core,/data-at128-export/);
  assert.match(core,/const pending=cloudDirty/);assert.match(core,/ATStorage1274\.save\(localStorage,KEY,localSnapshot,cloudRevision,true/);
  assert.doesNotMatch(core,/localStorage\.clear\(/);

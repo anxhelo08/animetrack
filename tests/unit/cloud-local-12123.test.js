@@ -39,7 +39,7 @@ test('13.6 cloud-first module, generated PWA and release identity are wired befo
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountHydrateRemote\(remote,state\)/);assert.match(app,/accountApplyRemoteRecord/);
  assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);assert.match(app,/accountMergeRecovery\(remote,cached\)/);
  assert.match(app,/canReload:\(\)=>!cloudSaving&&!\(cloudDirty&&cloudMirrorUnavailable\)/);
- assert.equal(pkg.version,'13.6.0');assert.match(html,/AnimeTrack 13\.6\.0/);
+ assert.equal(pkg.version,'13.7.0');assert.match(html,/AnimeTrack 13\.7\.0/);
 });
 
 test('13.6 conflict merge unions watched progress and history from both devices',()=>{

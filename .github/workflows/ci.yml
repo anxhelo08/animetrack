@@ -2,7 +2,7 @@ name: AnimeTrack CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, "codex/**"]
   pull_request:
 
 permissions:
@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install pinned toolchain
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Unit tests and Vite production build
         run: npm test
       - name: Verify content-hashed production assets
@@ -67,7 +67,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install pinned toolchain
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Build production bundle
         run: npm run build
       - name: Install Playwright browser
@@ -75,7 +75,7 @@ jobs:
       - name: Run Playwright Test
         run: npx playwright test --project=${{ matrix.project }}
       - uses: actions/upload-artifact@v4
-        if: failure()
+        if: always()
         with:
           name: playwright-${{ matrix.project }}
           path: |

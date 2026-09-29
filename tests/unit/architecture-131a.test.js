@@ -10,11 +10,11 @@ const walk=dir=>fs.existsSync(dir)?fs.readdirSync(dir,{withFileTypes:true}).flat
 
 test('13.1.a uses Vite source/dist architecture and content hashes',()=>{
  const pkg=JSON.parse(read('package.json')),vite=read('vite.config.mjs'),html=read('index.html'),main=read('src/main.js');
- assert.equal(pkg.version,'13.6.0');assert.equal(pkg.releaseLabel,'13.6.0');assert.equal(pkg.devDependencies.vite,'8.3.1');
+ assert.equal(pkg.version,'13.7.0');assert.equal(pkg.releaseLabel,'13.7.0');assert.equal(pkg.devDependencies.vite,'8.3.1');
  assert.match(vite,/outDir:'dist'/);assert.match(vite,/\[name\]\.\[hash\]\.js/);assert.match(vite,/\[name\]\.\[hash\]\[extname\]/);
  assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotMatch(html,/\/assets\/pro-/);
  assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(main,/import\("\.\/modules\/movies\.js"\)/);assert.match(main,/import\("\.\/app\.js"\)/);
- assert.equal(fs.existsSync(path.join(root,'assets')),false);assert.equal(fs.existsSync(path.join(root,'dist')),false);
+ assert.equal(fs.existsSync(path.join(root,'assets')),false);assert.match(read('.gitignore'),/^dist\/$/m);
 });
 
 test('13.1.a source filenames no longer embed release numbers',()=>{

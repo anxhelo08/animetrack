@@ -51,8 +51,8 @@ test('13.6.0 mobile sync re-subscribes and re-fetches when app wakes',()=>{
 
 test('13.6.0 release identity is bumped for PWA cache invalidation',()=>{
  const pkg=JSON.parse(read('package.json')),sw=read('src/sw.js'),html=read('index.html');
- assert.equal(pkg.version,'13.6.0');
- assert.equal(pkg.releaseLabel,'13.6.0');
+ assert.equal(pkg.version,'13.7.0');
+ assert.equal(pkg.releaseLabel,'13.7.0');
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.match(html,/AnimeTrack 13\.6\.0/);
+ assert.match(html,/AnimeTrack 13\.7\.0/);
 });

@@ -3,7 +3,7 @@
    metadata stays out of the hot sync path so PC <-> mobile updates remain small. */
 window.ATCloudLocal12123=(()=>{
  const clone=value=>JSON.parse(JSON.stringify(value));
- const ANIME_FIELDS=['id','title','status','rating','year','genre','cover','notes','favorite','communityScore','communitySource','source','sourceId','malId','format','sourceUrl','synopsis','hydrated','franchiseVersion','tvmazeId','rewatches','activeRewatchId','imdbId','imdbRating','imdbVotes','tmdbId','runtime','director','cast','backdrop','releaseDate','movieWatchCount','lastWatchedAt','collectionId','collectionName','createdAt','updatedAt'];
+ const ANIME_FIELDS=['id','title','status','rating','year','genre','cover','notes','favorite','communityScore','communitySource','source','sourceId','malId','aliases','mergedIds','providerIds','format','sourceUrl','synopsis','hydrated','franchiseVersion','tvmazeId','rewatches','activeRewatchId','imdbId','imdbRating','imdbVotes','tmdbId','runtime','director','cast','backdrop','releaseDate','movieWatchCount','lastWatchedAt','collectionId','collectionName','createdAt','updatedAt'];
  const SEASON_FIELDS=['id','title','subtitle','aliases','total','watched','year','source','sourceId','malId','format','globalStart','epPage','myRating','arcRatings','releaseStatus','releaseStart','nextAiringAt','nextAiringEpisode','airedCount','imdbId','imdbSeasonNumber','hidden'];
  const pick=(value,fields)=>{
   const out={};
@@ -88,13 +88,14 @@ window.ATCloudLocal12123=(()=>{
    const key=[row.id||'',row.seasonId||'',row.episode||'',row.action||'',row.date||row.at||''].join('|');
    historyMap.set(key,row);
   }
-  return {
+  const merged={
    ...base,
    anime,
    tvShows:[],
    history:[...historyMap.values()],
    preferences:pending.preferences&&typeof pending.preferences==='object'?{...(base.preferences||{}),...pending.preferences}:(base.preferences||{})
   };
+  return window.ATLibraryIdentity137?.repair(merged)?.payload||merged;
  }
  function hydrateSeason(remote,rich){
   if(!rich)return clone(remote);

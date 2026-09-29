@@ -2,9 +2,24 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.6.0` / package version `13.6.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.7.0` / package version `13.7.0`.
 
 ## [Unreleased]
+
+## [13.7.0] - 2026-09-29
+
+### Fixed
+- Every library save, account open, cloud pull, Realtime payload and conflict recovery checks for verified duplicate anime records.
+- AniList/MAL identities and absorbed library/TVMaze IDs survive compact cloud payloads, preventing old devices from recreating a second card.
+- Canonical duplicates are reconciled before TVMaze matching, avoiding ambiguous matches to two copies of the same franchise.
+- Demon Slayer's four TVMaze seasons map into the five canonical TV arcs without shifting progress into films; bulk undo, episode notes, ratings, rewatch references and custom lists survive the merge.
+- Series updates roll back on persistence failure. Live-action movies cannot enter the anime franchise hydrator.
+- Full timelines retain up to 200 parts instead of truncating franchises to 45 parts.
+
+### Design
+- Refined library cards, search, metrics and controls with quieter surfaces and clearer typography on desktop and mobile.
+- One readable release timeline replaces duplicate horizontal season selectors. TV seasons and films have distinct labels, progress bars and All / Seasons / Films filters.
+- Timeline controls have selected states, touch-friendly sizes and reduced-motion support.
 
 ## [13.6.0] - 2026-09-29
 

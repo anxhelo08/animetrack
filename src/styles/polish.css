@@ -1,0 +1,103 @@
+/* AnimeTrack 13.7 — calm library surfaces and one readable release timeline. */
+:root{--surface-soft:#191b2a;--border-soft:rgba(184,178,216,.14);--shadow-card:0 8px 28px rgba(0,0,0,.16)}
+.primary{box-shadow:0 4px 14px #7654e72b}
+.main .section-head h3,.at113-library-title h2{letter-spacing:-.7px}
+#library-view .at113-library-head{padding:24px;background:radial-gradient(ellipse at 90% 0%,#66509125,transparent 65%),#171925;border-color:var(--border-soft);box-shadow:var(--shadow-card)}
+#library-view .at113-library-title>span{color:var(--purple);letter-spacing:1.9px;font-size:10px}
+#library-view .at113-library-title p{color:var(--muted);line-height:1.6}
+#library-view .at113-library-metrics>span{background:#ffffff03;border-color:var(--border-soft);border-radius:14px;min-width:82px;padding:9px 14px;color:var(--muted)}
+#library-view .at113-library-metrics b{color:var(--text);font-variant-numeric:tabular-nums}
+#library-view .at113-library-search{background:#10121d;border-color:var(--border-soft);border-radius:14px;min-height:48px}
+#library-view .anime-grid{gap:20px}
+#library-view .anime-card{background:#191b28;border-color:var(--border-soft);box-shadow:var(--shadow-card);border-radius:18px}
+#library-view .anime-card:hover{border-color:#a78bfa66;transform:translateY(-3px);box-shadow:0 12px 30px #0004}
+#library-view .anime-card .poster{height:auto;aspect-ratio:2/3}
+#library-view .card-info{padding:14px}
+#library-view .card-title{font-size:14px;font-weight:750;line-height:1.45}
+#library-view .card-row{color:#b6b5ca}
+#library-view .status-badge{background:#10121ded;border-color:#ffffff1f;backdrop-filter:none;border-radius:7px}
+#library-view .card-actions .ghost{background:#ffffff05;border-color:var(--border-soft);font-weight:650}
+#library-view .plus{background:#a78bfa1a;border-color:#a78bfa4d;color:#d4c5fc}
+#library-view .progress{height:4px;background:#ffffff0b}
+#library-view .filter,#library-view .sort{border-color:var(--border-soft);background:#191b28}
+#library-view .filter.active{background:#a78bfa20;border-color:#a78bfa60}
+#detail-modal .modal{border-color:var(--border-soft);box-shadow:0 30px 100px #0008}
+#detail-body .detail-top{gap:24px}
+#detail-body .detail-content h3{font-size:clamp(24px,3vw,34px);line-height:1.2;letter-spacing:-1px;margin:8px 0 14px}
+#detail-body .detail-poster{border-radius:16px;box-shadow:0 10px 32px #0005}
+#detail-body .detail-stats{color:var(--muted);font-variant-numeric:tabular-nums}
+#detail-body .pill{border-color:var(--border-soft);background:#ffffff04}
+#detail-body .seasons-topline{padding-top:22px;align-items:center;border-top:1px solid var(--border-soft);margin-top:26px}
+#detail-body .seasons-topline h4{font-size:17px;letter-spacing:-.3px}
+#detail-body .season-toolbar{gap:8px;flex-wrap:wrap}
+#detail-body .season-toolbar .primary{padding:10px 15px;font-size:12px;min-height:42px}
+.at131-franchise{margin:14px 0 24px;padding:22px;border-color:var(--border-soft);background:#151722;box-shadow:none;border-radius:18px}
+.at131-head{grid-template-columns:1fr;gap:14px}
+.at131-head h4{font-size:20px;letter-spacing:-.5px;margin:6px 0}
+.at131-head p{font-size:12px;max-width:620px;line-height:1.7}
+.at131-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.at131-summary>span{min-height:70px;background:#ffffff03;border-color:var(--border-soft);border-radius:12px;padding:12px 14px}
+.at131-summary small{font-size:9px;letter-spacing:.08em}
+.at137-timeline-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0 12px}
+.at137-timeline-tools p{margin:0;color:var(--muted);font-size:11px}
+.at137-timeline-filters{display:flex;gap:4px;padding:4px;border:1px solid var(--border-soft);border-radius:12px;background:#10121b}
+.at137-timeline-filters button{min-height:36px;padding:6px 11px;border:1px solid transparent;border-radius:8px;color:var(--muted);background:transparent;font-size:11px;font-weight:700}
+.at137-timeline-filters button[aria-pressed=true]{background:#a78bfa1b;border-color:#a78bfa33;color:#e0d5ff}
+.at131-track{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;overflow:visible;padding:0;margin-top:0;scroll-snap-type:none}
+.at131-track:before{display:none}
+.at131-part{min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;padding:14px;border-radius:13px;background:#1b1d2a;border-color:var(--border-soft);box-shadow:none}
+.at131-part[hidden]{display:none}
+.at131-part:hover{transform:none;border-color:#a78bfa50;background:#202232}
+.at131-part.active{border-color:#a78bfa80;background:#a78bfa0e;box-shadow:inset 3px 0 var(--purple)}
+.at131-part[data-part-format=MOVIE] .at131-step{background:#ffd48012;color:var(--yellow);border-color:#ffd48030}
+.at131-open{grid-column:1/-1;grid-template-columns:32px minmax(0,1fr);gap:12px;padding:0;min-height:80px}
+.at131-step{width:32px;height:32px;margin-top:2px;background:#a78bfa10;border-color:#a78bfa25;color:#cabbf5;font-variant-numeric:tabular-nums;border-radius:10px}
+.at131-icon{display:none}
+.at131-copy{gap:4px}
+.at131-copy strong{font-size:14px;display:flex;justify-content:space-between;gap:8px;white-space:normal}
+.at137-part-kind{flex-shrink:0;color:var(--muted);font-size:9px;letter-spacing:.05em;align-self:center;border:1px solid var(--border-soft);border-radius:5px;padding:2px 5px}
+.at131-part[data-part-format=MOVIE] .at137-part-kind{color:var(--yellow);border-color:#ffd48035}
+.at131-copy small{white-space:normal;font-size:11px;line-height:1.5;margin:0;overflow-wrap:anywhere}
+.at131-copy em{font-size:10px;color:#c0bacf;margin:0}
+.at137-part-progress{height:3px;border-radius:3px;background:#ffffff09;margin-top:7px;overflow:hidden}
+.at137-part-progress>span{display:block;height:100%;background:var(--purple);border-radius:3px}
+.at131-part[data-part-done=true] .at137-part-progress>span{background:var(--green)}
+.at131-rate,.at131-score{margin:12px 0 0;background:transparent;padding:0;border-radius:0}
+.at131-rate{justify-content:flex-start;gap:8px}
+.at131-rate select{font-size:11px;max-width:88px;min-height:36px;background:#121420;border-color:var(--border-soft)}
+.at131-score{gap:6px;align-self:center}
+.at131-score small{font-size:9px}
+.at131-score b{font-size:11px;color:#c9c4db}
+.at131-legacy-tabs{display:none}
+.at137-timeline-empty{grid-column:1/-1;color:var(--muted);padding:20px;text-align:center;border:1px dashed var(--border-soft);border-radius:12px;font-size:12px}
+#detail-body .season-banner{background:#191b28;border-color:var(--border-soft);border-radius:16px;padding:20px}
+#detail-body .season-banner>div>strong{font-size:18px}
+#detail-body .season-banner p{line-height:1.65;color:var(--muted)}
+#detail-body .episode-grid{gap:8px}
+#detail-body .episode-tile{border-color:var(--border-soft);border-radius:11px}
+.at131-arcs{border-color:var(--border-soft)}
+.at131-arc-head p{font-size:11px;line-height:1.6}
+.at131-arc-add{background:#ffffff02;border-color:var(--border-soft)}
+@media(min-width:1100px){#library-view .anime-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}}
+@media(max-width:900px){.at131-track{grid-template-columns:1fr}.at131-franchise{padding:18px}.at131-open{min-height:64px}}
+@media(max-width:620px){
+ #library-view .at113-library-head,body.at-ios-enabled #library-view .at113-library-head{padding:18px 14px;border-radius:16px;background:#171925;gap:14px}
+ #library-view .at113-library-title h2{font-size:25px;line-height:1.25}
+ #library-view .at113-library-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:7px}
+ #library-view .at113-library-metrics>span{min-width:0;padding:8px 4px;border-radius:10px;font-size:9px}
+ #library-view .at113-library-search{min-height:46px;padding:0 12px}
+ #library-view .anime-grid{gap:12px}
+ #library-view .anime-card,body.at-ios-enabled #library-view .anime-card{background:#191b28;border-color:var(--border-soft);border-radius:14px}
+ #library-view .anime-card .poster,body.at-ios-enabled #library-view .anime-card .poster{aspect-ratio:2/3;height:auto!important}
+ #library-view .anime-card .card-info,body.at-ios-enabled #library-view .anime-card .card-info{padding:12px 10px}
+ #library-view .anime-card .card-title,body.at-ios-enabled #library-view .anime-card .card-title{font-size:12px;line-height:1.45}
+ #library-view .anime-card .card-actions button{min-height:42px}
+ .at131-franchise{margin:12px 0 20px;padding:14px;border-radius:14px}
+ .at131-head h4{font-size:18px}.at131-head .eyebrow{font-size:9px;letter-spacing:1.6px}
+ .at131-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.at131-summary>span{padding:10px;min-height:66px}.at131-summary>span:last-child{grid-column:1/-1}
+ .at137-timeline-tools{gap:10px;margin:16px 0 12px}.at137-timeline-filters{width:100%}.at137-timeline-filters button{flex:1;min-height:40px;padding:6px}
+ .at131-part{padding:12px}.at131-rate select{min-height:42px}.at131-score small{display:none}
+ #detail-body .detail-top{gap:16px}#detail-body .detail-content h3{font-size:24px}
+ #detail-body .season-banner{padding:16px}.at131-copy small{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){#library-view .anime-card,.at131-part{transition:none;transform:none!important}}

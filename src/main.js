@@ -52,4 +52,5 @@ await import("./modules/franchise-engine.js");
 await import("./modules/movies.js");
 await import("./modules/cross-sync.js");
 await import("./modules/release-guard.js");
+await import("./modules/library-identity.js");
 await import("./app.js");

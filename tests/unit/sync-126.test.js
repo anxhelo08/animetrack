@@ -60,7 +60,7 @@ test('13.6 integration merges divergent updated_at revisions before conditional 
  assert.match(features,/await pwaUpdater\(true\)/);
  assert.match(read('src/sw.js'),/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(read('src/main.js'),/modules\/sync\.js/);
- assert.match(html,/AnimeTrack 13\.6\.0/);
+ assert.match(html,/AnimeTrack 13\.7\.0/);
 });
 
 test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{
