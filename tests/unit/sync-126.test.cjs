@@ -51,21 +51,22 @@ test('13.0 integration prevents blind offline overwrite and auto-activates the q
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountApplyRemoteRecord\(record\)/);assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);
  assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
  assert.match(app,/if\(accountUser\?\.id!==uid\|\|JSON\.stringify\(state\)!==prior\)/);
- assert.match(sw,/animetrack-shell-v1350-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
+ assert.match(sw,/animetrack-shell-v1351-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
  assert.match(sw,/await self\.skipWaiting\(\)/);
  assert.match(sw,/staleWhileRevalidate\(request\)/);
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
  assert.match(features,/if\(!updateRequested\)return/);
- assert.match(read('src/main.js'),/modules\/sync\.js/);assert.match(html,/AnimeTrack 13\.5/);
+ assert.match(read('src/main.js'),/modules\/sync\.js/);assert.match(html,/AnimeTrack 13\.5\.1/);
 });
 
 test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{
  const code=read('src/modules/cross-sync.js'),ctx={window:{}};vm.runInNewContext(code,ctx);const api=ctx.window.ATCrossSync12153;
- let event=null,opts=null,callback=null,subscribed=false,removed=false;
- const channel={on:(e,o,cb)=>{event=e;opts=o;callback=cb;return channel},subscribe:()=>{subscribed=true;return channel}};
+ let event=null,opts=null,callback=null,statusCallback=null,subscribed=false,removed=false;
+ const channel={on:(e,o,cb)=>{event=e;opts=o;callback=cb;return channel},subscribe:cb=>{subscribed=true;statusCallback=cb;return channel}};
  const client={channel:name=>{assert.equal(name,'animetrack-library-user-123');return channel},removeChannel:ch=>{assert.equal(ch,channel);removed=true}};
- let payload=null;const returned=api.start(client,'user-123',p=>payload=p);
+ let payload=null,status=null;const returned=api.start(client,'user-123',p=>payload=p,s=>status=s);
  assert.equal(returned,channel);assert.equal(event,'postgres_changes');assert.equal(opts.table,'anime_libraries');assert.equal(opts.filter,'user_id=eq.user-123');assert.equal(subscribed,true);
+ statusCallback('SUBSCRIBED');assert.equal(status,'SUBSCRIBED');
  callback({new:{updated_at:'2026-09-28T18:00:00Z'}});assert.equal(payload.new.updated_at,'2026-09-28T18:00:00Z');assert.equal(api.stop(client,channel),true);assert.equal(removed,true);
 });
 test('13.0 app has realtime plus focus/visibility/poll fallbacks',()=>{
