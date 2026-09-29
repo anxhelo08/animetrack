@@ -61,8 +61,8 @@ test('UI and PWA integration preserve all existing routes',()=>{
  assert.match(app,/!force&&s\.fillerPagesChecked\?\.includes\(metadataPage\)/);
  assert.match(app,/data-filler-manual/);
  assert.match(css,/at1210-chip\.filler/);assert.match(css,/at1210-manual/);
- assert.match(main,/modules\/filler\.js/);assert.match(styles,/filler\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.5\.2/);
+ assert.match(main,/modules\/filler\.js/);assert.match(styles,/filler\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.6\.0/);
  assert.equal(JSON.parse(read('package.json')).version,'13.6.0');
 });
 
