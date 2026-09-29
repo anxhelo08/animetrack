@@ -73,7 +73,7 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  assert.match(main,/modules\/episode-hub\.js/);assert.match(main,/modules\/tv-episodes\.js/);assert.match(styles,/episode-hub\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1352-1/);
  assert.match(html,/AnimeTrack 13\.5\.1/);
 });
 
