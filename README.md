@@ -241,3 +241,5 @@ Cinemeta is now the primary zero-key movie discovery source. It searches a large
 
 ## 12.15.3 · Cross-device cloud sync
 Movie and library changes now use the existing Supabase Realtime publication for `anime_libraries`. A change saved on PC triggers a quiet pull on an already-open iPhone session, and vice versa. Movie add/watch/rewatch/rating/note actions request an immediate cloud flush instead of relying only on the generic delayed queue. Focus, pageshow, visibility return and a 30-second foreground safety poll provide fallback recovery when Realtime is interrupted. No database migration is required.
+
+<!-- production-redeploy: 13.5.1 -->
