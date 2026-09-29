@@ -163,7 +163,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/compact.css'),'utf8'),sw=fs.readFileSync(path.join(root,'public/sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudSaving&&!\(cloudDirty&&cloudMirrorUnavailable\)/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1352-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -341,7 +341,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(main,/modules\/smart-airing\.js/);assert.match(main,/modules\/push\.js/);
  assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
- assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(sw,/animetrack-shell-v1352-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -406,7 +406,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
  assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
  assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(sw,/animetrack-shell-v1352-1/);
  assert.match(html,/viewport-fit=cover/);
  assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
@@ -527,7 +527,7 @@ test('11.4.1 watches ignored metadata update for seven-day inactivity and filter
 });
 test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
  const css=fs.readFileSync(path.join(root,'src/styles/mobile-controls.css'),'utf8'),sw=fs.readFileSync(path.join(root,'public/sw.js'),'utf8');
- assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1352-1/);
 });
 
 test('11.5 daily experience uses shared library, real weekly history and existing episode actions',()=>{
@@ -673,7 +673,7 @@ test('11.8 TV resources, cloud normalization and mobile entry are wired',()=>{
  const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.match(main,/modules\/tv\.js/);assert.match(styles,/tv\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
  assert.match(app,/function normalizeTVShows/);assert.match(app,/ATTVUnified120\.migrate/);
  assert.doesNotMatch(pro,/data-mobile-nav="tv"/);assert.match(pro,/modules\.tv\.render/);
- assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(sw,/animetrack-shell-v1352-1/);
 });
 
 test('11.9 unified library: TV totals, progress and content switch without changing anime',()=>{
@@ -687,7 +687,7 @@ test('11.9 unified library: TV totals, progress and content switch without chang
  assert.match(html,/data-media-filter="all"/);assert.match(html,/data-media-filter="anime"/);assert.match(html,/data-media-filter="tv"/);
  assert.match(core,/ATUnified119\?\.render/);assert.match(features,/modules\.day\.render\(true\)/);
  assert.match(features,/data-at119-add-tv/);assert.match(css,/\.at117-library-tools button\.active/);
- assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.match(sw,/animetrack-shell-v1352-1/);
 });
 
 test('11.9.1 single catalog searches anime and TV, opens TV from results and retains one library',()=>{
@@ -729,7 +729,7 @@ test('12.0 shared UI, catalog, calendar and cloud migration are connected',()=>{
  assert.match(core,/at120-unified-tv-open/);assert.match(core,/data-media=/);
  assert.match(core,/function refreshUpcoming/);assert.match(core,/source:'TVmaze'/);
  assert.match(pro,/at120-unified-tv-open/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/modules\/tv-unified\.js/);
- assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(sw,/animetrack-shell-v1352-1/);
 });
 
 test('12.0.1 TV search opens preview without forced library mutation',()=>{
