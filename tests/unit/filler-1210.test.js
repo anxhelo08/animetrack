@@ -51,7 +51,7 @@ test('unverified providers and incomplete payloads are never labelled by guessin
  assert.throws(()=>f.merge({episodes:[]},null,false),/Invalid Jikan/);
 });
 test('UI and PWA integration preserve all existing routes',()=>{
- const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/filler.css'),sw=read('public/sw.js');
+ const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/filler.css'),sw=read('src/sw.js');
  assert.doesNotThrow(()=>new vm.Script(app));
  assert.match(app,/ATFiller1210\.merge\(s,j\.data,shared,now\(\)\)/);
  assert.doesNotMatch(app,/s\.episodes\.length>=s\.total\)return/);
@@ -62,8 +62,8 @@ test('UI and PWA integration preserve all existing routes',()=>{
  assert.match(app,/data-filler-manual/);
  assert.match(css,/at1210-chip\.filler/);assert.match(css,/at1210-manual/);
  assert.match(main,/modules\/filler\.js/);assert.match(styles,/filler\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(sw,/animetrack-shell-v1352-1/);assert.match(html,/AnimeTrack 13\.5\.2/);
- assert.equal(JSON.parse(read('package.json')).version,'13.5.2');
+ assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.5\.2/);
+ assert.equal(JSON.parse(read('package.json')).version,'13.6.0');
 });
 
 test('12.10.2 Jikan pages are marked complete only when all flags are present',()=>{
