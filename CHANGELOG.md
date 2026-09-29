@@ -13,7 +13,7 @@ _Public release label: **13.6.0**._
 ### Security
 - Audited and hardened RLS/grants for profiles, friendships, push reminders and push subscriptions; anonymous table access is explicitly revoked.
 - SECURITY DEFINER friend lookup/request helpers keep an empty immutable search path, verify auth.uid(), and deny anonymous execution.
-- External movie and MAL/Jikan metadata is sanitized through DOMPurify before it reaches UI renderers.
+- External movie, MAL/Jikan, TVMaze, recommendation and rich-details metadata is sanitized through DOMPurify before it reaches UI renderers.
 - Security-header regression coverage verifies clickjacking and MIME-sniffing protections.
 
 ### Stability
