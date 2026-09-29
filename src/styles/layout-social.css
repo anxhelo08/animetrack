@@ -1,0 +1,483 @@
+/* AnimeTrack 13.6 — Bundle 2/6. Original cascade order preserved. */
+
+/* ===== desktop.css ===== */
+/* AnimeTrack 10.6 — desktop-only viewing workflow; iPhone layout remains isolated. */
+@media (min-width:761px){
+ #at-home-lineup{min-width:0}
+ .at-pc-watch-tools{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:13px 0 10px}
+ .at-pc-watch-search{display:flex;align-items:center;gap:10px;flex:1;min-width:220px;max-width:460px;min-height:43px;padding:0 14px;background:#1c1f31;border:1px solid #454059;border-radius:12px;color:#bcb1da;transition:border-color .17s,box-shadow .17s}
+ .at-pc-watch-search:focus-within{border-color:#ae91ed;box-shadow:0 0 0 3px #9e77df22}
+ .at-pc-watch-search>span{font-size:21px;line-height:1}
+ .at-pc-watch-search input{width:100%;min-width:0;padding:8px 0;border:0;outline:0;background:transparent;color:#f8f3ff;font-size:13px}
+ .at-pc-watch-search input::placeholder{color:#9692ad}
+ .at-pc-watch-search input::-webkit-search-cancel-button{cursor:pointer}
+ .at-pc-undo{min-height:42px;padding:8px 14px;background:#2f2846;border:1px solid #8d72b9;border-radius:11px;color:#e7d5ff;font-size:12px;font-weight:850;cursor:pointer}
+ .at-pc-undo:hover{background:#493561;border-color:#bd9ef5}
+ .at-pc-more-wrap{text-align:center;padding:19px 0 3px}
+ .at-pc-more{min-height:41px;min-width:210px;padding:10px 18px;color:#e6d7ff;font-weight:800;font-size:12px;border:1px solid #79679c;border-radius:11px;background:#302942;cursor:pointer}
+ .at-pc-more:hover{background:#45345e}
+ .at-h2-lineup-card{transition:border-color .17s,transform .17s}
+ .at-h2-lineup-card:hover{border-color:#9d81cb;transform:translateY(-2px)}
+ .at-h2-lineup-name:hover{text-decoration:underline}
+ .at-h2-lineup-actions button:focus-visible,.at-pc-more:focus-visible,.at-pc-undo:focus-visible{outline:2px solid #d5baff;outline-offset:2px}
+}
+@media (min-width:761px) and (max-width:1060px){
+ .at-pc-watch-tools{align-items:stretch}
+ .at-pc-watch-search{max-width:none;flex:1}
+ .at-h2-lineup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:760px){
+ .at-pc-watch-tools,.at-pc-more-wrap{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){.at-h2-lineup-card,.at-pc-watch-search{transition:none}.at-h2-lineup-card:hover{transform:none}}
+
+/* ===== quality.css ===== */
+/* AnimeTrack 10.7 — stable watch actions and explicit save status; shared visual language. */
+.at-ios-watch-feedback{display:flex;align-items:center;gap:9px;min-height:38px;margin:-7px 0 17px;padding:8px 11px;border:1px solid #49455c;border-radius:11px;background:#211f31;color:#bab6cf;font-size:10px;line-height:1.35}
+.at-ios-watch-feedback>span:nth-child(2){flex:1;min-width:0}
+.at-ios-sync-dot{display:block;width:8px;height:8px;flex:none;border-radius:50%;background:#73d7ac;box-shadow:0 0 0 3px #73d7ac12}
+.at-ios-sync-dot.pending{background:#eac17c;box-shadow:0 0 0 3px #eac17c20}
+.at-ios-sync-dot.busy{background:#bca4f3;animation:at107-sync-pulse 1.1s ease-in-out infinite}
+.at-ios-watch-feedback button{min-height:32px;flex:none;padding:6px 10px;border:1px solid #987ac8;border-radius:8px;background:#4c396a;color:#f5eaff;font-size:10px;font-weight:850;cursor:pointer}
+.at-ios-watch-feedback button:focus-visible{outline:2px solid #dbc6fc;outline-offset:2px}
+.at-ios-section-heading button[disabled]{opacity:.55;cursor:progress}
+.at-ios-empty[role="alert"]{border-color:#846ca4}
+.at-ios-empty[role="alert"] button{min-height:42px}
+.at-h4-sync-dot{transition:background-color .15s}
+.at-live-checking .at-h4-sync button{opacity:.68;pointer-events:none}
+.at-pro-recovery{display:grid;justify-items:start;gap:12px;border:1px dashed #756394;border-radius:16px;background:#242033;padding:25px;color:#f5edff}
+.at-pro-recovery h3{margin:0;font-size:19px}
+.at-pro-recovery p{margin:0;color:#bfb5d4;font-size:12px;line-height:1.55}
+.at-pro-recovery button{min-height:39px;border:1px solid #9f81d4;border-radius:10px;background:#654b9b;color:#fff;padding:9px 14px;font-weight:800;cursor:pointer}
+@keyframes at107-sync-pulse{50%{opacity:.35;transform:scale(.82)}}
+@media(prefers-reduced-motion:reduce){.at-ios-sync-dot.busy{animation:none}}
+@media(max-width:760px){.at-ios-watch-feedback{margin-top:-4px}.at-ios-watch-feedback button{min-height:38px}}
+
+/* ===== journey.css ===== */
+/* AnimeTrack 11.0 · Episode Hub only. Native season selector handles all seasons. */
+.at108-kicker{font-size:10px;letter-spacing:1.25px;text-transform:uppercase;color:#bca0f0;font-weight:900}
+#episode-detail-modal .ep-detail-dialog{width:min(900px,100%);max-height:min(95dvh,990px)}
+#episode-detail-modal .modal-header{border-bottom:1px solid #ffffff10}
+.at108-episode-head{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;margin:3px 0 12px;padding:15px;border:1px solid #564567;border-radius:15px;background:linear-gradient(115deg,#35294d,#1f2434)}
+.at108-episode-summary{display:grid;gap:6px;min-width:0}
+.at108-episode-summary>div{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.at108-episode-summary strong{font-size:26px;line-height:1.05;letter-spacing:-.6px}
+.at108-episode-summary>div span{border-radius:99px;padding:5px 8px;border:1px solid #5c516a;background:#262337;font-size:10px;font-weight:800;color:#d1c5e5}
+.at108-episode-summary>div span.seen{background:#234842;border-color:#4d8477;color:#bffbea}
+.at108-episode-summary small{font-size:10px;color:#b1a7c7}
+.at108-episode-switch{display:flex;align-items:center;flex-wrap:wrap;justify-content:end;gap:7px}
+.at108-episode-switch button{min-height:39px;padding:8px 12px;border-radius:9px;border:1px solid #8b6bc0;background:#57437f;color:#fff;font-size:11px;font-weight:850}
+.at108-episode-switch button:first-child{background:#28283b;border-color:#5f536e;color:#e4d9f6}
+.at108-no-episode{color:#88849f;font-size:10px;max-width:130px}
+.at108-episode-tabs{display:flex;align-items:center;gap:7px;margin:0 0 18px;padding:5px;background:#17192a;border:1px solid #37364c;border-radius:12px}
+.at108-episode-tabs button{flex:1;min-height:39px;border:0;border-radius:9px;background:transparent;color:#b5acc8;font-size:12px;font-weight:850}
+.at108-episode-tabs button.active{background:#544078;color:#fff}
+.at108-episode-tabs button span{margin-left:5px;padding:2px 5px;border-radius:99px;background:#ffffff20;font-size:10px}
+#ep-detail-body[data-at108-tab="episode"]>.v98-discussion{display:none!important}
+#ep-detail-body[data-at108-tab="discussion"]>:not(.at108-episode-head):not(.at108-episode-tabs):not(.v98-discussion){display:none!important}
+#ep-detail-body[data-at108-tab="discussion"]>.v98-discussion{display:block!important}
+#episode-detail-modal .v98-navline{display:none!important}
+#episode-detail-modal .ep-detail-visual{max-height:370px;overflow:hidden;border-radius:15px}
+#episode-detail-modal .ep-detail-visual img{max-height:370px;object-fit:cover}
+#episode-detail-modal .v98-discussion{margin-top:4px}
+.at108-episode-switch button:focus-visible,.at108-episode-tabs button:focus-visible{outline:2px solid #e2d0ff;outline-offset:2px}
+@media(max-width:760px){
+ #episode-detail-modal .ep-detail-dialog{width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - 12px);border-radius:18px}
+ #episode-detail-modal .modal-body{padding:9px 13px calc(22px + env(safe-area-inset-bottom))}
+ .at108-episode-head{display:grid;gap:12px;padding:13px}
+ .at108-episode-summary strong{font-size:23px}
+ .at108-episode-switch{justify-content:space-between;flex-wrap:nowrap}
+ .at108-episode-switch button{flex:1;min-height:42px;padding:7px 6px;font-size:10px}
+ .at108-no-episode{max-width:110px}
+ .at108-episode-tabs{position:sticky;top:0;z-index:5;background:#191a2bf5;backdrop-filter:blur(12px)}
+ .at108-episode-tabs button{min-height:43px}
+}
+
+/* ===== airing.css ===== */
+/* AnimeTrack 10.9 — personal anime week, opt-in reminders, push readiness. */
+.at109-smart-week{display:grid;gap:15px;padding:19px;margin:0 0 20px;border:1px solid #55496c;border-radius:19px;background:linear-gradient(125deg,#27233c,#1c2534)}
+.at109-week-heading{display:flex;align-items:start;justify-content:space-between;gap:13px}
+.at109-eyebrow{font-size:9px;letter-spacing:1.3px;font-weight:900;color:#bca5f2}
+.at109-week-heading h3{margin:3px 0;font-size:20px;letter-spacing:-.4px;color:#faf6ff}
+.at109-week-heading p{margin:0;font-size:11px;color:#aaa6c0}
+.at109-week-heading>button{min-height:35px;flex:none;border:1px solid #8b72bd;border-radius:9px;padding:7px 10px;background:#4e3b78;color:#f9eeff;font-weight:850;font-size:10px}
+.at109-week-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.at109-week-stats span{display:flex;align-items:baseline;gap:6px;padding:10px 12px;border:1px solid #4a405c;border-radius:10px;background:#1a2030;color:#bcb1cf;font-size:10px}
+.at109-week-stats b{font-size:21px;color:#f7edff}
+.at109-week-list{display:grid;gap:8px}
+.at109-week-event{display:flex;align-items:center;gap:10px;min-height:69px;padding:10px 12px;background:#1b2030;border:1px solid #3d4056;border-radius:12px}
+.at109-week-date{display:grid;gap:2px;min-width:88px;color:#e5d7ff}
+.at109-week-date b{font-size:11px}.at109-week-date small{font-size:10px;color:#aaa7c0}
+.at109-week-event>div{display:grid;gap:4px;flex:1;min-width:0}
+.at109-week-event>div strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.at109-week-event>div small{color:#aca6bd;font-size:10px}
+.at109-week-event>button{width:33px;height:33px;flex:none;background:#34294c;color:#e4d5ff;border:1px solid #6b557d;border-radius:9px}
+.at109-reminder-choice{display:flex;align-items:center;gap:5px;flex:none;font-size:11px;color:#e4d5ff}
+.at109-reminder-choice select{min-height:33px;max-width:160px;padding:6px 8px;background:#29283e;color:#f4eaff;border:1px solid #6b5982;border-radius:8px;font-size:11px}
+.at109-reminder-choice select:focus-visible{outline:2px solid #c0a2f4;outline-offset:2px}
+.at109-week-disclaimer,.at109-empty{margin:0;font-size:10px;line-height:1.5;color:#a5a1b7}
+.at109-settings{display:grid;gap:15px;padding:18px;border:1px solid #544765;border-radius:17px;margin:0 0 20px;background:#201e31}
+.at109-settings h3{font-size:18px;margin:4px 0}.at109-settings p{font-size:11px;color:#b5aec8;line-height:1.55;margin:0}
+.at109-settings>small{font-size:10px;line-height:1.5;color:#aaa4c0}
+.at109-default{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;font-size:11px;font-weight:800}
+.at109-default select{min-height:38px;border-radius:9px;border:1px solid #73608a;background:#2a283e;color:#f5eeff;padding:8px 11px;font-size:11px}
+.at109-push-state{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px;border:1px solid #564763;border-radius:13px;background:#1b1e2f}
+.at109-push-state.enabled{border-color:#538677;background:#1a332e}
+.at109-push-state>div{flex:1;min-width:0}
+.at109-push-state strong{font-size:12px}.at109-push-state p{margin:5px 0;font-size:11px}.at109-push-state small{font-size:9px;color:#a5a0b9}
+.at109-push-dot{display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:50%;background:#e1b470}
+.at109-push-state.enabled .at109-push-dot{background:#78d8aa}
+.at109-push-state>button{min-height:37px;flex:none;max-width:135px;padding:8px;border:1px solid #9472bc;border-radius:9px;background:#554078;color:#fff;font-size:10px;font-weight:850}
+.at109-push-state>button:disabled{opacity:.6}
+.at-cal-event .at109-reminder-choice{margin:8px 0 0}
+.at-cal-event .at109-reminder-choice select{max-width:180px}
+@media(max-width:760px){
+ .at109-smart-week{padding:13px;margin:0 0 19px;border-radius:15px;gap:11px}
+ .at109-week-heading h3{font-size:17px}
+ .at109-week-heading p{font-size:10px}
+ .at109-week-heading>button{max-width:107px;line-height:1.3;min-height:37px}
+ .at109-week-stats span{display:grid;justify-items:center;text-align:center;gap:1px;padding:7px 3px;font-size:9px}
+ .at109-week-stats b{font-size:20px}
+ .at109-week-event{padding:9px;gap:8px}
+ .at109-week-date{min-width:65px}
+ .at109-week-event>div strong{font-size:11px}
+ .at109-reminder-choice select{font-size:10px}
+ .at109-settings{padding:14px}
+ .at109-push-state{align-items:stretch;flex-direction:column}
+ .at109-push-state>button{max-width:none;min-height:42px}
+ .at109-smart-week.compact .at109-week-event{min-height:56px}
+ .at109-smart-week.compact .at109-week-heading>button{background:#332849}
+}
+@media(max-width:370px){
+ .at109-week-heading{gap:6px}
+ .at109-week-heading>button{font-size:9px;max-width:97px;padding:7px 5px}
+ .at109-week-stats span{font-size:8px}
+}
+
+/* ===== collections.css ===== */
+/* AnimeTrack 11.0 — clean series view and private My Lists */
+.at110-library-link{min-height:41px;margin-left:auto;padding:9px 14px;border:1px solid #8167af;border-radius:11px;background:#39304e;color:#f5eaff;font-weight:850;font-size:12px;cursor:pointer}
+.at110-mobile-link{display:none}
+.at110-page{padding:12px 0 32px;max-width:1340px;margin:auto}
+.at110-heading{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:19px;padding:23px;border:1px solid #594874;border-radius:18px;background:linear-gradient(125deg,#302541,#1e2839)}
+.at110-kicker{font-size:9px;color:#bca0f4;letter-spacing:1.15px;font-weight:900}
+.at110-heading h2{font-size:29px;margin:6px 0;letter-spacing:-.7px}
+.at110-heading p{margin:0;font-size:12px;color:#bcb4d1;line-height:1.5}
+.at110-heading>button{flex:none;min-height:40px;padding:9px 13px;border:1px solid #786395;border-radius:11px;background:#342a47;color:#f0e3ff;font-size:12px;font-weight:850}
+.at110-shell{display:grid;grid-template-columns:minmax(220px,280px) minmax(0,1fr);gap:14px;align-items:start}
+.at110-aside,.at110-content{border:1px solid #494157;border-radius:17px;background:#202236;padding:17px;min-width:0}
+.at110-aside-head{display:flex;justify-content:space-between;align-items:center}
+.at110-aside-head h3{font-size:16px;margin:0 0 14px}
+.at110-aside-head span{font-size:10px;color:#b4a8cd}
+.at110-create{display:grid;gap:8px;margin-bottom:17px}
+.at110-create label,.at110-search label{font-size:11px;font-weight:850;color:#dad1e9}
+.at110-create input,.at110-search input{width:100%;min-width:0;min-height:42px;border:1px solid #60546f;border-radius:10px;padding:9px 12px;font-size:13px;background:#171a2b;color:#f8f3ff}
+.at110-create input::placeholder,.at110-search input::placeholder{color:#9992aa}
+.at110-create>button{min-height:41px;border-radius:10px;background:#654897;border:1px solid #9777cf;color:#fff;font-size:12px;font-weight:900}
+.at110-choices{display:grid;gap:7px}
+.at110-choices button{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:43px;padding:9px 12px;text-align:left;border:1px solid #444157;border-radius:10px;background:#29283c;color:#d8d0e9;font-size:12px;font-weight:800}
+.at110-choices button.active{background:#4b3971;color:#fff;border-color:#a288d2}
+.at110-choices button span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at110-choices button b{display:grid;place-items:center;min-width:24px;height:24px;background:#ffffff1a;border-radius:99px;font-size:11px}
+.at110-list-top{display:flex;align-items:start;justify-content:space-between;gap:13px;margin-bottom:21px}
+.at110-list-top h3{font-size:23px;margin:5px 0}
+.at110-list-top p{margin:0;color:#ada5c1;font-size:11px}
+.at110-list-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.at110-list-actions button{min-height:34px;border:1px solid #746083;border-radius:9px;background:#332b44;color:#e8daff;padding:7px 10px;font-size:10px;font-weight:850}
+.at110-list-actions button.danger{border-color:#865265;color:#ffd4db}
+.at110-pick{display:flex;align-items:center;gap:9px;flex-wrap:wrap;background:#403052;border:1px solid #9074b6;border-radius:12px;padding:12px;margin-bottom:18px}
+.at110-pick strong{font-size:12px;flex:1;min-width:130px}
+.at110-pick button{min-height:34px;border:1px solid #9b82c7;border-radius:8px;background:#624d8c;color:#fff;padding:7px 11px;font-size:11px;font-weight:850}
+.at110-content>h4{font-size:14px;margin:15px 0 10px}
+.at110-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:9px}
+.at110-anime{display:flex;align-items:center;gap:10px;min-width:0;border:1px solid #454059;border-radius:11px;background:#191e30;padding:7px}
+.at110-cover{display:grid;place-items:center;flex:none;width:42px;height:57px;overflow:hidden;padding:0;background:#352c48;border:0;border-radius:7px;color:#cba5fa}
+.at110-cover img{width:100%;height:100%;object-fit:cover}
+.at110-anime>div{display:grid;gap:5px;min-width:0;flex:1}
+.at110-anime>div strong{font-size:11px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.at110-anime>div small{font-size:9px;color:#aaa4bd}
+.at110-toggle{flex:none;min-height:33px;padding:7px 9px;border:1px solid #856ba6;border-radius:8px;background:#493566;color:#fff;font-size:10px;font-weight:800}
+.at110-toggle.selected{border-color:#598579;background:#244b43;color:#c6ffeb}
+.at110-divider{border-top:1px solid #50465f;margin:21px 0 16px}
+.at110-search{display:grid;gap:8px;margin-bottom:12px}
+.at110-empty,.at110-empty-note{color:#bcb3c8;font-size:12px;line-height:1.5}
+.at110-empty{display:grid;justify-items:center;gap:10px;text-align:center;padding:45px 12px}
+.at110-empty span{font-size:30px;color:#bf9be9}
+.at110-empty h3{margin:0;font-size:19px}.at110-empty p{margin:0}
+.at110-private-note{margin:16px 0;color:#a8a0b9;font-size:10px}
+.at110-page button:focus-visible,.at110-page input:focus-visible,.at110-library-link:focus-visible{outline:2px solid #d4baff;outline-offset:2px}
+@media(max-width:760px){
+ .at110-mobile-link{display:block;width:100%;margin:0 0 12px;min-height:44px;text-align:center}
+ .at110-library-link{min-height:38px;padding:8px 10px;font-size:11px}
+ .at110-page{padding-top:6px;padding-bottom:calc(110px + env(safe-area-inset-bottom))}
+ .at110-heading{padding:15px;border-radius:14px}
+ .at110-heading h2{font-size:22px}
+ .at110-heading>button{font-size:10px;padding:8px}
+ .at110-shell{display:flex;flex-direction:column;gap:10px}
+ .at110-aside,.at110-content{width:100%;padding:13px;border-radius:13px}
+ .at110-choices{display:flex;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+ .at110-choices button{flex:none;max-width:180px}
+ .at110-create{display:grid;grid-template-columns:1fr auto;align-items:end}
+ .at110-create label{grid-column:1/-1}
+ .at110-create>button{padding:8px 11px}
+ .at110-list-top{flex-direction:column}
+ .at110-list-actions{justify-content:flex-start}
+ .at110-items{grid-template-columns:1fr}
+ .at110-anime{min-height:68px}
+ .at110-toggle{min-height:40px}
+}
+
+/* ===== ios-polish.css ===== */
+/* AnimeTrack 11.0.1 — iPhone layout & touch ergonomics.
+   Keep pinch-to-zoom available for accessibility; disable accidental double-tap
+   smart zoom through touch-action: manipulation, not user-scalable=no.
+*/
+@media (max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse) {
+ :root {--at-mobile-safe-top:env(safe-area-inset-top,0px);--at-mobile-safe-bottom:env(safe-area-inset-bottom,0px)}
+ html {width:100%;max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
+ body {width:100%;max-width:100%;overflow-x:clip;-webkit-tap-highlight-color:transparent}
+ body.at-ios-enabled {min-width:0;padding-bottom:calc(91px + var(--at-mobile-safe-bottom))}
+ body.at-ios-enabled .app {min-width:0;max-width:100%;min-height:100dvh}
+ body.at-ios-enabled .main {
+   width:100%;min-width:0;max-width:100%;
+   padding:0 max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px))!important;
+ }
+ body.at-ios-enabled #home-view,
+ body.at-ios-enabled #library-view,
+ body.at-ios-enabled #explore-view,
+ body.at-ios-enabled #upcoming-view,
+ body.at-ios-enabled #seasons-view,
+ body.at-ios-enabled #statistics-view,
+ body.at-ios-enabled #pro-view {max-width:100%;min-width:0}
+ body.at-ios-enabled #home-view {padding-bottom:calc(104px + var(--at-mobile-safe-bottom))}
+ body.at-ios-enabled #library-view,
+ body.at-ios-enabled #explore-view,
+ body.at-ios-enabled #upcoming-view,
+ body.at-ios-enabled #seasons-view,
+ body.at-ios-enabled #statistics-view {
+   padding-top:calc(16px + var(--at-mobile-safe-top))!important;
+   padding-bottom:calc(110px + var(--at-mobile-safe-bottom))!important;
+ }
+ body.at-ios-enabled .pro-view {
+   padding-top:calc(16px + var(--at-mobile-safe-top))!important;
+   padding-bottom:calc(110px + var(--at-mobile-safe-bottom))!important;
+ }
+ body.at-ios-enabled .at-mobile-nav {
+   z-index:900;
+   left:0;right:0;bottom:0;
+   grid-template-columns:repeat(5,minmax(0,1fr));
+   padding:8px max(6px,env(safe-area-inset-right,0px))
+           calc(8px + var(--at-mobile-safe-bottom))
+           max(6px,env(safe-area-inset-left,0px));
+   min-height:calc(66px + var(--at-mobile-safe-bottom));
+   border-radius:17px 17px 0 0;
+   background:#171827f7;
+ }
+ body.at-ios-enabled .at-mobile-nav button {
+   min-width:0;min-height:50px;padding:7px 2px 5px;gap:4px;
+   border-radius:11px;align-content:center;
+ }
+ body.at-ios-enabled .at-mobile-nav button span {font-size:21px;line-height:1.12}
+ body.at-ios-enabled .at-mobile-nav button small {font-size:11px;line-height:1.2;font-weight:750}
+ body.at-ios-enabled .at-ios-shell {padding-top:calc(19px + var(--at-mobile-safe-top));padding-bottom:20px}
+ .at-ios-header {margin-bottom:19px}
+ .at-ios-header h1 {font-size:clamp(25px,7.3vw,32px)}
+ .at-ios-header p {font-size:12px;line-height:1.45}
+ .at-ios-section-heading h2 {font-size:21px}
+ .at-ios-tabs button {min-height:44px;font-size:12px;padding-inline:13px}
+ .at-ios-episode-card {grid-template-columns:clamp(90px,26vw,114px) minmax(0,1fr);min-height:173px}
+ .at-ios-cover img {min-height:173px}
+ .at-ios-episode-copy {gap:7px;padding:12px 10px}
+ .at-ios-title {font-size:14px;line-height:1.28}
+ .at-ios-next {font-size:18px}
+ .at-ios-episode-copy>small {font-size:11px}
+ .at-ios-card-actions button {min-height:44px;padding:7px 8px;font-size:11px;white-space:normal;line-height:1.2}
+ .at-ios-card-actions {gap:6px}
+ .at-ios-release-copy button {min-height:42px;font-size:11px}
+ .at-ios-coming>button,.at-ios-section-heading>button,.at-ios-bell {min-width:44px;min-height:44px}
+ .at-ios-more,.at-ios-empty button {min-height:46px;font-size:12px}
+ .at-ios-watch-feedback button {min-height:44px;font-size:11px}
+ .at109-week-heading>button,.at110-library-link,.at110-heading>button {min-height:44px;font-size:11px}
+ .at109-week-event>button,.at110-list-actions button,.at110-create>button {min-height:44px}
+ .at110-heading {gap:9px}
+ .at110-heading h2 {font-size:clamp(19px,5.8vw,24px);line-height:1.2}
+ .at110-heading>button {white-space:nowrap}
+ .at110-create input,.at110-search input,.at109-default select,.at109-reminder-choice select {
+   font-size:16px!important;
+ }
+ /* Modal backdrops must outrank the tab bar (legacy bar used z-index:1000).
+    Put all controls below the notch and above the home indicator. */
+ .modal-backdrop:not(#detail-modal) {
+   padding:calc(12px + var(--at-mobile-safe-top))
+           max(12px,env(safe-area-inset-right,0px))
+           calc(12px + var(--at-mobile-safe-bottom))
+           max(12px,env(safe-area-inset-left,0px));
+ }
+ .modal-backdrop:not(#detail-modal)>.modal {
+   max-height:calc(100dvh - 24px - var(--at-mobile-safe-top) - var(--at-mobile-safe-bottom));
+   overscroll-behavior:contain;
+   -webkit-overflow-scrolling:touch;
+ }
+ #detail-modal {z-index:1150;padding:0!important;align-items:stretch}
+ #detail-modal .seasons-modal {
+   width:100%;max-width:100%;height:100dvh;max-height:100dvh;
+   overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ }
+ #detail-modal .modal-header {
+   position:sticky;top:0;z-index:8;
+   display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;
+   min-height:calc(65px + var(--at-mobile-safe-top));
+   padding:calc(12px + var(--at-mobile-safe-top))
+           max(13px,env(safe-area-inset-right,0px))
+           12px
+           max(13px,env(safe-area-inset-left,0px));
+   background:#171827f5;
+ }
+ #detail-modal .modal-header h2 {min-width:0;font-size:18px;line-height:1.3;overflow:hidden;text-overflow:ellipsis}
+ #detail-modal .detail-back {
+   display:inline-flex;align-items:center;justify-content:center;
+   min-height:46px;min-width:94px;margin:0;padding:8px 12px;white-space:nowrap;
+   font-size:13px;font-weight:800;line-height:1.2;border-radius:12px;
+ }
+ #detail-modal .modal-body {
+   width:100%;max-width:100%;padding:
+     16px max(13px,env(safe-area-inset-right,0px))
+     calc(30px + var(--at-mobile-safe-bottom))
+     max(13px,env(safe-area-inset-left,0px));
+ }
+ #detail-modal .detail-top {gap:12px}
+ #detail-modal .detail-poster {min-width:82px;width:82px;height:124px;flex:0 0 82px}
+ #detail-modal .detail-content h3 {font-size:clamp(18px,5vw,23px)}
+ #detail-modal .season-scroller {scroll-padding-inline:10px}
+ #detail-modal .season-tab {min-height:115px;flex-basis:145px}
+ #detail-modal .episode-list .ep-row button {min-height:44px}
+ #episode-detail-modal {z-index:1170;align-items:flex-start}
+ #episode-detail-modal .ep-detail-dialog {
+   width:100%;max-height:calc(100dvh - 24px - var(--at-mobile-safe-top) - var(--at-mobile-safe-bottom));
+   overflow-y:auto;
+ }
+ #episode-detail-modal .modal-header {
+   position:sticky;top:0;z-index:12;align-items:center;
+   padding:12px 13px;background:#1a1b2bf8;border-bottom:1px solid #39334d;
+ }
+ #episode-detail-modal .modal-header h2 {font-size:19px;line-height:1.25}
+ #episode-detail-modal .modal-header .x {flex:0 0 46px;width:46px;height:46px;font-size:24px}
+ #episode-detail-modal .modal-body {padding:12px 13px calc(24px + var(--at-mobile-safe-bottom))}
+ #episode-detail-modal .at108-episode-tabs {top:0}
+ #episode-detail-modal .at108-episode-switch button {min-height:44px}
+ #account-modal {z-index:1180}
+ #form-modal,#catalog-preview-modal {z-index:1180}
+ #confirm-modal,#season-confirm-modal {z-index:1200}
+ #account-modal .modal-header .x,
+ .modal-backdrop:not(#detail-modal) .modal-header>.x {width:46px;height:46px;flex:0 0 46px;font-size:23px}
+ .modal-backdrop:not(#detail-modal) .modal-header {align-items:center}
+ .modal-backdrop:not(#detail-modal) .modal-header h2 {font-size:clamp(18px,5.5vw,23px);line-height:1.25}
+ .toast {z-index:1300;bottom:calc(82px + var(--at-mobile-safe-bottom));left:12px;right:12px;max-width:none;font-size:13px}
+ .at-ios-install-dialog {max-height:calc(100dvh - 24px - var(--at-mobile-safe-top) - var(--at-mobile-safe-bottom));overflow-y:auto}
+ .at-ios-install-dialog button {min-height:44px}
+}
+@media(max-width:380px){
+ .at-ios-episode-card {grid-template-columns:90px minmax(0,1fr)}
+ .at-ios-episode-copy {gap:5px;padding:10px 8px}
+ .at-ios-title {font-size:12.5px}
+ .at-ios-next {font-size:17px}
+ .at-ios-card-actions button {font-size:10px;padding-inline:5px}
+ body.at-ios-enabled .at-mobile-nav button small {font-size:10px}
+ #detail-modal .modal-header h2 {font-size:16px}
+ #detail-modal .detail-back {min-width:88px;padding-inline:9px}
+}
+@media(max-width:760px) and (orientation:landscape) and (max-height:500px){
+ body.at-ios-enabled .at-mobile-nav button {min-height:44px;padding-block:4px}
+ body.at-ios-enabled .at-mobile-nav {min-height:calc(58px + var(--at-mobile-safe-bottom));padding-top:5px}
+ #detail-modal .modal-header {min-height:calc(54px + var(--at-mobile-safe-top));padding-top:calc(7px + var(--at-mobile-safe-top));padding-bottom:7px}
+}
+@media(hover:none) and (pointer:coarse){
+ /* manipulation blocks accidental double-tap zoom, but preserves pinch zoom. */
+ html,body,button,a,summary,select,label,[role="button"],
+ .at-ios-episode-card,.at-ios-release,.at-ios-coming,.anime-card,.modal-backdrop,.modal {
+   touch-action:manipulation;
+ }
+ input,textarea {font-size:16px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .at-ios-episode-card,.at-ios-tabs button,.at-mobile-nav button {transition:none!important}
+}
+
+/* Landscape iPhone is wider than 760 CSS pixels: keep the mobile app shell. */
+@media (max-height:500px) and (orientation:landscape) and (pointer:coarse) {
+ body.at-ios-enabled .app {display:block!important}
+ body.at-ios-enabled .sidebar,body.at-ios-enabled .topbar {display:none!important}
+ body.at-ios-enabled .main {display:block;max-width:100%;width:100%;padding-top:0!important}
+ body.at-ios-enabled .at-mobile-nav {display:grid!important;z-index:900}
+ body.at-ios-enabled #home-view.at-home-rebuilt > :not(#at-iphone-feed) {display:none!important}
+ body.at-ios-enabled #home-view.at-home-rebuilt > #at-iphone-feed {display:block!important;visibility:visible!important}
+ body.at-ios-enabled #at-iphone-feed {display:block!important}
+ .at-ios-shell {padding-top:calc(12px + env(safe-area-inset-top,0px));}
+ .at-ios-header {margin-bottom:11px}
+ .at-ios-header h1 {font-size:24px}
+ .at-ios-episode-card {min-height:150px}
+ .at-ios-cover img {min-height:150px}
+ #detail-modal .modal-header {padding-top:calc(8px + env(safe-area-inset-top,0px))}
+}
+
+/* ===== social.css ===== */
+/* AnimeTrack 11.1 — mobile-first media experience; retains the existing brand and data model. */
+:root{--at11-bg:#101017;--at11-panel:#1c1d28;--at11-border:#373343;--at11-violet:#bb9aff;--at11-gold:#f5d66b;--at11-muted:#aaa7bc}
+.at11-social-page{display:grid;gap:17px;min-width:0;max-width:1170px;margin:0 auto;padding-bottom:22px}
+.at11-social-hero{position:relative;overflow:hidden;border:1px solid #544368;border-radius:25px;padding:clamp(22px,4vw,38px);background:radial-gradient(circle at 90% 10%,#7252a280,transparent 48%),linear-gradient(132deg,#282038,#171c2b);box-shadow:0 20px 55px #07060b40}
+.at11-social-hero:after{content:'✦';position:absolute;right:6%;top:15%;color:#f5d66b33;font-size:115px;pointer-events:none}
+.at11-social-hero h2{margin:10px 0;font-size:clamp(27px,3.6vw,41px);letter-spacing:-1.35px;line-height:1.12;max-width:650px;color:#faf6ff}
+.at11-social-hero p{color:#c9c0d6;font-size:13px;line-height:1.55;max-width:560px;margin-bottom:17px}
+.at11-social-metrics{display:flex;gap:9px;flex-wrap:wrap}.at11-social-metrics span{display:flex;gap:7px;align-items:center;border:1px solid #ffffff27;background:#ffffff0d;border-radius:999px;padding:8px 12px;color:#cfc7db;font-size:11px}.at11-social-metrics strong{font-size:17px;color:#f4e5ff}
+.at11-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.at11-panel-head h3{font-size:19px;margin:3px 0;color:#f9f4ff}.at11-soft-pill,.at11-count{flex:none;border:1px solid #68547b;background:#4c385f56;border-radius:99px;padding:7px 11px;font-size:11px;color:#d9c7f7;font-weight:800}
+.at11-friend-search,.at11-social-page>.pro-panel,.at11-social-columns>.pro-panel{border-radius:21px;padding:20px;background:linear-gradient(150deg,#23202e,#1a1b28);border:1px solid #444052}
+.at11-friend-hint{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #78663f;border-radius:16px;padding:15px 17px;background:#48402845}.at11-friend-hint strong{color:#ffe19a}.at11-friend-hint p{margin:0;flex:1;min-width:180px;color:#d0c5ae;font-size:12px;line-height:1.5}
+.at11-friend-form{display:flex;gap:10px;align-items:stretch}.at11-input-shell{display:flex;align-items:center;gap:9px;flex:1;min-width:0;border:1px solid #5b536c;border-radius:13px;background:#11131d;padding:0 12px}.at11-input-shell:focus-within{border-color:#bb9aff;box-shadow:0 0 0 3px #ad82ee24}.at11-input-shell>span{color:#d4c0eb;font-size:24px}.at11-input-shell input{width:100%;min-width:0;height:48px;border:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#fff;font-size:15px}.at11-friend-form>.pro-btn{min-height:48px;min-width:96px;border-radius:12px;background:linear-gradient(135deg,#a67beb,#7456c6);color:white;font-weight:850}
+.at11-person-list{display:grid;gap:9px;min-width:0}.at11-friend-search .at11-person-list{margin-top:13px}.at11-person{display:flex;align-items:center;gap:12px;min-width:0;min-height:77px;padding:11px;border:1px solid #403b50;border-radius:15px;background:#12141f}.at11-person:hover{border-color:#725f90}.at11-social-avatar{display:grid;place-items:center;flex:0 0 51px;width:51px;height:51px;border-radius:16px;background:linear-gradient(130deg,#6f51a5,#405b7f);overflow:hidden;font-size:25px}.at11-social-avatar img{height:100%;width:100%;object-fit:cover}.at11-person-info{display:grid;gap:4px;min-width:0;flex:1}.at11-person-info strong{font-size:13px;color:#f8f6ff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.at11-person-info small{font-size:11px;color:#a8a1b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.at11-person-actions{display:flex;flex-wrap:wrap;justify-content:end;gap:6px}.at11-person-actions .pro-btn{min-height:38px;border-radius:10px;padding:8px 11px;font-size:11px;white-space:normal}.at11-person-actions .pro-btn.primary{background:linear-gradient(135deg,#9069cc,#674bbb);border-color:#997bd5;color:#fff}.at11-social-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.at11-search-state{margin:0;padding:17px;border:1px dashed #51495f;border-radius:13px;color:#bcb5cd;font-size:12px;line-height:1.5}.at11-compare{scroll-margin-top:24px}.at11-compare-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:17px}.at11-compare-metrics>div{display:grid;gap:6px;padding:20px;border:1px solid #584c6b;background:#2b243c;border-radius:16px}.at11-compare-metrics strong{font-size:32px;color:#eed7ff}.at11-compare-metrics small{color:#bcb0ca}.at11-compare-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #433c51;font-size:12px}.at11-compare-row small{color:#c8b6df}.at11-compare h4{margin:19px 0 6px}
+.at11-profile-social{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:16px}.at11-profile-social button{display:grid;gap:5px;justify-items:start;text-align:left;border:1px solid #50465f;border-radius:15px;background:#242030;padding:14px 16px;color:#f1edf8;cursor:pointer;transition:background .18s,border-color .18s,transform .18s}.at11-profile-social button:hover{border-color:#a586d4;background:#332944;transform:translateY(-2px)}.at11-profile-social strong{font-size:23px;line-height:1}.at11-profile-social span{font-size:11px;color:#b9b0c9;font-weight:700}.at11-profile-social .at11-find-friends{background:linear-gradient(120deg,#4d326e,#242e48);border-color:#8871bd}.at11-profile-social .at11-find-friends strong{color:#ead0ff}.at-profile-tabs .at11-friend-tab{margin-left:auto;color:#dbb9ff}
+/* Make logged episode actions feel intentional and responsive across devices. */
+.at-ios-done,.at-h3-watch-btn,.at-h2-lineup-actions [data-home-action="advance-next"],.ep-toggle-btn,.season-actions .primary{transition:transform .16s,box-shadow .16s,border-color .16s,background .16s}
+.at-ios-done:active,.at-h3-watch-btn:active,.ep-toggle-btn:active{transform:scale(.975)}
+.at11-watch-plus{display:grid;place-items:center;flex:none;width:31px;height:31px;border-radius:10px;background:#ffffff25;font-size:23px;font-weight:400}.at11-watch-check{flex:none;display:grid;place-items:center;width:25px;height:25px;border:1px solid #ffffff6c;border-radius:50%;font-size:12px}.at-ios-done>span:nth-child(2){display:grid;gap:3px;text-align:left;font-size:12px;font-weight:900}.at-ios-done>span:nth-child(2) small{font-size:9px;font-weight:650;opacity:.81}.at-ios-done{display:flex;align-items:center;justify-content:space-between;gap:6px;box-shadow:0 7px 19px #593c9b32}
+.at-ios-done:focus-visible,.ep-toggle-btn:focus-visible,.at11-person button:focus-visible,.at11-profile-social button:focus-visible{outline:3px solid #f3d785;outline-offset:3px}
+.ep-article{border-radius:13px;overflow:hidden}.ep-article .ep-info-btn{min-width:0}.ep-article .ep-toggle-btn{flex:none;min-height:43px;border-radius:10px;font-weight:850}.ep-article.seen .ep-toggle-btn{background:#24493f;color:#c3fce1;border-color:#477c68}.ep-article:not(.seen) .ep-toggle-btn{background:linear-gradient(145deg,#7a59b7,#5d4598);color:#fff;border-color:#977ac9}
+.at11-head-friends{display:inline-flex;align-items:center;gap:5px;border:1px solid #544763;background:#30273e;border-radius:13px;color:#ddc5ff;min-height:43px;padding:8px 11px;font-weight:850;font-size:12px;cursor:pointer}.at11-head-friends>span{font-size:11px}
+@media (min-width:761px){
+ .at-h2-lineup-card,.at-profile-stat,.pro-panel{box-shadow:0 8px 25px #09081118}.at-h2-lineup-actions [data-home-action="advance-next"]{border-radius:12px;background:linear-gradient(125deg,#8e69d3,#6346a6);color:#fff;border-color:#937bc3;font-weight:850}.at-h2-lineup-card:hover{box-shadow:0 18px 36px #09050d60}.ep-article{border:1px solid #433950;margin-bottom:6px}.ep-article:hover{border-color:#9372c9}
+ .at-profile-header{border-radius:25px}.at-profile-banner{background:radial-gradient(circle at 86% 0%,#7651b46d,transparent 44%),radial-gradient(circle at 10% 100%,#41858c49,transparent 50%),#241c34}
+ .at-profile-top-actions .pro-btn.primary{background:linear-gradient(135deg,#a67beb,#6f4cb7)}
+}
+@media(max-width:760px){
+ html,body{overscroll-behavior-x:none}
+ body.at-ios-enabled{background:#101017;color:#f8f6ff}
+ body.at-ios-enabled .main{padding-inline:max(14px,env(safe-area-inset-left,0px))!important}
+ body.at-ios-enabled .at-mobile-nav{border-radius:19px 19px 0 0!important;border:1px solid #4a4256!important;border-bottom:0!important;background:#17151fee!important;box-shadow:0 -12px 40px #08070bb5;backdrop-filter:blur(24px);gap:2px}
+ body.at-ios-enabled .at-mobile-nav button{border-radius:13px;min-height:52px;gap:4px}
+ body.at-ios-enabled .at-mobile-nav button.active{background:#3b2d53;color:#f2deff}
+ body.at-ios-enabled .at-mobile-nav button small{font-size:10px;letter-spacing:-.1px}
+ body.at-ios-enabled .at-ios-shell{padding-top:calc(13px + env(safe-area-inset-top,0px))}
+ .at-ios-header{display:flex;align-items:center;gap:8px}.at-ios-header>div{flex:1;min-width:0}.at-ios-header h1{font-size:clamp(23px,6.6vw,30px)}.at-ios-header p{font-size:12px}
+ .at11-head-friends{flex:0 0 45px;justify-content:center;width:45px;padding:0;border-radius:14px;color:#ffe19a;background:#373047;border-color:#5c4b72;font-size:25px}
+ .at11-head-friends>span{display:none}.at-ios-bell{flex:0 0 44px}
+ .at-ios-tabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:7px;padding-bottom:5px}.at-ios-tabs::-webkit-scrollbar{display:none}.at-ios-tabs button{flex:0 0 auto;min-height:45px;font-size:12px;border-radius:13px;padding:9px 12px}.at-ios-tabs button.active{background:linear-gradient(130deg,#8560cc,#5f498f)!important;border-color:#a486d6!important;color:#fff}
+ .at-ios-episode-card{background:linear-gradient(130deg,#262334,#1b1b27);border:1px solid #524762;border-radius:19px;box-shadow:0 10px 30px #06060a40;overflow:hidden;grid-template-columns:clamp(93px,26vw,116px) minmax(0,1fr)}
+ .at-ios-cover{min-height:178px}.at-ios-cover img{min-height:100%;height:100%;object-fit:cover}
+ .at-ios-cover-badge{background:#1c1629df;border-color:#8568a5;color:#f5e5ff}
+ .at-ios-episode-copy{gap:7px;padding:13px 11px}.at-ios-card-eyebrow{color:#e3c889}.at-ios-title{font-size:clamp(13px,3.65vw,15px);line-height:1.3}.at-ios-next{font-size:18px;color:#e9d8ff}
+ .at-ios-card-progress{height:5px;border-radius:5px;background:#494052}.at-ios-card-progress span{background:linear-gradient(90deg,#a77de5,#f1cc6d)}.at-ios-episode-copy>small{font-size:11px}
+ .at-ios-card-actions{grid-template-columns:minmax(0,1fr) auto;gap:7px}.at-ios-card-actions .at-ios-done{min-height:50px;border-radius:12px;padding:7px 9px;font-size:11px;line-height:1.1;background:linear-gradient(120deg,#9c72da,#6c4eb5);border-color:#ab8bdd;color:#fff;white-space:normal}.at-ios-card-actions .at-ios-detail{min-height:50px;border-radius:12px;border-color:#51465e;background:#302a3c;font-size:11px}
+ .at-ios-release,.at-ios-coming{border-radius:17px;border-color:#494052;background:#24212e}.at-ios-release-copy button:last-child{background:#30624d;border-color:#5d9575;color:#e4ffef;border-radius:9px;font-weight:850}
+ .at-ios-watch-feedback{background:#1c1c29;border-color:#393b4e;border-radius:13px;font-size:11px}.at-ios-watch-feedback button{border-radius:10px;background:#423456}
+ .at-ios-empty{background:#1c1d29;border-color:#4d425e}.at-ios-install{border-radius:17px}
+ .at11-profile-social{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.at11-profile-social button{padding:12px 8px;min-height:75px;justify-items:center;text-align:center;gap:5px;border-radius:13px}.at11-profile-social strong{font-size:23px}.at11-profile-social span{font-size:10px}
+ .at-profile-header{margin-bottom:10px;border-radius:20px;background:#1c1d28}.at-profile-banner{height:108px;background:radial-gradient(circle at 85% 0%,#70519b7e,transparent 48%),linear-gradient(125deg,#30223f,#1b2130)}.at-profile-identity{padding:0 15px 18px;gap:9px}.at-profile-avatar{width:75px;height:75px;border-radius:21px;margin-top:-34px}.at-profile-person{min-width:0;flex-basis:170px}.at-profile-person h2{font-size:21px}.at-profile-person>span{font-size:12px}.at-profile-person p{font-size:12px}.at-profile-top-actions{width:100%;padding-top:4px}.at-profile-top-actions .pro-btn{min-height:43px;border-radius:12px;flex:1}
+ .at-profile-tabs{gap:4px;overflow-x:auto;scrollbar-width:none;padding:0 0 2px}.at-profile-tabs button{font-size:12px;padding:13px 11px;white-space:nowrap;min-height:45px}.at-profile-tabs .at11-friend-tab{margin-left:0}
+ .at-profile-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;overflow:visible}.at-profile-stat{min-width:0;padding:12px 8px;border-radius:13px}.at-profile-stat span{font-size:10px}.at-profile-stat strong{font-size:22px}
+ .at-profile-columns{grid-template-columns:1fr}.at-profile-activity{overflow-x:auto}.at-profile-top-list,.at-profile-favorites{max-width:100%}
+ .at11-social-page{gap:12px;padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}.at11-social-hero{border-radius:18px;padding:21px 18px}.at11-social-hero h2{font-size:28px}.at11-social-hero p{font-size:12px}.at11-social-hero:after{font-size:76px}.at11-social-metrics span{font-size:10px}
+ .at11-social-columns{grid-template-columns:1fr;gap:12px}.at11-friend-search,.at11-social-page>.pro-panel,.at11-social-columns>.pro-panel{padding:15px;border-radius:17px}.at11-friend-form{gap:7px}.at11-friend-form>.pro-btn{min-width:72px;padding:8px 9px}.at11-person{gap:9px;padding:10px;flex-wrap:wrap}.at11-social-avatar{width:44px;height:44px;flex-basis:44px;border-radius:13px}.at11-person-info{flex-basis:calc(100% - 55px)}.at11-person-actions{width:100%;justify-content:stretch}.at11-person-actions .pro-btn{flex:1;min-height:43px;font-size:12px}.at11-compare-metrics{gap:7px}.at11-compare-metrics>div{padding:13px}
+ .ep-article{display:flex;align-items:stretch;gap:6px;min-width:0;border:1px solid #484054;background:#211d2b;margin-bottom:7px;padding:5px}.ep-article .ep-info-btn{flex:1;padding:7px;gap:7px}.ep-article .ep-text strong{font-size:12px}.ep-article .ep-toggle-btn{min-width:90px;min-height:45px;margin:auto 0;border-radius:10px;padding:8px;font-size:11px}
+ #detail-modal .detail-actions .primary,#detail-modal .season-actions .primary{min-height:46px;border-radius:12px;background:linear-gradient(125deg,#926bcf,#6046a5)}
+}
+@media(max-width:360px){.at-ios-card-actions .at-ios-done{padding:6px 7px;gap:4px}.at11-watch-plus{width:24px;height:28px;font-size:19px}.at11-watch-check{display:none}.at-ios-card-actions .at-ios-detail{padding:5px 6px}.at-ios-header h1{font-size:22px}.at11-social-hero h2{font-size:25px}.at-profile-stat strong{font-size:19px}.at11-person-actions .pro-btn{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.at11-profile-social button,.at-ios-done,.ep-toggle-btn,.at-h2-lineup-card{transition:none!important}}
