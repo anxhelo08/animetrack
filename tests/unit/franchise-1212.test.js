@@ -54,12 +54,12 @@ test('TV family grouping is generic instead of hard-coded to Dexter',()=>{
 });
 
 test('12.12 integration exposes one update action and caches the new helper',()=>{
- const app=read('src/app.js'),tv=read('src/modules/tv.js'),html=read('index.html'),main=read('src/main.js'),sw=read('public/sw.js'),pkg=JSON.parse(read('package.json'));
+ const app=read('src/app.js'),tv=read('src/modules/tv.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.doesNotThrow(()=>new vm.Script(app));assert.doesNotThrow(()=>new vm.Script(tv));
  assert.match(app,/isFranchiseFormat/);assert.match(app,/strictSeriesOverlap/);assert.match(app,/franchiseTitleKeys/);assert.match(app,/FRANCHISE_SCHEMA='13\.1\.0'/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
  assert.doesNotMatch(app,/Ndarja si serial \(TV\)/);
  assert.match(tv,/function refreshShow/);assert.match(tv,/SERIA E PLOTË/);assert.doesNotMatch(tv,/dexterTitles/);
  assert.match(main,/modules\/franchise\.js/);assert.match(html,/AnimeTrack 13\.5\.2/);
- assert.match(sw,/animetrack-shell-v1352-1/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.equal(pkg.version,'13.5.2');
+ assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
+ assert.equal(pkg.version,'13.6.0');
 });
