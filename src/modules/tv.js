@@ -1,6 +1,7 @@
 /* AnimeTrack 11.8: live-action TV catalog, isolated from anime progress. */
 window.ATTVShows=function ATTVShows(ctx){
- const esc=ctx.esc, el=ctx.el, statuses={watching:'Po shikoj',completed:'Përfunduar',planning:'Në listë',paused:'Në pauzë',dropped:'E lënë'};\n const clean=(value,max=1400)=>window.ATSecurity136?.text(value,max)||String(value||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,max);
+ const esc=ctx.esc, el=ctx.el, statuses={watching:'Po shikoj',completed:'Përfunduar',planning:'Në listë',paused:'Në pauzë',dropped:'E lënë'};
+ const clean=(value,max=1400)=>window.ATSecurity136?.text(value,max)||String(value||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,max);
  let query='',results=[],busy=false,error='',selected='',filter='all',genre='all',sort='updated',timer=null,request=0,loadingId='',expanded=new Set(),owner='',preview=null,pending=null,fromUnified=false;
  const familyKey=s=>window.ATFranchise1212?.tvFamilyKey(s?.title||s?.name||'')||String(s?.title||s?.name||'').toLocaleLowerCase().split(':')[0].trim();
  const familyName=(key,items)=>window.ATFranchise1212?.tvFamilyName(key,items)||String(items?.[0]?.title||key||'Serial').split(':')[0].trim();
