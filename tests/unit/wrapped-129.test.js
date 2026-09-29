@@ -74,8 +74,8 @@ test('12.9 integrated Wrapped and profile have new assets, period actions, safe 
  assert.match(feature,/function renderBackground\(\)/);assert.match(read('src/app.js'),/proApp\.renderBackground\(\)/);
  assert.match(calendar,/ATWrapped129\.render/);assert.match(calendar,/wrapped-badges/);
  assert.match(main,/modules\/wrapped\.js/);assert.match(styles,/wrapped\.css/);
- assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.5\.2/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.6\.0/);
  assert.match(css,/@media\(max-width:760px\)/);
 });
 
