@@ -11,6 +11,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   calendar:window.ATCalendarWrapped(ctx),
   diary:window.ATDiary132(ctx),
   watch:window.ATWatch133(ctx),
+  rich:window.ATRich134(ctx),
   smart:window.ATSmartAiring(ctx),
   push:window.ATPush109(ctx),
   collections:window.ATCollections110(ctx),
@@ -78,6 +79,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   modules.experience.init();
   modules.diary.mount();
   modules.watch.mount();
+  modules.rich.mount();
   window.ATMobile113.init();
   window.ATUnified119?.mount();
   const nav=$('side-nav');
