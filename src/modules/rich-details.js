@@ -10,7 +10,7 @@ window.ATRich134=function ATRich134(ctx){
  let workMap=new Map();
  let requestSeq=0;
 
- const clean=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+ const clean=s=>window.ATSecurity136?.text(s,5000)||String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,5000);
  const safeUrl=v=>{try{const u=new URL(String(v||''));return /^https?:$/.test(u.protocol)?u.href:''}catch{return''}};
  const token=()=>{try{return String(localStorage.getItem(TMDB_TOKEN_KEY)||'').trim()}catch{return''}};
  const photo=(path,size='w300')=>path?(/^https?:\/\//.test(String(path))?String(path):'https://image.tmdb.org/t/p/'+size+String(path)):'';

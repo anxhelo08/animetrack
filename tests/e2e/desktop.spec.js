@@ -1,5 +1,5 @@
-const {test}=require('@playwright/test');
-const assert=require('node:assert/strict');
+import {test} from '@playwright/test';
+import assert from 'node:assert/strict';
 test('desktop regression',async({browser},testInfo)=>{
  test.skip(!testInfo.project.name.startsWith('desktop'));
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
@@ -275,9 +275,10 @@ test('desktop regression',async({browser},testInfo)=>{
   };
  });
  assert.equal(recovered.watched,local.watched,'stale cloud snapshot cannot overwrite offline progress on login');
- assert.equal(recovered.pending,true,'conflicting progress remains queued');
- assert.match(recovered.indicator,/Konflikt/,'cloud mismatch requires explicit resolution');
- console.log('OFFLINE_RECOVERY_DESKTOP_PASS',JSON.stringify({saved:local.watched,recovered:recovered.watched,conflict:true}));
+ assert.equal(recovered.pending,true,'merged offline progress remains queued until the safe cloud write completes');
+ assert.match(recovered.indicator,/Në pritje|Offline|Po ruhet/,'timestamp-resolvable divergence stays queued without forcing a false conflict');
+ assert.doesNotMatch(recovered.indicator,/Konflikt/,'updated_at ordering should auto-merge resolvable divergence');
+ console.log('OFFLINE_RECOVERY_DESKTOP_PASS',JSON.stringify({saved:local.watched,recovered:recovered.watched,conflict:false,pending:true}));
  // 12.7.4: deliberately exhaust writes to the cloud snapshot while auth still succeeds.
  // The app must show a backup/retry gate instead of returning to the login form.
  const quotaContext=await browser.newContext({viewport:{width:1360,height:840},acceptDownloads:true});

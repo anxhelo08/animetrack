@@ -55,6 +55,10 @@ window.ATCloudLocal12123=(()=>{
   const richEpisodes=new Map((remote.episodes||[]).map(ep=>[Number(ep.number),ep]));
   for(const ep of local.episodes||[]){const n=Number(ep.number);richEpisodes.set(n,mergeEpisode(richEpisodes.get(n),ep))}
   const out={...remote,...local,episodes:[...richEpisodes.values()].sort((a,b)=>Number(a.number)-Number(b.number))};
+  // Watching progress is monotonic during conflict recovery: never lose an episode
+  // that was marked watched on either device.
+  out.watched=[...new Set([...(remote.watched||[]),...(local.watched||[])].map(Number).filter(n=>Number.isInteger(n)&&n>0))].sort((a,b)=>a-b);
+  out.total=Math.max(Number(remote.total)||0,Number(local.total)||0,...out.watched);
   if(remote.loadedPages)out.loadedPages=remote.loadedPages;
   if(remote.fillerPagesChecked)out.fillerPagesChecked=remote.fillerPagesChecked;
   return out;
@@ -65,8 +69,11 @@ window.ATCloudLocal12123=(()=>{
   const merged=[];
   for(const ls of local.seasons||[]){const key=seasonKey(ls);merged.push(mergeSeason(remoteSeasons.get(key),ls));remoteSeasons.delete(key)}
   for(const rs of remoteSeasons.values())merged.push(rs);
-  const out={...remote,...local,seasons:merged};
-  if(!local.synopsis&&remote.synopsis)out.synopsis=remote.synopsis;
+  const rt=Date.parse(String(remote.updatedAt||'')),lt=Date.parse(String(local.updatedAt||''));
+  const localNewer=!Number.isFinite(rt)||(Number.isFinite(lt)&&lt>=rt);
+  const newer=localNewer?local:remote,older=localNewer?remote:local;
+  const out={...older,...newer,seasons:merged};
+  if(!out.synopsis)out.synopsis=remote.synopsis||local.synopsis||'';
   return out;
  }
  function merge(remote,local){
@@ -75,12 +82,18 @@ window.ATCloudLocal12123=(()=>{
   const anime=[];
   for(const la of pending.anime||[]){const key=animeKey(la);anime.push(mergeAnime(remoteAnime.get(key),la));remoteAnime.delete(key)}
   for(const ra of remoteAnime.values())anime.push(ra);
+  const historyMap=new Map();
+  for(const row of [...(base.history||[]),...(pending.history||[])]){
+   if(!row||typeof row!=='object')continue;
+   const key=[row.id||'',row.seasonId||'',row.episode||'',row.action||'',row.date||row.at||''].join('|');
+   historyMap.set(key,row);
+  }
   return {
    ...base,
    anime,
    tvShows:[],
-   history:Array.isArray(pending.history)?pending.history:(base.history||[]),
-   preferences:pending.preferences&&typeof pending.preferences==='object'?pending.preferences:(base.preferences||{})
+   history:[...historyMap.values()],
+   preferences:pending.preferences&&typeof pending.preferences==='object'?{...(base.preferences||{}),...pending.preferences}:(base.preferences||{})
   };
  }
  function hydrateSeason(remote,rich){

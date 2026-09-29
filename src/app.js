@@ -280,8 +280,8 @@ async function jikanSeasons(seedId,format){
   const id=queue.shift();if(known.has(id))continue;
   let full;try{full=(await jikanGet('https://api.jikan.moe/v4/anime/'+encodeURIComponent(id)+'/full')).data}catch(err){if(known.size)break;throw err}
   const f=mediaFormat(full?.type||'TV');if(!isFranchiseFormat(f))continue;
-  const releaseStart=String(full.aired?.from||'').slice(0,10),total=Number(full.episodes)||((f==='MOVIE'||f==='SPECIAL')?1:0),subtitle=full.title_english||full.title||'',aliases=[full.title,full.title_english,full.title_japanese,...(Array.isArray(full.title_synonyms)?full.title_synonyms:[])].filter(Boolean);
-  known.set(id,normSeason({id:'mal-'+id,title:f==='MOVIE'?'Film':'Sezoni',subtitle,aliases,total,year:full.year||full.aired?.prop?.from?.year,source:'MyAnimeList',sourceId:id,malId:id,format:f,communityScore:full.score==null?null:Math.round(full.score*10),communitySource:'MyAnimeList',synopsis:full.synopsis||'',sourceUrl:full.url||'',releaseStatus:String(full.status||'').toUpperCase().replace(/\s+/g,'_'),releaseStart,airedCount:/finished/i.test(full.status||'')?total:/not yet/i.test(full.status||'')?0:null,airedCheckedAt:now(),episodes:f==='MOVIE'?[{number:1,title:subtitle||'Filmi',aired:releaseStart,airedAt:releaseStart}]:[]}));
+  const releaseStart=String(full.aired?.from||'').slice(0,10),total=Number(full.episodes)||((f==='MOVIE'||f==='SPECIAL')?1:0),subtitle=textOnly(full.title_english||full.title||''),aliases=[full.title,full.title_english,full.title_japanese,...(Array.isArray(full.title_synonyms)?full.title_synonyms:[])].filter(Boolean).map(textOnly);
+  known.set(id,normSeason({id:'mal-'+id,title:f==='MOVIE'?'Film':'Sezoni',subtitle,aliases,total,year:full.year||full.aired?.prop?.from?.year,source:'MyAnimeList',sourceId:id,malId:id,format:f,communityScore:full.score==null?null:Math.round(full.score*10),communitySource:'MyAnimeList',synopsis:textOnly(full.synopsis||''),sourceUrl:full.url||'',releaseStatus:String(full.status||'').toUpperCase().replace(/\s+/g,'_'),releaseStart,airedCount:/finished/i.test(full.status||'')?total:/not yet/i.test(full.status||'')?0:null,airedCheckedAt:now(),episodes:f==='MOVIE'?[{number:1,title:subtitle||'Filmi',aired:releaseStart,airedAt:releaseStart}]:[]}));
   for(const rel of full.relations||[]){if(!['Prequel','Sequel','Alternative version','Summary','Parent story','Compilation'].includes(rel.relation))continue;for(const ep of rel.entry||[]){if(ep.type==='anime'&&!known.has(String(ep.mal_id))&&!queue.includes(String(ep.mal_id)))queue.push(String(ep.mal_id))}}
  }
  return applyTimelineLabels(timelineSort([...known.values()]));
@@ -348,7 +348,7 @@ async function loadSeasonEpisodes(id,seasonId,uiPage=0,force=false){
  }
 }
 
-function textOnly(html){const d=new DOMParser().parseFromString(String(html||''),'text/html');return (d.body.textContent||'').replace(/\s+/g,' ').trim().slice(0,1800)}
+function textOnly(html){return window.ATSecurity136?.text(html,1800)||String(html||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,1800)}
 function canonicalTitle(s){return String(s||'').toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,' ').trim()}
 
 function seriesRootTitle(title){
@@ -1257,6 +1257,11 @@ async function accountOpenCloud(user){
  if(status==='pending'){
   state=remote?accountMergeRecovery(remote,cached):cached;cloudDirty=!!journal;cloudConflict=false;
   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
+ }else if(status==='remote-newer'||status==='local-newer'){
+  // Both copies moved from the same base. Merge progress first, then conditionally
+  // push against the exact Supabase updated_at revision that we just read.
+  state=accountMergeRecovery(remote,cached);cloudDirty=true;cloudConflict=false;cloudRevision=data?.updated_at||cloudRevision;
+  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
  }else if(status==='conflict'||status==='cached'){
   state=cached;cloudDirty=!!journal;cloudConflict=status==='conflict';
   if(cloudConflict)cloudRevision=journal.baseRevision;
@@ -1308,10 +1313,17 @@ async function accountPush(showResult=true){
     if(showResult)accountStatus('Progresi ishte tashmë i sinkronizuar ✓','ok');
     return;
    }
-   if(check==='conflict'||(!record&&baseline.data?.updated_at!==window.ATSync126.revision(localStorage,KEY))){
+   if(check==='remote-newer'||check==='local-newer'){
+    const remoteBase=baseline.data?.payload?accountNormalizePayload(baseline.data.payload):null;
+    if(!remoteBase)throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
+    state=accountMergeRecovery(remoteBase,state);
+    const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
+    cloudRevision=baseline.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudDirty=true;
+   }else if(check==='conflict'||(!record&&baseline.data?.updated_at!==window.ATSync126.revision(localStorage,KEY))){
     throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
+   }else{
+    cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;
    }
-   cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;
   }
   const payload=accountCompact(state);let result;
   if(overwrite)result=await table.upsert({user_id:uid,payload},{onConflict:'user_id'}).select('updated_at').maybeSingle();
@@ -1478,6 +1490,7 @@ window.addEventListener('focus',()=>accountWakeCloud(false));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')accountWakeCloud(false)});
 window.addEventListener('pageshow',()=>accountWakeCloud(true));
 window.addEventListener('online',()=>accountWakeCloud(true));
+window.addEventListener('pagehide',accountStopRealtime);
 setInterval(()=>{if(document.visibilityState!=='visible'||accountMode!=='cloud'||cloudDirty||cloudSaving||accountBusy)return;if(Date.now()-cloudLastPullAt>30000)void accountPullQuiet()},30000);
 
 // 9.3 – season forecast is information only, never a watched episode.

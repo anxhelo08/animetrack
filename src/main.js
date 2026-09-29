@@ -7,6 +7,8 @@ const waitForSupabase=async()=>{
 };
 
 await import("./config.js");
+await import("./modules/security.js");
+await import("./modules/pwa.js");
 await waitForSupabase();
 await import("./modules/recommendations.js");
 await import("./modules/wrapped.js");

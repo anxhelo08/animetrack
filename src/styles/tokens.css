@@ -1,0 +1,26 @@
+/* AnimeTrack 13.6 — shared design tokens.
+   Feature bundles may add local variables, but global palette/spacing primitives live here. */
+:root{
+  color-scheme:dark;
+  --bg:#0c0d16;
+  --surface:#151624;
+  --surface2:#1b1d2e;
+  --border:#303148;
+  --text:#f7f7ff;
+  --muted:#a8a9bc;
+  --purple:#a78bfa;
+  --purple2:#7654e7;
+  --cyan:#65e5ef;
+  --green:#65ddad;
+  --yellow:#ffd480;
+  --red:#ff829a;
+  --radius:19px;
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --shadow-panel:0 12px 34px #0008;
+  --focus-ring:0 0 0 3px #65e5ef24;
+}

@@ -2,9 +2,29 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.5.2` / package version `13.5.2`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.6.0` / package version `13.6.0`.
 
 ## [Unreleased]
+
+## [13.6.0] - 2026-09-29
+
+_Public release label: **13.6.0**._
+
+### Security
+- Audited and hardened RLS/grants for profiles, friendships, push reminders and push subscriptions; anonymous table access is explicitly revoked.
+- SECURITY DEFINER friend lookup/request helpers keep an empty immutable search path, verify auth.uid(), and deny anonymous execution.
+- External movie and MAL/Jikan metadata is sanitized through DOMPurify before it reaches UI renderers.
+- Security-header regression coverage verifies clickjacking and MIME-sniffing protections.
+
+### Stability
+- Vite now generates the service worker precache from hashed production assets with vite-plugin-pwa/Workbox while preserving Web Push.
+- Cross-device conflicts compare Supabase updated_at with the durable local journal timestamp and merge watched progress/history before conditional writes.
+- Supabase Realtime channels are unsubscribed and removed on account switches and page lifecycle cleanup.
+- dist/ remains ignored from source control.
+
+### Architecture
+- Unit tests run under Vitest as ESM .js tests.
+- CSS imports are consolidated into ordered bundles with shared design tokens.
 
 ## [13.5.2] - 2026-09-29
 

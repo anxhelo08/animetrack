@@ -12,9 +12,10 @@ window.ATCrossSync12153=(()=>{
  }
  function stop(client,channel){
   if(!channel)return false;
-  try{if(client&&typeof client.removeChannel==='function'){client.removeChannel(channel);return true}}catch{}
-  try{if(typeof channel.unsubscribe==='function'){channel.unsubscribe();return true}}catch{}
-  return false;
+  let stopped=false;
+  try{if(typeof channel.unsubscribe==='function'){channel.unsubscribe();stopped=true}}catch{}
+  try{if(client&&typeof client.removeChannel==='function'){client.removeChannel(channel);stopped=true}}catch{}
+  return stopped;
  }
  return {start,stop};
 })();

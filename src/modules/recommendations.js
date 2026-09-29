@@ -1,6 +1,7 @@
 /* AnimeTrack 10.0 — personal discovery, mood and time filters, explainable matches. */
 window.ATRecommendations=function ATRecommendations(ctx){
  const esc=ctx.esc;
+ const clean=(value,max=500)=>window.ATSecurity136?.text(value,max)||String(value||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,max);
  const MOODS=[
   ['all','✦','Të gjitha',[]],
   ['action','⚔','Adrenalinë',['action','adventure','sports']],
@@ -60,7 +61,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
   return {kind:'tv',key:'tv-'+show.id,source:'TVMaze',sourceId:String(show.id),
    title:String(show.name||'Serial TV').slice(0,180),year:Number.isInteger(year)&&year>=1888&&year<=2200?year:null,
    genre:(show.genres||[]).join(', '),rawGenres,cover:String(show.image?.medium||show.image?.original||''),
-   synopsis:String(show.summary||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,400),
+   synopsis:clean(show.summary,400),
    score:Math.round(rating*10),format:'TV_SERIES',total:0,popularity:0,related:[],match:0,why:[]};
  }
  function candidateScore(x,p){

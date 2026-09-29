@@ -1,5 +1,5 @@
-const {test}=require('@playwright/test');
-const assert=require('node:assert/strict');
+import {test} from '@playwright/test';
+import assert from 'node:assert/strict';
 test('iPhone regression',async({browser,browserName},testInfo)=>{
  test.skip(!testInfo.project.name.startsWith('iphone'));
  console.log('BROWSER_ENGINE',browserName);
