@@ -73,8 +73,8 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  assert.match(main,/modules\/episode-hub\.js/);assert.match(main,/modules\/tv-episodes\.js/);assert.match(styles,/episode-hub\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1320-1/);
- assert.match(html,/AnimeTrack 13\.2/);
+ assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1330-1/);
+ assert.match(html,/AnimeTrack 13\.3/);
 });
 
 test('12.7.2 background TV checks preserve editable pages without bypassing cloud journal',()=>{

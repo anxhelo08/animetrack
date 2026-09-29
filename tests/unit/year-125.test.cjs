@@ -38,6 +38,6 @@ test('12.5 integration: one sorting control for anime and TV in both viewports',
  assert.match(core,/ATLibraryYear125\.sort\(anime,sort\)/);assert.match(core,/data-release-year=/);
  assert.match(main,/modules\/year\.js/);assert.match(styles,/year\.css/);
  assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(sw,/animetrack-shell-v1320-1/);assert.match(html,/AnimeTrack 13\.2/);
+ assert.match(sw,/animetrack-shell-v1330-1/);assert.match(html,/AnimeTrack 13\.3/);
  assert.match(core,/\$\('at125-sort-hint'\)\.hidden/);
 });

@@ -1,10 +1,22 @@
-# AnimeTrack 13.2 — Diary
+# AnimeTrack 13.3 — Where to Watch
 
-**Versioni publik:** 13.2 · **package version:** 13.2.0. Diary përdor historikun ekzistues dhe sinkronizohet me të njëjtën bibliotekë cloud.
+**Versioni publik:** 13.3 · **package version:** 13.3.0. Where to Watch shton availability sipas rajonit pa ndryshuar bibliotekën ose progresin.
 
-13.2 shton Diary si kronologji personale për episodet, filmat dhe rewatches, me datë/orë, rating të hyrjes, shënim privat, filtra dhe aktivitet 30-ditor. Të dhënat ruhen brenda historikut/rewatch records ekzistuese, pa tabelë të re.
+13.3 shton Where to Watch: anime përdorin linket e streaming nga AniList dhe MyAnimeList/Jikan; filma/seriale përdorin TMDB watch providers me të dhëna JustWatch sipas rajonit kur TMDB është lidhur.
 
 ### Përditësimet aktuale
+
+## AnimeTrack 13.3 · Where to Watch
+- Çdo faqe detaji ka seksionin “Ku mund ta shoh?” me availability që rifreskohet sipas titullit.
+- Anime përdorin linket zyrtare të streaming nga AniList dhe fallback MyAnimeList/Jikan pa API key.
+- Filmat dhe serialet përdorin TMDB watch/providers sipas rajonit; providerët ndahen në abonim, falas, reklama, qira dhe blerje.
+- Rajoni ruhet në preferencat cloud të përdoruesit; default-i është Shqipëri (AL) dhe mund të ndryshohet nga faqja Where to Watch ose detajet.
+- TMDB Read Access Token mbetet vetëm në pajisje dhe nuk dërgohet në Supabase.
+- TVMaze mund të zgjidhet në TMDB përmes IMDb ID kur është e mundur; fallback është kërkimi konservativ me titull/vit.
+- Availability cache-ohet lokalisht për 12 orë që të ulen thirrjet e panevojshme në API.
+- Faqja e re “Ku ta shoh” në desktop tregon bibliotekën dhe providerët e kontrolluar së fundmi.
+- Të dhënat TMDB watch providers shfaqin attribution JustWatch sipas kërkesës së TMDB.
+
 
 ## AnimeTrack 13.2 · Diary
 - Diary ndërtohet automatikisht nga episodet, filmat dhe rewatches që regjistron si të parë.

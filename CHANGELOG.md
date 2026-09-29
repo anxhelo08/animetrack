@@ -2,9 +2,26 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.2` / package version `13.2.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.3` / package version `13.3.0`.
 
 ## [Unreleased]
+
+## [13.3.0] - 2026-09-29
+
+_Public release label: **13.3**._
+
+### Added
+- Where to Watch section on title detail pages.
+- Official anime streaming links from AniList with MyAnimeList/Jikan fallback.
+- TMDB watch-provider availability for movies and live-action TV by selected region, with JustWatch attribution.
+- Provider categories for subscription, free, ad-supported, rent and buy.
+- Synced region preference and a dedicated Where to Watch library page.
+- Local 12-hour availability cache to reduce repeated provider requests.
+
+### Changed
+- TMDB settings now also power Where to Watch for movies and TV.
+- TVMaze titles can resolve to TMDB through IMDb IDs before falling back to title/year matching.
+
 
 ## [13.2.0] - 2026-09-29
 

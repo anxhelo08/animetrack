@@ -2,7 +2,7 @@
   "id": "/",
   "name": "AnimeTrack — Anime, TV & Movie Tracker",
   "short_name": "AnimeTrack",
-  "description": "Ndiq anime, seriale TV, filma, episode dhe Diary-n tënd personal me kalendar, statistika dhe sinkronizim online mes pajisjeve.",
+  "description": "Ndiq anime, seriale TV, filma, episode dhe Diary; shiko edhe ku transmetohen titujt sipas burimeve zyrtare dhe rajonit.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
