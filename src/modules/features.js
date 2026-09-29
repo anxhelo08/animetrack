@@ -51,7 +51,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   liveBusy=true;liveLastCheck=Date.now();document.body.classList.add('at-live-checking');renderHome();
   try{const result=await ctx.liveRefresh(force);modules.push.scheduleSync();void modules.providerSync.auto();return {status:result?.failed?'partial':'ok'}}
   catch(e){console.warn('Live refresh failed',e);return {status:'error'}}
-  finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation'].includes(active))render();renderHome()}
+  finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation','sync'].includes(active))render();renderHome()}
  }
  function renderHome(){
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
