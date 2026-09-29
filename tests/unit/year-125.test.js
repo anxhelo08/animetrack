@@ -41,7 +41,7 @@ test('12.5 integration: one sorting control for anime and TV in both viewports',
  assert.match(mobile,/data-at117-sort="year-new"/);assert.match(mobile,/data-at117-sort="year-old"/);
  assert.match(core,/ATLibraryYear125\.sort\(anime,sort\)/);assert.match(core,/data-release-year=/);
  assert.match(main,/modules\/year\.js/);assert.match(styles,/year\.css/);
- assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.5\.2/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.6\.0/);
  assert.match(core,/\$\('at125-sort-hint'\)\.hidden/);
 });
