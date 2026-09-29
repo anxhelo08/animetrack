@@ -1193,8 +1193,27 @@ function accountStartRealtime(uid){
    if(cloudDirty||cloudSaving||accountBusy){cloudRealtimePending=true;if(record?.payload)cloudRealtimeRecord=record;return}
    if(record?.payload&&accountApplyRemoteRecord(record))return;
    accountScheduleRemotePull(60);
+  },(status,error)=>{
+   if(accountMode!=='cloud'||accountUser?.id!==uid||cloudRealtimeUID!==uid)return;
+   if(status==='SUBSCRIBED'){
+    cloudConnected=true;accountUI();
+    if(cloudRealtimePending||Date.now()-cloudLastPullAt>3000)accountScheduleRemotePull(30);
+    return;
+   }
+   if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
+    cloudConnected=false;accountUI();
+    if(error)console.warn('Realtime library channel',status,error);
+   }
   })||null;
- }catch(err){console.warn('Realtime library sync unavailable',err)}
+ }catch(err){cloudConnected=false;console.warn('Realtime library sync unavailable',err)}
+}
+let cloudLastWakeAt=0;
+function accountWakeCloud(force=false){
+ if(accountMode!=='cloud'||!accountUser||!navigator.onLine)return;
+ const now=Date.now();if(!force&&now-cloudLastWakeAt<1500)return;cloudLastWakeAt=now;
+ accountStartRealtime(accountUser.id);
+ if(cloudDirty){if(!cloudSaving&&!cloudConflict)void accountPush(false);return}
+ if(!cloudSaving&&!accountBusy)void accountPullQuiet();
 }
 
 function accountNormalizePayload(data){if(!data||!Array.isArray(data.anime))throw Error('Biblioteka online ka format të pavlefshëm.');const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);return {anime:merged.anime,tvShows:[],history:Array.isArray(data.history)?data.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(data.preferences)}}
@@ -1457,10 +1476,10 @@ async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=re
 $('at1162-save-password').addEventListener('click',accountSaveRecoveredPassword);
 $('account-top-btn').addEventListener('click',()=>accountToggle(true));$('account-sidebar-btn').addEventListener('click',()=>accountToggle(true));
 $('account-form').addEventListener('submit',e=>{e.preventDefault();return window.ATMobile113?.signupReady?.()?accountRegister():accountLogin(e)});$('account-email').addEventListener('input',()=>{if(at116PendingEmail&&$('account-email').value.trim().toLowerCase()!==at116PendingEmail){$('at116-pending-email').hidden=true;at116PendingEmail=''}});$('at116-resend-email').addEventListener('click',accountResend);$('account-reset').addEventListener('click',accountReset);$('account-save-config').addEventListener('click',accountSetConfig);$('account-refresh').addEventListener('click',()=>accountPull(true));$('account-push').addEventListener('click',()=>accountPush(true));$('account-copy-guest').addEventListener('click',accountCopyGuest);$('account-logout').addEventListener('click',accountLogout);$('account-export').addEventListener('click',exportData);$('account-guest-backup').addEventListener('click',()=>{const current=state;try{const raw=localStorage.getItem(GUEST_KEY);if(raw){state=accountNormalizePayload(JSON.parse(raw));exportData();}else notify('Nuk ka bibliotekë të vjetër në këtë shfletues.')}catch(e){notify('Kopja rezervë nuk u hap.')}finally{state=current}});$('account-use-guest').addEventListener('click',()=>accountToggle(false));
-window.addEventListener('focus',()=>{if(accountMode==='cloud'&&!cloudDirty&&!cloudSaving&&Date.now()-cloudLastPullAt>3000)void accountPullQuiet()});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&accountMode==='cloud'&&!cloudDirty&&!cloudSaving&&Date.now()-cloudLastPullAt>3000)void accountPullQuiet()});
-window.addEventListener('pageshow',()=>{if(accountMode==='cloud'&&!cloudDirty&&!cloudSaving&&Date.now()-cloudLastPullAt>3000)void accountPullQuiet()});
-window.addEventListener('online',()=>{if(accountMode==='cloud'&&accountUser&&cloudDirty&&!cloudSaving&&!cloudConflict)void accountPush(false);else if(accountMode==='cloud'&&!cloudDirty&&!cloudSaving)void accountPullQuiet()});
+window.addEventListener('focus',()=>accountWakeCloud(false));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')accountWakeCloud(false)});
+window.addEventListener('pageshow',()=>accountWakeCloud(true));
+window.addEventListener('online',()=>accountWakeCloud(true));
 setInterval(()=>{if(document.visibilityState!=='visible'||accountMode!=='cloud'||cloudDirty||cloudSaving||accountBusy)return;if(Date.now()-cloudLastPullAt>30000)void accountPullQuiet()},30000);
 
 // 9.3 – season forecast is information only, never a watched episode.
@@ -1796,7 +1815,7 @@ const proContext={
  confirm:message=>window.confirm(message),prompt:(message,value)=>window.prompt(message,value),closeDetail:()=>{if($('detail-modal').classList.contains('show'))closeModal('detail-modal')},
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,
  toast:notify,save:()=>save(),exportLibrary:exportData,importExternal,accountName,openAnime:id=>openDetail(id),
- nextEpisode:nextSeasonEp,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(40),
+ nextEpisode:nextSeasonEp,seasonNumber:seasonNumberFor,releasedTotal,percent:percentage,markNext,recentAiring:()=>v96RecentEpisodes(40),
  undoEpisode:(id,seasonId,n)=>{const last=state.history[state.history.length-1];if(!last||last.id!==id||last.seasonId!==seasonId||last.episode!==n||last.action!=='watched'){notify('Progresi ka ndryshuar. Zhbërja nuk u krye.');return false}return updateSeasonEpisode(id,seasonId,n,false)},
  openFilter:code=>setFilter(code),
  
