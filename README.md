@@ -1,10 +1,21 @@
-# AnimeTrack 13.3 — Where to Watch
+# AnimeTrack 13.4 — Rich Details / Cast / Staff
 
-**Versioni publik:** 13.3 · **package version:** 13.3.0. Where to Watch shton availability sipas rajonit pa ndryshuar bibliotekën ose progresin.
+**Versioni publik:** 13.4 · **package version:** 13.4.0. Rich Details shton cast, regji, staff dhe profile njerëzish me filmografi të navigueshme.
 
-13.3 shton Where to Watch: anime përdorin linket e streaming nga AniList dhe MyAnimeList/Jikan; filma/seriale përdorin TMDB watch providers me të dhëna JustWatch sipas rajonit kur TMDB është lidhur.
+13.4 shton një shtresë Rich Details te çdo titull: cast/staff të strukturuar, profile personash dhe vepra të tjera që mund të hapen përsëri brenda AnimeTrack.
 
 ### Përditësimet aktuale
+
+## AnimeTrack 13.4 · Rich Details / Cast / Staff
+- Çdo detail page ka seksion Rich Details me metadata shtesë, studio/production, zhanre/tags, trailer kur burimi e ofron, cast dhe staff.
+- Anime përdorin grafikun e AniList për staff, voice actors, studio dhe profile njerëzish.
+- Seriale TV përdorin TVMaze cast/crew dhe person cast/crew credits.
+- Filmat përdorin TMDB credits + person combined credits kur TMDB Read Access Token është lidhur; pa token ruhen emrat bazë nga metadata ekzistuese.
+- Klikimi mbi aktorin/regjisorin hap profil brenda AnimeTrack me foto, rol, bio/fakte dhe deri në 30 vepra të tjera.
+- Klikimi mbi një vepër tjetër hap direkt titullin në AnimeTrack kur ka ID kanonike; TMDB TV kalon në kërkimin universal që të zgjidhet versioni TVMaze pa krijuar duplikate.
+- Titujt që janë tashmë në bibliotekë shënohen “Në bibliotekë” në filmografi dhe hapen direkt.
+- Rich metadata cache-ohet lokalisht për 24 orë dhe nuk ndryshon progresin ose payload-in personal cloud.
+
 
 ## AnimeTrack 13.3 · Where to Watch
 - Çdo faqe detaji ka seksionin “Ku mund ta shoh?” me availability që rifreskohet sipas titullit.
