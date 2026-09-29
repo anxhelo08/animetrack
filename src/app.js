@@ -1819,6 +1819,7 @@ const proContext={
   return false;
  },
  refreshDetail:id=>renderDetail(id),navigate:page=>setView(page),setLocalView:page=>{view=page},
+ searchOnline:q=>{setView('explore');syncSearch(String(q||''),'catalog');$('global-search')?.focus({preventScroll:true})},
  previewItem:item=>{if(item.kind==='tv'){void openUnifiedTV(item.sourceId);return}v8PrepareCatalog(item);openCatalogPreview(item.key)},
  addItem:async item=>{if(item.kind==='tv'){await openUnifiedTV(item.sourceId);return}v8PrepareCatalog(item);const id=await addCatalogItem(item.key,'planning');if(id)openDetail(id)}
 };
@@ -1974,6 +1975,13 @@ document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-at
 const at133PriorDetail=renderDetail;renderDetail=function(id){
  const result=at133PriorDetail(id),a=state.anime.find(x=>x.id===id),root=$('detail-body');
  if(a&&root&&proApp?.modules?.watch){const part=a.seasons.find(x=>x.id===activeSeasonId)||a.seasons[0];void proApp.modules.watch.attach(root,a,part)}
+ return result;
+};
+
+/* AnimeTrack 13.4 — Rich Details, Cast & Staff explorer. */
+const at134PriorDetail=renderDetail;renderDetail=function(id){
+ const result=at134PriorDetail(id),a=state.anime.find(x=>x.id===id),root=$('detail-body');
+ if(a&&root&&proApp?.modules?.rich){const part=a.seasons.find(x=>x.id===activeSeasonId)||a.seasons[0];void proApp.modules.rich.attach(root,a,part)}
  return result;
 };
 

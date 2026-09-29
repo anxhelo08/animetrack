@@ -1,7 +1,7 @@
 {
   "name": "animetrack",
-  "version": "13.3.0",
-  "releaseLabel": "13.3",
+  "version": "13.4.0",
+  "releaseLabel": "13.4",
   "private": true,
   "type": "commonjs",
   "scripts": {

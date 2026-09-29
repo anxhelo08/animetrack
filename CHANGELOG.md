@@ -2,9 +2,25 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.3` / package version `13.3.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.4` / package version `13.4.0`.
 
 ## [Unreleased]
+
+## [13.4.0] - 2026-09-29
+
+_Public release label: **13.4**._
+
+### Added
+- Rich Details section on title pages with cast, director/staff, studio/production, genres/tags and trailer links when available.
+- Clickable person profiles inside AnimeTrack for AniList staff/voice actors, TVMaze cast/crew and TMDB movie credits.
+- Person filmography / combined credits with up to 30 related works and direct navigation back into AnimeTrack.
+- Library awareness inside filmography so already-saved works open directly instead of creating duplicates.
+- 24-hour local cache for rich title/person metadata.
+
+### Changed
+- TMDB TV works from a movie person's combined credits route through universal search so AnimeTrack resolves the canonical TVMaze representation.
+- Movie details keep basic cast/director text even without a TMDB token; linking TMDB upgrades those names to structured clickable profiles.
+
 
 ## [13.3.0] - 2026-09-29
 

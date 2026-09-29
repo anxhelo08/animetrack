@@ -21,8 +21,15 @@ test('desktop regression',async({browser},testInfo)=>{
  ];
  await page.route('https://graphql.anilist.co',route=>{const query=String(route.request().postDataJSON()?.query||'');const media=query.includes('$season:MediaSeason')?seasonalMedia:[];return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{Page:{media,pageInfo:{hasNextPage:false}}}})});});
  await page.route('https://api.tvmaze.com/search/shows?q=*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{score:1,show:{id:777,name:'Dexter',premiered:'2006-10-01',genres:['Drama'],image:null,url:'https://www.tvmaze.com/shows/777/dexter'}}])}));
- await page.route('https://api.tvmaze.com/shows/777',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:777,name:'Dexter',premiered:'2006-10-01',genres:['Drama'],image:null,url:'https://www.tvmaze.com/shows/777/dexter'})}));
+ await page.route('https://api.tvmaze.com/shows/777',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:777,name:'Dexter',status:'Ended',premiered:'2006-10-01',runtime:55,genres:['Drama'],rating:{average:8.6},image:null,url:'https://www.tvmaze.com/shows/777/dexter'})}));
  await page.route('https://api.tvmaze.com/shows/777/episodes',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{id:7771,season:1,number:1,name:'Dexter',airdate:'2006-10-01',runtime:55}])}));
+ await page.route('https://api.tvmaze.com/shows/777/cast',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{person:{id:1,name:'Michael C. Hall',image:{medium:'https://example.com/mch.jpg'},url:'https://www.tvmaze.com/people/1/michael-c-hall'},character:{name:'Dexter Morgan'}}])}));
+ await page.route('https://api.tvmaze.com/shows/777/crew',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{type:'Creator',person:{id:2,name:'James Manos Jr.',image:null,url:'https://www.tvmaze.com/people/2/james'}}])}));
+ await page.route('https://api.tvmaze.com/people/1',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:1,name:'Michael C. Hall',birthday:'1971-02-01',gender:'Male',country:{name:'United States'},image:{medium:'https://example.com/mch.jpg'},url:'https://www.tvmaze.com/people/1/michael-c-hall'})}));
+ await page.route('https://api.tvmaze.com/people/1/castcredits?*',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{_embedded:{show:{id:778,name:'Six Feet Under',premiered:'2001-06-03',genres:['Drama'],image:null,rating:{average:8.4},url:'https://www.tvmaze.com/shows/778/six-feet-under'},character:{name:'David Fisher'}}}])}));
+ await page.route('https://api.tvmaze.com/people/1/crewcredits?*',route=>route.fulfill({status:200,contentType:'application/json',body:'[]'}));
+ await page.route('https://api.tvmaze.com/shows/778',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:778,name:'Six Feet Under',premiered:'2001-06-03',genres:['Drama'],image:null,url:'https://www.tvmaze.com/shows/778/six-feet-under'})}));
+ await page.route('https://api.tvmaze.com/shows/778/episodes',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify([{id:7781,season:1,number:1,name:'Pilot',airdate:'2001-06-03',runtime:55}])}));
  await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
  await page.locator('#at-home-lineup .at-h2-lineup-card').first().waitFor();
  assert.equal(await page.locator('#at-home-lineup .at-h2-lineup-card').count(),6);
@@ -177,6 +184,17 @@ test('desktop regression',async({browser},testInfo)=>{
  assert(await page.locator('#detail-body .at120-preview-season').count()>0,'TV preview has season overview');
  await page.locator('#detail-body [data-tv-unified-add="watching"]').click();
  assert(await page.locator('#detail-body .season-tab').count()>0,'TV has native season tabs');
+ await page.locator('#detail-body .at134-rich').waitFor({state:'visible',timeout:10000});
+ await page.locator('#detail-body .at134-person-card[data-provider="tvmaze"][data-at134-person="1"]').waitFor({state:'visible',timeout:10000});
+ assert.match(await page.locator('#detail-body .at134-rich').innerText(),/Michael C\. Hall/,'Rich Details shows TV cast');
+ await page.locator('#detail-body .at134-person-card[data-provider="tvmaze"][data-at134-person="1"]').click();
+ await page.locator('#at134-person-dialog').waitFor({state:'visible',timeout:10000});
+ assert.match(await page.locator('#at134-person-dialog').innerText(),/Michael C\. Hall/);
+ assert.match(await page.locator('#at134-person-dialog').innerText(),/Six Feet Under/,'Person profile shows other credits');
+ await page.locator('#at134-person-dialog .at134-work').first().click();
+ await page.locator('#detail-modal.show').waitFor({timeout:12000});
+ assert.match(await page.locator('#detail-body').innerText(),/Six Feet Under/,'Clicking a cast credit opens the related title inside AnimeTrack');
+ assert(await page.locator('#detail-body .at120-preview-season').count()>0,'Related TV work opens as normal AnimeTrack preview');
  await page.locator('#detail-modal [data-close="detail-modal"]').click();
  // 12.5: anime and TV share the same first-premiere-year ordering.
  await page.evaluate(()=>{
