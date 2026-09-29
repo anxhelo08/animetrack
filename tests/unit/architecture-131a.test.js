@@ -34,5 +34,5 @@ test('13.1.a standardizes browser E2E on Playwright Test',()=>{
 
 test('13.1.a keeps GitHub Actions focused and service worker hash-friendly',()=>{
  const workflows=walk(path.join(root,'.github/workflows')).filter(p=>/\.ya?ml$/.test(p));assert.equal(workflows.length,2);assert.ok(workflows.some(p=>p.endsWith('ci.yml')));assert.ok(workflows.some(p=>p.endsWith('generate-ios-icons.yml')));
- const sw=read('src/sw.js');assert.match(sw,/url\.pathname\.startsWith\('\/assets\/'\)/);assert.doesNotMatch(sw,/pro-[a-z-]+-\d+\.js/);
+ const sw=read('src/sw.js'),vite=read('vite.config.mjs');assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(vite,/VitePWA/);assert.doesNotMatch(sw,/pro-[a-z-]+-\d+\.js/);
 });
