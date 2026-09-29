@@ -72,3 +72,20 @@ test('known unknown-count future parts and large full timelines survive identity
  const result=api.ATLibraryIdentity137.repair(payload).payload.anime[0];
  expect(result.seasons).toHaveLength(58);expect(result.seasons.at(-1).id).toBe('al-future');expect(result.seasons.at(-1).watched).toHaveLength(0);
 });
+test('a failed save rolls back automatic identity repair and keeps the original card, history and active detail',()=>{
+ const {payload}=demonFixture(),window=load(),original=JSON.stringify(payload);
+ const source=fs.readFileSync(new URL('../../src/app.js',import.meta.url),'utf8');
+ const transaction=source.slice(source.indexOf('function repairLibraryState()'),source.indexOf('function notify(message)'));
+ let queued=0,writes=0;
+ window.ATStorage1274={save(){writes++;return{ok:false}}};
+ const ctx={window,state:payload,detailId:'tvmaze-demon',activeSeasonId:'tvmaze-41469-s2',episodePage:3,accountMode:'guest',accountUser:null,cloudRevision:null,cloudMirrorUnavailable:false,accountLocalSnapshot:v=>v,syncTotals(){},releasedCount:s=>s.total,localStorage:{},KEY:'test',notify(){},accountUI(){},accountQueueSave(){queued++},console};
+ vm.runInNewContext(transaction,ctx);
+ expect(ctx.save()).toBe(false);expect(writes).toBe(1);expect(queued).toBe(0);
+ expect(JSON.stringify(ctx.state)).toBe(original);expect(ctx.detailId).toBe('tvmaze-demon');expect(ctx.activeSeasonId).toBe('tvmaze-41469-s2');expect(ctx.episodePage).toBe(3);
+});
+test('an old custom-list reference is repaired even when the duplicate card is already gone',()=>{
+ const api=load(),{payload}=demonFixture();const clean=api.ATLibraryIdentity137.repair(payload).payload;
+ clean.preferences.customLists[0].animeIds=['tvmaze-demon'];
+ const result=api.ATLibraryIdentity137.repair(clean);
+ expect(result.changed).toBe(true);expect(plain(result.payload.preferences.customLists[0].animeIds)).toEqual(['anime-demon']);
+});

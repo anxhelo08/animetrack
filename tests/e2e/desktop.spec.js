@@ -96,7 +96,7 @@ test('desktop regression',async({browser},testInfo)=>{
  await page.locator('#at-home-lineup .at-h2-lineup-name[data-id="demo7"]').click();
  assert(await page.locator('#detail-modal').isVisible(),'Anime detail should open');
  assert.equal(await page.locator('#detail-body .at108-franchise').count(),0,'Franchise Hub must be absent');
- assert(await page.locator('#detail-body .season-scroller').isVisible(),'Native season selector remains');
+ assert(await page.locator('#detail-body .at131-franchise').isVisible(),'Release timeline is the single visible season selector');assert(await page.locator('#detail-body .season-scroller').isHidden(),'Legacy duplicate selector is hidden');
  assert.equal(await page.locator('#detail-body .season-tab').count(),1);
  await page.locator('#detail-body .ep-article.at1210-filler').waitFor({state:'visible',timeout:10000});
  assert.match(await page.locator('#detail-body .ep-article.at1210-filler').innerText(),/FILLER/);

@@ -31,7 +31,7 @@
 #detail-body .seasons-topline h4{font-size:17px;letter-spacing:-.3px}
 #detail-body .season-toolbar{gap:8px;flex-wrap:wrap}
 #detail-body .season-toolbar .primary{padding:10px 15px;font-size:12px;min-height:42px}
-.at131-franchise{margin:14px 0 24px;padding:22px;border-color:var(--border-soft);background:#151722;box-shadow:none;border-radius:18px}
+.at131-franchise{margin:14px 0 24px;padding:22px;border-color:var(--border-soft);background:#151722;box-shadow:none;border-radius:18px;scroll-margin-top:96px}
 .at131-head{grid-template-columns:1fr;gap:14px}
 .at131-head h4{font-size:20px;letter-spacing:-.5px;margin:6px 0}
 .at131-head p{font-size:12px;max-width:620px;line-height:1.7}
@@ -64,7 +64,7 @@
 .at131-part[data-part-done=true] .at137-part-progress>span{background:var(--green)}
 .at131-rate,.at131-score{margin:12px 0 0;background:transparent;padding:0;border-radius:0}
 .at131-rate{justify-content:flex-start;gap:8px}
-.at131-rate select{font-size:11px;max-width:88px;min-height:36px;background:#121420;border-color:var(--border-soft)}
+.at131-rate select{font-size:11px;width:112px;max-width:100%;min-height:36px;padding:7px 9px;background:#121420;border-color:var(--border-soft)}
 .at131-score{gap:6px;align-self:center}
 .at131-score small{font-size:9px}
 .at131-score b{font-size:11px;color:#c9c4db}
@@ -74,6 +74,7 @@
 #detail-body .season-banner>div>strong{font-size:18px}
 #detail-body .season-banner p{line-height:1.65;color:var(--muted)}
 #detail-body .episode-grid{gap:8px}
+#detail-body .episode-pages{position:static;bottom:auto;margin-top:16px;padding:12px;background:#191b28;border:1px solid var(--border-soft);backdrop-filter:none}
 #detail-body .episode-tile{border-color:var(--border-soft);border-radius:11px}
 .at131-arcs{border-color:var(--border-soft)}
 .at131-arc-head p{font-size:11px;line-height:1.6}
@@ -96,7 +97,7 @@
  .at131-head h4{font-size:18px}.at131-head .eyebrow{font-size:9px;letter-spacing:1.6px}
  .at131-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.at131-summary>span{padding:10px;min-height:66px}.at131-summary>span:last-child{grid-column:1/-1}
  .at137-timeline-tools{gap:10px;margin:16px 0 12px}.at137-timeline-filters{width:100%}.at137-timeline-filters button{flex:1;min-height:40px;padding:6px}
- .at131-part{padding:12px}.at131-rate select{min-height:42px}.at131-score small{display:none}
+ .at131-part{padding:12px}.at131-rate select{width:134px;min-height:42px}.at131-score small{display:none}
  #detail-body .detail-top{gap:16px}#detail-body .detail-content h3{font-size:24px}
  #detail-body .season-banner{padding:16px}.at131-copy small{font-size:11px}
 }
