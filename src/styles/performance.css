@@ -2,8 +2,6 @@
    Skip paint/layout work for cards that are far outside the viewport. */
 @supports (content-visibility:auto){
   .anime-card,
-  .at-pc-card,
-  .at114-card,
   .at118-card,
   .at128-card,
   .at129-card{
@@ -14,8 +12,6 @@
 
 @media(max-width:760px){
   .anime-card,
-  .at-pc-card,
-  .at114-card,
   .at118-card{
     contain:layout style;
   }
