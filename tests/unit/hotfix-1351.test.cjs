@@ -49,5 +49,5 @@ test('13.5.2 release identity is bumped for PWA cache invalidation',()=>{
  assert.equal(pkg.version,'13.5.2');
  assert.equal(pkg.releaseLabel,'13.5.2');
  assert.match(sw,/animetrack-shell-v1352-1/);
- assert.match(html,/AnimeTrack 13\.5\.1/);
+ assert.match(html,/AnimeTrack 13\.5\.2/);
 });
