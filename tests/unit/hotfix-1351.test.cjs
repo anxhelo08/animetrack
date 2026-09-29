@@ -7,7 +7,7 @@ function homeApi(){
  return ctx.window.ATHome;
 }
 
-test('13.5.1 Continue Watching ignores movie parts when numbering TV seasons',()=>{
+test('13.5.2 Continue Watching ignores movie parts when numbering TV seasons',()=>{
  const ATHome=homeApi();
  const s1={id:'s1',format:'TV',total:26,watched:Array.from({length:26},(_,i)=>i+1),episodes:[]};
  const s2={id:'s2',format:'TV',total:18,watched:Array.from({length:18},(_,i)=>i+1),episodes:[]};
@@ -33,7 +33,7 @@ test('13.5.1 Continue Watching ignores movie parts when numbering TV seasons',()
  assert.match(rendered.hero,/S3 · Episodi 8/);
 });
 
-test('13.5.1 mobile sync re-subscribes and re-fetches when app wakes',()=>{
+test('13.5.2 mobile sync re-subscribes and re-fetches when app wakes',()=>{
  const app=read('src/app.js'),sync=read('src/modules/cross-sync.js'),features=read('src/modules/features.js');
  assert.match(app,/function accountWakeCloud\(force=false\)/);
  assert.match(app,/accountStartRealtime\(accountUser\.id\)/);
@@ -44,10 +44,10 @@ test('13.5.1 mobile sync re-subscribes and re-fetches when app wakes',()=>{
  assert.match(features,/window\.addEventListener\('online',check\);\s*check\(\);\s*setInterval\(check,60\*60000\)/);
 });
 
-test('13.5.1 release identity is bumped for PWA cache invalidation',()=>{
+test('13.5.2 release identity is bumped for PWA cache invalidation',()=>{
  const pkg=JSON.parse(read('package.json')),sw=read('public/sw.js'),html=read('index.html');
- assert.equal(pkg.version,'13.5.1');
- assert.equal(pkg.releaseLabel,'13.5.1');
- assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.equal(pkg.version,'13.5.2');
+ assert.equal(pkg.releaseLabel,'13.5.2');
+ assert.match(sw,/animetrack-shell-v1352-1/);
  assert.match(html,/AnimeTrack 13\.5\.1/);
 });
