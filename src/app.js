@@ -160,6 +160,7 @@ function normalizePreferences(raw){
    pushEnabled:p.pushEnabled===true,
   homeQueue:Array.isArray(p.homeQueue)?[...new Set(p.homeQueue.filter(x=>typeof x==='string'&&x.length<=90))].slice(0,6):[],
   shareFriendActivity:p.shareFriendActivity===true,
+  watchRegion:/^[A-Z]{2}$/.test(String(p.watchRegion||'').toUpperCase())?String(p.watchRegion).toUpperCase():'AL',
   customLists
  };
 }
@@ -1968,6 +1969,13 @@ function at131DeleteArc(id,seasonId,arcId){
 const at131PriorDetail=renderDetail;renderDetail=function(id){const result=at131PriorDetail(id);at131EnhanceDetail(id);return result};
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.at131Part)at131OpenPart(b.dataset.id,b.dataset.at131Part);if(b.dataset.at131ArcAdd)at131AddArc(b.dataset.id,b.dataset.at131ArcAdd);if(b.dataset.at131ArcEdit)at131EditArc(b.dataset.id,b.dataset.season,b.dataset.at131ArcEdit);if(b.dataset.at131ArcDelete)at131DeleteArc(b.dataset.id,b.dataset.season,b.dataset.at131ArcDelete);if(b.dataset.at131ArcOpen){const a=state.anime.find(x=>x.id===b.dataset.id),s=a?.seasons.find(x=>x.id===b.dataset.season),arc=s?.arcRatings?.find(x=>x.id===b.dataset.at131ArcOpen);if(a&&s&&arc){activeSeasonId=s.id;episodePage=Math.floor((arc.start-1)/24);renderDetail(a.id);void loadSeasonEpisodes(a.id,s.id,episodePage);requestAnimationFrame(()=>$('detail-body').querySelector('[data-season-ep][data-ep="'+arc.start+'"]')?.scrollIntoView({block:'center',behavior:'smooth'}))}}});
 document.addEventListener('change',e=>{const el=e.target;if(el.matches('[data-at131-part-rating]')){const a=state.anime.find(x=>x.id===el.dataset.id);if(a)setPersonalRating(a,el.value,el.dataset.at131PartRating)}if(el.matches('[data-at131-arc-rating]')){const a=state.anime.find(x=>x.id===el.dataset.id),s=a?.seasons.find(x=>x.id===el.dataset.season),arc=s?.arcRatings?.find(x=>x.id===el.dataset.at131ArcRating);if(!a||!s||!arc)return;const before=arc.rating;arc.rating=el.value===''?null:Math.max(.5,Math.min(10,Number(el.value)||.5));a.updatedAt=now();if(!save()){arc.rating=before;return}renderDetail(a.id);notify('Vlerësimi i arc-ut u ruajt ✓')}});
+
+/* AnimeTrack 13.3 — Where to Watch is attached after every detail renderer. */
+const at133PriorDetail=renderDetail;renderDetail=function(id){
+ const result=at133PriorDetail(id),a=state.anime.find(x=>x.id===id),root=$('detail-body');
+ if(a&&root&&proApp?.modules?.watch){const part=a.seasons.find(x=>x.id===activeSeasonId)||a.seasons[0];void proApp.modules.watch.attach(root,a,part)}
+ return result;
+};
 
 at150ProviderBadge();
 
