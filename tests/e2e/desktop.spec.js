@@ -1,5 +1,5 @@
-const {test}=require('@playwright/test');
-const assert=require('node:assert/strict');
+import {test} from '@playwright/test';
+import assert from 'node:assert/strict';
 test('desktop regression',async({browser},testInfo)=>{
  test.skip(!testInfo.project.name.startsWith('desktop'));
  const context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1});
