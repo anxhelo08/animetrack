@@ -51,7 +51,7 @@ test('unverified providers and incomplete payloads are never labelled by guessin
  assert.throws(()=>f.merge({episodes:[]},null,false),/Invalid Jikan/);
 });
 test('UI and PWA integration preserve all existing routes',()=>{
- const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/filler.css'),sw=read('src/sw.js');
+ const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/tracking-media.css'),sw=read('src/sw.js');
  assert.doesNotThrow(()=>new vm.Script(app));
  assert.match(app,/ATFiller1210\.merge\(s,j\.data,shared,now\(\)\)/);
  assert.doesNotMatch(app,/s\.episodes\.length>=s\.total\)return/);
