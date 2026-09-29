@@ -28,6 +28,6 @@ test('13.1 arc and season ratings are persisted through normalization, cloud and
 });
 test('13.1 release identity and PWA cache are consistent',()=>{
  const html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json')),css=read('src/styles/details-integrations.css');
- assert.equal(pkg.version,'13.6.0');assert.match(html,/AnimeTrack 13\.5\.2/);assert.match(html,/AT<span>13\.5\.2<\/span>/);assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);
+ assert.equal(pkg.version,'13.6.0');assert.match(html,/AnimeTrack 13\.6\.0/);assert.match(html,/AT<span>13\.6\.0<\/span>/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(css,/\.at131-franchise/);assert.match(css,/\.at131-arc-add/);
 });
