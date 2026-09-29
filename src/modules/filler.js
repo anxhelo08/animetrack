@@ -47,7 +47,7 @@ window.ATFiller1210=(()=>{
    const recap=typeof raw.recap==='boolean'?raw.recap:old.recap===true;
    const known=typeof raw.filler==='boolean'&&typeof raw.recap==='boolean';
    const updated={...old,number:n,absolute:number,
-    title:String(old.title||raw.title||raw.title_romanji||'').slice(0,220),
+    title:(window.ATSecurity136?.text(old.title||raw.title||raw.title_romanji||'',220)||String(old.title||raw.title||raw.title_romanji||'').replace(/<[^>]*>/g,' ').slice(0,220)),
     aired:String(old.aired||raw.aired||'').slice(0,40),
     filler,recap,fillerChecked:known||old.fillerChecked===true,
     fillerSource:known?'Jikan':String(old.fillerSource||''),
