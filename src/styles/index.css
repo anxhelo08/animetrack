@@ -5,3 +5,12 @@
 @import "./media-workflow.css";
 @import "./tracking-media.css";
 @import "./details-integrations.css";
+
+/* Consolidated source-section manifest (13.6):
+base.css features.css visual.css home.css mobile-base.css compact.css iphone-base.css
+desktop.css quality.css journey.css airing.css collections.css ios-polish.css social.css
+experience.css mobile-controls.css daily.css social-auth.css mobile-profile.css mobile-library.css tv.css
+unified.css tv-unified.css studio.css auth-compact.css refresh.css workflow.css year.css
+episode-hub.css storage.css seasonal.css wrapped.css filler.css season-ux.css movies.css
+franchise.css diary.css watch.css rich-details.css provider-sync.css performance.css
+*/
