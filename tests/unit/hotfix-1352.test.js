@@ -58,7 +58,7 @@ test('13.6.0 app routes TVMaze away from MAL/Jikan hydration and loads guard bef
 });
 
 test('13.6.0 scroll performance keeps visual design while reducing offscreen work',()=>{
- const css=read('src/styles/performance.css'),styles=read('src/styles/index.css'),app=read('src/app.js'),home=read('src/modules/home.js');
+ const css=read('src/styles/details-integrations.css'),styles=read('src/styles/index.css'),app=read('src/app.js'),home=read('src/modules/home.js');
  assert.match(styles,/performance\.css/);
  assert.match(css,/content-visibility:auto/);
  assert.match(css,/contain:layout style/);
