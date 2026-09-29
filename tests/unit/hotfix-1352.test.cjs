@@ -57,6 +57,8 @@ test('13.5.2 scroll performance keeps visual design while reducing offscreen wor
  assert.match(styles,/performance\.css/);
  assert.match(css,/content-visibility:auto/);
  assert.match(css,/contain:layout style/);
+ assert.doesNotMatch(css,/\.at114-card[,\{]/,'iPhone interactive cards must never be content-visibility targets');
+ assert.doesNotMatch(css,/\.at-pc-card[,\{]/,'dynamic phone cards must stay fully painted');
  assert.match(css,/backdrop-filter:none!important/);
  assert.match(app,/decoding="async"/);
  assert.match(home,/decoding="async"/);
