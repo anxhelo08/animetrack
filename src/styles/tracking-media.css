@@ -1,0 +1,254 @@
+/* AnimeTrack 13.6 — Bundle 5/6. Original cascade order preserved. */
+
+/* ===== episode-hub.css ===== */
+/* 12.7.3: normal watch card with a subtle NEW EP badge for completed titles only. */
+@media(max-width:760px){
+ body.at-ios-enabled .at127-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:20px 2px 11px;min-width:0}
+ body.at-ios-enabled .at127-section-head>div{display:flex;align-items:center;gap:8px;min-width:0}
+ body.at-ios-enabled .at127-section-head h2{margin:0;font-size:13px;letter-spacing:.9px;font-weight:900;color:#e9e3fa}
+ body.at-ios-enabled .at127-section-head .at127-count{display:grid;place-items:center;min-width:25px;height:25px;padding:0 7px;border-radius:999px;background:#3b2b60;border:1px solid #7054ad;color:#e5d5ff;font-size:11px;font-weight:900}
+ body.at-ios-enabled .at127-new-episode{border-color:#645081}
+ body.at-ios-enabled .at127-new-episode .at114-code{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+ body.at-ios-enabled .at127-new-ep{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:5px 8px;border:1px solid #9b79e8;border-radius:7px;background:#ab85ee;color:#1c132b;font-size:10px;line-height:1;font-weight:950;letter-spacing:.5px;white-space:nowrap;vertical-align:middle}
+ body.at-ios-enabled .at127-new-ep:before{content:'✦';font-size:9px}
+ body.at-ios-enabled .at127-new-episode .at114-meta{color:#b7a1d9}
+ body.at-ios-enabled .at127-stale-head{margin-top:22px;padding:11px 12px;border-radius:13px;background:#1b1a26;border:1px solid #373147}
+ body.at-ios-enabled .at127-stale-head h2{color:#b8afcc;font-size:11px}
+ body.at-ios-enabled .at127-stale-note{padding:0 3px 9px;color:#928ca3;font-size:11px;line-height:1.5}
+ body.at-ios-enabled .at127-stale-list .at114-card{opacity:.83}
+ body.at-ios-enabled .at127-empty-active{padding:17px 12px;border:1px dashed #413751;border-radius:12px;color:#a9a1bd;font-size:12px;line-height:1.5}
+}
+@media(prefers-reduced-motion:reduce){.at127-new-ep{animation:none!important}}
+
+/* ===== storage.css ===== */
+/* AnimeTrack 12.7.4: explicit, non-destructive recovery if localStorage is full. */
+body.at128-storage-blocked .app,body.at128-storage-blocked .at-mobile-nav{pointer-events:none!important}
+body.at128-storage-blocked{overflow:hidden}
+.at128-storage-overlay{position:fixed;inset:0;z-index:20000;display:flex;align-items:center;justify-content:center;padding:clamp(18px,5vw,36px);background:rgba(10,9,18,.91);color:#f7f2ff}
+.at128-storage-panel{box-sizing:border-box;width:min(100%,480px);padding:28px;border:1px solid #75649c;border-radius:22px;background:#24202f;box-shadow:0 24px 80px rgba(0,0,0,.4);line-height:1.55}
+.at128-storage-kicker{display:block;margin-bottom:12px;color:#c8adff;font-size:10px;letter-spacing:1.5px;font-weight:900}
+.at128-storage-panel h2{margin:0 0 12px;font-size:22px;line-height:1.22;color:#fff}
+.at128-storage-panel p{margin:0 0 22px;font-size:14px;color:#d6d0e3}
+.at128-storage-actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.at128-storage-actions button{min-height:48px;flex:1 1 180px;padding:12px 15px;border-radius:12px;font-weight:800;font-size:13px;border:1px solid #9680d8;background:#bba5ff;color:#170f28;cursor:pointer}
+.at128-storage-actions button+button{background:#30283e;color:#f1e8ff}
+.at128-storage-panel small{display:block;color:#a69cb9;font-size:11px;line-height:1.45}
+
+/* ===== seasonal.css ===== */
+/* AnimeTrack 12.8 — accessible responsive seasonal catalog and real genre chips. */
+.seasons-view{--season-border:#44395e;--season-accent:#c6a8ff;--season-surface:#211d2e;min-width:0}
+.seasons-view .season-view-head{position:relative;overflow:hidden;min-height:130px;border:1px solid #675185;background:radial-gradient(ellipse at 92% -25%,rgba(160,118,230,.28),transparent 50%),linear-gradient(118deg,#322445,#181b29);border-radius:22px;padding:25px 28px}
+.seasons-view .season-view-head .eyebrow{color:#ceb7ff;letter-spacing:1.4px;font-size:10px}
+.seasons-view .season-view-head h2{font-size:clamp(24px,3vw,35px);letter-spacing:-.9px;line-height:1.15}
+.seasons-view .season-view-head p{max-width:670px}
+.seasons-view .season-view-head .primary{border-radius:12px;min-height:46px}
+.seasons-view .season-browser-controls{gap:12px;padding:15px;border:1px solid var(--season-border);border-radius:17px;background:var(--season-surface)}
+.seasons-view .season-browser-controls label{flex:1 1 125px;min-width:110px}
+.seasons-view .season-browser-controls select{min-width:0;width:100%;min-height:44px;background:#181624;border-color:#5b4b76;border-radius:11px}
+.seasons-view .season-browser-controls .season-unadded-label{flex:1 1 170px;min-height:44px;align-self:end;margin:0;padding:9px 12px;background:#2a2438;border:1px solid #574a71;border-radius:11px}
+.seasons-view .season-period-nav{gap:8px;padding:8px 0;margin:8px 0 16px}
+.seasons-view .season-period-nav strong{font-size:clamp(14px,2vw,19px);color:#f2e7ff}
+.seasons-view .season-period-nav button{min-height:42px;border-radius:11px}
+.at128-genres{display:grid;gap:11px;padding:15px 16px;margin:12px 0 14px;border:1px solid #544369;background:linear-gradient(145deg,#262036,#1c1b2a);border-radius:18px;min-width:0}
+.at128-genres-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.at128-genres-top strong{font-size:13px;color:#f0e5ff;letter-spacing:.15px}
+.at128-genres-top span{font-size:11px;color:#ad9dbf}
+.at128-season-search{min-height:44px;width:min(100%,280px);border:1px solid #67547e;border-radius:11px;background:#151421;color:#f3ebff;padding:10px 13px;font-size:14px}
+.at128-season-search:focus-visible,.at128-genre:focus-visible{outline:2px solid #d2b6ff;outline-offset:2px}
+.at128-genre-list{display:flex;flex-wrap:wrap;gap:8px;min-width:0}
+.at128-genre{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:8px 12px;border:1px solid #5a4c72;border-radius:999px;background:#201c2b;color:#d2c7e2;font-size:12px;font-weight:780;white-space:nowrap;cursor:pointer;transition:background .14s,border-color .14s}
+.at128-genre:hover{border-color:#b49be7;background:#302540}
+.at128-genre[aria-pressed=true]{background:#b99aff;color:#180f2d;border-color:#ceb8ff;box-shadow:0 2px 12px #a784ff29}
+.at128-genre small{font-size:10px;color:inherit;opacity:.76;font-variant-numeric:tabular-nums}
+.at128-genre[data-empty=true]:not([aria-pressed=true]){opacity:.55}
+.at128-results{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:#bdaed3;padding:0 2px}
+.at128-results button{background:none;border:0;color:#d0b5ff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:34px}
+.seasons-view .seasonal-grid{gap:17px;margin:14px 0 20px}
+.seasons-view .seasonal-tile{background:linear-gradient(160deg,#262134,#1b1a26);border:1px solid #453856;border-radius:17px;box-shadow:0 8px 24px #09081124;transition:transform .14s,border-color .14s}
+.seasons-view .seasonal-tile:hover{transform:translateY(-3px);border-color:#a58bdb}
+.seasons-view .seasonal-cover{aspect-ratio:2/2.48;background:#28213b}
+.seasons-view .seasonal-cover:after{content:'';position:absolute;inset:auto 0 0;height:35%;background:linear-gradient(transparent,rgba(14,12,24,.83));pointer-events:none}
+.seasons-view .seasonal-cover img{transition:transform .22s}
+.seasons-view .seasonal-tile:hover img{transform:scale(1.035)}
+.seasons-view .seasonal-cover .catalog-type{border-radius:7px;padding:5px 7px;font-size:9px;z-index:1}
+.seasons-view .seasonal-cover .catalog-score{z-index:1;border-radius:7px;background:#181421e8;padding:5px 8px;font-size:11px;color:#f1d6a6}
+.seasons-view .seasonal-info{gap:10px;padding:14px}
+.seasons-view .seasonal-name{font-size:14px;line-height:1.38;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:38px}
+.seasons-view .seasonal-meta{color:#a9a0bd;font-size:11px}
+.at128-tile-genres{display:flex;gap:5px;flex-wrap:wrap;align-content:start;min-height:22px}
+.at128-tile-genre{border:1px solid #544566;background:#32283d;border-radius:6px;padding:3px 6px;font-size:10px;color:#d1bedf;line-height:1.4}
+.seasons-view .seasonal-actions button{min-height:39px;border-radius:9px}
+@media(max-width:760px){
+ .seasons-view .season-view-head{padding:18px;align-items:stretch;gap:14px}
+ .seasons-view .season-view-head .primary{width:100%}
+ .seasons-view .season-browser-controls{padding:12px;gap:9px}
+ .seasons-view .season-browser-controls label{flex-basis:calc(50% - 5px)}
+ .seasons-view .season-browser-controls .season-unadded-label{flex-basis:100%}
+ .at128-genres{padding:12px;gap:10px}
+ .at128-genres-top{align-items:stretch}
+ .at128-season-search{width:100%;max-width:none;font-size:16px}
+ .at128-genre-list{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity;overscroll-behavior-x:contain;padding:2px 0 8px}
+ .at128-genre{min-height:44px;flex:0 0 auto;scroll-snap-align:start}
+ .seasons-view .seasonal-grid{gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+ .seasons-view .seasonal-info{padding:10px;gap:7px}
+ .seasons-view .seasonal-name{font-size:12px;min-height:34px}
+ .seasons-view .seasonal-cover{aspect-ratio:2/2.5}
+ .seasons-view .seasonal-actions{display:grid;grid-template-columns:1fr;gap:6px}
+ .seasons-view .seasonal-actions button{width:100%;font-size:10px;padding:7px;min-height:38px}
+ .seasons-view .season-period-nav button{font-size:10px;padding:7px 9px}
+}
+@media(min-width:761px) and (max-width:1160px){.seasons-view .seasonal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:360px){.seasons-view .season-period-nav strong{font-size:12px}.seasons-view .seasonal-grid{gap:7px}}
+@media(prefers-reduced-motion:reduce){.seasons-view .seasonal-tile,.seasons-view .seasonal-cover img,.at128-genre{transition:none!important}}
+
+/* Seasonal discovery shortcut inside the iPhone search view. */
+.at128-mobile-season-link{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:4px 0 15px;padding:15px;border:1px solid #6e5296;border-radius:17px;background:linear-gradient(112deg,#38264c,#211d34);color:#f4edff}
+.at128-mobile-season-link>div{display:grid;gap:5px;min-width:0}
+.at128-mobile-season-link span{font-size:9px;font-weight:900;letter-spacing:1.1px;color:#c5a7f8}
+.at128-mobile-season-link strong{font-size:16px;line-height:1.2}
+.at128-mobile-season-link small{font-size:11px;color:#b9a8cc}
+.at128-mobile-season-link button{flex:0 0 auto;padding:10px 12px;min-height:44px;border-radius:10px;border:1px solid #b798f4;background:#bb9aff;color:#21132c;font-weight:850;font-size:12px;cursor:pointer}
+@media(max-width:370px){.at128-mobile-season-link{flex-wrap:wrap}.at128-mobile-season-link button{width:100%}}
+
+/* ===== wrapped.css ===== */
+/* AnimeTrack 12.9 — Wrapped editorial dark dashboard. Scoped to this feature. */
+.at129-wrapped{--w-border:#54496c;--w-panel:#1b1929;--w-muted:#ada7bf;display:grid;gap:20px;width:100%;max-width:1250px;margin:0 auto 32px;color:#eeeafa;min-width:0}
+.at129-wrapped *{box-sizing:border-box}
+.at129-hero{position:relative;isolation:isolate;overflow:hidden;min-height:260px;padding:clamp(23px,4vw,48px);border:1px solid #736192;border-radius:26px;background:radial-gradient(ellipse 48% 95% at 90% 10%,#8857dc8a,transparent 74%),radial-gradient(ellipse 45% 70% at 18% 120%,#38689965,transparent 74%),linear-gradient(125deg,#1f173b 2%,#2b204b 58%,#12283a);box-shadow:0 20px 55px #0c0c2045}
+.at129-hero:before{content:"";position:absolute;right:-50px;bottom:-170px;width:410px;height:410px;border:1px solid #c9aeff3d;border-radius:50%;box-shadow:0 0 0 47px #b3a0f910,0 0 0 94px #ae9af909;z-index:-1}
+.at129-hero .at129-stars{position:absolute;right:8%;top:16%;font-size:28px;letter-spacing:12px;color:#ccb8ff78}
+.at129-kicker,.at129-eyebrow{display:block;font-size:10px;font-weight:900;letter-spacing:2px;color:#d7c4ff}
+.at129-hero h2{font-size:clamp(37px,6.6vw,76px);line-height:1.04;letter-spacing:-2.5px;margin:17px 0 14px;color:#fff;font-weight:950}
+.at129-hero h2 em{font-style:normal;background:linear-gradient(90deg,#cdb5ff,#86d8e6);color:transparent;background-clip:text;-webkit-background-clip:text}
+.at129-hero p{font-size:clamp(12px,1.8vw,15px);line-height:1.65;color:#e1d5f6;max-width:460px}
+.at129-hero-bottom{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-top:28px;font-size:11px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;color:#e0d4f4}
+.at129-toolbar{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.at129-switch,.at129-badge-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:4px;border:1px solid #494158;background:#201d2e;padding:5px;border-radius:14px}
+.at129-switch button,.at129-badge-toolbar button{appearance:none;border:0;background:transparent;color:#aea9c0;border-radius:10px;min-height:38px;padding:9px 14px;font:800 12px/1.2 inherit;cursor:pointer;transition:background .16s,color .16s}
+.at129-switch button.active,.at129-badge-toolbar button.active{background:#7c60b9;color:#fff;box-shadow:0 3px 10px #160d2a40}
+.at129-switch button:hover,.at129-badge-toolbar button:hover{color:#fff}
+.at129-story{display:grid;gap:16px}
+.at129-number{position:relative;overflow:hidden;display:flex;flex-direction:column;gap:2px;padding:26px 28px 29px;background:linear-gradient(120deg,#36294c,#211c30);border:1px solid #7861a4;border-radius:22px}
+.at129-number:after{content:"✦";position:absolute;right:20px;top:-46px;font-size:220px;line-height:1;color:#bba1ff17;pointer-events:none}
+.at129-number small{font-size:11px;letter-spacing:1.7px;color:#cdbce8;font-weight:900}
+.at129-number strong{font-weight:950;letter-spacing:-5px;line-height:1.07;font-size:clamp(70px,10vw,124px);color:#fff;font-variant-numeric:tabular-nums}
+.at129-number>span{font-size:13px;color:#c9bfd9}
+.at129-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.at129-stat{display:grid;align-content:start;gap:5px;min-width:0;padding:18px;border:1px solid #514565;border-radius:17px;background:linear-gradient(145deg,#252036,#1c1b2b)}
+.at129-stat>span{font-size:19px;color:#c0a3fd}
+.at129-stat strong{font-size:clamp(21px,3vw,31px);letter-spacing:-.8px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.at129-stat small{font-size:11px;color:#aaa4c0;line-height:1.4}
+.at129-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.at129-panel{min-width:0;overflow:hidden;padding:23px;background:linear-gradient(145deg,#222032,#181b28);border:1px solid #494158;border-radius:21px}
+.at129-panel h3{font-size:19px;margin:7px 0 18px;line-height:1.35;letter-spacing:-.35px}
+.at129-heat{height:139px;display:grid;grid-template-columns:repeat(14,minmax(0,1fr));align-items:end;gap:8px;min-width:0}
+.at129-heat-col{display:flex;flex-direction:column;justify-content:end;gap:6px;height:100%;min-width:0}
+.at129-heat-fill{min-height:5px;max-height:115px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#bb95ff,#6552ad);box-shadow:0 0 14px #9c7ae522}
+.at129-heat-col small{font-size:9px;color:#89839d;text-align:center}
+.at129-facts{margin-top:16px;padding-top:13px;border-top:1px solid #ffffff19}
+.at129-facts>div{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;color:#9e99b2;font-size:11px}
+.at129-facts b{color:#e3daff;text-align:right;font-size:12px;font-weight:850}
+.at129-top{display:grid;gap:8px}
+.at129-top-item{display:grid;grid-template-columns:36px minmax(0,1fr) auto;align-items:center;gap:12px;padding:11px;border-radius:12px;background:#ffffff08;border:1px solid #ffffff0d}
+.at129-rank{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:#564476;color:#e9dcff;font-size:11px;font-weight:950}
+.at129-top-item>div{min-width:0}.at129-top-item b{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.at129-top-item small{font-size:10px;color:#88849b}
+.at129-top-item>strong{font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.at129-empty{font-size:12px;color:#a59db9;line-height:1.6;margin:8px 0}
+.at129-genre{margin:13px 0}.at129-genre>div{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin-bottom:7px}.at129-genre b{color:#c5aff9}
+.at129-genre i,.at129-progress{display:block;height:7px;border-radius:99px;overflow:hidden;background:#393248}.at129-genre i span,.at129-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8264d1,#a8d0e3)}
+.at129-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.at129-weekdays>div{display:grid;place-items:center;gap:10px;background:#302943;border:1px solid #514367;padding:11px 3px;border-radius:11px;min-width:0}
+.at129-weekdays span{font-size:10px;color:#aba5c2}.at129-weekdays b{font-size:17px;font-variant-numeric:tabular-nums}
+.at129-achievements{padding:clamp(17px,3vw,27px);background:linear-gradient(140deg,#201b31,#181d2c);border:1px solid #615078;border-radius:23px;min-width:0}
+.at129-achievements>header{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:17px}
+.at129-achievements h2{margin:7px 0;font-size:clamp(22px,3vw,29px);letter-spacing:-.7px}
+.at129-achievements h2 span{color:#cba8ff}.at129-achievements p{font-size:12px;color:#a9a2bc;line-height:1.6;margin:0;max-width:580px}
+.at129-achievement-count{display:grid;justify-items:center;flex:none;min-width:104px;padding:10px 13px;border:1px solid #8363a9;border-radius:13px;background:#443154}
+.at129-achievement-count strong{font-size:32px;font-variant-numeric:tabular-nums}.at129-achievement-count strong small{font-size:13px;color:#cdbade}
+.at129-achievement-count span{font-size:10px;color:#d2c4e5}
+.at129-badge-toolbar{display:inline-flex;margin-bottom:17px}
+.at129-badge-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.at129-badge{display:grid;grid-template-columns:56px minmax(0,1fr);gap:12px;padding:14px;border:1px solid #4b425e;border-radius:15px;background:linear-gradient(135deg,#2c263c,#221e30)}
+.at129-badge.earned{border-color:#7963a5;background:radial-gradient(ellipse at 0 0,#7c54b733,transparent 75%),linear-gradient(130deg,#322640,#252134)}
+.at129-badge.locked{opacity:.71}
+.at129-badge-icon{width:53px;height:53px;display:grid;place-items:center;border:1px solid #775c9b;border-radius:15px;background:linear-gradient(135deg,#614c83,#322746);font-size:24px;color:#fff}
+.at129-badge.locked .at129-badge-icon{filter:grayscale(1);background:#393340;border-color:#544c5c}
+.at129-badge-body{display:grid;align-content:start;gap:6px;min-width:0}
+.at129-badge-body strong{font-size:12px;line-height:1.3}.at129-badge-body small{font-size:10px;color:#aba4bc;line-height:1.5}.at129-badge-body>span{font-size:10px;font-weight:900;color:#cdb8fc;letter-spacing:.3px}
+.at129-progress{height:5px;margin-top:2px}.at129-disclaimer{margin:17px 0 0!important;padding:14px;border-top:1px solid #ffffff1a;font-size:11px!important}
+.at129-share{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:21px;border:1px solid #62527e;border-radius:18px;background:#242033}
+.at129-share>div:first-child{display:grid;gap:5px}.at129-share strong{font-size:17px}.at129-share small{font-size:11px;color:#aea6c3}
+.at129-share>div:last-child{display:flex;flex-wrap:wrap;gap:8px}
+.at129-share button{min-height:44px}
+.at129-profile-preview{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:17px;border:1px solid #654e83;border-radius:16px;background:linear-gradient(120deg,#332547,#1d2031);color:#f0eaff;margin:18px 0}
+.at129-profile-preview h3{margin:5px 0;font-size:18px}.at129-profile-preview p{font-size:11px;color:#b3a7cb;margin:0}
+.at129-mini-icons{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px}
+.at129-mini-icons span{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#695085;border:1px solid #9d7bbd;font-size:17px}
+.at129-profile-preview button{grid-column:1/-1;justify-self:start;min-height:40px;padding:10px 14px;border-radius:10px;border:1px solid #9e83c0;background:#51406d;color:#fff;font-size:12px;font-weight:850}
+@media(max-width:960px){.at129-badge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .at129-wrapped{gap:13px;margin-bottom:100px;width:100%;padding:0 1px}
+ .at129-hero{min-height:222px;padding:22px 20px;border-radius:18px}
+ .at129-hero h2{font-size:clamp(34px,9vw,49px);letter-spacing:-1.6px;margin:14px 0}
+ .at129-hero p{font-size:12px}
+ .at129-hero-bottom{font-size:9px;margin-top:23px}
+ .at129-toolbar{display:grid;gap:8px}
+ .at129-switch{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+ .at129-switch button{min-width:0;padding:9px 5px;white-space:normal;font-size:11px;min-height:43px}
+ .at129-number{padding:19px 20px;border-radius:17px}.at129-number strong{font-size:78px;letter-spacing:-3px}
+ .at129-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .at129-stat{padding:13px;border-radius:13px}.at129-stat strong{font-size:25px}
+ .at129-split{grid-template-columns:minmax(0,1fr);gap:10px}.at129-panel{padding:17px;border-radius:16px}
+ .at129-heat{gap:5px}.at129-weekdays{gap:4px}
+ .at129-achievements{padding:16px;border-radius:17px}
+ .at129-achievements>header{align-items:flex-start}.at129-achievement-count{min-width:79px;padding:9px}
+ .at129-achievement-count strong{font-size:25px}
+ .at129-badge-grid{grid-template-columns:minmax(0,1fr);gap:8px}.at129-badge{grid-template-columns:46px minmax(0,1fr);padding:11px}.at129-badge-icon{width:44px;height:44px;font-size:21px;border-radius:12px}
+ .at129-share{display:grid;padding:17px}.at129-share>div:last-child{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.at129-share button{font-size:11px;padding:10px 6px}
+ .at129-profile-preview{grid-template-columns:minmax(0,1fr)}.at129-mini-icons{justify-content:flex-start}
+}
+@media(max-width:355px){.at129-achievements>header{flex-direction:column}.at129-weekdays span{font-size:9px}.at129-switch button{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.at129-switch button,.at129-badge-toolbar button{transition:none}}
+
+/* ===== filler.css ===== */
+/* 12.10 — gold is reserved for verified or manually marked filler. */
+.episode-list .ep-article.at1210-filler{border-color:#a98030;background:linear-gradient(104deg,#342b1d,#211f28)}
+.episode-list .ep-article.at1210-filler.seen{background:linear-gradient(104deg,#2e3325,#1d2e2b);border-color:#b39549}
+.episode-list .ep-article.at1210-filler .ep-num{background:#66501f;color:#ffe6a1}
+.episode-list .ep-article.at1210-filler .ep-info-btn:hover{background:#48371e}
+.episode-list .ep-article.at1210-filler .ep-toggle-btn{border-left-color:#8f7036}
+.at1210-chip{display:inline-flex;align-items:center;justify-content:center;max-width:max-content;min-height:22px;padding:3px 7px;border-radius:6px;font-size:10px;font-weight:900;line-height:1.1;letter-spacing:.4px;white-space:nowrap}
+.at1210-chip.filler{background:#eabf60;border:1px solid #ffd681;color:#2c210d}
+.at1210-chip.recap{background:#2f527b;border:1px solid #5279a7;color:#dfedff}
+.episode-list .ep-text{min-width:0}
+.episode-list .ep-text .at1210-chip{margin-top:4px}
+.at1210-legend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 12px;color:#c1b8d3;font-size:11px;line-height:1.4}
+.at1210-legend button{min-height:36px;margin-left:auto;padding:6px 10px;background:#312747;border:1px solid #62517e;border-radius:8px;color:#e4d4ff;font-size:11px}
+.at1210-legend button:disabled{opacity:.55}
+.ep-meta-row .at1210-chip{min-height:27px;padding:5px 9px}
+.at1210-manual{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:12px 0;color:#c2b9d5;font-size:12px}
+.at1210-manual select{font-size:16px;background:#231e33;border:1px solid #68527d;border-radius:8px;min-height:44px;color:#f2e7ff;padding:8px 11px;max-width:100%}
+.at1210-manual small{width:100%;font-size:10px;color:#a8a0ba}
+@media(max-width:580px){.at1210-legend button{margin-left:0}.at1210-chip{font-size:9px}.episode-list .ep-info-btn{gap:8px}}
+
+/* ===== season-ux.css ===== */
+/* AnimeTrack 12.14 — season UX */
+.at140-resume-chip{display:inline-flex;align-items:center;width:max-content;margin:0 0 6px;padding:3px 7px;border-radius:999px;background:#b69cff;color:#171322;font-size:9px;font-weight:900;letter-spacing:.08em}
+.season-tab.at140-resume-season{box-shadow:inset 0 0 0 1px #8c75d8}
+.at140-resume-episode{outline:1px solid #8f79d8;outline-offset:2px;border-radius:13px}
+.at140-season-description{flex:1 0 100%;border-top:1px solid #4b4463;padding-top:12px;margin-top:2px}
+.at140-season-description>span{display:block;color:#a995ef;font-size:9px;font-weight:900;letter-spacing:.12em;margin-bottom:6px}
+.at140-season-description p{font-size:12px!important;line-height:1.65;color:#d5d0e4!important;margin:0!important;max-width:900px}
+.at140-season-description a{display:inline-block;margin-top:7px;font-size:11px;color:#bda9ff}
+.at140-hide-part{border-color:#68546f!important;color:#d9cbe0!important}
+.at140-hidden-parts{margin:0 0 13px;border:1px dashed #4a435f;border-radius:12px;background:#171827;padding:8px 10px}
+.at140-hidden-parts summary{cursor:pointer;color:#bdb3d4;font-size:11px;font-weight:800}
+.at140-hidden-parts>div{display:flex;gap:8px;overflow-x:auto;padding-top:9px}
+.at140-hidden-parts button{min-width:190px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center}
+.at140-hidden-parts button strong{font-size:11px}.at140-hidden-parts button small{grid-column:1;color:#9f98b4}.at140-hidden-parts button span{grid-column:2;grid-row:1/3;color:#bca7ff;font-size:10px;font-weight:800}
+@media(max-width:680px){.at140-season-description p{font-size:11px!important}.at140-hidden-parts button{min-width:165px}.at140-hide-part{width:100%}}
+
+/* ===== movies.css ===== */
+/* AnimeTrack 12.15 — Movies */
+.at150-provider{margin-top:10px;border:1px solid #39374f;border-radius:12px;background:#161721;padding:9px 11px}.at150-provider summary{cursor:pointer;font-size:11px;font-weight:800;color:#d6d1e7}.at150-provider-grid{display:grid;grid-template-columns:minmax(220px,1fr) auto;gap:9px;margin-top:10px;align-items:end}.at150-provider-grid label{display:grid;gap:5px;font-size:10px;color:#aaa3bf}.at150-provider-grid input{min-height:38px;border-radius:9px;border:1px solid #49445e;background:#10111a;color:#fff;padding:0 10px}.at150-provider-grid>div{display:flex;gap:6px}.at150-provider-grid small{grid-column:1/-1;color:#8e889f;line-height:1.5}.at150-movie-result .catalog-type{background:#2c203e}.at150-movie-hero{position:relative;overflow:hidden;border-radius:15px}.at150-backdrop{position:absolute;inset:0 0 auto 0;height:250px;background-size:cover;background-position:center;opacity:.72;pointer-events:none}.at150-preview-top,.at150-movie-detail{position:relative;z-index:1;padding-top:18px}.at150-meta{display:flex;gap:6px;flex-wrap:wrap;margin:9px 0}.at150-movie-facts>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.at150-movie-facts span{display:grid;gap:3px;padding:10px;border:1px solid #343246;border-radius:10px;background:#171823;font-size:11px;color:#c8c3d4}.at150-movie-facts b{font-size:9px;letter-spacing:.08em;color:#9887d5;text-transform:uppercase}.at150-watch-stat{display:flex;gap:8px;align-items:baseline;margin-top:10px;color:#aaa3bb}.at150-watch-stat b{font-size:24px;color:#d7c8ff}.at150-notes{width:100%;min-height:100px;margin-bottom:8px;border-radius:10px;border:1px solid #403b54;background:#11121a;color:#eee;padding:10px;resize:vertical}.at150-collection-strip{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px}.at150-collection-card{min-width:130px;max-width:130px;text-align:left;border:1px solid #37334c;background:#171822;color:#fff;border-radius:11px;padding:7px;cursor:pointer}.at150-collection-card img{width:100%;aspect-ratio:2/3;object-fit:cover;border-radius:8px;margin-bottom:6px}.at150-collection-card strong,.at150-collection-card small{display:block}.at150-collection-card strong{font-size:10px;line-height:1.3}.at150-collection-card small{font-size:9px;color:#9991aa;margin-top:3px}.at150-attribution{font-size:9px;color:#777184;margin-top:12px}.at150-home-movie .progress{display:none}@media(max-width:680px){.at150-provider-grid{grid-template-columns:1fr}.at150-provider-grid small{grid-column:1}.at150-movie-facts>div{grid-template-columns:1fr}.at150-backdrop{height:190px}.at150-preview-top,.at150-movie-detail{padding-top:8px}}
+
