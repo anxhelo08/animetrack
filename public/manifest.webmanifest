@@ -2,7 +2,7 @@
   "id": "/",
   "name": "AnimeTrack — Anime, TV & Movie Tracker",
   "short_name": "AnimeTrack",
-  "description": "Ndiq anime, seriale TV dhe filma; eksploro cast, regjisorë, staff, filmografi, Diary dhe ku transmetohen titujt.",
+  "description": "Ndiq anime, seriale TV dhe filma; sinkronizo progresin me AniList/MyAnimeList, eksploro cast/staff, Diary dhe streaming providers.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

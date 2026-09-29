@@ -3,7 +3,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,updateRequested=false;
  let achievementsOwner='',achievementsKnown=null;
- const proPages=['notifications','recommendations','calendar','diary','watch','wrapped','profile','friends','moderation','collections'];
+ const proPages=['notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>`<button type="button" class="pro-btn" data-pro-action="${esc(action)}" data-id="${esc(id)}">${esc(label)}</button>`;
  const modules={
   notifications:window.ATNotifications(ctx),
@@ -12,6 +12,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   diary:window.ATDiary132(ctx),
   watch:window.ATWatch133(ctx),
   rich:window.ATRich134(ctx),
+  providerSync:window.ATProviderSync135(ctx),
   smart:window.ATSmartAiring(ctx),
   push:window.ATPush109(ctx),
   collections:window.ATCollections110(ctx),
@@ -35,22 +36,22 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
  function renderMobileDiscover(){const node=$('at117-mobile-discover');if(!node)return;const recs=modules.recommendations;node.innerHTML=`<section class="at128-mobile-season-link"><div><span>✦ KATALOGU SEZONAL</span><strong>Zbulo anime sipas zhanrit</strong><small>Drama · Thriller · Isekai · Fantasy</small></div><button type="button" data-at128-open-seasons>Shiko sezonet ↗</button></section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>✦ PËR TY</span><h3>Rekomanduar për ty</h3></div><button type="button" data-pro-page="recommendations">Të gjitha ›</button></div>${recs.home()}</section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>◈ ANILIST · POPULLARITETI</span><h3>Popullore për ty</h3></div></div><p class="at117-discover-note">Tituj nga zbulimet e tua, renditur sipas ndjekësve në AniList; jo statistika të AnimeTrack.</p><div class="at117-trending-row">${recs.trending()||'<p class="at117-discover-note">Po ngarkohen titujt nga katalogu…</p>'}</div></section>`}
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
- function renderBackground(){if(!['collections','profile','friends','moderation'].includes(active))render()}
+ function renderBackground(){if(!['collections','profile','friends','moderation','sync'].includes(active))render()}
  function render(force=false){if(!active)return;
   // Background refreshes must never replace a typed, unsubmitted collection name.
   // Explicit collection mutations still use ctx.rerender() and force a fresh view.
   if(!force&&active==='collections'&&$('at110-new-list')?.value.trim())return;
-  if(!force&&['profile','friends'].includes(active)&&$('pro-content')?.contains(document.activeElement)&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
-  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:modules.diary.render,watch:modules.watch.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};$('pro-content').innerHTML=renderers[active]?.()||''}
+  if(!force&&['profile','friends','sync'].includes(active)&&$('pro-content')?.contains(document.activeElement)&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:modules.diary.render,watch:modules.watch.render,sync:modules.providerSync.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini()+modules.providerSync.profileCard(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};$('pro-content').innerHTML=renderers[active]?.()||''}
  async function refreshLive(force=false){
   if(liveBusy)return {status:'busy'};
   if(document.visibilityState==='hidden')return {status:'hidden'};
   if(!navigator.onLine)return {status:'offline'};
   if(!force&&Date.now()-liveLastCheck<5*60000)return {status:'recent'};
   liveBusy=true;liveLastCheck=Date.now();document.body.classList.add('at-live-checking');renderHome();
-  try{const result=await ctx.liveRefresh(force);modules.push.scheduleSync();return {status:result?.failed?'partial':'ok'}}
+  try{const result=await ctx.liveRefresh(force);modules.push.scheduleSync();void modules.providerSync.auto();return {status:result?.failed?'partial':'ok'}}
   catch(e){console.warn('Live refresh failed',e);return {status:'error'}}
-  finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation'].includes(active))render();renderHome()}
+  finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation','sync'].includes(active))render();renderHome()}
  }
  function renderHome(){
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
@@ -80,10 +81,11 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   modules.diary.mount();
   modules.watch.mount();
   modules.rich.mount();
+  modules.providerSync.mount();
   window.ATMobile113.init();
   window.ATUnified119?.mount();
   const nav=$('side-nav');
-  nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['collections','▤','Listat e mia'],['diary','✎','Diary'],['watch','▶','Ku ta shoh'],['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
+  nav.insertAdjacentHTML('beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['collections','▤','Listat e mia'],['diary','✎','Diary'],['watch','▶','Ku ta shoh'],['sync','⇄','MAL / AniList Sync'],['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${icon} <span class="nav-label">${label}</span></span></button>`).join(''));
   document.querySelector('.top-actions')?.insertAdjacentHTML('afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
   document.querySelector('main.main').insertAdjacentHTML('beforeend','<section class="pro-view hidden" id="pro-view" aria-label="AnimeTrack Pro"><div id="pro-content"></div></section>');
   document.body.insertAdjacentHTML('beforeend','<nav class="at-mobile-nav" aria-label="Navigimi i aplikacionit"><button type="button" data-mobile-nav="home" class="active"><span>▶</span><small>Episodet</small></button><button type="button" data-mobile-nav="explore"><span>⌕</span><small>Kërko</small></button><button type="button" data-mobile-nav="library"><span>▤</span><small>Biblioteka</small></button><button type="button" data-mobile-nav="diary"><span>✎</span><small>Diary</small></button><button type="button" data-mobile-nav="profile"><span>◉</span><small>Unë</small></button></nav>');
@@ -150,8 +152,8 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   active=name;ctx.setLocalView(name);
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
-  $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',diary:'Diary ✎',watch:'Ku ta shoh ▶',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤',tv:'Serialet e mia ▣'})[name];setMobileActive(name);
-  if(name==='collections'||name==='tv')setMobileActive('library');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
+  $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',diary:'Diary ✎',watch:'Ku ta shoh ▶',sync:'MAL / AniList Sync ⇄',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤',tv:'Serialet e mia ▣'})[name];setMobileActive(name);
+  if(name==='collections'||name==='tv')setMobileActive('library');if(name==='sync')setMobileActive('profile');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name);if(name==='explore'){renderMobileDiscover();void modules.recommendations.refresh(false)}}
@@ -181,7 +183,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
  function onStateChange(){
   modules.profiles.scheduleSnapshot();modules.recommendations.onLibraryChange();modules.push.scheduleSync();
   trackAchievements(true);
-  if(!['collections','profile','friends','moderation'].includes(active))render();renderHome();
+  if(!['collections','profile','friends','moderation','sync'].includes(active))render();renderHome();
   clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>{if(document.visibilityState==='visible')void modules.notifications.refresh();else modules.notifications.badge()},450);
  }
  function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';element.innerHTML=modules.rewatch.render(id);root.append(element)}

@@ -1,10 +1,23 @@
-# AnimeTrack 13.4 — Rich Details / Cast / Staff
+# AnimeTrack 13.5 — MAL / AniList Live Sync
 
-**Versioni publik:** 13.4 · **package version:** 13.4.0. Rich Details shton cast, regji, staff dhe profile njerëzish me filmografi të navigueshme.
+**Versioni publik:** 13.5 · **package version:** 13.5.0. Live Sync lidh progresin e AnimeTrack me AniList dhe MyAnimeList pa futur token-at në Supabase.
 
-13.4 shton një shtresë Rich Details te çdo titull: cast/staff të strukturuar, profile personash dhe vepra të tjera që mund të hapen përsëri brenda AnimeTrack.
+13.5 shton sync të kontrolluar me AniList dhe MyAnimeList: progress, status dhe rating krahasohen me baseline lokal; ndryshimet një-anëshe mund të sinkronizohen automatikisht, ndërsa konfliktet kërkojnë zgjedhjen e përdoruesit.
 
 ### Përditësimet aktuale
+
+## AnimeTrack 13.5 · MAL / AniList Live Sync
+- Faqja e re Live Sync lidh AniList dhe MyAnimeList me username read-only ose access token për two-way sync.
+- Access token-at ruhen vetëm në localStorage të pajisjes dhe nuk futen në Supabase ose payload-in cloud të bibliotekës.
+- AniList përdor MediaListCollection për listën dhe SaveMediaListEntry për progress/status/rating; OAuth implicit mund të përdoret kur vendoset AniList Client ID.
+- MyAnimeList write sync përdor një Vercel proxy same-origin që përcjell vetëm token-in e kërkesës; serveri nuk e ruan token-in. Pa token, MAL username mund të lexohet përmes Jikan.
+- Motori mban baseline lokal për çdo media ID. Nëse vetëm provider-i ndryshon bëhet Pull; nëse vetëm AnimeTrack ndryshon bëhet Push; nëse ndryshojnë të dy, hyrja shënohet Conflict dhe nuk mbishkruhet automatikisht.
+- Remote-only titujt importohen vetëm gjatë Sync manual; auto-sync nuk shton ose fshin tituj pa ndërhyrjen e përdoruesit.
+- Progress-i llogaritet vetëm nga vargu vazhdues i episodeve 1..N, që të mos dërgohet progres i rremë kur biblioteka ka episode të kapërcyera.
+- Rating-u i sezonit nga Franchise Timeline 2.0 përdoret si rating i provider-it; për anime me një pjesë përdoret rating-u i përgjithshëm si fallback.
+- Auto Live Sync kontrollon vetëm ndryshime të sigurta afërsisht çdo 10 minuta kur aplikacioni është aktiv dhe online.
+- Profile page në desktop/mobile ka shortcut për Live Sync dhe tregon nëse MAL/AniList janë lidhur.
+
 
 ## AnimeTrack 13.4 · Rich Details / Cast / Staff
 - Çdo detail page ka seksion Rich Details me metadata shtesë, studio/production, zhanre/tags, trailer kur burimi e ofron, cast dhe staff.

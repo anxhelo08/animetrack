@@ -191,6 +191,7 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
    }
    if(tab==='profile'){
     assert(await page.locator('#pro-content .at129-profile-preview').isVisible(),'Profile displays earned achievement icons');
+    assert(await page.locator('#pro-content .at135-profile-card').isVisible(),'Live Sync shortcut renders on iPhone profile');
     await page.locator('#pro-content .at129-profile-preview [data-pro-page="wrapped"]').click();
     assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped opens from iPhone profile');
     assert.equal(await page.locator('#pro-content .at129-badge').count(),24,'Achievement collection renders on mobile');

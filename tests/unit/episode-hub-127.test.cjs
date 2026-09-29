@@ -73,13 +73,13 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  assert.match(main,/modules\/episode-hub\.js/);assert.match(main,/modules\/tv-episodes\.js/);assert.match(styles,/episode-hub\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1340-1/);
- assert.match(html,/AnimeTrack 13\.4/);
+ assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1350-1/);
+ assert.match(html,/AnimeTrack 13\.5/);
 });
 
 test('12.7.2 background TV checks preserve editable pages without bypassing cloud journal',()=>{
  const feature=read('src/modules/features.js'),app=read('src/app.js');
  assert.match(app,/ATSync126\.save\(localStorage,KEY,accountLocalSnapshot\(state\),cloudRevision,true\);accountQueueSave\(\)/);
- assert.match(feature,/finally\{liveBusy=false;document\.body\.classList\.remove\('at-live-checking'\);if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)\}/);
- assert.match(feature,/function onStateChange\(\)\{[\s\S]*?if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)/);
+ assert.match(feature,/finally\{liveBusy=false;document\.body\.classList\.remove\('at-live-checking'\);if\(!\['collections','profile','friends','moderation','sync'\]\.includes\(active\)\)render\(\);renderHome\(\)\}/);
+ assert.match(feature,/function onStateChange\(\)\{[\s\S]*?if\(!\['collections','profile','friends','moderation','sync'\]\.includes\(active\)\)render\(\);renderHome\(\)/);
 });
