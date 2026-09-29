@@ -40,6 +40,6 @@ test('Vite owns the single production CSS bundle and hashed asset cache',()=>{
  const path=require('node:path'),read=p=>fs.readFileSync(path.join(__dirname,'../..',p),'utf8');
  const html=read('index.html'),sw=read('src/sw.js'),main=read('src/main.js'),styles=read('src/styles/index.css');
  assert.equal((html.match(/rel="stylesheet"/g)||[]).length,0);assert.match(html,/type="module" src="\/src\/main\.js"/);
- assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(styles,/@import "\.\/base\.css"/);
- assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.doesNotMatch(sw,/pro-[a-z-]+-[0-9]+\.(js|css)/);
+ assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(styles,/@import "\.\/foundation\.css"/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.doesNotMatch(sw,/pro-[a-z-]+-[0-9]+\.(js|css)/);
 });
