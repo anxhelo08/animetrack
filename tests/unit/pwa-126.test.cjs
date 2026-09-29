@@ -5,7 +5,7 @@ function create(){
  const listeners=new Map(),files=new Map(),calls={network:[],installed:0,claimed:0,shell:[]};
  const cache={match:async key=>files.get(typeof key==='string'?key:key.url)||null,add:async request=>{const key=typeof request==='string'?request:request.url;calls.shell.push(key);files.set(key,{key})},put:async(key,value)=>{files.set(typeof key==='string'?key:key.url,value)}};
  const self={location:{origin:'https://anime.example'},addEventListener:(name,fn)=>listeners.set(name,fn),skipWaiting:()=>{calls.installed++},clients:{claim:()=>{calls.claimed++}}};
- const ctx={self,caches:{open:async()=>cache,match:async key=>files.get(typeof key==='string'?key:key.url)||null,keys:async()=>['animetrack-shell-v1300-1','animetrack-shell-v1330-1-runtime'],delete:async()=>true},Request:class{constructor(url){this.url=url}},URL,Response:{error:()=>({failed:true})},fetch:async req=>{calls.network.push(req.url||req);return {ok:true,network:true,clone(){return this}}},console,setTimeout};
+ const ctx={self,caches:{open:async()=>cache,match:async key=>files.get(typeof key==='string'?key:key.url)||null,keys:async()=>['animetrack-shell-v1300-1','animetrack-shell-v1340-1-runtime'],delete:async()=>true},Request:class{constructor(url){this.url=url}},URL,Response:{error:()=>({failed:true})},fetch:async req=>{calls.network.push(req.url||req);return {ok:true,network:true,clone(){return this}}},console,setTimeout};
  vm.runInNewContext(src,ctx,{filename:'public/sw.js'});return {listeners,files,cache,calls};
 }
 async function trigger(fn,request){let response=null;fn({request,respondWith:p=>{response=p}});return response&&await response}
