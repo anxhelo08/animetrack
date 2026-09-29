@@ -2,9 +2,19 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.5` / package version `13.5.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.5.1` / package version `13.5.1`.
 
 ## [Unreleased]
+
+## [13.5.1] - 2026-09-29
+
+_Public release label: **13.5.1**._
+
+### Fixed
+- Continue Watching now uses canonical TV-season numbering, so movie/special/OVA timeline parts do not shift the displayed season.
+- Mobile cloud sync re-subscribes to the per-user Realtime channel and performs an authoritative cloud re-fetch whenever the app returns to the foreground.
+- Realtime channel errors/timeouts/closures are surfaced to the account sync state instead of leaving a stale mobile library silently connected.
+- The PWA checks for an updated service worker immediately after registration to reduce stale installed iPhone builds.
 
 ## [13.5.0] - 2026-09-29
 
