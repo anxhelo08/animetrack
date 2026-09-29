@@ -3,7 +3,8 @@
    Live-action TV franchise structure: Wikidata relations/franchise membership.
    Episode/season metadata: TVMaze (regular seasons only; specials never become numbered seasons). */
 window.ATFranchiseEngine12130=(()=>{
- 'use strict';\n const clean=(value,max=2500)=>window.ATSecurity136?.text(value,max)||String(value||'').replace(/<[^>]*>/g,' ').replace(/\\s+/g,' ').trim().slice(0,max);
+ 'use strict';
+ const clean=(value,max=2500)=>window.ATSecurity136?.text(value,max)||String(value||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,max);
  const canon=s=>String(s||'').toLocaleLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
  const claimIds=(entity,prop)=>(entity?.claims?.[prop]||[]).map(x=>x?.mainsnak?.datavalue?.value?.id).filter(Boolean);
  const enLabel=entity=>entity?.labels?.en?.value||Object.values(entity?.labels||{})[0]?.value||'';
