@@ -123,6 +123,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
      reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(worker)worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate()})});
      document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
      window.addEventListener('online',check);
+     check();
      setInterval(check,60*60000);
     }).catch(console.warn);
    }
