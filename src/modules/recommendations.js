@@ -1,6 +1,7 @@
 /* AnimeTrack 10.0 — personal discovery, mood and time filters, explainable matches. */
 window.ATRecommendations=function ATRecommendations(ctx){
- const esc=ctx.esc;\n const clean=(value,max=500)=>window.ATSecurity136?.text(value,max)||String(value||'').replace(/<[^>]*>/g,' ').replace(/\\s+/g,' ').trim().slice(0,max);
+ const esc=ctx.esc;
+ const clean=(value,max=500)=>window.ATSecurity136?.text(value,max)||String(value||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim().slice(0,max);
  const MOODS=[
   ['all','✦','Të gjitha',[]],
   ['action','⚔','Adrenalinë',['action','adventure','sports']],
