@@ -56,7 +56,7 @@ test('13.0 integration prevents blind offline overwrite and auto-activates the q
  assert.match(sw,/staleWhileRevalidate\(request\)/);
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
  assert.match(features,/if\(!updateRequested\)return/);
- assert.match(read('src/main.js'),/modules\/sync\.js/);assert.match(html,/AnimeTrack 13\.5\.1/);
+ assert.match(read('src/main.js'),/modules\/sync\.js/);assert.match(html,/AnimeTrack 13\.5\.2/);
 });
 
 test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{
