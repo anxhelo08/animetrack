@@ -38,7 +38,7 @@ test('new title opens first released season and initial episode',()=>{
  assert.equal(resolve(a,[],aired).seasonId,'aired');
 });
 test('detail and episode UI use the new shared data but separate desktop/mobile layouts',()=>{
- const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/refresh.css'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');
+ const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/media-workflow.css'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');
  assert.match(app,/const resume=window\.ATResume123\.resolve\(a,state\.history,releasedCount\)/);
  assert.match(app,/loadSeasonEpisodes\(id,selected\.id,episodePage\)/);
  assert.match(app,/at123-resume-button/);
