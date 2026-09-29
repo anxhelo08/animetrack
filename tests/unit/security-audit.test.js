@@ -97,11 +97,11 @@ test('13.6 SECURITY DEFINER helpers use an immutable search path and authenticat
 });
 
 test('13.6 API metadata crosses a DOMPurify boundary before UI rendering',()=>{
- const pkg=JSON.parse(read('package.json')),security=read('src/modules/security.js'),movies=read('src/modules/movies.js'),filler=read('src/modules/filler.js');
+ const pkg=JSON.parse(read('package.json')),security=read('src/modules/security.js');
+ const apiModules=['movies.js','filler.js','rich-details.js','tv.js','franchise-engine.js','recommendations.js'].map(name=>read('src/modules/'+name));
  assert.equal(pkg.dependencies.dompurify,'3.4.16');
  assert.match(security,/DOMPurify\.sanitize/);
- assert.match(movies,/ATSecurity136\?\.text/);
- assert.match(filler,/ATSecurity136\?\.text/);
+ for(const source of apiModules)assert.match(source,/ATSecurity136\?\.text/);
  assert.match(core,/ATSecurity136\?\.text/);
 });
 
