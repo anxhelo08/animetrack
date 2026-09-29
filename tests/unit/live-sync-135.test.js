@@ -51,7 +51,7 @@ test('13.5 MAL proxy never embeds tokens and exposes only me/list/update actions
  const src=read('api/mal.js');assert.match(src,/Missing MAL access token/);assert.match(src,/action==='me'/);assert.match(src,/action==='list'/);assert.match(src,/action==='update'/);assert.match(src,/my_list_status/);assert.doesNotMatch(src,/client_secret|MAL_CLIENT_SECRET|Bearer\s+[A-Za-z0-9_-]{20,}/);
 });
 test('13.5 release wires provider sync into Pro profile/navigation and PWA version',()=>{
- const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('public/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'13.5.2');assert.equal(pkg.releaseLabel,'13.5.2');assert.match(main,/modules\/provider-sync\.js/);assert.match(styles,/provider-sync\.css/);
- assert.match(features,/providerSync:window\.ATProviderSync135/);assert.match(features,/MAL \/ AniList Sync/);assert.match(features,/providerSync\.profileCard/);assert.match(app,/providerAutoSync/);assert.match(html,/AnimeTrack 13\.5\.2/);assert.match(sw,/animetrack-shell-v1352-1/);
+ const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
+ assert.equal(pkg.version,'13.6.0');assert.equal(pkg.releaseLabel,'13.6.0');assert.match(main,/modules\/provider-sync\.js/);assert.match(styles,/provider-sync\.css/);
+ assert.match(features,/providerSync:window\.ATProviderSync135/);assert.match(features,/MAL \/ AniList Sync/);assert.match(features,/providerSync\.profileCard/);assert.match(app,/providerAutoSync/);assert.match(html,/AnimeTrack 13\.5\.2/);assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);
 });
