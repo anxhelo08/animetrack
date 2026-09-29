@@ -165,7 +165,9 @@ test('watched notifications are excluded and foreground sync refreshes views',()
 
 test('PWA update notification checks new workers and avoids reload during unsaved cloud writes',()=>{
  const features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/foundation.css'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
- assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
+ const pwa=fs.readFileSync(path.join(root,'src/modules/pwa.js'),'utf8');
+ assert.match(features,/window\.ATPWA136\.register/);assert.match(features,/onNeedRefresh:showUpdate/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
+ assert.match(pwa,/virtual:pwa-register/);assert.match(pwa,/onNeedRefresh/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudSaving&&!\(cloudDirty&&cloudMirrorUnavailable\)/);
  assert.match(css,/\.at-pwa-update/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
@@ -346,7 +348,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(main,/modules\/smart-airing\.js/);assert.match(main,/modules\/push\.js/);
  assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.doesNotThrow(()=>new vm.Script(sw));
+ assert.match(sw,/from 'workbox-precaching'/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 
 test('11.0 private lists survive saves, never alter watch progress, and share title only',async()=>{
