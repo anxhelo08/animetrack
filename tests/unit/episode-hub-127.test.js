@@ -72,13 +72,13 @@ test('12.7: TVMaze catalog update never moves watched numbers when remote episod
  assert.equal(a.seasons[0].total,3);
 });
 test('12.7 mobile and cache integration of all release-first assets',()=>{
- const iphone=read('src/modules/iphone.js'),app=read('src/app.js'),sw=read('public/sw.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/episode-hub.css');
+ const iphone=read('src/modules/iphone.js'),app=read('src/app.js'),sw=read('src/sw.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/episode-hub.css');
  assert.match(iphone,/ATEpisodeHub127\.classify/);assert.match(iphone,/at127-new-ep/);assert.match(iphone,/at127-stale-head/);assert.doesNotMatch(iphone,/at127-fresh-list/);
  assert.match(iphone,/ctx\.markEpisode\(a\.id,s\.id,n\);if\(s\.watched\.includes\(n\)\)/);
  assert.match(app,/refreshTrackedTV127\(force\)/);assert.match(app,/ATTVEpisodes127\.merge/);
  assert.match(app,/accountUser\?\.id!==uid/);
  assert.match(main,/modules\/episode-hub\.js/);assert.match(main,/modules\/tv-episodes\.js/);assert.match(styles,/episode-hub\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(css,/at127-new-ep/);assert.match(sw,/animetrack-shell-v1352-1/);
+ assert.match(css,/at127-new-ep/);assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);
  assert.match(html,/AnimeTrack 13\.5\.2/);
 });
 
