@@ -50,10 +50,10 @@ test('12.7.4 retrying a cloud mutation retains its original journal and latest s
  assert.equal(sync.remoteStatus(state,sync.pending(storage,key),{payload:{anime:[]},updated_at:'r2'},x=>x),'conflict');
 });
 test('12.7.4 persistent recovery gate is wired before app, and no site-data reset exists',()=>{
- const html=read('index.html'),sw=read('public/sw.js'),core=read('src/app.js'),css=read('src/styles/storage.css'),pkg=JSON.parse(read('package.json'));
+ const html=read('index.html'),sw=read('src/sw.js'),core=read('src/app.js'),css=read('src/styles/storage.css'),pkg=JSON.parse(read('package.json'));
  const main=read('src/main.js');assert.match(main,/modules\/storage\.js/);assert.match(main,/styles\/index\.css/);assert(main.indexOf('./modules/storage.js')<main.indexOf('./app.js'));
- assert.match(sw,/animetrack-shell-v1352-1/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.equal(pkg.version,'13.5.2');
+ assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
+ assert.equal(pkg.version,'13.6.0');
  assert.match(core,/cloudMirrorUnavailable=!mirror\.ok/);assert.match(core,/data-at128-export/);
  assert.match(core,/const pending=cloudDirty/);assert.match(core,/ATStorage1274\.save\(localStorage,KEY,localSnapshot,cloudRevision,true/);
  assert.doesNotMatch(core,/localStorage\.clear\(/);
