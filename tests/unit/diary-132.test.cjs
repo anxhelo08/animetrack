@@ -53,5 +53,5 @@ test('13.2 release wires Diary into Pro navigation, mobile navigation and watch 
  assert.match(main,/modules\/diary\.js/);assert.match(styles,/diary\.css/);
  assert.match(features,/['"]diary['"]/);assert.match(features,/data-mobile-nav="diary"/);assert.match(features,/op\.startsWith\('diary-'\)/);assert.match(read('src/modules/diary.js'),/diary-edit/);
  assert.match(app,/eventId:uuid\(\)/);assert.match(app,/diaryNote/);assert.match(app,/diaryRating/);
- assert.match(html,/AnimeTrack 13\.5\.1/);assert.match(html,/AT<span>13\.5\.1<\/span>/);assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(html,/AnimeTrack 13\.5\.1\.1/);assert.match(html,/AT<span>13\.5\.1<\/span>/);assert.match(sw,/animetrack-shell-v1351-1/);
 });
