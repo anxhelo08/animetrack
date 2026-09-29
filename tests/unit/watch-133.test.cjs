@@ -60,5 +60,5 @@ test('13.3 release wires Where to Watch into source, detail renderer and Pro nav
  const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('public/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.equal(pkg.version,'13.5.2');assert.equal(pkg.releaseLabel,'13.5.2');assert.match(main,/modules\/watch\.js/);assert.match(styles,/watch\.css/);
  assert.match(features,/watch:window\.ATWatch133/);assert.match(features,/Ku ta shoh/);assert.match(features,/op\.startsWith\('watch-'\)/);assert.match(read('src/modules/watch.js'),/watch-open/);
- assert.match(app,/watchRegion/);assert.match(app,/at133PriorDetail/);assert.match(html,/AnimeTrack 13\.5\.1/);assert.match(sw,/animetrack-shell-v1352-1/);
+ assert.match(app,/watchRegion/);assert.match(app,/at133PriorDetail/);assert.match(html,/AnimeTrack 13\.5\.2/);assert.match(sw,/animetrack-shell-v1352-1/);
 });
