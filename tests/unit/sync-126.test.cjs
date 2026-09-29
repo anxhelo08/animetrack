@@ -51,7 +51,7 @@ test('13.0 integration prevents blind offline overwrite and auto-activates the q
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountApplyRemoteRecord\(record\)/);assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);
  assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
  assert.match(app,/if\(accountUser\?\.id!==uid\|\|JSON\.stringify\(state\)!==prior\)/);
- assert.match(sw,/animetrack-shell-v1351-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
+ assert.match(sw,/animetrack-shell-v1352-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
  assert.match(sw,/await self\.skipWaiting\(\)/);
  assert.match(sw,/staleWhileRevalidate\(request\)/);
  assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
