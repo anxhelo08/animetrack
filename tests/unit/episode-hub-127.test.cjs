@@ -80,6 +80,6 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
 test('12.7.2 background TV checks preserve editable pages without bypassing cloud journal',()=>{
  const feature=read('src/modules/features.js'),app=read('src/app.js');
  assert.match(app,/ATSync126\.save\(localStorage,KEY,accountLocalSnapshot\(state\),cloudRevision,true\);accountQueueSave\(\)/);
- assert.match(feature,/finally\{liveBusy=false;document\.body\.classList\.remove\('at-live-checking'\);if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)\}/);
- assert.match(feature,/function onStateChange\(\)\{[\s\S]*?if\(!\['collections','profile','friends','moderation'\]\.includes\(active\)\)render\(\);renderHome\(\)/);
+ assert.match(feature,/finally\{liveBusy=false;document\.body\.classList\.remove\('at-live-checking'\);if\(!\['collections','profile','friends','moderation','sync'\]\.includes\(active\)\)render\(\);renderHome\(\)\}/);
+ assert.match(feature,/function onStateChange\(\)\{[\s\S]*?if\(!\['collections','profile','friends','moderation','sync'\]\.includes\(active\)\)render\(\);renderHome\(\)/);
 });
