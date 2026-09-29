@@ -2,9 +2,30 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.4` / package version `13.4.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.5` / package version `13.5.0`.
 
 ## [Unreleased]
+
+## [13.5.0] - 2026-09-29
+
+_Public release label: **13.5**._
+
+### Added
+- AniList/MyAnimeList Live Sync page with provider connection state, comparison table and manual conflict resolution.
+- Device-local provider baselines for safe direction detection: pull, push, conflict, remote-only and local-only.
+- AniList authenticated list reads and SaveMediaListEntry mutations for progress, status and score.
+- MyAnimeList same-origin Vercel proxy for authenticated profile/list/update requests without storing user tokens server-side.
+- Read-only MAL username mode through Jikan and read-only AniList username mode without OAuth.
+- Optional AniList implicit OAuth connection when a user supplies their own AniList Client ID.
+- Auto Live Sync toggle and mobile Profile shortcut.
+
+### Changed
+- External imports can retain provider cover/year/genre/source metadata when remote-only entries are added by Live Sync.
+- Auto-sync only applies matched one-sided changes; it never auto-imports remote-only titles and never resolves two-sided conflicts.
+
+### Security
+- AniList and MAL access tokens remain device-local and are excluded from Supabase/cloud payloads.
+
 
 ## [13.4.0] - 2026-09-29
 

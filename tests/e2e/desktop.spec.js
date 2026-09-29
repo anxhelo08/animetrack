@@ -161,6 +161,15 @@ test('desktop regression',async({browser},testInfo)=>{
  assert.equal(await page.locator('#pro-content .at132-entry').count(),diaryBefore);
  assert.match(await page.locator('#pro-content .at132-entry').first().innerText(),/Desktop diary smoke note/);
  console.log('DIARY_DESKTOP_PASS',JSON.stringify({entries:diaryBefore,rating:8.5}));
+ // 13.5: Live provider sync settings render without exposing stored tokens.
+ await page.locator('#pro-nav-sync').click();
+ await page.locator('#pro-content .at135-page').waitFor({state:'visible',timeout:3000});
+ assert(await page.locator('#at135-anilist').isVisible(),'AniList sync card renders');
+ assert(await page.locator('#at135-mal').isVisible(),'MAL sync card renders');
+ assert.equal(await page.locator('#at135-anilist [data-at135-token]').getAttribute('type'),'password');
+ assert.equal(await page.locator('#at135-auto').isChecked(),false);
+ assert.match(await page.locator('#pro-content .at135-security').innerText(),/token/i);
+ console.log('LIVE_SYNC_DESKTOP_PASS');
  // 12.9: Desktop Wrapped and Trophy Room.
  await page.locator('#pro-nav-wrapped').click();
  assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped 12.9 renders on desktop');

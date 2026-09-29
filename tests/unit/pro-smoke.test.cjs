@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
-const names=['recommendations','wrapped','calendar-wrapped','diary','watch','rich-details','profiles','friends','moderation','notifications','rewatch','home','seasonal','episode-hub','filler','franchise','iphone','tv-episodes','tv','tv-unified','unified','daily','journey','smart-airing','push','collections','experience','features'];
+const names=['recommendations','wrapped','calendar-wrapped','diary','watch','rich-details','provider-sync','profiles','friends','moderation','notifications','rewatch','home','seasonal','episode-hub','filler','franchise','iphone','tv-episodes','tv','tv-unified','unified','daily','journey','smart-airing','push','collections','experience','features'];
 function load(extra={}){
  const sandbox={window:{},console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
@@ -12,9 +12,9 @@ function load(extra={}){
  return sandbox.window;
 }
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
-test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATDiary132','ATWatch133','ATRich134','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','ATCollections110','AnimeTrackPro','ATExperience112'])assert.equal(typeof w[key],'function')});
+test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATDiary132','ATWatch133','ATRich134','ATProviderSync135','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','ATCollections110','AnimeTrackPro','ATExperience112'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('Vite entry references every feature module and public PWA resources exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');for(const name of names)assert.ok(main.includes('./modules/'+name+'.js'),name);for(const p of ['src/app.js','src/config.js','src/styles/index.css','public/manifest.webmanifest','public/sw.js','public/icon.svg','public/icon-192.png','public/icon-512.png'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 13\.4/);assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'public/manifest.webmanifest'),'utf8')))});
+test('Vite entry references every feature module and public PWA resources exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');for(const name of names)assert.ok(main.includes('./modules/'+name+'.js'),name);for(const p of ['src/app.js','src/config.js','src/styles/index.css','public/manifest.webmanifest','public/sw.js','public/icon.svg','public/icon-192.png','public/icon-512.png'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/AnimeTrack 13\.5/);assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'public/manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/);assert.match(src,/data\.user\.identities\.length===0/);assert.match(src,/at116EmailIssue\(email\)/);assert.match(src,/resetPasswordForEmail/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -163,7 +163,7 @@ test('PWA update notification checks new workers and avoids reload during unsave
  const features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/compact.css'),'utf8'),sw=fs.readFileSync(path.join(root,'public/sw.js'),'utf8');
  assert.match(features,/controllerchange/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(features,/ctx.canReload/);assert.match(core,/canReload:\(\)=>!cloudSaving&&!\(cloudDirty&&cloudMirrorUnavailable\)/);
- assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(css,/\.at-pwa-update/);assert.match(sw,/animetrack-shell-v1350-1/);
 });
 
 test('iPhone app shell replaces mobile home and supports install instructions',()=>{
@@ -341,7 +341,7 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
  const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(main,/modules\/smart-airing\.js/);assert.match(main,/modules\/push\.js/);
  assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
- assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(sw,/animetrack-shell-v1350-1/);
  assert.doesNotThrow(()=>new vm.Script(sw));
 });
 
@@ -406,7 +406,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
  assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
  assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(sw,/animetrack-shell-v1350-1/);
  assert.match(html,/viewport-fit=cover/);
  assert.doesNotMatch(html,/user-scalable\s*=\s*no|maximum-scale\s*=\s*1/);
 });
@@ -527,7 +527,7 @@ test('11.4.1 watches ignored metadata update for seven-day inactivity and filter
 });
 test('11.4.1 mobile polish is scoped to small screens and keeps iOS status bar clear',()=>{
  const css=fs.readFileSync(path.join(root,'src/styles/mobile-controls.css'),'utf8'),sw=fs.readFileSync(path.join(root,'public/sw.js'),'utf8');
- assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(css,/at114-check\.pending/);assert.match(css,/at114-check\.done/);assert.match(css,/at114-upcoming-intro/);assert.match(css,/display-mode:standalone/);assert.match(css,/safe-area-inset-top/);assert.match(sw,/animetrack-shell-v1350-1/);
 });
 
 test('11.5 daily experience uses shared library, real weekly history and existing episode actions',()=>{
@@ -615,7 +615,7 @@ test('11.6 profile onboarding creates private handle for newly confirmed account
 
 test('11.6.1 mobile profile uses real library data and keeps email confirmation',()=>{const p=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),a=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),h=fs.readFileSync(path.join(root,'index.html'),'utf8'),c=fs.readFileSync(path.join(root,'src/styles/mobile-profile.css'),'utf8');for(const v of ['at1161-profile','at1161-posters','at1161-metrics','profile-anime'])assert.match(p,new RegExp(v));assert.match(a,/email_address_not_authorized/);assert.match(a,/identities\.length===0/);assert.match(a,/nuk garanton mbërritjen/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(c,/safe-area-inset-bottom/);});
 
-test('11.6.2 signup uses canonical production redirect and handles consumed links safely',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/ANIMETRACK_AUTH_REDIRECT='https:\/\/animetrack-flax\.vercel\.app\/'/);assert.match(src,/emailRedirectTo:accountRedirectURL\(\)/);assert.match(src,/redirectTo:accountRedirectURL\(\)/);assert.match(src,/otp_expired/);assert.match(src,/provo Hyr/);assert.match(html,/AnimeTrack 13\.4/)});
+test('11.6.2 signup uses canonical production redirect and handles consumed links safely',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/ANIMETRACK_AUTH_REDIRECT='https:\/\/animetrack-flax\.vercel\.app\/'/);assert.match(src,/emailRedirectTo:accountRedirectURL\(\)/);assert.match(src,/redirectTo:accountRedirectURL\(\)/);assert.match(src,/otp_expired/);assert.match(src,/provo Hyr/);assert.match(html,/AnimeTrack 13\.5/)});
 
 test('11.6.3 password recovery uses authenticated updateUser and requires matching strong password',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/auth\.updateUser\(\{password\}\)/);assert.match(src,/recoveryReturn&&accountMode==='cloud'/);assert.match(src,/password!==confirm\.value/);for(const id of ['at1162-recovery-panel','at1162-new-password','at1162-confirm-password','at1162-save-password'])assert.match(html,new RegExp(id))});
 
@@ -673,7 +673,7 @@ test('11.8 TV resources, cloud normalization and mobile entry are wired',()=>{
  const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.match(main,/modules\/tv\.js/);assert.match(styles,/tv\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
  assert.match(app,/function normalizeTVShows/);assert.match(app,/ATTVUnified120\.migrate/);
  assert.doesNotMatch(pro,/data-mobile-nav="tv"/);assert.match(pro,/modules\.tv\.render/);
- assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(sw,/animetrack-shell-v1350-1/);
 });
 
 test('11.9 unified library: TV totals, progress and content switch without changing anime',()=>{
@@ -687,7 +687,7 @@ test('11.9 unified library: TV totals, progress and content switch without chang
  assert.match(html,/data-media-filter="all"/);assert.match(html,/data-media-filter="anime"/);assert.match(html,/data-media-filter="tv"/);
  assert.match(core,/ATUnified119\?\.render/);assert.match(features,/modules\.day\.render\(true\)/);
  assert.match(features,/data-at119-add-tv/);assert.match(css,/\.at117-library-tools button\.active/);
- assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.match(sw,/animetrack-shell-v1350-1/);
 });
 
 test('11.9.1 single catalog searches anime and TV, opens TV from results and retains one library',()=>{
@@ -729,7 +729,7 @@ test('12.0 shared UI, catalog, calendar and cloud migration are connected',()=>{
  assert.match(core,/at120-unified-tv-open/);assert.match(core,/data-media=/);
  assert.match(core,/function refreshUpcoming/);assert.match(core,/source:'TVmaze'/);
  assert.match(pro,/at120-unified-tv-open/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/modules\/tv-unified\.js/);
- assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(sw,/animetrack-shell-v1350-1/);
 });
 
 test('12.0.1 TV search opens preview without forced library mutation',()=>{

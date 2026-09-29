@@ -49,9 +49,9 @@ test('13.2 Diary metadata remains inside compact cloud history and rewatches',()
 });
 test('13.2 release wires Diary into Pro navigation, mobile navigation and watch records',()=>{
  const app=read('src/app.js'),features=read('src/modules/features.js'),main=read('src/main.js'),styles=read('src/styles/index.css'),html=read('index.html'),sw=read('public/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'13.4.0');assert.equal(pkg.releaseLabel,'13.4');
+ assert.equal(pkg.version,'13.5.0');assert.equal(pkg.releaseLabel,'13.5');
  assert.match(main,/modules\/diary\.js/);assert.match(styles,/diary\.css/);
  assert.match(features,/['"]diary['"]/);assert.match(features,/data-mobile-nav="diary"/);assert.match(features,/op\.startsWith\('diary-'\)/);assert.match(read('src/modules/diary.js'),/diary-edit/);
  assert.match(app,/eventId:uuid\(\)/);assert.match(app,/diaryNote/);assert.match(app,/diaryRating/);
- assert.match(html,/AnimeTrack 13\.4/);assert.match(html,/AT<span>13\.4<\/span>/);assert.match(sw,/animetrack-shell-v1340-1/);
+ assert.match(html,/AnimeTrack 13\.5/);assert.match(html,/AT<span>13\.5<\/span>/);assert.match(sw,/animetrack-shell-v1350-1/);
 });

@@ -161,6 +161,7 @@ function normalizePreferences(raw){
   homeQueue:Array.isArray(p.homeQueue)?[...new Set(p.homeQueue.filter(x=>typeof x==='string'&&x.length<=90))].slice(0,6):[],
   shareFriendActivity:p.shareFriendActivity===true,
   watchRegion:/^[A-Z]{2}$/.test(String(p.watchRegion||'').toUpperCase())?String(p.watchRegion).toUpperCase():'AL',
+  providerAutoSync:p.providerAutoSync===true,
   customLists
  };
 }
@@ -235,7 +236,7 @@ function importExternal(rows){
    const title=String(raw.title||'').trim().slice(0,180),progress=Math.min(2000,Math.max(0,Math.floor(Number(raw.progress)||0))),total=Math.min(10000,Math.max(progress,Math.floor(Number(raw.total)||0)));
    if(!title)continue;
    const source=['AniList','MyAnimeList'].includes(raw.source)?raw.source:'',sourceId=/^\d{1,12}$/.test(String(raw.sourceId||''))?String(raw.sourceId):'',malId=/^\d{1,12}$/.test(String(raw.malId||''))?String(raw.malId):'';
-   const entry=normalized({id:uuid(),title,status:STATUS[raw.status]?raw.status:'planning',source,sourceId,malId,total,watched:Array.from({length:progress},(_,i)=>i+1),rating:raw.rating,format:raw.format||'TV',hydrated:false,createdAt:now(),updatedAt:now(),seasons:[{id:(source==='AniList'?'al-':source==='MyAnimeList'?'mal-':'manual-')+(sourceId||uuid()),title:'Sezoni 1',total,watched:Array.from({length:progress},(_,i)=>i+1),source,sourceId,malId,format:raw.format||'TV',airedCount:progress,airedCheckedAt:''}]});
+   const entry=normalized({id:uuid(),title,status:STATUS[raw.status]?raw.status:'planning',source,sourceId,malId,total,watched:Array.from({length:progress},(_,i)=>i+1),rating:raw.rating,year:Number(raw.year)||null,genre:String(raw.genre||'').slice(0,240),cover:String(raw.cover||'').slice(0,1200),sourceUrl:String(raw.sourceUrl||'').slice(0,1200),communityScore:Number.isFinite(Number(raw.communityScore))?Math.max(0,Math.min(100,Number(raw.communityScore))):null,communitySource:source,format:raw.format||'TV',hydrated:false,createdAt:now(),updatedAt:now(),seasons:[{id:(source==='AniList'?'al-':source==='MyAnimeList'?'mal-':'manual-')+(sourceId||uuid()),title:'Sezoni 1',subtitle:title,total,watched:Array.from({length:progress},(_,i)=>i+1),year:Number(raw.year)||null,source,sourceId,malId,format:raw.format||'TV',airedCount:progress,airedCheckedAt:''}]});
    if(!entry)continue;
    if(keys(entry).some(key=>seen.has(key)))continue;
    for(const key of keys(entry))seen.add(key);added.push(entry);
