@@ -48,5 +48,5 @@ test('13.5 MAL proxy never embeds tokens and exposes only me/list/update actions
 test('13.5 release wires provider sync into Pro profile/navigation and PWA version',()=>{
  const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('public/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.equal(pkg.version,'13.5.1');assert.equal(pkg.releaseLabel,'13.5.1');assert.match(main,/modules\/provider-sync\.js/);assert.match(styles,/provider-sync\.css/);
- assert.match(features,/providerSync:window\.ATProviderSync135/);assert.match(features,/MAL \/ AniList Sync/);assert.match(features,/providerSync\.profileCard/);assert.match(app,/providerAutoSync/);assert.match(html,/AnimeTrack 13\.5\.1\.1/);assert.match(sw,/animetrack-shell-v1351-1/);
+ assert.match(features,/providerSync:window\.ATProviderSync135/);assert.match(features,/MAL \/ AniList Sync/);assert.match(features,/providerSync\.profileCard/);assert.match(app,/providerAutoSync/);assert.match(html,/AnimeTrack 13\.5\.1/);assert.match(sw,/animetrack-shell-v1351-1/);
 });
