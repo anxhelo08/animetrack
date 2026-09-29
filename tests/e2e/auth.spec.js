@@ -1,6 +1,6 @@
 /* Auth browser regression — no real user accounts created. Supabase is mocked at network boundary. */
-const {test}=require('@playwright/test');
-const assert=require('node:assert/strict');
+import {test} from '@playwright/test';
+import assert from 'node:assert/strict';
 test('auth registration and confirmation flow',async({browser,browserName},testInfo)=>{
  const desktop=testInfo.project.name.startsWith('desktop');
  const viewport=desktop?{width:1365,height:900}:{width:390,height:844};
