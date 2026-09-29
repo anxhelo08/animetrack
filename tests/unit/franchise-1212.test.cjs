@@ -55,6 +55,6 @@ test('12.12 integration exposes one update action and caches the new helper',()=
  assert.doesNotMatch(app,/Ndarja si serial \(TV\)/);
  assert.match(tv,/function refreshShow/);assert.match(tv,/SERIA E PLOTË/);assert.doesNotMatch(tv,/dexterTitles/);
  assert.match(main,/modules\/franchise\.js/);assert.match(html,/AnimeTrack 13\.5\.1/);
- assert.match(sw,/animetrack-shell-v1351-1/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
- assert.equal(pkg.version,'13.5.1');
+ assert.match(sw,/animetrack-shell-v1352-1/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
+ assert.equal(pkg.version,'13.5.2');
 });
