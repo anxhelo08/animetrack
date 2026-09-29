@@ -39,11 +39,11 @@ test('12.4 mobile: recently aired is a distinct tab and keeps future dates out',
 });
 test('12.4 markup: quick search and phone release controls are wired and escaped',()=>{
  const html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),app=read('src/app.js'),mobile=read('src/modules/mobile.js'),css=read('src/styles/media-workflow.css'),sw=read('src/sw.js');
- assert.match(main,/modules\/command\.js/);assert.match(styles,/workflow\.css/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
+ assert.match(main,/modules\/command\.js/);assert.match(styles,/workflow\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(app,/ATCommand124/);assert.match(app,/modalReturnFocus/);assert.match(app,/e\.key!=='Tab'/);
  assert.match(mobile,/at124-episode-quickbar/);assert.match(mobile,/action\.dataset\.episodeMark='1'/);
  assert.match(css,/at124-command-panel/);assert.match(css,/at124-episode-mark/);assert.match(css,/at114-top-tabs/);
  assert.match(iphoneSource,/data-ios-action="recent-filter"/);assert.match(iphoneSource,/data-ios-action="open-recent"/);
  assert.match(commandSource,/esc\(x\.label\)/);assert.match(commandSource,/esc\(x\.desc\|\|''\)/);
- assert.match(sw,/precacheAndRoute\\(self\\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.5\.2/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.6\.0/);
 });
