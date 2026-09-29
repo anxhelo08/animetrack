@@ -34,5 +34,5 @@ test('13.0 cloud-first module, compact writes and PWA revision are wired before 
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountHydrateRemote\(remote,state\)/);assert.match(app,/accountApplyRemoteRecord/);
  assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);assert.match(app,/accountMergeRecovery\(remote,cached\)/);
  assert.match(app,/canReload:\(\)=>!cloudSaving&&!\(cloudDirty&&cloudMirrorUnavailable\)/);
- assert.equal(pkg.version,'13.5.2');assert.match(html,/AnimeTrack 13\.5\.1/);
+ assert.equal(pkg.version,'13.5.2');assert.match(html,/AnimeTrack 13\.5\.2/);
 });
