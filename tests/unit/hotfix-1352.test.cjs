@@ -56,7 +56,7 @@ test('13.5.2 scroll performance keeps visual design while reducing offscreen wor
  const css=read('src/styles/performance.css'),styles=read('src/styles/index.css'),app=read('src/app.js'),home=read('src/modules/home.js');
  assert.match(styles,/performance\.css/);
  assert.match(css,/content-visibility:auto/);
- assert.match(css,/contain:layout paint style/);
+ assert.match(css,/contain:layout style/);
  assert.match(css,/backdrop-filter:none!important/);
  assert.match(app,/decoding="async"/);
  assert.match(home,/decoding="async"/);
