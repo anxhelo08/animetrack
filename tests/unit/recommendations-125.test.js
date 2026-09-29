@@ -42,7 +42,7 @@ test('12.5 media filters: TV, anime and movie categories and safe TV preview',as
  assert([...fx.store.keys()].some(x=>x.includes('animetrack_rec_prefs_v10_test-user')));
 });
 test('12.5 integration: TV preview is routed through native TVMaze flow without forced add',()=>{
- const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/year.css'),'utf8');
+ const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/media-workflow.css'),'utf8');
  assert.match(app,/if\(item\.kind==='tv'\)\{void openUnifiedTV\(item\.sourceId\);return\}/);
  assert.match(pro,/rec-media/);
  assert.match(css,/at125-rec-media-btn/);
