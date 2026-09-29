@@ -32,8 +32,4 @@
     backdrop-filter:none!important;
     background:#191a2f!important;
   }
-
-  img[loading="lazy"]{
-    transform:translateZ(0);
-  }
 }
