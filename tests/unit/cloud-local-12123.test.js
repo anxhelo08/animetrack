@@ -32,12 +32,25 @@ test('13.0 realtime hydration treats remote personal state as authoritative but 
  assert.deepEqual(Array.from(season.watched),[1,2,3,4]);assert.match(ep2.summary,/plot/);assert.match(ep2.image,/img\.example/);
  assert.equal(ep2.myNote,'');assert.equal(ep2.personalRating,null);
 });
-test('13.0 cloud-first module, compact writes and PWA revision are wired before app boot',()=>{
- const html=read('index.html'),sw=read('public/sw.js'),app=read('src/app.js'),main=read('src/main.js'),pkg=JSON.parse(read('package.json'));
+test('13.6 cloud-first module, generated PWA and release identity are wired before app boot',()=>{
+ const html=read('index.html'),sw=read('src/sw.js'),app=read('src/app.js'),main=read('src/main.js'),pkg=JSON.parse(read('package.json'));
  assert(main.indexOf('./modules/cloud-local.js')<main.indexOf('./app.js'));
- assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);assert.match(sw,/animetrack-shell-v1352-1/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountHydrateRemote\(remote,state\)/);assert.match(app,/accountApplyRemoteRecord/);
  assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);assert.match(app,/accountMergeRecovery\(remote,cached\)/);
  assert.match(app,/canReload:\(\)=>!cloudSaving&&!\(cloudDirty&&cloudMirrorUnavailable\)/);
- assert.equal(pkg.version,'13.5.2');assert.match(html,/AnimeTrack 13\.5\.2/);
+ assert.equal(pkg.version,'13.6.0');assert.match(html,/AnimeTrack 13\.6\.0/);
+});
+
+test('13.6 conflict merge unions watched progress and history from both devices',()=>{
+ const api=load(),remote=api.compact(sample()),local=api.compact(sample());
+ remote.anime[0].updatedAt='2026-09-29T10:00:00Z';
+ local.anime[0].updatedAt='2026-09-29T10:01:00Z';
+ remote.anime[0].seasons[0].watched=[1,2,5];
+ local.anime[0].seasons[0].watched=[1,2,3,4];
+ remote.history=[{id:'al-1',seasonId:'al-1',episode:5,action:'watched',date:'2026-09-29T10:00:00Z'}];
+ local.history=[{id:'al-1',seasonId:'al-1',episode:4,action:'watched',date:'2026-09-29T10:01:00Z'}];
+ const merged=api.merge(remote,local);
+ assert.deepEqual(Array.from(merged.anime[0].seasons[0].watched),[1,2,3,4,5]);
+ assert.equal(merged.history.length,2);
 });
