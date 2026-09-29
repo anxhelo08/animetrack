@@ -1,7 +1,7 @@
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
 window.AnimeTrackPro=function AnimeTrackPro(ctx){
  const $=ctx.el,esc=ctx.esc;
- let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,updateRequested=false;
+ let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,pwaUpdater=null,updateRequested=false;
  let achievementsOwner='',achievementsKnown=null;
  const proPages=['notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>`<button type="button" class="pro-btn" data-pro-action="${esc(action)}" data-id="${esc(id)}">${esc(label)}</button>`;
@@ -104,28 +104,25 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   document.body.insertAdjacentHTML('beforeend','<dialog id="at-ios-install-guide" class="at-ios-install-dialog" aria-labelledby="at-ios-install-title"><button type="button" class="at-ios-dialog-close" data-ios-action="close-install" aria-label="Mbyll">×</button><div class="at-ios-install-mark">✦</div><h2 id="at-ios-install-title">Instalo AnimeTrack</h2><p>Hape në Safari dhe shtoje si aplikacion në ekranin e iPhone.</p><ol><li>Hap <strong>Safari</strong> në iPhone.</li><li>Prek butonin <strong>Share</strong> (katrori me shigjetë).</li><li>Zgjidh <strong>Add to Home Screen</strong>.</li><li>Aktivizo <strong>Open as Web App</strong>, pastaj prek <strong>Add</strong>.</li></ol><button type="button" class="at-ios-install-ok" data-ios-action="close-install">E kuptova ✓</button></dialog>');
   const install=document.createElement('div');install.className='pro-install';install.innerHTML='<div class="pro-row"><strong>📱 AnimeTrack si aplikacion</strong>'+ctx.button('Instalo','install')+'</div><small class="pro-muted">Hape nga ekrani kryesor në telefon ose desktop.</small>';document.querySelector('.sidebar')?.appendChild(install);
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e});
-  if('serviceWorker' in navigator&&location.protocol==='https:'){
+  if('serviceWorker' in navigator&&location.protocol==='https:'&&window.ATPWA136){
     const showUpdate=()=>{
      if($('at-pwa-update'))return;
      document.body.insertAdjacentHTML('beforeend','<div id="at-pwa-update" class="at-pwa-update" role="status"><span>✦ Version i ri i AnimeTrack është gati.</span><button type="button" data-pro-action="reload-update">Përditëso tani ↻</button><button type="button" data-pro-action="dismiss-update" aria-label="Më vonë">×</button></div>');
     };
-    navigator.serviceWorker.addEventListener('controllerchange',()=>{
-     if(!updateRequested)return;
-     updateRequested=false;
-     if(ctx.canReload?.())location.reload();
-     else showUpdate();
+    const bridge=window.ATPWA136.register({
+     onNeedRefresh:showUpdate,
+     onRegistered:reg=>{
+      pwaRegistration=reg;
+      let lastCheck=0;
+      const check=()=>{if(!reg||document.visibilityState==='hidden'||!navigator.onLine||Date.now()-lastCheck<30*60000)return;lastCheck=Date.now();reg.update().catch(console.warn)};
+      document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
+      window.addEventListener('online',check);
+      check();
+      setInterval(check,60*60000);
+     },
+     onError:error=>console.warn('PWA registration failed',error)
     });
-    navigator.serviceWorker.register('/sw.js').then(reg=>{
-     pwaRegistration=reg;
-     if(reg.waiting&&navigator.serviceWorker.controller)showUpdate();
-     let lastCheck=0;
-     const check=()=>{if(document.visibilityState==='hidden'||!navigator.onLine||Date.now()-lastCheck<30*60000)return;lastCheck=Date.now();reg.update().catch(console.warn)};
-     reg.addEventListener('updatefound',()=>{const worker=reg.installing;if(worker)worker.addEventListener('statechange',()=>{if(worker.state==='installed'&&navigator.serviceWorker.controller)showUpdate()})});
-     document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
-     window.addEventListener('online',check);
-     check();
-     setInterval(check,60*60000);
-    }).catch(console.warn);
+    pwaUpdater=bridge.update;
    }
    document.addEventListener('click',handleClick);
   window.addEventListener('at120-tv-open',e=>{window.dispatchEvent(new CustomEvent('at120-unified-tv-open',{detail:e.detail}))});
@@ -204,7 +201,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   const op=b.dataset.proAction,id=b.dataset.id||'';if(!op)return;
   try{
    if(op==='dismiss-update'){$('at-pwa-update')?.remove();return}
-   if(op==='reload-update'){if(ctx.canReload&&!ctx.canReload()){ctx.toast('Ruajtja është ende aktive ose kopja lokale nuk është ruajtur në mënyrë të sigurt. Provo përsëri pas pak ose eksporto kopje rezervë.');return}if(pwaRegistration?.waiting){updateRequested=true;pwaRegistration.waiting.postMessage({type:'SKIP_WAITING'});return}location.reload();return}
+   if(op==='reload-update'){if(ctx.canReload&&!ctx.canReload()){ctx.toast('Ruajtja është ende aktive ose kopja lokale nuk është ruajtur në mënyrë të sigurt. Provo përsëri pas pak ose eksporto kopje rezervë.');return}if(pwaUpdater){updateRequested=true;await pwaUpdater(true);return}location.reload();return}
    if(op==='install'){if(/iPhone|iPad|iPod/.test(navigator.userAgent)){const d=$('at-ios-install-guide');if(d){d.hidden=false;d.showModal?.()}return}if(installPrompt){await installPrompt.prompt();installPrompt=null}else ctx.toast('Në Android: Chrome → ⋮ → Instalo. Në iPhone: Safari → Share → Add to Home Screen.');return}
    if(op==='recommendations'){ctx.navigate('recommendations');return}
    if(op==='add-recommendation')return await modules.recommendations.add(b.dataset.key);
