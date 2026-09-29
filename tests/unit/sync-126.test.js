@@ -14,7 +14,9 @@ test('12.6 durable journal records base cloud revision before local changes',()=
  api.save(storage,key,{anime:[{id:'two'}]},'v2',true);
  assert.equal(api.pending(storage,key).baseRevision,'v1','unsynced journal must preserve original CAS revision');
  assert.equal(api.remoteStatus(a,api.pending(storage,key),{payload:{anime:[]},updated_at:'v1'},x=>x),'pending');
- assert.equal(api.remoteStatus(a,api.pending(storage,key),{payload:{anime:[]},updated_at:'v2'},x=>x),'conflict');
+ const journal=api.pending(storage,key);
+ assert.equal(api.remoteStatus(a,journal,{payload:{anime:[]},updated_at:new Date(journal.savedAt+1000).toISOString()},x=>x),'remote-newer');
+ assert.equal(api.remoteStatus(a,journal,{payload:{anime:[]},updated_at:new Date(Math.max(1,journal.savedAt-1000)).toISOString()},x=>x),'local-newer');
  assert.equal(api.remoteStatus(a,api.pending(storage,key),{payload:a,updated_at:'v2'},x=>x),'same');
 });
 test('12.6 local storage failure restores previous marker and does not claim success',()=>{
@@ -48,34 +50,35 @@ test('12.6 account records remain isolated and invalid journals refuse silent re
  assert.equal(api.pending(storage,'animetrack_user_two').invalid,true);
  assert.throws(()=>api.save(storage,'animetrack_user_two',{anime:[]},'new',true),/Journal lokal/);
 });
-test('13.0 integration prevents blind offline overwrite and auto-activates the quota recovery worker once',()=>{
- const app=read('src/app.js'),sw=read('public/sw.js'),features=read('src/modules/features.js'),html=read('index.html');
+test('13.6 integration merges divergent updated_at revisions before conditional cloud writes',()=>{
+ const app=read('src/app.js'),sync=read('src/modules/sync.js'),features=read('src/modules/features.js'),html=read('index.html');
  assert.match(app,/ATSync126\.save\(localStorage,KEY,accountLocalSnapshot\(state\),cloudRevision/);
- assert.match(app,/ATSync126\.remoteStatus\(accountCompact\(cached\),journal,data,payload=>accountCompact\(accountNormalizePayload\(payload\)\)\)/);
- assert.match(app,/if\(!cloudBaseKnown&&!overwrite\)/);
- assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountApplyRemoteRecord\(record\)/);assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);
+ assert.match(app,/check==='remote-newer'\|\|check==='local-newer'/);
+ assert.match(app,/state=accountMergeRecovery\(remoteBase,state\)/);
  assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
- assert.match(app,/if\(accountUser\?\.id!==uid\|\|JSON\.stringify\(state\)!==prior\)/);
- assert.match(sw,/animetrack-shell-v1352-1/);assert.match(sw,/event\.data\?\.type==='SKIP_WAITING'/);
- assert.match(sw,/await self\.skipWaiting\(\)/);
- assert.match(sw,/staleWhileRevalidate\(request\)/);
- assert.match(features,/pwaRegistration\.waiting\.postMessage\(\{type:'SKIP_WAITING'\}\)/);
- assert.match(features,/if\(!updateRequested\)return/);
- assert.match(read('src/main.js'),/modules\/sync\.js/);assert.match(html,/AnimeTrack 13\.5\.2/);
+ assert.match(sync,/remoteAt>localAt\?'remote-newer':'local-newer'/);
+ assert.match(features,/await pwaUpdater\(true\)/);
+ assert.match(read('src/sw.js'),/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(read('src/main.js'),/modules\/sync\.js/);
+ assert.match(html,/AnimeTrack 13\.6\.0/);
 });
 
 test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{
  const code=read('src/modules/cross-sync.js'),ctx={window:{}};vm.runInNewContext(code,ctx);const api=ctx.window.ATCrossSync12153;
  let event=null,opts=null,callback=null,statusCallback=null,subscribed=false,removed=false;
- const channel={on:(e,o,cb)=>{event=e;opts=o;callback=cb;return channel},subscribe:cb=>{subscribed=true;statusCallback=cb;return channel}};
+ let unsubscribed=false;
+ const channel={on:(e,o,cb)=>{event=e;opts=o;callback=cb;return channel},subscribe:cb=>{subscribed=true;statusCallback=cb;return channel},unsubscribe:()=>{unsubscribed=true}};
  const client={channel:name=>{assert.equal(name,'animetrack-library-user-123');return channel},removeChannel:ch=>{assert.equal(ch,channel);removed=true}};
  let payload=null,status=null;const returned=api.start(client,'user-123',p=>payload=p,s=>status=s);
  assert.equal(returned,channel);assert.equal(event,'postgres_changes');assert.equal(opts.table,'anime_libraries');assert.equal(opts.filter,'user_id=eq.user-123');assert.equal(subscribed,true);
  statusCallback('SUBSCRIBED');assert.equal(status,'SUBSCRIBED');
- callback({new:{updated_at:'2026-09-28T18:00:00Z'}});assert.equal(payload.new.updated_at,'2026-09-28T18:00:00Z');assert.equal(api.stop(client,channel),true);assert.equal(removed,true);
+ callback({new:{updated_at:'2026-09-28T18:00:00Z'}});assert.equal(payload.new.updated_at,'2026-09-28T18:00:00Z');assert.equal(api.stop(client,channel),true);assert.equal(unsubscribed,true);assert.equal(removed,true);
 });
-test('13.0 app has realtime plus focus/visibility/poll fallbacks',()=>{
- const app=read('src/app.js'),html=read('index.html'),sw=read('public/sw.js');
- assert.match(app,/function accountStartRealtime/);assert.match(app,/accountStartRealtime\(uid\)/);assert.match(app,/visibilitychange/);assert.match(app,/pageshow/);assert.match(app,/30000/);
- assert.match(read('src/main.js'),/modules\/cross-sync\.js/);assert.match(sw,/pathname\.startsWith\('\/assets\/'\)/);
+test('13.6 app cleans realtime on account switches and page lifecycle boundaries',()=>{
+ const app=read('src/app.js'),cross=read('src/modules/cross-sync.js');
+ assert.match(app,/function accountStartRealtime/);assert.match(app,/accountStopRealtime\(\)/);assert.match(app,/accountStartRealtime\(uid\)/);
+ assert.match(app,/addEventListener\('pagehide',accountStopRealtime\)/);
+ assert.match(app,/visibilitychange/);assert.match(app,/pageshow/);assert.match(app,/30000/);
+ assert.match(cross,/channel\.unsubscribe/);assert.match(cross,/client\.removeChannel/);
+ assert.match(read('src/main.js'),/modules\/cross-sync\.js/);
 });
