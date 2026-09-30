@@ -1,6 +1,6 @@
 -- Production only: install AFTER the tested queue migration and dispatcher.
 CREATE EXTENSION IF NOT EXISTS pg_cron;
-CREATE EXTENSION IF NOT EXISTS pg_net;
+CREATE EXTENSION IF NOT EXISTS pg_net WITH SCHEMA extensions;
 DO $$ BEGIN
  IF NOT EXISTS(SELECT 1 FROM vault.secrets WHERE name='animetrack_push_cron_secret') THEN
   PERFORM vault.create_secret(encode(extensions.gen_random_bytes(32),'hex'),'animetrack_push_cron_secret');
