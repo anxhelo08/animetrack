@@ -49,4 +49,4 @@ Vercel përdor `npm run build`, shërben `dist/` dhe vendos politikat e siguris�
 
 ## Statusi i kandidatit 13.9
 
-Shiko `RELEASE_13.9_REVIEW.md` për verifikimet dhe kushtet e publikimit. Kodi i këtij kandidati ende nuk është publikuar live.
+Shiko `docs/13.9-review.md` për verifikimet dhe kushtet e publikimit. Kodi i këtij kandidati ende nuk është publikuar live.

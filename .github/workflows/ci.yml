@@ -77,7 +77,9 @@ jobs:
         run: npm run test:db
       - name: Install PostgreSQL function checker
         run: |
-          docker exec -u root ${{ job.services.postgres.id }} bash -c 'apt-get update -qq && apt-get install -y --no-install-recommends postgresql-17-plpgsql-check'
+          docker exec -u root ${{ job.services.postgres.id }} bash -c 'apt-get update -qq && apt-get install -y --no-install-recommends postgresql-17 postgresql-17-plpgsql-check'
+          docker restart ${{ job.services.postgres.id }}
+          for attempt in $(seq 1 30); do docker exec ${{ job.services.postgres.id }} pg_isready -U postgres && break; sleep 1; done
           docker exec ${{ job.services.postgres.id }} psql -U postgres -d animetrack_security_test -c 'CREATE EXTENSION plpgsql_check'
       - name: Lint restored application schemas
         run: npx supabase db lint --db-url "$DATABASE_URL" --schema public,private,animetrack_private --level warning --fail-on error
