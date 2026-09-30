@@ -134,10 +134,20 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run build
       - name: Measure LCP, blocking time and script transfer
-        run: npx --yes --package=@lhci/cli@0.15.1 lhci collect && npx --yes --package=@lhci/cli@0.15.1 lhci assert
+        run: |
+          npx --yes --package=@lhci/cli@0.15.1 lhci collect
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          for (const file of fs.readdirSync('.lighthouseci').filter(file => /^lhr-.*\.json$/.test(file))) {
+            const {audits} = JSON.parse(fs.readFileSync('.lighthouseci/' + file, 'utf8'));
+            console.log(JSON.stringify({file, blocking:audits['total-blocking-time'].numericValue, mainthread:audits['mainthread-work-breakdown'].details.items, scripts:audits['bootup-time'].details.items, tasks:audits['long-tasks'].details.items.slice(0,8)}));
+          }
+          JS
+          npx --yes --package=@lhci/cli@0.15.1 lhci assert
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: lighthouse-reports
+          include-hidden-files: true
           path: .lighthouseci/
           retention-days: 14
