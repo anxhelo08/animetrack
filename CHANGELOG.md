@@ -1,3 +1,12 @@
+# 14.5.0
+
+- PWA: ikonë maskable e veçantë, screenshots të ndërfaqes dhe shortcuts Biblioteka/Kërko/Aktiviteti që hapen pas identifikimit. Screenshots nuk rëndojnë precache-in e aplikacionit.
+- Njoftim pas ruajtjes së episodit me Zhbëj për 12 sekonda; kontroll i llogarisë dhe ngjarjes së fundit para zhbërjes. Dështimi i ruajtjes nuk shfaq sukses.
+- Swipe djathtas në kartat e episodeve të telefonit përdor të njëjtin veprim të sigurt dhe ofron zhbërje. Gjeste vertikale, majtas dhe të anuluara injorohen.
+- README i shkurtër, udhëzime zhvillimi të veçuara dhe `.env.example` pa sekrete. Node/engines dhe User-Agent nga versioni i paketës mbahen.
+- Teste sjelljeje për shënimin/zhbërjen, ruajtjen e dështuar, gjestet, shortcuts dhe asetet e manifestit. Preview-t e Vercel ekzistojnë për branch/PR; shtohet template për shqyrtimin e PR-ve.
+- Përgatitet protokolli për 3–5 përdorues realë; prova është ende e pakryer. Kontrollet e përsëritura të rendit të bootstrap-it zëvendësohen me prova të nisjes, hyrjes dhe veprimeve reale. Kontrollet legacy për funksionet e tjera ruhen aty ku ende mungon zëvendësimi.
+
 # 14.4.0
 
 - Temë e çelët/errët/automatike te Cilësimet; preferencë vetëm në pajisje, me theme-color dhe color-scheme të përputhur.

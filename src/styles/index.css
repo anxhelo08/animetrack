@@ -23,3 +23,5 @@ franchise.css diary.css watch.css rich-details.css provider-sync.css performance
 @import "./product-experience.css";
 
 @import "./themes.css";
+
+@import './release-experience.css';

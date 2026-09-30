@@ -55,7 +55,7 @@ test('13.6.0 app routes TVMaze away from MAL/Jikan hydration and loads guard bef
  assert.match(app,/syncTVFranchise\(id,force,silent\)/);
  assert.match(app,/ATReleaseGuard1352\.tvmazeReleasedCount/);
  assert.match(read('src/core/library-model.js'),/String\(s.source\s*\|\|\s*''\).toLowerCase\(\)\s*===\s*'tvmaze'/);
- assert.ok(main.indexOf('./startup-factories.js')<main.indexOf('startApp();'));
+
 });
 
 test('13.6.0 scroll performance keeps visual design while reducing offscreen work',()=>{

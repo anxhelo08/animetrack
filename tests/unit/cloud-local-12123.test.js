@@ -35,7 +35,7 @@ test('13.0 realtime hydration treats remote personal state as authoritative but 
 });
 test('13.6 cloud-first module, generated PWA and release identity are wired before app boot',()=>{
  const html=read('index.html'),sw=read('src/sw.js'),app=read('src/app.js'),main=(read('src/main.js')+read('src/startup-factories.js')),pkg=JSON.parse(read('package.json'));
- assert(main.indexOf('./startup-factories.js')<main.indexOf('startApp();'));
+
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(app,/const payload=accountCompact\(state\)/);assert.match(app,/accountHydrateRemote\(remote,state\)/);assert.match(app,/accountApplyRemoteRecord/);
  assert.match(app,/setTimeout\(\(\)=>accountPush\(false\),120\)/);assert.match(app,/accountMergeRecovery\(remote,cached\)/);

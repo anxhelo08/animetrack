@@ -1,3 +1,4 @@
+import {mountReleaseExperience} from './modules/release-experience.js';
 import {theme} from './core/browser-theme.js';
 import {mountThemeSettings} from './core/theme.js';
 import { catalogJSON, retryCatalogRequests } from './core/request-cache.js';
@@ -23,6 +24,7 @@ const $=id=>document.getElementById(id);
 let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false,cloudRealtimeChannel=null,cloudRealtimeUID='',cloudRealtimePending=false,cloudRealtimeTimer=null,cloudRealtimeRecord=null;
 let state=load(),filter='all',search='',sort='updated',detailId=null,episodePage=0,activeSeasonId=null,toastTimeout,selectedGenre='all';
 const libraryStore=createStore(()=>state,()=>accountUser?.id||'guest',error=>console.warn('State subscriber failed',error));
+let releaseExperience=null;
 let view='home', previewKey=null, pendingEpisode=null, airingWindow=7, upcomingEntries=[], upcomingFailures=0, upcomingCheckedAt=0, upcomingBusy=false;
 const FRANCHISE_SCHEMA='13.1.0';
 function escapeHTML(s){return window.ATHTML.escapeHTML(s);}
@@ -48,7 +50,8 @@ function updateSeasonEpisode(id,seasonId,n,seen,quiet=false){
   if(!save()){state.anime[index]=before;state.history=historyBefore;return false}
  }catch(err){state.anime[index]=before;state.history=historyBefore;console.error('Episode transaction rolled back',err);notify('Episodi nuk u ruajt. Provo përsëri.');return false}
  try{render();if(detailId===id)renderDetail(id);renderHome()}catch(err){console.warn('View refresh after saved episode failed',err)}
- if(!quiet)notify(`${mediaFormat(s.format)==='MOVIE'?(s.title||'Filmi'):'Sezoni '+seasonIndex}, episodi ${n} ${seen?'u shënua ✓':'u hoq'}`);
+ releaseExperience?.episodeSaved({id,seasonId,n,seen});
+ if(!quiet&&(!seen||!releaseExperience))notify(`${mediaFormat(s.format)==='MOVIE'?(s.title||'Filmi'):'Sezoni '+seasonIndex}, episodi ${n} ${seen?'u shënua ✓':'u hoq'}`);
  return true;
 }
 function updateEpisode(id,n,seen){let a=state.anime.find(x=>x.id===id);if(!a)return;let offset=0;for(const s of visibleSeasons(a)){const len=s.total||Math.max(...s.watched,24);if(n<=offset+len)return updateSeasonEpisode(id,s.id,n-offset,seen);offset+=len}}
@@ -1188,7 +1191,7 @@ function accountApplyRemoteRecord(record){
   accountUI();return true;
  }catch(err){console.warn('Realtime payload apply failed',err);return false}
 }
-function accountRefreshViews(){filter='all';search='';$('search').value='';$('global-search').value='';if(typeof clearCatalog==='function')clearCatalog();render();renderHome();renderUpcoming();setView('home');accountUI()}
+function accountRefreshViews(){filter='all';search='';$('search').value='';$('global-search').value='';if(typeof clearCatalog==='function')clearCatalog();render();renderUpcoming();setView('home');accountUI();releaseExperience?.ready()}
 
 async function accountOpenCloud(user){
  if(!user?.id)throw Error('Nuk u verifikua llogaria.');
@@ -1466,7 +1469,7 @@ async function accountDelete(){
  }catch(e){accountStatus('Fshirja nuk u përfundua: '+e.message,'error');if(accountUser?.id===owner)accountStartRealtime(owner)}finally{accountBusy=false;$('account-delete-password').value=''}
 }
 
-async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=recovery\b/.test(location.hash)||/\btype=recovery\b/.test(location.search);try{const c=accountGetConfig();if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user);authReturn=accountAuthReturnNotice()}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};render();renderHome();accountToggle(true);}accountUI();if(recoveryReturn&&accountMode==='cloud'){$('at1162-recovery-panel').hidden=false;accountToggle(true);accountStatus('Vendos një fjalëkalim të ri për llogarinë tënde.','ok')}else if(authReturn){if(accountMode==='cloud')notify(authReturn.kind==='error'?'Llogaria është aktive. Mund të vazhdosh; linku i vjetër nuk është më i nevojshëm.':authReturn.message);else accountStatus(authReturn.message,authReturn.kind)}}}
+async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=recovery\b/.test(location.hash)||/\btype=recovery\b/.test(location.search);try{const c=accountGetConfig();if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user);authReturn=accountAuthReturnNotice()}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};render();renderHome();accountToggle(true);}accountUI();releaseExperience?.ready();if(recoveryReturn&&accountMode==='cloud'){$('at1162-recovery-panel').hidden=false;accountToggle(true);accountStatus('Vendos një fjalëkalim të ri për llogarinë tënde.','ok')}else if(authReturn){if(accountMode==='cloud')notify(authReturn.kind==='error'?'Llogaria është aktive. Mund të vazhdosh; linku i vjetër nuk është më i nevojshëm.':authReturn.message);else accountStatus(authReturn.message,authReturn.kind)}}}
 $('at1162-save-password').addEventListener('click',accountSaveRecoveredPassword);
 $('account-top-btn').addEventListener('click',()=>accountToggle(true));$('account-sidebar-btn').addEventListener('click',()=>accountToggle(true));
 $('account-form').addEventListener('submit',e=>{e.preventDefault();return window.ATMobile113?.signupReady?.()?accountRegister():accountLogin(e)});$('account-email').addEventListener('input',()=>{if(at116PendingEmail&&$('account-email').value.trim().toLowerCase()!==at116PendingEmail){$('at116-pending-email').hidden=true;at116PendingEmail=''}});$('at116-resend-email').addEventListener('click',accountResend);$('account-reset').addEventListener('click',accountReset);$('account-refresh').addEventListener('click',()=>accountPull(true));$('account-push').addEventListener('click',()=>accountPush(true));$('account-copy-guest').addEventListener('click',accountCopyGuest);$('account-logout').addEventListener('click',accountLogout);$('account-export').addEventListener('click',exportData);$('account-export-all').addEventListener('click',accountExportAll);$('account-delete').addEventListener('click',accountDelete);$('account-guest-backup').addEventListener('click',()=>{const current=state;try{const raw=localStorage.getItem(GUEST_KEY);if(raw){state=accountNormalizePayload(JSON.parse(raw));exportData();}else notify('Nuk ka bibliotekë të vjetër në këtë shfletues.')}catch(e){notify('Kopja rezervë nuk u hap.')}finally{state=current}});$('account-use-guest').addEventListener('click',()=>accountToggle(false));
@@ -1844,6 +1847,7 @@ await new Promise(resolve=>setTimeout(resolve,0));
 await proApp.init();
 mountThemeSettings(theme,document.getElementById('product-advanced'),{toast:notify});
 mountStorageSettings({key:()=>KEY,toast:notify},libraryRepository);
+releaseExperience=mountReleaseExperience({owner:()=>accountUser?.id||'guest',history:()=>state.history.at(-1),undo:(id,sid,n)=>updateSeasonEpisode(id,sid,n,false),navigate:page=>setView(page)});
 const at124Command=window.ATCommand124({
  esc:escapeHTML,state:()=>state,released:releasedCount,
  resume:a=>window.ATResume123.resolve(a,state.history,releasedCount),
@@ -1865,7 +1869,8 @@ const proPriorLogout=accountLogout;accountLogout=async function(){await proPrior
 const proPriorSave=save;save=function(){const result=proPriorSave();if(result)libraryStore.publish('saved');return result};
 
 await new Promise(resolve=>setTimeout(resolve,0));
-render();renderUpcoming();renderHome();setView('home');v8LoadSeason(1);accountBoot();
+// Account boot renders the authenticated or empty library once; the app is hidden until it finishes.
+v8LoadSeason(1);accountBoot();
 
 // AnimeTrack 12.14 — season resume focus, reversible hidden parts and season descriptions.
 function at140SeasonDescription(s){return String(s?.synopsis||'').replace(/\s+/g,' ').trim()}

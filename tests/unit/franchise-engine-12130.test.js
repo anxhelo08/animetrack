@@ -43,5 +43,5 @@ test('12.13 Wikidata + TVMaze resolver discovers all main Dexter TV series in re
 test('12.13 anime franchise logic is ID-first and movies never increment season numbering',()=>{
  const app=readCoreSource(),fr=read('src/modules/franchise.js'),html=read('index.html'),main=(read('src/main.js')+read('src/startup-factories.js')),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.match(app,/Only official AniList relation edges may add a part/);assert.doesNotMatch(app,/Series title fallback unavailable/);assert.match(app,/return remote\.some\(s=>sameSeriesSeason/);assert.doesNotMatch(app,/localKeys\.some/);assert.doesNotMatch(app,/canonicalTitle\(a\.title\)===canonicalTitle\(item\.title\)/);
- assert.match(fr,/else if\(f==='MOVIE'\)title='Film'/);assert(main.indexOf('./startup-factories.js')<main.indexOf('startApp();'));assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(fr,/else if\(f==='MOVIE'\)title='Film'/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

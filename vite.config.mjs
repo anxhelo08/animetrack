@@ -18,6 +18,7 @@ export default defineConfig({
       manifest:false,
       injectManifest:{
         globPatterns:['**/*.{js,css,html,svg,png,ico,webmanifest}'],
+        globIgnores:['**/screenshot-*.png'],
         maximumFileSizeToCacheInBytes:4*1024*1024
       }
     })
