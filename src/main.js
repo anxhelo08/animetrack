@@ -35,6 +35,7 @@ await import("./modules/collections.js");
 await import("./modules/experience.js");
 await import("./modules/mobile.js");
 await import("./modules/tv.js");
+await import("./modules/product-experience.js");
 await import("./modules/features.js");
 await import("./modules/tv-unified.js");
 await import("./modules/unified.js");

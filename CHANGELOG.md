@@ -1,3 +1,11 @@
+# 14.0.0
+
+- Pesë hyrje kryesore dhe mjete dytësore sipas faqes; etiketa kryesore të unifikuara në shqip.
+- Udhëzues me tre hapa për llogaritë e reja, gjendje bosh me kërkim/import dhe fshehje e paneleve pa përmbajtje.
+- Progresi dhe episodi i radhës dalin përpara në detaje; përshkrimi, aktorët dhe burimet hapen me palosje.
+- Burimet opsionale te Cilësimet → Avancuar; tregues i ruajtjes/offline, skeleton dhe riprovim për kërkimin.
+- Teste sjelljeje për hyrjen e parë, navigimin, offline dhe dështimin/riprovimin e kërkimit.
+
 # 13.11.0
 
 - Tipografi e përbashkët, fokus i dukshëm, skip link, tituj të strukturuar dhe SVG në navigimin desktop.

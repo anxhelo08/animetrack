@@ -43,6 +43,7 @@ test('desktop regression',async({browser},testInfo)=>{
  assert(await page.locator('#at124-command').isHidden(),'Command palette closes after selection');
  console.log('COMMAND_DESKTOP_PASS');
  // 12.8 seasonal catalog: real genre tags, source-backed filters and normal add actions.
+ await page.locator('#explore-nav').click();
  await page.locator('#seasons-nav').click();
  await page.locator('#season-catalog-grid .seasonal-tile').first().waitFor({timeout:10000});
  assert.equal(await page.locator('#season-catalog-grid .seasonal-tile').count(),3);
@@ -125,6 +126,7 @@ test('desktop regression',async({browser},testInfo)=>{
  await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="episode"]').click();
  assert.equal(await page.locator('#ep-detail-body').getAttribute('data-at108-tab'),'episode');
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
+ await page.locator('#library-nav').click();
  await page.locator('#pro-nav-collections').click();
  assert(await page.locator('#pro-content .at110-page').isVisible(),'My Lists should open');
  await page.locator('#at110-new-list').fill('My Weekend List');
@@ -138,6 +140,7 @@ test('desktop regression',async({browser},testInfo)=>{
  assert(await page.locator('#library-view').isVisible(),'Back to library works');
  assert(await page.locator('#at110-open-lists').isVisible(),'Library offers My Lists shortcut');
 
+ await page.locator('#pro-nav-diary').click();
  await page.locator('#pro-nav-calendar').click();
  assert(await page.locator('#pro-view').isVisible(),'Calendar should open');
  assert(await page.locator('#pro-content .at109-smart-week').isVisible(),'Desktop personal weekly calendar should render');
@@ -162,7 +165,10 @@ test('desktop regression',async({browser},testInfo)=>{
  assert.match(await page.locator('#pro-content .at132-entry').first().innerText(),/Desktop diary smoke note/);
  console.log('DIARY_DESKTOP_PASS',JSON.stringify({entries:diaryBefore,rating:8.5}));
  // 13.5: Live provider sync settings render without exposing stored tokens.
- await page.locator('#pro-nav-sync').click();
+ await page.locator('#pro-nav-profile').click();
+ await page.locator('[data-product-action="settings"]').click();
+ await page.locator('#product-advanced > details > summary').click();
+ await page.locator('[data-product-action="external-sync"]').click();
  await page.locator('#pro-content .at135-page').waitFor({state:'visible',timeout:3000});
  assert(await page.locator('#at135-anilist').isVisible(),'AniList sync card renders');
  assert(await page.locator('#at135-mal').isVisible(),'MAL sync card renders');
@@ -171,6 +177,7 @@ test('desktop regression',async({browser},testInfo)=>{
  assert.match(await page.locator('#pro-content .at135-security').innerText(),/token/i);
  console.log('LIVE_SYNC_DESKTOP_PASS');
  // 12.9: Desktop Wrapped and Trophy Room.
+ await page.locator('#pro-nav-diary').click();
  await page.locator('#pro-nav-wrapped').click();
  assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped 12.9 renders on desktop');
  assert.match(await page.locator('#pro-content .at129-hero').innerText(),/Historia jote/);
@@ -193,6 +200,7 @@ test('desktop regression',async({browser},testInfo)=>{
  assert(await page.locator('#detail-body .at120-preview-season').count()>0,'TV preview has season overview');
  await page.locator('#detail-body [data-tv-unified-add="watching"]').click();
  assert(await page.locator('#detail-body .season-tab').count()>0,'TV has native season tabs');
+ await page.locator('#detail-body .product-secondary').filter({has:page.locator('.at134-rich')}).locator('summary').click();
  await page.locator('#detail-body .at134-rich').waitFor({state:'visible',timeout:10000});
  await page.locator('#detail-body .at134-person-card[data-provider="tvmaze"][data-at134-person="1"]').waitFor({state:'visible',timeout:10000});
  assert.match(await page.locator('#detail-body .at134-rich').innerText(),/Michael C\. Hall/,'Rich Details shows TV cast');

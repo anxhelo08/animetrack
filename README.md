@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 13.11.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
+AnimeTrack 14.0.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
 
 **Live:** https://animetrack-flax.vercel.app/ · **Ndryshimet:** [CHANGELOG.md](CHANGELOG.md) · **Siguria:** [SECURITY.md](SECURITY.md)
 
@@ -56,3 +56,7 @@ Njoftimet 13.10: shih [push-delivery.md](docs/push-delivery.md) për konfigurimi
 ## Aksesueshmëria dhe provat vizuale
 
 `tests/e2e/accessibility.spec.js` kontrollon WCAG AA me axe për hyrjen, regjistrimin, kryefaqen, bibliotekën dhe detajet. Provon hapjen/mbylljen me tastierë, kthimin e fokusit dhe butonat mobilë 44px. Screenshot-et e bibliotekës krahasohen me baseline të ruajtura në Git. Përditësoji vetëm pas kontrollit vizual: `npx playwright test tests/e2e/accessibility.spec.js --update-snapshots`. Testet automatike nuk zëvendësojnë provat me lexues ekrani.
+
+## Përvoja e parë
+
+Menuja ka pesë hyrje: Kreu, Biblioteka, Zbulo, Aktiviteti dhe Profili. Kalendari, listat dhe statistikat hapen nga seksioni përkatës. Llogaritë me bibliotekë bosh marrin një udhëzues me tre hapa; mund të kalohet dhe ruhet veçmas për çdo llogari në këtë pajisje. Rihapet te Profili → Cilësimet → Avancuar. Konfigurimi opsional i burimeve dhe lidhjet MAL/AniList janë në të njëjtin vend. Treguesi i ruajtjes ndan sinkronizimin, pritjen, mungesën e internetit dhe konfliktet. Provat e rrjedhës janë në `tests/e2e/product-experience.spec.js`.

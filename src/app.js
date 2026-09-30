@@ -818,7 +818,7 @@ async function dailySync(force=false){await refreshCatalogDaily(force);await ref
 
 
 // AnimeTrack 7.0: reliable 'last actually watched' and visible TV Time-style lists.
-const V7_STATUSES=[['watching','◉','Watching','Po shikoj'],['completed','✓','Completed','Përfunduar'],['paused','Ⅱ','On Hold','Në pauzë'],['dropped','×','Dropped','E lënë'],['planning','◇','Plan to Watch','Në listë']];
+const V7_STATUSES=[['watching','◉','Po shikoj','Po shikoj'],['completed','✓','Përfunduar','Përfunduar'],['paused','Ⅱ','Në pauzë','Në pauzë'],['dropped','×','E lënë','E lënë'],['planning','◇','Në listë','Në listë']];
 function v7Label(a){return escapeHTML(STATUS[a.status]||a.status)}
 function v7StatusSelect(a){return `<select class="v7-inline-select" data-status-select="${escapeHTML(a.id)}" aria-label="Ndrysho statusin e ${escapeHTML(a.title)}">${V7_STATUSES.map(([code,,label])=>`<option value="${code}" ${a.status===code?'selected':''}>${label}</option>`).join('')}</select>`}
 function v7LastEvent(a){for(let i=state.history.length-1;i>=0;i--){const h=state.history[i];if(h.id!==a.id||!['watched','season-watched','movie-watched','movie-rewatched'].includes(h.action))continue;const s=a.seasons.find(x=>x.id===h.seasonId&&!x.hidden)||visibleSeasons(a)[0];if(!s)continue;let n=h.action==='season-watched'?Math.max(0,...s.watched):Number(h.episode);if(n>0&&s.watched.includes(n))return {a,s,n,date:h.date}}let s=[...visibleSeasons(a)].reverse().find(s=>s.watched.length);return s?{a,s,n:Math.max(...s.watched),date:a.updatedAt}:null}
@@ -1176,7 +1176,7 @@ function accountUI(){
    cloudConnected?'Sinkronizimi i fundit: '+cloudLastSync:'Cloud nuk u lidh; kopja lokale e llogarisë mbetet.';
   accountStatus(message,cloudMirrorUnavailable||cloudConflict?'error':cloudConnected&&!cloudDirty?'ok':'');
  }
- accountMirrorWarning();
+ accountMirrorWarning();document.dispatchEvent(new Event('at-account-ui'));
 }
 function accountToggle(open=true){if(open){accountUI();showModal('account-modal')}else closeModal('account-modal')}
 const ANIMETRACK_AUTH_REDIRECT='https://animetrack-flax.vercel.app/';
@@ -1883,7 +1883,9 @@ const proContext={
  liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshTrackedTV127(force);await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.renderBackground();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
  canReload:()=>!cloudSaving&&!(cloudDirty&&cloudMirrorUnavailable),
- watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict}),
+ watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict,mirrorUnavailable:cloudMirrorUnavailable}),
+ openSettings:()=>{setView('profile');proApp.modules.profiles.setTab('settings')},
+ retrySync:async()=>{if(cloudConflict){accountToggle(true);return}if(cloudDirty)await accountPush(true);else await accountPullQuiet(true)},
  syncReminderJobs:()=>proApp.modules.push.scheduleSync(),
  openDiscussion:key=>{
   const m=/^(mal|al|tv):(\d+):(\d+)$/.exec(String(key||''));if(!m)return false;
@@ -1917,7 +1919,7 @@ const at113PreviousLibraryRender=render;render=function(...args){const result=at
 window.addEventListener('at119-library-filter',()=>render());
 window.addEventListener('at113-library-search',e=>{search=String(e.detail||'').trim().toLocaleLowerCase();render()});
 let at113LastEpisodeKey='';const at113EpisodeRender=v81RenderEpisode;v81RenderEpisode=function(...args){const panel=$('episode-detail-modal')?.querySelector('.modal-body'),parts=v81EpisodeParts(),key=[parts.a?.id,parts.s?.id,parts.n].join(':');const position=key===at113LastEpisodeKey?(panel?.scrollTop||0):0;at113EpisodeRender(...args);window.ATMobile113.enhanceEpisode();if(panel)panel.scrollTop=position;at113LastEpisodeKey=key};
-const proPriorView=setView;setView=function(which){if(proApp.open(which))return;proApp.hide();proApp.syncMobile(which);return proPriorView(which)};
+const proPriorView=setView;setView=function(which){let result;if(!proApp.open(which)){proApp.hide();proApp.syncMobile(which);result=proPriorView(which)}proApp.product?.navigation(which);return result};
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id);const a=state.anime.find(x=>x.id===id),resume=a&&window.ATResume123.resolve(a,state.history,releasedCount),root=$('detail-body');if(!resume||!root)return;const season=a.seasons.find(s=>s.id===resume.seasonId),top=root.querySelector('.seasons-topline');if(!season||!top)return;const button=document.createElement('button');button.type='button';button.className='at123-resume-button';button.dataset.at123Resume=id;window.ATHTML.renderHTML(button,'<span class="at123-resume-icon">▶</span><span><small>VAZHDO NGA KU E LE</small><strong>'+escapeHTML(season.title)+' · Episodi '+resume.episode+'</strong></span><span aria-hidden="true">→</span>');top.after(button)};
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-at123-resume]');if(!b)return;const a=state.anime.find(x=>x.id===b.dataset.at123Resume),pos=a&&window.ATResume123.resolve(a,state.history,releasedCount);if(!pos)return;activeSeasonId=pos.seasonId;episodePage=pos.page;renderDetail(a.id);void loadSeasonEpisodes(a.id,pos.seasonId,pos.page);$('detail-body').querySelector('[data-season-ep][data-ep="'+pos.episode+'"]')?.scrollIntoView({block:'center',behavior:'smooth'})});
 const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);void proApp.onAccount().catch(e=>console.warn('Optional account features',e));if(navigator.onLine)void refreshTrackedTV127(false).catch(e=>console.warn('Tracked TV check failed',e))};
@@ -2064,6 +2066,15 @@ const at134PriorDetail=renderDetail;renderDetail=function(id){
  const result=at134PriorDetail(id),a=state.anime.find(x=>x.id===id),root=$('detail-body');
  if(a&&root&&proApp?.modules?.rich){const part=a.seasons.find(x=>x.id===activeSeasonId)||a.seasons[0];void proApp.modules.rich.attach(root,a,part)}
  return result;
+};
+
+// Product presentation runs after the legacy detail extensions are composed.
+const productPriorDetail=renderDetail;renderDetail=function(id){const result=productPriorDetail(id);proApp.product?.detail(id);return result};
+const productPriorCatalog=searchCatalog;searchCatalog=async function(q,page=1){
+ const work=productPriorCatalog(q,page),request=catalogRequest,grid=$('catalog-grid');
+ grid.setAttribute('aria-busy','true');
+ if(page===1)window.ATHTML.renderHTML(grid,Array.from({length:6},()=>'<div class="product-skeleton-card" aria-hidden="true"><span></span><i></i><i></i></div>').join(''));
+ try{return await work}finally{if(request===catalogRequest){grid.removeAttribute('aria-busy');if(String($('global-search').value).trim()===String(q).trim())proApp.product?.searchFinished(q,{count:catalogItems.length,failed:/nuk u lidh|nuk u ngarkua|dështoi/i.test($('catalog-state').textContent)})}}
 };
 
 at150ProviderBadge();
