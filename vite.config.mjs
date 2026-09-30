@@ -24,6 +24,7 @@ export default defineConfig({
   ],
   build:{
     outDir:'dist',
+    cssTarget:['chrome123','safari17.5','firefox120'],
     emptyOutDir:true,
     sourcemap:false,
     rolldownOptions:{
