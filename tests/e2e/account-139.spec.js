@@ -33,7 +33,9 @@ test('server provider connection, full export and confirmed account deletion',as
  await expect(page.locator('#at135-anilist')).toContainText('token në server');
  const storage=await page.evaluate(()=>({anilist:localStorage.getItem('animetrack_anilist_token_135'),mal:localStorage.getItem('animetrack_mal_token_135')}));
  expect(storage).toEqual({anilist:null,mal:null});expect(requests.find(x=>x.input.action==='connect').authorization).toBe('Bearer synthetic-supabase-session');
- await page.locator('#account-top-btn').click();
+ await page.evaluate(()=>document.querySelector('[data-pro-page="profile"]')?.click());
+ await page.locator('#pro-content [data-pro-action="profile-tab"][data-id="settings"]:visible').first().click();
+ await page.locator('#pro-content [data-pro-action="account-open"]').click();
  const downloaded=page.waitForEvent('download');await page.locator('#account-export-all').click();const download=await downloaded;expect(download.suggestedFilename()).toMatch(/^AnimeTrack-account-/);
  await page.locator('#account-cloud-user summary').click();
  await page.locator('#account-delete').click();expect(requests.filter(x=>x.input.action==='delete')).toHaveLength(0);

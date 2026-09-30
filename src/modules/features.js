@@ -221,6 +221,7 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
    if(op.startsWith('collection-'))return await modules.collections.action(op,id);
    if(op.startsWith('smart-push-'))return await modules.push.action(op);
    if(op.startsWith('week-')||op.startsWith('calendar-')||op.startsWith('wrapped-'))return modules.calendar.action(op,id);
+   if(op==='account-open')return ctx.openAccount();
    if(op==='profile-tab')return modules.profiles.setTab(id);
    if(op==='profile-anime')return ctx.openAnime(id);
    if(op==='profile-goal-save')return modules.profiles.goalSave();
