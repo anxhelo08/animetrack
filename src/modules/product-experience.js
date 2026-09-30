@@ -433,7 +433,7 @@ export function createProductExperience(ctx) {
       if (action === 'account') ctx.openAccount();
       if (action === 'settings') ctx.openSettings();
       if (action === 'external-sync') ctx.navigate('sync');
-      if (action === 'retry-search') ctx.searchOnline(searchQuery);
+      if (action === 'retry-search') ctx.searchOnline(searchQuery, { retry: true });
       if (action === 'resume') {
         const a = ctx.state().anime.find((x) => x.id === button.dataset.id),
           next = a && ctx.nextEpisode(a);

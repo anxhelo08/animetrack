@@ -1,4 +1,4 @@
-import { catalogJSON } from './core/request-cache.js';
+import { catalogJSON, retryCatalogRequests } from './core/request-cache.js';
 import { createVisibleScheduler } from './core/visible-scheduler.js';
 import {libraryRepository,libraryStorage} from './core/browser-storage.js';
 import {validateLibrary,parseLibrary} from './core/library-schema.js';
@@ -1831,7 +1831,7 @@ const proContext={
   return false;
  },
  refreshDetail:id=>renderDetail(id),navigate:page=>setView(page),setLocalView:page=>{view=page},
- searchOnline:q=>{setView('explore');syncSearch(String(q||''),'catalog');$('global-search')?.focus({preventScroll:true})},
+ searchOnline:(q,{retry=false}={})=>{if(retry)retryCatalogRequests();setView('explore');syncSearch(String(q||''),'catalog');$('global-search')?.focus({preventScroll:true})},
  previewItem:item=>{if(item.kind==='tv'){void openUnifiedTV(item.sourceId);return}v8PrepareCatalog(item);openCatalogPreview(item.key)},
  addItem:async item=>{if(item.kind==='tv'){await openUnifiedTV(item.sourceId);return}v8PrepareCatalog(item);const id=await addCatalogItem(item.key,'planning');if(id)openDetail(id)}
 };

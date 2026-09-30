@@ -94,3 +94,24 @@ test('public catalog cache rejects authenticated and non-catalog requests', () =
     'public catalog',
   );
 });
+
+test('explicit retry clears transient errors while respecting server Retry-After and retaining successes', async () => {
+  let clock = 0;
+  const cache = createRequestCache({ now: () => clock });
+  const temporary = vi.fn().mockRejectedValueOnce(Error('503')).mockResolvedValue({ ok: true });
+  const limited = vi
+    .fn()
+    .mockRejectedValueOnce(Object.assign(Error('429'), { retryAfter: 60000 }))
+    .mockResolvedValue({ ok: true });
+  await expect(cache('temporary', temporary)).rejects.toThrow('503');
+  await expect(cache('limited', limited)).rejects.toThrow('429');
+  cache.retryFailures();
+  await cache('temporary', temporary);
+  await expect(cache('limited', limited)).rejects.toThrow('429');
+  expect(limited).toHaveBeenCalledTimes(1);
+  clock = 60000;
+  cache.retryFailures();
+  await cache('limited', limited);
+  await cache('temporary', temporary);
+  expect(temporary).toHaveBeenCalledTimes(2);
+});

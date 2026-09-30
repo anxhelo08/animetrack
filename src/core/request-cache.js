@@ -16,7 +16,7 @@ function consume(work, signal) {
 /** Public metadata only. Bounded memory, TTL, shared in-flight requests and failure cooldown. */
 export function createRequestCache({ now = Date.now, limit = 100 } = {}) {
   const entries = new Map();
-  return function read(key, load, { ttl = 5 * 60000, signal } = {}) {
+  function read(key, load, { ttl = 5 * 60000, signal } = {}) {
     if (signal?.aborted) return Promise.reject(abortError());
     let entry = entries.get(key);
     if (entry?.work) return consume(entry.work, signal);
@@ -43,6 +43,7 @@ export function createRequestCache({ now = Date.now, limit = 100 } = {}) {
           entry.value = undefined;
           entry.error = error;
           entry.failures++;
+          entry.retryAfterUntil = now() + Math.min(300000, Number(error.retryAfter) || 0);
           entry.retryAt =
             now() +
             Math.max(
@@ -57,10 +58,16 @@ export function createRequestCache({ now = Date.now, limit = 100 } = {}) {
       });
     entry.work = work;
     return consume(work, signal);
+  }
+  read.retryFailures = () => {
+    for (const [key, entry] of entries)
+      if (entry.error && !entry.work && !(entry.retryAfterUntil > now())) entries.delete(key);
   };
+  return read;
 }
 
 const read = createRequestCache();
+export const retryCatalogRequests = () => read.retryFailures();
 export function catalogJSON(url, { signal, ttl, ...options } = {}) {
   const endpoint = new URL(url);
   if (

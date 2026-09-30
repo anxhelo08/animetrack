@@ -58,5 +58,5 @@ test('13.4 TMDB person combined credits include movies and TV for cross-title na
 });
 test('13.4 release wiring loads rich details after Where to Watch with hashed Vite assets',()=>{
  const main=(read('src/main.js')+read('src/startup-factories.js')),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.match(main,/modules\/rich-details\.js/);assert.match(styles,/rich-details\.css/);assert.match(features,/rich:window\.ATRich134/);assert.match(features,/modules\.rich\.mount/);assert.match(app,/at134PriorDetail/);assert.match(app,/searchOnline:q/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(main,/modules\/rich-details\.js/);assert.match(styles,/rich-details\.css/);assert.match(features,/rich:window\.ATRich134/);assert.match(features,/modules\.rich\.mount/);assert.match(app,/at134PriorDetail/);assert.match(app,/searchOnline:\(q/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
