@@ -28,7 +28,7 @@ test('13.1.a has one changelog and no active Base64 release patch system',()=>{
 });
 
 test('13.1.a standardizes browser E2E on Playwright Test',()=>{
- const e2e=walk(path.join(root,'tests/e2e')).map(p=>path.relative(root,p));assert.ok(e2e.length>=3);assert.ok(e2e.every(p=>p.endsWith('.spec.js')));assert.equal(walk(path.join(root,'tests')).some(p=>p.endsWith('.py')),false);
+ const e2e=walk(path.join(root,'tests/e2e')).map(p=>path.relative(root,p));assert.ok(e2e.length>=3);assert.ok(e2e.every(p=>p.endsWith('.spec.js')||(p.includes('.spec.js-snapshots/')&&p.endsWith('.png'))));assert.equal(walk(path.join(root,'tests')).some(p=>p.endsWith('.py')),false);
  const cfg=read('playwright.config.js');for(const project of ['desktop-chromium','iphone-chromium','iphone-webkit'])assert.match(cfg,new RegExp(project));
 });
 

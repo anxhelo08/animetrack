@@ -1,3 +1,4 @@
+import {navIcon} from '../../src/modules/nav-icons.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
@@ -11,9 +12,9 @@ const vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
 const names=['recommendations','wrapped','calendar-wrapped','diary','watch','rich-details','provider-sync','profiles','friends','moderation','notifications','rewatch','home','seasonal','episode-hub','filler','franchise','iphone','tv-episodes','tv','tv-unified','unified','daily','journey','smart-airing','push','collections','experience','features'];
 function load(extra={}){
- const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},navIcon,console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
- for(const name of names)vm.runInContext(fs.readFileSync(path.join(root,'src/modules',name+'.js'),'utf8'),sandbox,{filename:name+'.js'});
+ for(const name of names)vm.runInContext(fs.readFileSync(path.join(root,'src/modules',name+'.js'),'utf8').replace(/^import \{navIcon\} from '\.\/nav-icons\.js';\n/,''),sandbox,{filename:name+'.js'});
  return sandbox.window;
 }
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}

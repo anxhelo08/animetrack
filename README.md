@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 13.10.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
+AnimeTrack 13.11.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
 
 **Live:** https://animetrack-flax.vercel.app/ · **Ndryshimet:** [CHANGELOG.md](CHANGELOG.md) · **Siguria:** [SECURITY.md](SECURITY.md)
 
@@ -52,3 +52,7 @@ Vercel përdor `npm run build`, shërben `dist/` dhe vendos politikat e siguris�
 Shiko `docs/13.9-review.md` për verifikimet, kufizimet e OAuth dhe backup/PITR. Statusi aktual i testeve ndiqet në GitHub Actions; publikimi në serverin kryesor verifikohet në Vercel.
 
 Njoftimet 13.10: shih [push-delivery.md](docs/push-delivery.md) për konfigurimin, riprovimet dhe kufizimet.
+
+## Aksesueshmëria dhe provat vizuale
+
+`tests/e2e/accessibility.spec.js` kontrollon WCAG AA me axe për hyrjen, regjistrimin, kryefaqen, bibliotekën dhe detajet. Provon hapjen/mbylljen me tastierë, kthimin e fokusit dhe butonat mobilë 44px. Screenshot-et e bibliotekës krahasohen me baseline të ruajtura në Git. Përditësoji vetëm pas kontrollit vizual: `npx playwright test tests/e2e/accessibility.spec.js --update-snapshots`. Testet automatike nuk zëvendësojnë provat me lexues ekrani.

@@ -9,7 +9,7 @@ export default defineConfig({
   workers:1,
   retries:process.env.CI?1:0,
   reporter:process.env.CI?'line':'list',
-  use:{baseURL:'http://127.0.0.1:8765',trace:'retain-on-failure'},
+  use:{baseURL:'http://127.0.0.1:8765',trace:'retain-on-failure',launchOptions:process.env.AT_CHROMIUM_PATH?{executablePath:process.env.AT_CHROMIUM_PATH,args:['--single-process','--no-zygote']}:undefined},
   webServer:{
     command:'npm run preview -- --port 8765',
     url:'http://127.0.0.1:8765',

@@ -1,0 +1,120 @@
+/* 13.11: readable type, visible keyboard focus and usable touch targets. */
+body {
+  font-size: var(--font-base);
+  line-height: var(--line-body);
+}
+.main :is(p, li),
+.modal :is(p, li) {
+  line-height: var(--line-body);
+}
+:is(h1, h2, h3, h4) {
+  line-height: var(--line-heading);
+  text-wrap: balance;
+}
+.page-title {
+  font-size: var(--font-display);
+}
+.home-section-head h2 {
+  font-size: var(--font-lg);
+  margin: 0;
+}
+.main :is(.meta, .home-helper, .home-empty, .v7-empty, .footer, .season-note, .search-hint),
+.modal :is(small, .meta),
+.main small {
+  font-size: var(--font-sm);
+  color: var(--muted);
+}
+:is(button, input, select, textarea) {
+  font: inherit;
+}
+:is(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 3px;
+}
+.main:focus {
+  outline: none;
+}
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100000;
+  transform: translateY(-160%);
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 700;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  vertical-align: middle;
+}
+.nav-btn > span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+@media (max-width: 900px), (pointer: coarse) {
+  body :is(button, a[href], select, summary, [role='button']) {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+  body :is(input:not([type='checkbox']):not([type='radio']), textarea) {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  body :is(input[type='checkbox'], input[type='radio']) {
+    width: 22px;
+    height: 22px;
+  }
+  label:has(> input[type='checkbox']),
+  label:has(> input[type='radio']) {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .main small,
+  .modal small {
+    font-size: var(--font-sm);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (forced-colors: active) {
+  :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+  .progress {
+    border: 1px solid CanvasText;
+  }
+}
+body :is(.primary, .next, button[data-ios-action='install']) {
+  background: #6040b5;
+  color: #fff;
+}
+body :is(.primary, .next) small {
+  color: #fff;
+}
+body.at-ios-enabled .at114-tab-count {
+  color: var(--muted);
+  font-size: var(--font-sm);
+}
+body.at-ios-enabled .at114-title-pill {
+  color: var(--purple);
+  font-size: var(--font-sm);
+}

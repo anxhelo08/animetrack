@@ -1,0 +1,2 @@
+/* Card baselines exclude the fixed navigation overlay. */
+.at-mobile-nav { visibility:hidden !important; }

@@ -1,3 +1,10 @@
+# 13.11.0
+
+- Tipografi e përbashkët, fokus i dukshëm, skip link, tituj të strukturuar dhe SVG në navigimin desktop.
+- Butona mobilë 44px, tekst pa zmadhim automatik në iPhone dhe mbështetje për reduced motion/forced colors.
+- Semantikë e korrigjuar për kërkimin, filtrat mobilë dhe butonat e kartave; kontrast i përmirësuar.
+- Axe WCAG AA dhe screenshot regression për bibliotekën në CI.
+
 # 13.10.0
 
 - Web Push: lease atomik, 5 përpjekje dhe backoff i qëndrueshëm. Status veçmas për pajisjet; sukseset nuk ridërgohen gjatë riprovimit.
