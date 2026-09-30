@@ -55,5 +55,7 @@ await import("./modules/movies.js");
 await import("./modules/cross-sync.js");
 await import("./modules/release-guard.js");
 await import("./modules/library-identity.js");
+const {libraryRepository}=await import("./core/browser-storage.js");
+await libraryRepository.prepare();
 const {startApp}=await import("./app.js");
 startApp();

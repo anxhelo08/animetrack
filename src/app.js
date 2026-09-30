@@ -1,3 +1,6 @@
+import {libraryRepository,libraryStorage} from './core/browser-storage.js';
+import {validateLibrary,parseLibrary} from './core/library-schema.js';
+import {mountStorageSettings} from './modules/storage-settings.js';
 import {API_QUERY,anilistMedia,anilistIdFromMal,jikanGet} from './core/catalog-client.js';
 import { STATUS, createLibraryModel } from './core/library-model.js';
 import { createStore } from './core/store.js';
@@ -5,6 +8,7 @@ import { bindLibraryUI } from './core/library-ui.js';
 import { createFeatures } from './modules/features.js';
 
 export function startApp(){'use strict';
+const localStorage=libraryStorage;
 const {validPoster,uuid,now,genresOf,mediaFormat,isMovieAnime,isLiveMovie,mediaKind,movieWatched,isConfirmedFutureSeason,visibleSeasons,hiddenSeasons,futureSeasonOf,tidyNums,normSeason,mediaStartIso,releaseFromMedia,releasedCount,releasedTotal,plannedPending,pendingReleaseText,releasedStatusAfterWatch,syncTotals,normalized,count,percentage,nextSeasonEp,nextEp,normalizePreferences,normalizeTVShows,isSeriesFormat,seasonNumberFor,formatLabel}=createLibraryModel({
  releasedTV:(season,at)=>window.ATReleaseGuard1352.tvmazeReleasedCount(season,at),
  normalizeArc:(arc,index)=>window.ATFranchise1212.normalizeArc(arc,index)
@@ -89,7 +93,7 @@ function setSeasonHidden(id,seasonId,hidden){
 /* Keep in-app preferences across refreshes and Supabase cloud pulls. */
 
 function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.anime)){if(Array.isArray(s.tvShows)&&s.tvShows.length){try{const backupKey=KEY+'_before_tv_unify_120';if(!localStorage.getItem(backupKey))localStorage.setItem(backupKey,JSON.stringify(s))}catch(err){console.warn('TV backup unavailable',err)}}const merged=window.ATTVUnified120.migrate(s.anime.map(normalized).filter(Boolean),normalizeTVShows(s.tvShows),normalized);return {anime:merged.anime,tvShows:[],history:Array.isArray(s.history)?s.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(s.preferences)}}}catch(e){console.warn('Nuk u lexuan të dhënat:',e)}return{anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}}
-function accountCompact(value){return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value):value}
+function accountCompact(value){if(value)validateLibrary(value);return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value):value}
 function accountLocalSnapshot(value=state){return accountMode==='cloud'&&accountUser?accountCompact(value):value}
 function accountMergeRecovery(remote,local){return window.ATCloudLocal12123?.merge?window.ATCloudLocal12123.merge(remote,local):local}
 function accountHydrateRemote(remote,rich=state){return window.ATCloudLocal12123?.hydrate?window.ATCloudLocal12123.hydrate(remote,rich):remote}
@@ -132,8 +136,8 @@ function renderDetail(id){const a=state.anime.find(x=>x.id===id);if(!a){closeMod
 function libraryEntry137(id){return state.anime.find(a=>a.id===id)||state.anime.find(a=>(a.mergedIds||[]).includes(id))}
 function openDetail(id){id=libraryEntry137(id)?.id||id;previewKey=null;$('top-results').classList.add('hidden');const a=state.anime.find(x=>x.id===id);if(!a)return;const resume=window.ATResume123.resolve(a,state.history,releasedCount);activeSeasonId=resume?.seasonId||a.seasons[0]?.id||null;episodePage=resume?.page||0;renderDetail(id);showModal('detail-modal');if(a.source==='TVMaze'){if(a.franchiseVersion!==FRANCHISE_SCHEMA)void syncTVFranchise(id,true,true)}else if(isOnePiece(a)&&!a.tvmazeLoaded)void syncTVmaze(id,false,true);else if(a.source&&isFranchiseFormat(a.format)&&(!a.hydrated||a.franchiseVersion!==FRANCHISE_SCHEMA))void hydrateSeasons(id,true,true);const selected=a.seasons.find(x=>x.id===activeSeasonId);if(selected)void loadSeasonEpisodes(id,selected.id,episodePage)}
 function deleteAnime(){const transactionBefore=JSON.parse(JSON.stringify(state));const id=$('anime-id').value;let a=state.anime.find(a=>a.id===id);if(!a)return;if(!confirm(`Ta fshijmë “${a.title}” dhe progresin e tij?`))return;state.anime=state.anime.filter(x=>x.id!==id);state.history=state.history.filter(h=>h.id!==id);if(!save()){state=transactionBefore;return false}closeModal('form-modal');render();renderHome();notify('Anime u fshi.')}
-function exportData(){const blob=new Blob([JSON.stringify({...state,version:3,exportedAt:now()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AnimeTrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Kopja rezervë u shkarkua ✓')}
-async function importData(file){if(!file)return;try{const text=await file.text();if(text.length>8_000_000)throw Error('Skedari është tepër i madh.');const data=JSON.parse(text);if(!data||!Array.isArray(data.anime)||!Array.isArray(data.history))throw Error('Formati i kopjes rezervë nuk është i saktë.');if(!confirm('Importi do të zëvendësojë bibliotekën aktuale. Vazhdo?'))return;const transactionBefore=state;{const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);state={anime:merged.anime,tvShows:[],history:data.history.filter(h=>h&&typeof h==='object'),preferences:normalizePreferences(data.preferences)};}if(!save()){state=transactionBefore;return}upcomingCheckedAt=0;catalogSyncAt=0;upcomingEntries=[];persistCache();filter='all';search='';$('search').value='';$('global-search').value='';clearCatalog();render();notify('Biblioteka u importua me sukses ✓')}catch(e){notify('Importi dështoi: '+e.message)}finally{$('import-file').value=''}}
+function exportData(){validateLibrary(state,{requireHistory:true});const blob=new Blob([JSON.stringify({...state,version:3,exportedAt:now()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='AnimeTrack-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Kopja rezervë u shkarkua ✓')}
+async function importData(file){if(!file)return;try{const text=await file.text();if(text.length>8_000_000)throw Error('Skedari është tepër i madh.');const data=parseLibrary(text);if(!data||!Array.isArray(data.anime)||!Array.isArray(data.history))throw Error('Formati i kopjes rezervë nuk është i saktë.');if(!confirm('Importi do të zëvendësojë bibliotekën aktuale. Vazhdo?'))return;const transactionBefore=state;{const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);state={anime:merged.anime,tvShows:[],history:data.history.filter(h=>h&&typeof h==='object'),preferences:normalizePreferences(data.preferences)};}if(!save()){state=transactionBefore;return}upcomingCheckedAt=0;catalogSyncAt=0;upcomingEntries=[];persistCache();filter='all';search='';$('search').value='';$('global-search').value='';clearCatalog();render();notify('Biblioteka u importua me sukses ✓')}catch(e){notify('Importi dështoi: '+e.message)}finally{$('import-file').value=''}}
 
 /* 11.6 import: append-only, atomic local save. Cross-account data is never reused. */
 function importExternal(rows){
@@ -1161,7 +1165,7 @@ function accountWakeCloud(force=false){
  if(!cloudSaving&&!accountBusy)void accountPullQuiet();
 }
 
-function accountNormalizePayload(data){if(!data||!Array.isArray(data.anime))throw Error('Biblioteka online ka format të pavlefshëm.');const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);return {anime:merged.anime,tvShows:[],history:Array.isArray(data.history)?data.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(data.preferences)}}
+function accountNormalizePayload(data){validateLibrary(data);if(!data||!Array.isArray(data.anime))throw Error('Biblioteka online ka format të pavlefshëm.');const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);return {anime:merged.anime,tvShows:[],history:Array.isArray(data.history)?data.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(data.preferences)}}
 function accountApplyRemoteRecord(record){
  if(!record?.payload||accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||accountBusy)return false;
  const revision=String(record.updated_at||'');
@@ -1185,6 +1189,7 @@ function accountRefreshViews(){filter='all';search='';$('search').value='';$('gl
 async function accountOpenCloud(user){
  if(!user?.id)throw Error('Nuk u verifikua llogaria.');
  const client=accountInitClient(),uid=user.id,key='animetrack_user_'+uid;
+ await libraryRepository.refresh(key);
  const journal=window.ATSync126.pending(localStorage,key);
  let cached=null;
  try{const raw=JSON.parse(localStorage.getItem(key)||'null');if(raw&&Array.isArray(raw.anime))cached=accountNormalizePayload(raw)}
@@ -1194,6 +1199,7 @@ async function accountOpenCloud(user){
  let data=null,readError=null;
  try{const response=await client.from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();if(response.error)throw response.error;data=response.data}
  catch(error){readError=error;if(!cached)throw Error('Leximi nga databaza dështoi dhe nuk ka kopje lokale për këtë llogari: '+error.message)}
+ if(data?.payload)try{validateLibrary(data.payload)}catch(error){if(!cached)throw error;readError=error;data=null;console.warn('Invalid cloud library retained local copy',error)}
  document.body.classList.remove('auth-required');
  accountUser=user;accountMode='cloud';KEY='animetrack_user_'+uid;cloudMirrorUnavailable=false;
  cloudBaseKnown=!readError;cloudConnected=!readError;cloudConflict=false;cloudLastPullAt=readError?0:Date.now();
@@ -1448,8 +1454,9 @@ async function accountDelete(){
  const r=await accountInitClient().auth.signInWithPassword({email,password});$('account-delete-password').value='';if(r.error)throw r.error;if(r.data?.user?.id!==owner)throw Error('Llogaria ndryshoi.');
  await proContext.accountService.call({action:'delete',confirmation});
  cloudDirty=false;cloudSaving=false;try{await accountInitClient().auth.signOut({scope:'local'})}catch{}
+ await libraryRepository.forget(key);
  // Clear this account's recovery copies; never touch another account or guest library.
- for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if(k===key||k?.startsWith(key+'_'))localStorage.removeItem(k)}
+ for(let i=localStorage.length-1;i>=0;i--){const k=localStorage.key(i);if((k===key||k?.startsWith(key+'_'))&&k!==key+'_deleted_142')localStorage.removeItem(k)}
  accountMode='guest';accountUser=null;cloudConnected=false;cloudRevision=null;cloudConflict=false;cloudBaseKnown=false;cloudMirrorUnavailable=false;KEY=GUEST_KEY;state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};
  $('account-delete-confirmation').value='';accountRefreshViews();proApp.hide();void proApp.onAccount();document.body.classList.add('auth-required');accountToggle(true);accountStatus('Llogaria dhe të dhënat online u fshinë.','ok');
  }catch(e){accountStatus('Fshirja nuk u përfundua: '+e.message,'error');if(accountUser?.id===owner)accountStartRealtime(owner)}finally{accountBusy=false;$('account-delete-password').value=''}
@@ -1830,6 +1837,7 @@ window.ATMobile113.state=libraryStore.getState;
 const proApp=createFeatures(proContext);
 libraryStore.subscribe((_state,event)=>{if(event.reason==='saved')proApp.onStateChange()});
 proApp.init();
+mountStorageSettings({key:()=>KEY,toast:notify},libraryRepository);
 const at124Command=window.ATCommand124({
  esc:escapeHTML,state:()=>state,released:releasedCount,
  resume:a=>window.ATResume123.resolve(a,state.history,releasedCount),

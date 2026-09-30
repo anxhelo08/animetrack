@@ -85,15 +85,21 @@ window.ATCloudLocal12123=(()=>{
   const historyMap=new Map();
   for(const row of [...(base.history||[]),...(pending.history||[])]){
    if(!row||typeof row!=='object')continue;
-   const key=[row.id||'',row.seasonId||'',row.episode||'',row.action||'',row.date||row.at||''].join('|');
+   const batch=Array.isArray(row.episodes)?[...new Set(row.episodes.map(Number))].sort((a,b)=>a-b).join(','):'';
+   const key=row.eventId?'event:'+row.eventId:[row.id||'',row.seasonId||'',row.episode||'',row.action||'',row.date||row.at||'',batch].join('|');
    historyMap.set(key,row);
+  }
+  const lists=new Map();
+  for(const list of [...(base.preferences?.customLists||[]),...(pending.preferences?.customLists||[])]){
+   const prior=lists.get(list.id),a=Date.parse(prior?.updatedAt||''),b=Date.parse(list.updatedAt||'');
+   if(!prior||!Number.isFinite(a)||(Number.isFinite(b)&&b>=a))lists.set(list.id,list);
   }
   const merged={
    ...base,
    anime,
    tvShows:[],
    history:[...historyMap.values()],
-   preferences:pending.preferences&&typeof pending.preferences==='object'?{...(base.preferences||{}),...pending.preferences}:(base.preferences||{})
+   preferences:{...(base.preferences||{}),...(pending.preferences||{}),customLists:[...lists.values()]}
   };
   return window.ATLibraryIdentity137?.repair(merged)?.payload||merged;
  }

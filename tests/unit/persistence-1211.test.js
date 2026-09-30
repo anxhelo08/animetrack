@@ -1,3 +1,4 @@
+import {validateLibrary,parseLibrary} from '../../src/core/library-schema.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -9,7 +10,7 @@ function fn(name){const start=source.indexOf('function '+name+'('),end=source.in
 function realm(ok){
  const fields={'anime-id':'a','anime-title':'Changed','anime-total':'12','anime-current':'1','anime-status':'watching','anime-rating':'','anime-year':'','anime-genre':'','anime-cover':'','anime-notes':''};
  const messages=[],closed=[];
- const c={state:{anime:[{id:'a',title:'Original',total:12,status:'watching',seasons:[{watched:[1],total:12}]}],history:[{id:'a',action:'watched'}],preferences:{}},$:(id)=>({value:fields[id]||''}),STATUS:{watching:'Watching'},now:()=>new Date().toISOString(),tidyNums:x=>x,normalized:x=>x,count:()=>1,uuid:()=> 'new',save:()=>ok,notify:m=>messages.push(m),closeModal:m=>closed.push(m),render(){},renderHome(){},renderUpcoming(){},confirm:()=>true,normalizePreferences:x=>x||{},normalizeTVShows:()=>[],window:{ATTVUnified120:{migrate:a=>({anime:a})}},persistCache(){},clearCatalog(){},accountMode:'cloud',accountStatus:m=>messages.push(m),localStorage:{getItem:()=>null}};
+ const c={validateLibrary,parseLibrary,state:{anime:[{id:'a',title:'Original',total:12,status:'watching',seasons:[{watched:[1],total:12}]}],history:[{id:'a',action:'watched'}],preferences:{}},$:(id)=>({value:fields[id]||''}),STATUS:{watching:'Watching'},now:()=>new Date().toISOString(),tidyNums:x=>x,normalized:x=>x,count:()=>1,uuid:()=> 'new',save:()=>ok,notify:m=>messages.push(m),closeModal:m=>closed.push(m),render(){},renderHome(){},renderUpcoming(){},confirm:()=>true,normalizePreferences:x=>x||{},normalizeTVShows:()=>[],window:{ATTVUnified120:{migrate:a=>({anime:a})}},persistCache(){},clearCatalog(){},accountMode:'cloud',accountStatus:m=>messages.push(m),localStorage:{getItem:()=>null}};
  vm.createContext(c);return {c,messages,closed};
 }
 test('form edit rolls back on rejected storage, retains modal and never reports success',()=>{
@@ -26,7 +27,7 @@ test('failed deletion keeps title and activity history',()=>{
 });
 test('failed import retains original library and does not invalidate caches',async()=>{
  const {c,messages}=realm(false),before=c.state;let invalidated=false;c.persistCache=()=>{invalidated=true};vm.runInContext(fn('importData'),c);
- await c.importData({text:async()=>JSON.stringify({anime:[{id:'b'}],history:[]})});
+ await c.importData({text:async()=>JSON.stringify({anime:[{id:'b',title:'Incoming'}],history:[]})});
  assert.equal(c.state,before);assert.equal(invalidated,false);assert.equal(messages.length,0);
 });
 test('record, import and cloud normalization preserve activity beyond 2000 events',async()=>{

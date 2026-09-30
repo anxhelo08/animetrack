@@ -55,3 +55,17 @@ test('13.6 conflict merge unions watched progress and history from both devices'
  assert.deepEqual(Array.from(merged.anime[0].seasons[0].watched),[1,2,3,4,5]);
  assert.equal(merged.history.length,2);
 });
+
+test('14.2 concurrent bulk events with the same timestamp retain both episode batches and stable event IDs dedupe',()=>{
+ const api=load(),stamp='2026-09-30T12:00:00Z',a={id:'a',seasonId:'s',episode:0,action:'season-watched',date:stamp,episodes:[1,2]},b={...a,episodes:[3,4]};
+ const merged=api.merge({anime:[],history:[a,{...a,eventId:'fixed'}],preferences:{}},{anime:[],history:[b,{...a,eventId:'fixed'}],preferences:{}});
+ assert.equal(merged.history.length,3);assert.deepEqual(Array.from(merged.history[0].episodes),[1,2]);assert.deepEqual(Array.from(merged.history[2].episodes),[3,4]);
+});
+test('14.2 independent custom lists survive conflicts and the newer shared list wins',()=>{
+ const api=load(),remote={anime:[],history:[],preferences:{customLists:[{id:'one',title:'PC',updatedAt:'2026-09-30T12:00:00Z'},{id:'shared',title:'New',updatedAt:'2026-09-30T13:00:00Z'}]}},local={anime:[],history:[],preferences:{customLists:[{id:'two',title:'Phone',updatedAt:'2026-09-30T12:00:00Z'},{id:'shared',title:'Old',updatedAt:'2026-09-30T11:00:00Z'}]}};
+ const before=JSON.stringify({remote,local}),merged=api.merge(remote,local);assert.equal(merged.preferences.customLists.length,3);assert.equal(merged.preferences.customLists.find(x=>x.id==='shared').title,'New');assert.equal(JSON.stringify({remote,local}),before);
+});
+test('14.2 large offline history merge retains independent events without duplicate synchronized events',()=>{
+ const api=load(),rows=Array.from({length:12000},(_,i)=>({eventId:'event-'+i,id:'a',seasonId:'s',episode:i%12+1,action:'watched',date:'2026-09-30T12:00:00Z'}));
+ const merged=api.merge({anime:[],history:rows.slice(0,9000),preferences:{}},{anime:[],history:rows.slice(3000),preferences:{}});assert.equal(merged.history.length,12000);
+});

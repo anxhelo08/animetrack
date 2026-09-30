@@ -511,7 +511,7 @@ export function createLibraryModel(dependencies = {}) {
               /^list-[a-zA-Z0-9_-]{3,85}$/.test(row.id) &&
               typeof row.title === 'string',
           )
-          .slice(0, 12)
+          .slice(0, 50)
           .map((row) => ({
             id: row.id,
             title: row.title.replace(/\s+/g, ' ').trim().slice(0, 50),

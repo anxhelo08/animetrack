@@ -1,3 +1,11 @@
+# 14.2.0
+
+- Migrim i kontrolluar në IndexedDB: snapshot, pending journal dhe revision atomikë; kontroll SHA-256 dhe kopje e mëparshme për rikuperim.
+- Kopja aktive write-ahead mbahet; pastrimi heq vetëm backup-e historike identike pas verifikimit. Fshirja e llogarisë heq edhe kopjet IndexedDB dhe pengon rikthimin kur DB është bllokuar.
+- Validim pa heqje të heshtur të rreshtave për import/eksport/cloud; payload-i cloud i pavlefshëm nuk mbishkruan kopjen lokale.
+- Merge ruan eventId, batch-e me datë të njëjtë dhe lista të pavarura nga dy pajisje. Ruajtja e listave të importuara zgjerohet në 50 pa ndryshuar kufirin e krijimit në UI.
+- Prova për korruptim, quota/fallback, skeda konkurruese, izolim llogarish, fshirje, importe të mëdha dhe histori offline.
+
 # 14.1.0
 
 - Ndarje e modelit të bibliotekës, transportit të katalogut dhe lidhjeve të UI nga app.js; importe/eksporte reale dhe startApp eksplicit.
@@ -30,7 +38,7 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `14.1.0` / package version `14.1.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `14.2.0` / package version `14.2.0`.
 
 ## [Unreleased]
 

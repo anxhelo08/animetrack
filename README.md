@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 14.1.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
+AnimeTrack 14.2.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
 
 **Live:** https://animetrack-flax.vercel.app/ · **Ndryshimet:** [CHANGELOG.md](CHANGELOG.md) · **Siguria:** [SECURITY.md](SECURITY.md)
 
@@ -65,3 +65,9 @@ Menuja ka pesë hyrje: Kreu, Biblioteka, Zbulo, Aktiviteti dhe Profili. Kalendar
 ## Organizimi i kodit
 
 Modulet e reja përdorin importe dhe eksporte ESM. `features.js` dhe përvoja e produktit lidhen pa objekte globale. Adapterët e vjetër që përdoren ende nga shtesat ruhen gjatë migrimit gradual. `npm run typecheck` kontrollon JSDoc me `checkJs` dhe strict mode për store-in dhe delegimin e ngjarjeve; përfshihet në `npm test` dhe CI. Logjika e bibliotekës provohet drejtpërdrejt nga modulet, përfshirë sezonet e fshehura, episodet e ardhshme dhe metadatat private.
+
+## IndexedDB dhe rikuperimi
+
+Biblioteka, journal-i në pritje dhe revision-i kopjohen në një transaksion IndexedDB dhe verifikohen me SHA-256 pas leximit. Një kopje e mëparshme e verifikuar ruhet për rikuperim. Shkrimet sinkrone vazhdojnë të përdorin kopjen aktuale në localStorage si write-ahead journal: suksesi nuk shfaqet kur kjo ruajtje dështon. Migrimi nuk fshin bibliotekën aktive ose journal-in në pritje. Kur IndexedDB bllokohet, kjo kopje mbetet funksionale. Nëse kopja aktuale mungon, hapja lexon kopjen e verifikuar të kësaj llogarie nga IndexedDB.
+
+Te Profili → Cilësimet → Avancuar mund të verifikosh ruajtjen, të shkarkosh kopjen e mëparshme për import dhe të pastrosh vetëm backup-et historike identike me kopjen e verifikuar. Kopjet e ndryshme, auth dhe ndryshimet në pritje mbahen. Fshirja e llogarisë heq kopjet IndexedDB; nëse databaza lokale nuk hapet, një marker pa të dhëna personale pengon rikthimin dhe kryen pastrimin në hapjen tjetër. Importi, eksporti, kopjet lokale dhe payload-et cloud kontrollohen për strukturë e madhësi përpara përdorimit. `tests/e2e/indexed-storage.spec.js` provon migrimin/rikuperimin dhe refuzimin e input-it të pavlefshëm në shfletues.
