@@ -272,7 +272,7 @@ test('desktop regression',async({browser},testInfo)=>{
  });
  assert.equal(local.watched,beforeOffline+1,'offline +1 must be durably saved to this account');
  assert(local.pending&&local.pending.baseRevision,'pending journal records the original cloud revision');
- assert.match(local.indicator,/Offline/);
+ assert.match(local.indicator,/Pa internet/);
  await page.reload({waitUntil:'domcontentloaded'});
  await page.waitForFunction(()=>!document.body.classList.contains('account-booting')&&window.ATMobile113?.state()?.anime?.some(a=>a.id==='demo7'));
  const recovered=await page.evaluate(()=>{
@@ -284,7 +284,7 @@ test('desktop regression',async({browser},testInfo)=>{
  });
  assert.equal(recovered.watched,local.watched,'stale cloud snapshot cannot overwrite offline progress on login');
  assert.equal(recovered.pending,true,'merged offline progress remains queued until the safe cloud write completes');
- assert.match(recovered.indicator,/Në pritje|Offline|Po ruhet/,'timestamp-resolvable divergence stays queued without forcing a false conflict');
+ assert.match(recovered.indicator,/Në pritje|Pa internet|Po ruhet/,'timestamp-resolvable divergence stays queued without forcing a false conflict');
  assert.doesNotMatch(recovered.indicator,/Konflikt/,'updated_at ordering should auto-merge resolvable divergence');
  console.log('OFFLINE_RECOVERY_DESKTOP_PASS',JSON.stringify({saved:local.watched,recovered:recovered.watched,conflict:false,pending:true}));
  // 12.7.4: deliberately exhaust writes to the cloud snapshot while auth still succeeds.
