@@ -1,0 +1,57 @@
+/* Theme controls stay with user-facing settings, above Advanced. */
+.theme-settings {
+  margin: 16px 0;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+.theme-settings h3 {
+  margin: 0 0 12px;
+}
+.theme-settings label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.theme-settings select {
+  width: min(100%, 320px);
+  min-height: 44px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px;
+}
+.theme-settings p {
+  color: var(--muted);
+}
+:root[data-theme='light'] body {
+  background: radial-gradient(ellipse at 80% 0%, #e5dff8, transparent 45%), var(--bg);
+}
+:root[data-theme='light'] :is(input, textarea, select) {
+  color: var(--text);
+  caret-color: var(--purple);
+}
+:root[data-theme='light'] :is(input, textarea)::placeholder {
+  color: var(--muted);
+}
+:root[data-theme='light'] :is(.nav-btn.active, .nav-btn:hover, .mini-button:hover) {
+  color: var(--text);
+}
+:root[data-theme='light'] .account-boot-screen {
+  background: var(--bg);
+  color: var(--text);
+}
+@media (prefers-reduced-transparency: reduce) {
+  body :is(.at-mobile-nav, .topbar, .modal-header, .account-dialog) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+:root[data-theme='light'] body :is(.primary, .next) {
+  background: var(--action-bg);
+  color: var(--action-text);
+}

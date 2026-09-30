@@ -1,3 +1,4 @@
+import {designSystemCSS} from './src/design-system.mjs';
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
 import {readFileSync} from 'node:fs';
@@ -5,6 +6,7 @@ const headers=Object.fromEntries(JSON.parse(readFileSync(new URL('./vercel.json'
 
 export default defineConfig({
   publicDir:'public',
+  css:{postcss:{plugins:[designSystemCSS()]}},
   preview:{headers},
   plugins:[
     VitePWA({

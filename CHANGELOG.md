@@ -1,3 +1,11 @@
+# 14.4.0
+
+- Temë e çelët/errët/automatike te Cilësimet; preferencë vetëm në pajisje, me theme-color dhe color-scheme të përputhur.
+- Tokens të përbashkët për ngjyrat, tipografinë, rrezet, hijet dhe z-index; stack sistemor i deklaruar saktë.
+- Përshtatje e paletës legacy gjatë build-it, ruajtje e ngjyrave mbi foto/butonat kryesorë dhe hije më të lehta në temën e çelët.
+- Blur i kufizuar në 8px, heqje e deklaratave identike dhe unifikim i familjeve kryesore të breakpoints.
+- Teste për preferencat, dështimin e ruajtjes, ndryshimin e sistemit dhe kontrastin në të dy pamjet.
+
 # 14.3.0
 
 - Ngarkim paralel i varësive të pavarura, kontrolluesit dhe IndexedDB; nisje vetëm pasi të jenë gati.

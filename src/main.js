@@ -1,3 +1,4 @@
+import './core/browser-theme.js';
 import "./styles/index.css";
 
 import {createHTML} from "./modules/safe-html.js";

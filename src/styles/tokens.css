@@ -2,6 +2,19 @@
    Feature bundles may add local variables, but global palette/spacing primitives live here. */
 :root{
   color-scheme:dark;
+  --font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:24px;
+  --shadow-soft:0 4px 16px #0003;
+  --shadow-dialog:0 24px 70px #0009;
+  --layer-navigation:900;
+  --layer-modal:1150;
+  --layer-episode:1170;
+  --layer-confirm:1200;
+  --layer-update:1300;
+  --layer-auth:1350;
+  --layer-toast:20000;
   --bg:#0c0d16;
   --surface:#151624;
   --surface2:#1b1d2e;
@@ -10,6 +23,8 @@
   --muted:#a8a9bc;
   --purple:#a78bfa;
   --purple2:#7654e7;
+  --action-bg:#6040b5;
+  --action-text:#fff;
   --cyan:#65e5ef;
   --green:#65ddad;
   --yellow:#ffd480;
@@ -21,6 +36,7 @@
   --space-4:16px;
   --space-5:20px;
   --space-6:24px;
+  --shadow-ink:#000;
   --shadow-panel:0 12px 34px #0008;
   --focus-ring:0 0 0 3px #65e5ef;
   --font-xs:0.8125rem;
@@ -31,4 +47,25 @@
   --font-display:clamp(1.75rem, 4vw, 2.5rem);
   --line-body:1.6;
   --line-heading:1.25;
+}
+
+:root[data-theme="light"]{
+ color-scheme:light;
+ --bg:#f4f5fa;
+ --surface:#ffffff;
+ --surface2:#e9ecf5;
+ --border:#c3c9dc;
+ --text:#202337;
+ --muted:#515c73;
+ --purple:#5733ae;
+ --purple2:#7654e7;
+ --cyan:#006878;
+ --green:#166747;
+ --yellow:#805600;
+ --red:#ad2547;
+ --shadow-ink:#202337;
+ --shadow-panel:0 12px 34px #20233716;
+ --shadow-soft:0 4px 16px #20233712;
+ --shadow-dialog:0 24px 70px #20233730;
+ --focus-ring:0 0 0 3px #006878;
 }

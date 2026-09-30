@@ -1,3 +1,5 @@
+import {theme} from './core/browser-theme.js';
+import {mountThemeSettings} from './core/theme.js';
 import { catalogJSON, retryCatalogRequests } from './core/request-cache.js';
 import { createVisibleScheduler } from './core/visible-scheduler.js';
 import {libraryRepository,libraryStorage} from './core/browser-storage.js';
@@ -1839,6 +1841,7 @@ window.ATMobile113.state=libraryStore.getState;
 const proApp=createFeatures(proContext);
 libraryStore.subscribe((_state,event)=>{if(event.reason==='saved')proApp.onStateChange()});
 proApp.init();
+mountThemeSettings(theme,document.getElementById('product-advanced'),{toast:notify});
 mountStorageSettings({key:()=>KEY,toast:notify},libraryRepository);
 const at124Command=window.ATCommand124({
  esc:escapeHTML,state:()=>state,released:releasedCount,

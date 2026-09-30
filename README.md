@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 14.3.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
+AnimeTrack 14.4.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
 
 **Live:** https://animetrack-flax.vercel.app/ · **Ndryshimet:** [CHANGELOG.md](CHANGELOG.md) · **Siguria:** [SECURITY.md](SECURITY.md)
 
@@ -79,3 +79,11 @@ Modulet e pavarura, kontrolluesi dhe hapja e IndexedDB ngarkohen paralelisht; `s
 Planifikuesit ndalojnë timer-at kur skeda fshihet, nuk mbivendosin punën dhe rikontrollojnë kur ajo hapet. PWA përdor NetworkFirst për HTML me timeout 3 sekonda dhe fallback në HTML-në e precache; API-të e llogarisë nuk ruhen në runtime cache. Posterët kryesorë kanë dimensione të deklaruara; posteri në detaje ngarkohet menjëherë.
 
 CI kontrollon madhësinë e JavaScript (330 KB gzip gjithsej), ndërsa Lighthouse kontrollon LCP ≤4.5 sekonda, TBT ≤300 ms dhe JS ≤400 KB në tre hapje të faqes publike. Raportet ruhen si artefakte CI; këto janë matje laboratorike të hapjes pa session dhe jo garanci për çdo pajisje apo bibliotekë.
+
+## Sistemi vizual — 14.4
+
+Cilësimet → Pamja e aplikacionit ofron temë të errët, të çelët dhe sipas pajisjes. Tema e errët mbetet zgjedhja fillestare; preferenca ruhet vetëm në pajisje dhe nuk përfshihet në bibliotekë, eksport apo cloud. `theme-color` dhe `color-scheme` ndjekin temën e zgjidhur. Fonti përdor stack sistemor, pa varësi nga një Inter i pangarkuar.
+
+`src/styles/tokens.css` përcakton paletën, tipografinë, rrezet, hijet dhe shtresat. `src/design-system.mjs` përshtat ngjyrat legacy për temën e çelët me `light-dark()`, ruan paletën e errët dhe ngjyrat mbi foto/butonat kryesorë, kufizon blur-in në 8px dhe heq deklaratat identike brenda të njëjtit rregull. Familjet kryesore të breakpoints centralizohen në 760/900/1000px; ndërprerjet 980px unifikohen me 1000px. Rregullat dinamike të vjetra dhe `!important` që kontrollojnë gjendjet e UI mbahen kur nuk mund të hiqen në mënyrë të sigurt.
+
+Tema e çelët kërkon shfletues modern me `light-dark()`. Kontrollet axe provojnë hyrjen, regjistrimin, kreun, bibliotekën dhe detajet në temën e çelët, krahas provave dhe screenshot-eve të temës së errët.
