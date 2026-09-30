@@ -4,6 +4,15 @@ import globals from 'globals';
 export default [
   { ignores: ['dist/**', 'node_modules/**'] },
   {
+    files: ['api/**/*.js', 'server/**/*.js', 'supabase/functions/anime-account/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser },
+    },
+    rules: { 'no-eval': 'error', 'no-new-func': 'error', 'no-implied-eval': 'error' },
+  },
+  {
     files: ['src/**/*.js'],
     languageOptions: { ecmaVersion: 'latest', sourceType: 'module', globals: globals.browser },
     rules: {

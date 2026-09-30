@@ -464,13 +464,13 @@ test('11.2 private friends can be located only by exact handle and invited throu
  let relationships=[],requests=0;const slot={innerHTML:''},notifications=[];
  const client={
   from:table=>{const q={};for(const n of ['select','eq','ilike','limit','or','in','insert','delete','update'])q[n]=()=>q;q.then=(resolve,reject)=>Promise.resolve({data:table==='anime_friendships'?relationships:[],error:null}).then(resolve,reject);return q},
-  rpc:async(name,params)=>{if(name==='anime_find_friend_by_handle')return {data:params.p_handle==='secretfan'?[p]:[],error:null};if(name==='anime_request_friend_by_handle'){requests++;relationships=[{id:1,requester_id:'user-1',recipient_id:'user-2',status:'pending'}];return {data:'sent',error:null}}throw Error(name)}
+  rpc:async(name,params)=>{if(name==='anime_find_friend_by_handle')return {data:params.p_handle==='secretfan'?[p]:[],error:null};if(name==='anime_request_friend_by_handle'){requests++;relationships=[{id:1,requester_id:'user-1',recipient_id:'user-2',status:'pending'}];return {data:'received',error:null}}throw Error(name)}
  };
  const w=load(),c=context();c.client=()=>client;c.user=()=>({id:'user-1'});c.el=id=>id==='pro-find-results'?slot:null;c.toast=x=>notifications.push(x);c.rerender=()=>{};c.poster=()=>'';
  const mod=w.ATFriends(c,{get:()=>({handle:'myhandle'}),snapshot:()=>({anime:[]})});
  await mod.find('secretfan');assert.match(slot.innerHTML,/Secret Fan/);assert.match(slot.innerHTML,/Profil privat/);
  assert.doesNotMatch(slot.innerHTML,/snapshot|private notes|email/i);
- await mod.action('friend-add','user-2');assert.equal(requests,1);assert.match(notifications.join('|'),/dërgua/);assert.equal(relationships[0].status,'pending');
+ await mod.action('friend-add','user-2');assert.equal(requests,1);assert.match(notifications.join('|'),/përpunua/);assert.equal(relationships[0].status,'pending');
 });
 
 

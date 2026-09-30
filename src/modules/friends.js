@@ -74,10 +74,10 @@ window.ATFriends=function ATFriends(ctx,profiles){
   if(!user()||id===myId()||busy)return;const person=results.find(p=>p.user_id===id);if(!person?.handle)return;
   busy=true;try{
    const existing=relation(id);if(existing?.status==='accepted'||existing?.status==='pending'){ctx.toast('Kërkesa ekziston tashmë.');return}
-   if(existing?.status==='declined'){ctx.toast('Kjo kërkesë është refuzuar më parë.');return}
+   if(existing?.status==='declined'){ctx.toast('Kërkesa u përpunua.');return}
    if(typeof client().rpc==='function'){
     const r=await client().rpc('anime_request_friend_by_handle',{p_handle:person.handle});
-    if(!r.error){const messages={sent:'Kërkesa u dërgua ✓',pending:'Kërkesa ekziston tashmë.',declined:'Kërkesa është refuzuar më parë.',limit:'Ke shumë kërkesa në pritje.',self:'Nuk mund të ftosh veten.',invalid:'Kontrollo username-in.','not-found':'Profili nuk u gjet.','already-friends':'Jeni tashmë miq.'};ctx.toast(messages[r.data]||'Kërkesa u kontrollua.');if(r.data==='sent'||r.data==='pending'||r.data==='already-friends'){await load();ctx.rerender()}return}
+    if(!r.error){const messages={received:'Kërkesa u përpunua. Nëse profili mund të marrë ftesa, ajo do të shfaqet te marrësi.',limit:'Shumë kërkesa. Provo përsëri pas një minute.'};ctx.toast(messages[r.data]||'Kërkesa u kontrollua.');if(r.data==='received'){await load();ctx.rerender()}return}
     if(!['42883','PGRST202'].includes(r.error.code)){throw r.error}
    }
    // Older backends only allow public profile requests; never bypass privacy policies.

@@ -159,10 +159,10 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   try{
    if(!ctx.user())modules.recommendations.reset();
    // Social, notifications and external recommendations must not hold the entire account UI hostage.
-   const work=[['profiles',()=>modules.profiles.load()],['friends',()=>modules.friends.load()],['moderation',()=>modules.moderation.load()],['notifications',()=>modules.notifications.refresh()],['recommendations',()=>modules.recommendations.refresh(false)]];
+   const work=[['provider',()=>modules.providerSync.onAccount()],['profiles',()=>modules.profiles.load()],['friends',()=>modules.friends.load()],['moderation',()=>modules.moderation.load()],['notifications',()=>modules.notifications.refresh()],['recommendations',()=>modules.recommendations.refresh(false)]];
    void Promise.allSettled(work.map(async([name,fn])=>{
     try{await fn()}catch(err){console.warn('Account module '+name,err)}
-    finally{if((name==='profiles'&&active==='profile')||(name==='friends'&&active==='friends'))render();if(name==='profiles'||name==='friends')renderHome()}
+    finally{if((name==='provider'&&(active==='sync'||active==='profile'))||(name==='profiles'&&active==='profile')||(name==='friends'&&active==='friends'))render();if(name==='profiles'||name==='friends')renderHome()}
    }));
    trackAchievements(false);render();renderHome();
    void modules.push.prepare().then(()=>modules.push.scheduleSync()).catch(console.warn);

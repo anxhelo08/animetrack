@@ -16,6 +16,7 @@ await import("./modules/calendar-wrapped.js");
 await import("./modules/diary.js");
 await import("./modules/watch.js");
 await import("./modules/rich-details.js");
+await import("./modules/account-service.js");
 await import("./modules/provider-sync.js");
 await import("./modules/profiles.js");
 await import("./modules/friends.js");

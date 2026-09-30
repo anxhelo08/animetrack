@@ -1,5 +1,5 @@
 /* AnimeTrack 13.5 — AniList / MyAnimeList Live Sync.
-   Provider tokens stay device-local. Sync baselines also stay local; only the auto-sync toggle is part of normal preferences. */
+   Provider tokens are held by the authenticated server vault. Sync baselines also stay local; only the auto-sync toggle is part of normal preferences. */
 window.ATProviderSync135=function ATProviderSync135(ctx){
  'use strict';
  const esc=ctx.esc;
@@ -15,7 +15,24 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
  const clean=s=>String(s||'').replace(/\s+/g,' ').trim().slice(0,180);
  const num=(v,max=10000)=>Math.max(0,Math.min(max,Math.floor(Number(v)||0)));
  const rating=v=>{const n=Number(v);return Number.isFinite(n)&&n>0?Math.max(.5,Math.min(10,Math.round(n*2)/2)):null};
- const token=p=>storeGet(p==='anilist'?KEYS.anilistToken:KEYS.malToken);
+ let owner='',serverProviders=new Set(),connectionReady=false,oauthPending=null;
+ const legacyTokens={anilist:storeGet(KEYS.anilistToken),mal:storeGet(KEYS.malToken)};
+ // Old credentials are offered once for an explicit transfer, never silently assigned to an account.
+ storeSet(KEYS.anilistToken,'');storeSet(KEYS.malToken,'');
+ const token=p=>serverProviders.has(p);
+ const serverCall=payload=>ctx.accountService.call(payload);
+ async function onAccount(){
+  const uid=ctx.user?.()?.id||'';if(owner!==uid){owner=uid;serverProviders=new Set();connectionReady=false;profiles={anilist:null,mal:null};rowsByProvider={anilist:[],mal:[]}}
+  if(!uid){oauthPending=null;return;}
+  try{const r=await serverCall({action:'status'});if(owner!==uid)return;serverProviders=new Set(r.providers||[]);connectionReady=true;
+   if(oauthPending&&oauthPending.owner===uid){const pending=oauthPending;oauthPending=null;await connectToken('anilist',pending.token)}
+  }catch{connectionReady=false}
+ }
+ async function connectToken(provider,value){
+  const uid=ctx.user?.()?.id;if(!uid)throw Error('Hyr në llogari për të lidhur provider-in.');
+  const r=await serverCall({action:'connect',provider,token:value});if(ctx.user?.()?.id!==uid)return;
+  owner=uid;serverProviders.add(provider);profiles[provider]=r.profile;legacyTokens[provider]='';connectionReady=true;messages[provider]='Lidhja u ruajt në server ✓';ctx.rerender(true);
+ }
  const username=p=>storeGet(p==='anilist'?KEYS.anilistUser:KEYS.malUser);
  const connected=p=>!!(token(p)||username(p));
  const writeable=p=>!!token(p);
@@ -95,8 +112,8 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
   for(const row of rows||[])if(row.local&&row.remote)b[provider+':'+row.key]={local:fp(row.local.snapshot),remote:fp(row.remote.snapshot),at:Date.now()};
   saveBaseline(b);
  }
- async function aniGql(query,variables={},auth=''){
-  const headers={'Content-Type':'application/json',Accept:'application/json'};if(auth)headers.Authorization='Bearer '+auth;
+ async function aniGql(query,variables={}){
+  const headers={'Content-Type':'application/json',Accept:'application/json'};
   const r=await fetch('https://graphql.anilist.co',{method:'POST',headers,body:JSON.stringify({query,variables})}),j=await r.json().catch(()=>({}));
   if(!r.ok||j.errors?.length)throw Error(j.errors?.[0]?.message||'AniList HTTP '+r.status);return j.data||{};
  }
@@ -105,18 +122,18 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
  }
  async function fetchAniList(){
   const auth=token('anilist'),user=clean(username('anilist'));let profile=null,userId=null,userName=user;
-  if(auth){profile=(await aniGql('query{Viewer{id name avatar{large}}}',{},auth)).Viewer;if(!profile)throw Error('AniList token i pavlefshëm.');userId=profile.id;userName=profile.name;storeSet(KEYS.anilistUser,userName)}
+  if(auth){profile=await serverCall({action:'provider',provider:'anilist',operation:'me'});if(!profile)throw Error('AniList token i pavlefshëm.');userId=profile.id;userName=profile.name;storeSet(KEYS.anilistUser,userName)}
   if(!userId&&!userName)throw Error('Vendos username ose access token AniList.');
   const query='query($userId:Int,$userName:String){MediaListCollection(type:ANIME,userId:$userId,userName:$userName){lists{entries{id mediaId status score(format:POINT_10) progress repeat updatedAt media{id idMal title{romaji english} episodes format seasonYear coverImage{large} genres averageScore siteUrl}}}}}';
-  const data=await aniGql(query,{userId,userName:userId?null:userName},auth),all=[];
+  const data=auth?await serverCall({action:'provider',provider:'anilist',operation:'list'}):await aniGql(query,{userId,userName:userId?null:userName}),all=[];
   for(const list of data.MediaListCollection?.lists||[])for(const e of list.entries||[]){const media=mapAniMedia(e.media||{});all.push({provider:'anilist',providerId:String(e.mediaId||e.media?.id||''),malId:media.malId,title:media.title,total:media.total,media,snapshot:{status:appStatus(e.status),progress:num(e.progress),score:rating(e.score)},updatedAt:Number(e.updatedAt||0)*1000,entryId:e.id})}
   const uniq=new Map();for(const x of all)if(x.providerId)uniq.set(x.providerId,x);
   return{profile:profile||{name:userName},entries:[...uniq.values()],canWrite:!!auth};
  }
  async function fetchMalToken(){
   const auth=token('mal');if(!auth)return null;
-  const meR=await fetch('/api/mal?action=me',{headers:{Authorization:'Bearer '+auth,Accept:'application/json'}}),me=await meR.json().catch(()=>({}));if(!meR.ok)throw Error(me.error||'MAL token i pavlefshëm.');
-  const entries=[];for(let offset=0;offset<10000;offset+=1000){const r=await fetch('/api/mal?action=list&limit=1000&offset='+offset,{headers:{Authorization:'Bearer '+auth,Accept:'application/json'}}),j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'MAL HTTP '+r.status);for(const row of j.data||[]){const n=row.node||{},s=row.list_status||{};entries.push({provider:'mal',providerId:String(n.id||''),malId:String(n.id||''),title:n.title||'Anime',total:num(n.num_episodes),media:{source:'MyAnimeList',sourceId:String(n.id||''),malId:String(n.id||''),title:n.title||'Anime',total:num(n.num_episodes),format:n.media_type||'TV',year:Number(String(n.start_date||'').slice(0,4))||null,cover:n.main_picture?.large||n.main_picture?.medium||'',genre:'',score:n.mean?Math.round(Number(n.mean)*10):null,sourceUrl:'https://myanimelist.net/anime/'+n.id},snapshot:{status:appStatus(s.status),progress:num(s.num_episodes_watched),score:rating(s.score)},updatedAt:Date.parse(s.updated_at||'')||0})}if((j.data||[]).length<1000)break}
+  const me=await serverCall({action:'provider',provider:'mal',operation:'me'});
+  const entries=[];for(let offset=0;offset<10000;offset+=1000){const j=await serverCall({action:'provider',provider:'mal',operation:'list',offset});for(const row of j.data||[]){const n=row.node||{},s=row.list_status||{};entries.push({provider:'mal',providerId:String(n.id||''),malId:String(n.id||''),title:n.title||'Anime',total:num(n.num_episodes),media:{source:'MyAnimeList',sourceId:String(n.id||''),malId:String(n.id||''),title:n.title||'Anime',total:num(n.num_episodes),format:n.media_type||'TV',year:Number(String(n.start_date||'').slice(0,4))||null,cover:n.main_picture?.large||n.main_picture?.medium||'',genre:'',score:n.mean?Math.round(Number(n.mean)*10):null,sourceUrl:'https://myanimelist.net/anime/'+n.id},snapshot:{status:appStatus(s.status),progress:num(s.num_episodes_watched),score:rating(s.score)},updatedAt:Date.parse(s.updated_at||'')||0})}if((j.data||[]).length<1000)break}
   return{profile:{name:me.name||username('mal'),picture:me.picture||''},entries,canWrite:true};
  }
  async function fetchMalPublic(){
@@ -131,9 +148,9 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
   const s=row.local.snapshot,id=row.local.providerId;
   if(provider==='anilist'){
    const query='mutation($mediaId:Int!,$status:MediaListStatus,$score:Float,$progress:Int){SaveMediaListEntry(mediaId:$mediaId,status:$status,score:$score,progress:$progress){id mediaId status score(format:POINT_10) progress updatedAt}}';
-   await aniGql(query,{mediaId:Number(id),status:remoteStatus('anilist',s.status),score:s.score||0,progress:num(s.progress)},token('anilist'));return true;
+   await serverCall({action:'provider',provider:'anilist',operation:'update',id:Number(id),status:remoteStatus('anilist',s.status),score:s.score||0,progress:num(s.progress)});return true;
   }
-  const r=await fetch('/api/mal?action=update&id='+encodeURIComponent(id),{method:'PATCH',headers:{Authorization:'Bearer '+token('mal'),'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify({status:remoteStatus('mal',s.status),num_watched_episodes:num(s.progress),score:s.score||0})}),j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'MAL update '+r.status);return true;
+  await serverCall({action:'provider',provider:'mal',operation:'update',id:Number(id),status:remoteStatus('mal',s.status),progress:num(s.progress),score:s.score||0});return true;
  }
  function importRows(rows){
   const payload=(rows||[]).map(row=>({title:row.remote.title,status:row.remote.snapshot.status,progress:row.remote.snapshot.progress,total:row.remote.total,rating:row.remote.snapshot.score,source:row.remote.media.source,sourceId:row.remote.media.sourceId,malId:row.remote.media.malId,format:row.remote.media.format,year:row.remote.media.year,cover:row.remote.media.cover,genre:row.remote.media.genre,sourceUrl:row.remote.media.sourceUrl,communityScore:row.remote.media.score}));
@@ -179,25 +196,31 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
  async function testConnection(provider){
   if(busy)return;busy=provider;messages[provider]='Po kontrollohet lidhja…';ctx.rerender(true);try{const r=await fetchRemote(provider);profiles[provider]=r.profile;messages[provider]='Lidhja funksionon ✓ · '+r.entries.length+' hyrje';ctx.rerender(true)}catch(err){messages[provider]='Lidhja dështoi: '+String(err.message||err);ctx.rerender(true)}finally{busy=''}
  }
- function saveCredentials(provider){
-  const root=document.getElementById('at135-'+provider),u=root?.querySelector('[data-at135-user]')?.value.trim()||'',t=root?.querySelector('[data-at135-token]')?.value.trim()||'';
-  storeSet(provider==='anilist'?KEYS.anilistUser:KEYS.malUser,u);if(t)storeSet(provider==='anilist'?KEYS.anilistToken:KEYS.malToken,t);messages[provider]='U ruajt vetëm në këtë pajisje ✓';void testConnection(provider);
+ async function saveCredentials(provider){
+  const root=document.getElementById('at135-'+provider),u=root?.querySelector('[data-at135-user]')?.value.trim()||'',field=root?.querySelector('[data-at135-token]'),t=field?.value.trim()||'';
+  storeSet(provider==='anilist'?KEYS.anilistUser:KEYS.malUser,u);
+  try{if(t)await connectToken(provider,t);if(field)field.value='';await testConnection(provider)}catch(e){messages[provider]=e.message;ctx.rerender(true)}finally{if(field)field.value=''}
  }
- function disconnect(provider){storeSet(provider==='anilist'?KEYS.anilistToken:KEYS.malToken,'');profiles[provider]=null;rowsByProvider[provider]=[];messages[provider]='Token-i u hoq nga kjo pajisje.';ctx.rerender(true)}
+ async function migrate(provider){try{const t=legacyTokens[provider];if(!t)return;await connectToken(provider,t);await testConnection(provider)}catch(e){messages[provider]=e.message;ctx.rerender(true)}}
+ async function disconnect(provider){try{await serverCall({action:'disconnect',provider});serverProviders.delete(provider);profiles[provider]=null;rowsByProvider[provider]=[];messages[provider]='Token-i u hoq nga serveri. Revokoje edhe te provider-i nëse dëshiron ta çaktivizosh.';ctx.rerender(true)}catch(e){messages[provider]=e.message;ctx.rerender(true)}}
  function setAuto(enabled){const state=ctx.state();state.preferences=state.preferences||{};const before=!!state.preferences.providerAutoSync;state.preferences.providerAutoSync=!!enabled;if(!ctx.save())state.preferences.providerAutoSync=before;ctx.rerender(true)}
  async function auto(){
+  if(!connectionReady&&ctx.user?.())await onAccount();
   if(!ctx.state()?.preferences?.providerAutoSync||busy||document.visibilityState==='hidden'||!navigator.onLine||Date.now()-lastAuto<8*60000)return;lastAuto=Date.now();
   for(const provider of providers)if(connected(provider))await sync(provider,{auto:true,quiet:true});
   ctx.rerender?.();
  }
  function oauthAniList(){
+  if(!ctx.user?.()){messages.anilist='Hyr në llogari për OAuth.';ctx.rerender(true);return}
   const root=document.getElementById('at135-anilist'),raw=root?.querySelector('[data-at135-client]')?.value.trim()||storeGet(KEYS.anilistClient);if(!/^\d+$/.test(raw)){messages.anilist='Vendos AniList Client ID.';ctx.rerender(true);return}
-  storeSet(KEYS.anilistClient,raw);sessionStorage.setItem('animetrack_anilist_oauth_135',String(Date.now()));location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+encodeURIComponent(raw)+'&response_type=token';
+  storeSet(KEYS.anilistClient,raw);sessionStorage.setItem('animetrack_anilist_oauth_135',JSON.stringify({at:Date.now(),owner:ctx.user().id}));location.href='https://anilist.co/api/v2/oauth/authorize?client_id='+encodeURIComponent(raw)+'&response_type=token';
  }
  function captureAniListOAuth(){
-  const started=Number(sessionStorage.getItem('animetrack_anilist_oauth_135'));
-  if(!started||Date.now()-started>10*60*1000||Date.now()<started||!location.hash.includes('access_token=')||location.hash.includes('refresh_token='))return false;
-  sessionStorage.removeItem('animetrack_anilist_oauth_135');const p=new URLSearchParams(location.hash.slice(1)),t=p.get('access_token');if(!t)return false;storeSet(KEYS.anilistToken,t);history.replaceState(null,'',location.pathname+location.search);messages.anilist='AniList u lidh me OAuth ✓';return true;
+  let attempt;try{attempt=JSON.parse(sessionStorage.getItem('animetrack_anilist_oauth_135')||'null')}catch{return false}
+  const started=attempt?.at;
+  if(!attempt?.owner||!started||Date.now()-started>10*60*1000||Date.now()<started||!location.hash.includes('access_token=')||location.hash.includes('refresh_token='))return false;
+  sessionStorage.removeItem('animetrack_anilist_oauth_135');const p=new URLSearchParams(location.hash.slice(1)),t=p.get('access_token');if(!t)return false;
+  history.replaceState(null,'',location.pathname+location.search);oauthPending={owner:attempt.owner,token:t};messages.anilist='Po lidhet AniList me serverin…';return true;
  }
  function counts(rows){const c={same:0,pull:0,push:0,conflict:0,'remote-only':0,'local-only':0};for(const r of rows||[])c[r.decision]=(c[r.decision]||0)+1;return c}
  const badge=d=>({same:'Në sinkron',pull:'← Merr',push:'Dërgo →',conflict:'Konflikt','remote-only':'Vetëm provider','local-only':'Vetëm AnimeTrack'})[d]||d;
@@ -209,11 +232,11 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
  }
  function providerCard(provider){
   const name=provider==='anilist'?'AniList':'MyAnimeList',user=username(provider),has=writeable(provider),profile=profiles[provider],rows=rowsByProvider[provider],c=counts(rows),client=storeGet(KEYS.anilistClient);
-  return'<section class="at135-provider" id="at135-'+provider+'"><header><div class="at135-logo '+provider+'">'+(provider==='anilist'?'AL':'MAL')+'</div><div><h3>'+name+'</h3><p>'+(has?'Lexim + shkrim · token vetëm në pajisje':user?'Read-only me username':'Pa lidhje')+'</p></div><span class="at135-state '+(connected(provider)?'on':'')+'">'+(connected(provider)?'● Lidhur':'○ Jo lidhur')+'</span></header><div class="at135-connect"><label>Username<input data-at135-user value="'+esc(user)+'" placeholder="'+(provider==='anilist'?'AniList username':'MAL username')+'"></label>'+(provider==='anilist'?'<label>Client ID opsional<input data-at135-client value="'+esc(client)+'" inputmode="numeric" placeholder="Për OAuth implicit"></label>':'')+'<label class="at135-token-field">Access token opsional<input data-at135-token type="password" autocomplete="off" placeholder="'+(has?'Token i ruajtur · lëre bosh për ta mbajtur':'Aktivizon two-way sync')+'"></label><div class="at135-connect-actions"><button type="button" class="primary" data-at135-action="save" data-provider="'+provider+'">Ruaj & testo</button>'+(provider==='anilist'?'<button type="button" class="ghost" data-at135-action="oauth" data-provider="anilist">Lidhu me OAuth ↗</button>':'')+(has?'<button type="button" class="ghost danger" data-at135-action="disconnect" data-provider="'+provider+'">Hiq token</button>':'')+'</div></div>'+(profile?'<div class="at135-profile-mini"><strong>'+esc(profile.name||user)+'</strong><span>'+rows.length+' hyrje të krahasuara</span></div>':'')+'<div class="at135-syncbar"><div><b>'+c.conflict+'</b><small>konflikte</small></div><div><b>'+c.pull+'</b><small>pull</small></div><div><b>'+c.push+'</b><small>push</small></div><div><b>'+c['remote-only']+'</b><small>vetëm provider</small></div><button type="button" class="primary" data-at135-action="sync" data-provider="'+provider+'" '+(!connected(provider)||busy?'disabled':'')+'>↻ Sync tani</button></div>'+(messages[provider]?'<p class="at135-message">'+esc(messages[provider])+'</p>':'')+(rows.length?'<div class="at135-rows">'+rows.filter(x=>x.decision!=='same').slice(0,80).map(x=>rowHTML(provider,x)).join('')+(rows.every(x=>x.decision==='same')?'<div class="at135-all-good">✓ Gjithçka është në sinkron.</div>':'')+'</div>':'')+'</section>';
+  return'<section class="at135-provider" id="at135-'+provider+'"><header><div class="at135-logo '+provider+'">'+(provider==='anilist'?'AL':'MAL')+'</div><div><h3>'+name+'</h3><p>'+(has?'Lexim + shkrim · token në server':user?'Read-only me username':'Pa lidhje')+'</p></div><span class="at135-state '+(connected(provider)?'on':'')+'">'+(connected(provider)?'● Lidhur':'○ Jo lidhur')+'</span></header><div class="at135-connect"><label>Username<input data-at135-user value="'+esc(user)+'" placeholder="'+(provider==='anilist'?'AniList username':'MAL username')+'"></label>'+(provider==='anilist'?'<label>Client ID opsional<input data-at135-client value="'+esc(client)+'" inputmode="numeric" placeholder="Për OAuth implicit"></label>':'')+'<label class="at135-token-field">Access token për lidhje me serverin<input data-at135-token type="password" autocomplete="off" placeholder="'+(has?'Token në server · lëre bosh për ta mbajtur':'Aktivizon two-way sync')+'"></label><div class="at135-connect-actions"><button type="button" class="primary" data-at135-action="save" data-provider="'+provider+'">Ruaj & testo</button>'+(provider==='anilist'?'<button type="button" class="ghost" data-at135-action="oauth" data-provider="anilist">Lidhu me OAuth ↗</button>':'')+(legacyTokens[provider]?'<button type="button" class="ghost" data-at135-action="migrate" data-provider="'+provider+'">Transfero token-in e vjetër në këtë llogari</button>':'')+(has?'<button type="button" class="ghost danger" data-at135-action="disconnect" data-provider="'+provider+'">Hiq token</button>':'')+'</div></div>'+(profile?'<div class="at135-profile-mini"><strong>'+esc(profile.name||user)+'</strong><span>'+rows.length+' hyrje të krahasuara</span></div>':'')+'<div class="at135-syncbar"><div><b>'+c.conflict+'</b><small>konflikte</small></div><div><b>'+c.pull+'</b><small>pull</small></div><div><b>'+c.push+'</b><small>push</small></div><div><b>'+c['remote-only']+'</b><small>vetëm provider</small></div><button type="button" class="primary" data-at135-action="sync" data-provider="'+provider+'" '+(!connected(provider)||busy?'disabled':'')+'>↻ Sync tani</button></div>'+(messages[provider]?'<p class="at135-message">'+esc(messages[provider])+'</p>':'')+(rows.length?'<div class="at135-rows">'+rows.filter(x=>x.decision!=='same').slice(0,80).map(x=>rowHTML(provider,x)).join('')+(rows.every(x=>x.decision==='same')?'<div class="at135-all-good">✓ Gjithçka është në sinkron.</div>':'')+'</div>':'')+'</section>';
  }
  function render(){
   const autoOn=!!ctx.state()?.preferences?.providerAutoSync;
-  return'<section class="at135-page"><header class="at135-hero"><div><span class="eyebrow">ANIMETRACK 13.5</span><h2>MAL / AniList Live Sync ⇄</h2><p>Krahaso progresin, statusin dhe rating-un. Pas baseline-it të parë, AnimeTrack zbulon cila anë ndryshoi dhe sinkronizon vetëm drejtimin e sigurt; konfliktet nuk mbishkruhen automatikisht.</p></div><label class="at135-auto"><input type="checkbox" id="at135-auto" '+(autoOn?'checked':'')+'><span><strong>Auto Live Sync</strong><small>Kontroll çdo ~10 min kur app-i është aktiv</small></span></label></header><div class="at135-security">🔒 Token-i i AniList jep akses afatgjatë dhe ruhet në këtë shfletues. Kodi që ekzekutohet në faqe mund ta lexojë; përdore vetëm në pajisjen tënde. “Hiq token” e fshin nga kjo pajisje; për ta çaktivizuar plotësisht, revokoje te AniList. Mund të përdorësh vetëm username për lexim, pa token.</div>'+providerCard('anilist')+providerCard('mal')+'<section class="at135-how"><h3>Si zgjidhen ndryshimet</h3><div><span><b>← Merr</b> Provider-i ndryshoi, AnimeTrack jo.</span><span><b>Dërgo →</b> AnimeTrack ndryshoi, provider-i jo.</span><span><b>Konflikt</b> Të dy ndryshuan; ti zgjedh cilën anë të mbash.</span><span><b>Remote-only</b> Shtohet në AnimeTrack vetëm gjatë Sync manual.</span></div><p>AniList mutations kërkojnë autentikim OAuth; access token-at janë long-lived dhe AniList nuk ofron refresh token. MAL write sync kërkon OAuth access token; pa të, username/Jikan përdoret vetëm për lexim.</p></section></section>';
+  return'<section class="at135-page"><header class="at135-hero"><div><span class="eyebrow">ANIMETRACK 13.5</span><h2>MAL / AniList Live Sync ⇄</h2><p>Krahaso progresin, statusin dhe rating-un. Pas baseline-it të parë, AnimeTrack zbulon cila anë ndryshoi dhe sinkronizon vetëm drejtimin e sigurt; konfliktet nuk mbishkruhen automatikisht.</p></div><label class="at135-auto"><input type="checkbox" id="at135-auto" '+(autoOn?'checked':'')+'><span><strong>Auto Live Sync</strong><small>Kontroll çdo ~10 min kur app-i është aktiv</small></span></label></header><div class="at135-security">🔒 Token-at ruhen të enkriptuar në server dhe lidhen me llogarinë tënde. OAuth implicit i AniList kalon token-in përkohësisht në shfletues para transferimit; nuk ruhet në localStorage. Kodi në faqe ende mund të kryejë veprime gjatë sesionit tënd. Mund të përdorësh vetëm username për lexim. “Hiq token” e heq lidhjen; revokoje te provider-i për ta çaktivizuar plotësisht.</div>'+providerCard('anilist')+providerCard('mal')+'<section class="at135-how"><h3>Si zgjidhen ndryshimet</h3><div><span><b>← Merr</b> Provider-i ndryshoi, AnimeTrack jo.</span><span><b>Dërgo →</b> AnimeTrack ndryshoi, provider-i jo.</span><span><b>Konflikt</b> Të dy ndryshuan; ti zgjedh cilën anë të mbash.</span><span><b>Remote-only</b> Shtohet në AnimeTrack vetëm gjatë Sync manual.</span></div><p>AniList mutations kërkojnë autentikim OAuth; access token-at janë long-lived dhe AniList nuk ofron refresh token. MAL write sync kërkon OAuth access token; pa të, username/Jikan përdoret vetëm për lexim.</p></section></section>';
  }
  function profileCard(){
   const names=providers.filter(connected).map(p=>p==='anilist'?'AniList':'MAL');
@@ -223,11 +246,11 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
   captureAniListOAuth();
   document.addEventListener('change',e=>{if(e.target?.id==='at135-auto')setAuto(e.target.checked)});
   document.addEventListener('click',e=>{const b=e.target.closest('[data-at135-action]');if(!b)return;const action=b.dataset.at135Action,p=b.dataset.provider;
-   if(action==='open')return;if(action==='save')saveCredentials(p);if(action==='disconnect')disconnect(p);if(action==='sync')void sync(p);if(action==='oauth')oauthAniList();
+   if(action==='open')return;if(action==='save')void saveCredentials(p);if(action==='migrate')void migrate(p);if(action==='disconnect')void disconnect(p);if(action==='sync')void sync(p);if(action==='oauth')oauthAniList();
   });
   document.addEventListener('click',e=>{const b=e.target.closest('[data-at135-resolve]');if(b)void resolve(b.dataset.provider,b.dataset.key,b.dataset.at135Resolve)});
   autoTimer=setInterval(()=>void auto(),10*60000);window.addEventListener('focus',()=>void auto());window.addEventListener('online',()=>void auto());
   setTimeout(()=>void auto(),2500);
  }
- return{render,profileCard,mount,auto,sync,resolve,analyze,fetchRemote,localEntries,analyzeSnapshots,decision,appStatus,remoteStatus,contiguous,connected,writeable};
+ return{render,profileCard,mount,onAccount,auto,sync,resolve,analyze,fetchRemote,localEntries,analyzeSnapshots,decision,appStatus,remoteStatus,contiguous,connected,writeable};
 };

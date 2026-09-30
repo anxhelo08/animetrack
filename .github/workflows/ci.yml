@@ -51,10 +51,41 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  database-security:
+    name: PostgreSQL restore + RLS + lint
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.6-bookworm
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: disposable-ci-password
+          POSTGRES_DB: animetrack_security_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 10s
+          --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgres://postgres:disposable-ci-password@127.0.0.1:5432/animetrack_security_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - run: npm ci --no-audit --no-fund
+      - name: Restore catalogue baseline and verify RLS behavior
+        run: npm run test:db
+      - name: Install PostgreSQL function checker
+        run: |
+          docker exec -u root ${{ job.services.postgres.id }} bash -c 'apt-get update -qq && apt-get install -y --no-install-recommends postgresql-17-plpgsql-check'
+          docker exec ${{ job.services.postgres.id }} psql -U postgres -d animetrack_security_test -c 'CREATE EXTENSION plpgsql_check'
+      - name: Lint restored application schemas
+        run: npx supabase db lint --db-url "$DATABASE_URL" --schema public,private,animetrack_private --level warning --fail-on error
+
   e2e:
     name: E2E · ${{ matrix.project }}
     runs-on: ubuntu-latest
-    needs: build-unit
+    needs: [build-unit, database-security]
     strategy:
       fail-fast: false
       matrix:

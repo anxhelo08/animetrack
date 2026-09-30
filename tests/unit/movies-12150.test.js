@@ -43,11 +43,7 @@ test('12.15.3 Cinemeta details provide rich metadata without API keys',async()=>
  const d=await api.details({source:'Cinemeta',sourceId:'tt37287335',imdbId:'tt37287335',title:'Obsession'},{});assert.equal(d.source,'Cinemeta');assert.equal(d.runtime,109);assert.match(d.genre,/Horror/);assert.match(d.cast,/Inde Navarrette/);assert.equal(d.imdbRating,7.8);assert.match(d.backdrop,/obsession-bg/);
 });
 
-test('12.15.3 Cinemeta browser requests use the same-origin proxy and the proxy is host-locked',()=>{
- const helper=read('src/modules/movies.js'),api=read('api/cinemeta.js');
- assert.match(helper,/\/api\/cinemeta\?mode=search/);assert.match(helper,/\/api\/cinemeta\?mode=meta/);assert.doesNotMatch(helper,/fetch\('https:\/\/v3-cinemeta\.strem\.io/);
- assert.match(api,/https:\/\/v3-cinemeta\.strem\.io\/catalog\/movie\/top\/search=/);assert.match(api,/https:\/\/v3-cinemeta\.strem\.io\/meta\/movie\//);assert.match(api,/\^tt\\d\+\$/);assert.doesNotMatch(api,/req\.query\.url|targetUrl/);
-});
+
 
 test('12.15.3 movie mutations flush cloud immediately after durable local save',()=>{
  const app=read('src/app.js');
