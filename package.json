@@ -1,7 +1,7 @@
 {
   "name": "animetrack",
-  "version": "14.0.0",
-  "releaseLabel": "14.0.0",
+  "version": "14.1.0",
+  "releaseLabel": "14.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,12 +10,13 @@
     "preview": "vite preview --host 127.0.0.1",
     "test:unit": "vitest run tests/unit",
     "test:e2e": "playwright test",
-    "test": "npm run test:unit && npm run build",
+    "test": "npm run typecheck && npm run test:unit && npm run build",
     "lint": "eslint src api server supabase/functions/**/*.js",
     "format": "prettier --write .",
-    "format:check": "prettier --check src/modules/safe-html.js src/modules/avatar.js src/modules/supabase-client.js tests/unit/safe-html.test.js eslint.config.js SECURITY.md src/modules/account-service.js api server supabase/functions/**/*.js tests/unit/server-api.test.js tests/unit/account-server.test.js scripts/test-database.mjs tests/unit/push-delivery.test.js src/modules/nav-icons.js src/styles/accessibility.css tests/e2e/accessibility.spec.js src/modules/product-experience.js src/styles/product-experience.css tests/unit/product-experience.test.js tests/e2e/product-experience.spec.js",
+    "format:check": "prettier --check src/modules/safe-html.js src/modules/avatar.js src/modules/supabase-client.js tests/unit/safe-html.test.js eslint.config.js SECURITY.md src/modules/account-service.js api server supabase/functions/**/*.js tests/unit/server-api.test.js tests/unit/account-server.test.js scripts/test-database.mjs tests/unit/push-delivery.test.js src/modules/nav-icons.js src/styles/accessibility.css tests/e2e/accessibility.spec.js src/modules/product-experience.js src/styles/product-experience.css tests/unit/product-experience.test.js tests/e2e/product-experience.spec.js src/core jsconfig.json tests/helpers/core-source.js tests/unit/library-model.test.js tests/unit/store.test.js tests/unit/ui-events.test.js",
     "audit": "npm audit --audit-level=high",
-    "test:db": "node scripts/test-database.mjs"
+    "test:db": "node scripts/test-database.mjs",
+    "typecheck": "tsc -p jsconfig.json"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
@@ -27,6 +28,7 @@
     "pg": "8.23.0",
     "prettier": "3.9.9",
     "supabase": "2.118.0",
+    "typescript": "7.0.2",
     "vite": "8.3.1",
     "vite-plugin-pwa": "1.3.0",
     "vitest": "5.0.2",

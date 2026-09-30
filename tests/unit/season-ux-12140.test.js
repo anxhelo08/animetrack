@@ -1,3 +1,4 @@
+import {readCoreSource} from '../helpers/core-source.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
@@ -7,8 +8,8 @@ const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').d
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 test('12.14 season UX persists hidden parts and excludes them from resume/progress helpers',()=>{
- const app=read('src/app.js'),resume=read('src/modules/resume.js'),css=read('src/styles/tracking-media.css'),pkg=JSON.parse(read('package.json'));
- assert.match(app,/hidden:raw\?\.hidden===true/);assert.match(app,/function visibleSeasons/);assert.match(app,/function setSeasonHidden/);assert.match(app,/Pjesë të fshehura/);assert.match(app,/at140-resume-chip/);assert.match(app,/at140-season-description/);
+ const app=readCoreSource(),resume=read('src/modules/resume.js'),css=read('src/styles/tracking-media.css'),pkg=JSON.parse(read('package.json'));
+ assert.match(app,/hidden:\s*raw\?\.hidden\s*===\s*true/);assert.match(app,/function visibleSeasons/);assert.match(app,/function setSeasonHidden/);assert.match(app,/Pjesë të fshehura/);assert.match(app,/at140-resume-chip/);assert.match(app,/at140-season-description/);
  assert.match(resume,/\.filter\(s=>!s\.hidden\)/);assert.match(css,/\.at140-resume-chip/);assert.match(css,/\.at140-hidden-parts/);
 });
 test('12.14 resume selects the next visible season and never a hidden part',()=>{
@@ -18,6 +19,6 @@ test('12.14 resume selects the next visible season and never a hidden part',()=>
  assert.equal(out.seasonId,'s2');assert.equal(out.episode,2);
 });
 test('12.14 season metadata includes descriptions and hidden TV choice survives rebuild',()=>{
- const app=read('src/app.js'),engine=read('src/modules/franchise-engine.js'),cloud=read('src/modules/cloud-local.js');
+ const app=readCoreSource(),engine=read('src/modules/franchise-engine.js'),cloud=read('src/modules/cloud-local.js');
  assert.match(app,/description\(asHtml:false\)/);assert.match(cloud,/const SEASON_FIELDS=/);assert.doesNotMatch(cloud,/SEASON_FIELDS=\[[^\]]*'synopsis'/);assert.match(app,/synopsis:m\.description/);assert.match(app,/synopsis:textOnly\(full\.synopsis/);assert.match(engine,/synopsis:clean\(show\.summary/);assert.match(engine,/hidden:old\?\.hidden===true/);
 });

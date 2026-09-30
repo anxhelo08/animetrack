@@ -1,3 +1,4 @@
+import {readCoreSource} from '../helpers/core-source.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
@@ -23,8 +24,8 @@ test('13.1 arc ratings normalize safe names, ranges and ratings',()=>{
  const clamped=api.normalizeArc({name:'Arc',start:8,end:3,rating:99},1);assert.equal(clamped.start,8);assert.equal(clamped.end,8);assert.equal(clamped.rating,10);
 });
 test('13.1 arc and season ratings are persisted through normalization, cloud and TV rebuilds',()=>{
- const app=read('src/app.js'),cloud=read('src/modules/cloud-local.js'),engine=read('src/modules/franchise-engine.js');
- assert.match(app,/FRANCHISE_SCHEMA='13\.1\.0'/);assert.match(app,/arcRatings:\(Array\.isArray/);assert.match(app,/at131EnhanceDetail/);assert.match(app,/data-at131-part-rating/);assert.match(app,/data-at131-arc-rating/);
+ const app=readCoreSource(),cloud=read('src/modules/cloud-local.js'),engine=read('src/modules/franchise-engine.js');
+ assert.match(app,/FRANCHISE_SCHEMA='13\.1\.0'/);assert.match(app,/arcRatings:\s*\(Array\.isArray/);assert.match(app,/at131EnhanceDetail/);assert.match(app,/data-at131-part-rating/);assert.match(app,/data-at131-arc-rating/);
  assert.match(cloud,/['"]arcRatings['"]/);assert.match(engine,/arcRatings:Array\.isArray\(old\?\.arcRatings\)/);
 });
 test('13.1 release identity and PWA cache are consistent',()=>{

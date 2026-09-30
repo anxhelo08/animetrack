@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 14.0.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
+AnimeTrack 14.1.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
 
 **Live:** https://animetrack-flax.vercel.app/ · **Ndryshimet:** [CHANGELOG.md](CHANGELOG.md) · **Siguria:** [SECURITY.md](SECURITY.md)
 
@@ -32,7 +32,8 @@ Funksionet push në `supabase/functions/` përdorin sekretet e mjedisit Supabase
 
 ## Arkitektura dhe ruajtja
 
-- `src/main.js` nis aplikacionin dhe ngarkon SDK-në Supabase nga npm.
+- `src/main.js` ngarkon varësitë dhe thërret `startApp()` në mënyrë eksplicite.
+- `src/core/` ndan modelin e bibliotekës, transportin e katalogut, lidhjet e UI dhe store-in me `getState`/`subscribe`. Store-i lexon gjendjen kanonike; nuk mban kopje të dytë. Njoftimi `saved` lëshohet vetëm pas ruajtjes së suksesshme.
 - `src/app.js` mban rrjedhën kryesore të bibliotekës dhe llogarisë; `src/modules/` përmban funksionet shtesë.
 - `safe-html.js` kontrollon të gjitha shkrimet HTML. Template-t e rinj përdorin escape automatik; renderer-at ekzistues sanitizohen në kufirin DOM.
 - Biblioteka personale sinkronizohet me Supabase, me kopje lokale rikuperimi. AniList/MAL token-at ruhen të enkriptuar në server, në `anime_provider_credentials`, pa akses për rolet e shfletuesit. `anime-account` kryen eksport/fshirje dhe thirrje të kufizuara drejt provider-ave. Enkriptimi lidhet me service-role key; pas rotacionit kërkohet rilidhje e provider-ave. Përdoruesi mund të zgjedhë lexim vetëm me username.
@@ -60,3 +61,7 @@ Njoftimet 13.10: shih [push-delivery.md](docs/push-delivery.md) për konfigurimi
 ## Përvoja e parë
 
 Menuja ka pesë hyrje: Kreu, Biblioteka, Zbulo, Aktiviteti dhe Profili. Kalendari, listat dhe statistikat hapen nga seksioni përkatës. Llogaritë me bibliotekë bosh marrin një udhëzues me tre hapa; mund të kalohet dhe ruhet veçmas për çdo llogari në këtë pajisje. Rihapet te Profili → Cilësimet → Avancuar. Konfigurimi opsional i burimeve dhe lidhjet MAL/AniList janë në të njëjtin vend. Treguesi i ruajtjes ndan sinkronizimin, pritjen, mungesën e internetit dhe konfliktet. Provat e rrjedhës janë në `tests/e2e/product-experience.spec.js`.
+
+## Organizimi i kodit
+
+Modulet e reja përdorin importe dhe eksporte ESM. `features.js` dhe përvoja e produktit lidhen pa objekte globale. Adapterët e vjetër që përdoren ende nga shtesat ruhen gjatë migrimit gradual. `npm run typecheck` kontrollon JSDoc me `checkJs` dhe strict mode për store-in dhe delegimin e ngjarjeve; përfshihet në `npm test` dhe CI. Logjika e bibliotekës provohet drejtpërdrejt nga modulet, përfshirë sezonet e fshehura, episodet e ardhshme dhe metadatat private.

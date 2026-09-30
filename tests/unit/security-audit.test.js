@@ -1,3 +1,5 @@
+import {createLibraryModel} from '../../src/core/library-model.js';
+import {readCoreSource} from '../helpers/core-source.js';
 import {htmlHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
@@ -7,7 +9,7 @@ const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').d
 /* Static security regression checks; no production users or passwords touched. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-const core=read('src/app.js'),html=read('index.html'),db=read('supabase/migrations/20260927121525_animetrack_122_security_permissions_and_queue_guard.sql'),hardening=read('supabase/migrations/20260929164949_animetrack_136_security_hardening.sql');
+const core=readCoreSource(),html=read('index.html'),db=read('supabase/migrations/20260927121525_animetrack_122_security_permissions_and_queue_guard.sql'),hardening=read('supabase/migrations/20260929164949_animetrack_136_security_hardening.sql');
 const headers=JSON.parse(read('vercel.json')).headers[0].headers;
 const header=name=>headers.find(h=>h.key.toLowerCase()===name.toLowerCase())?.value||'';
 test('CSP prohibits executable objects, third-party embedding and foreign scripts',()=>{
@@ -36,8 +38,7 @@ test('browser-owned content is HTML escaped',()=>{
  assert.ok(escaped.includes('&lt;img'));assert.ok(!escaped.includes('<img'));assert.ok(!escaped.includes('"'));
 });
 test('untrusted poster schemes cannot become javascript URLs',()=>{
- const m=core.match(/function validPoster\(s\)\{[^\n]+\}/);assert.ok(m);
- const check=vm.runInNewContext('(()=>{'+m[0]+';return validPoster})()', {URL});
+ const check=createLibraryModel().validPoster;
  assert.equal(check('javascript:alert(1)'),'');assert.equal(check('data:text/html,<script>x</script>'),'');assert.match(check('https://example.com/x.png'),/^https:/);
 });
 test('cloud account and local key are derived from authenticated user ID',()=>{

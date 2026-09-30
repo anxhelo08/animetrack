@@ -1,3 +1,4 @@
+import {readCoreSource} from '../helpers/core-source.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
@@ -52,12 +53,12 @@ test('unverified providers and incomplete payloads are never labelled by guessin
  assert.throws(()=>f.merge({episodes:[]},null,false),/Invalid Jikan/);
 });
 test('UI and PWA integration preserve all existing routes',()=>{
- const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/tracking-media.css'),sw=read('src/sw.js');
- assert.doesNotThrow(()=>new vm.Script(app));
+ const app=readCoreSource(),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),css=read('src/styles/tracking-media.css'),sw=read('src/sw.js');
+ assert.doesNotThrow(()=>new vm.Script(app.replace(/^import .*;$/gm,'')));
  assert.match(app,/ATFiller1210\.merge\(s,j\.data,shared,now\(\)\)/);
  assert.doesNotMatch(app,/s\.episodes\.length>=s\.total\)return/);
  assert.match(app,/at1210-filler/);assert.match(app,/at1210-legend/);
- assert.match(app,/fillerManual:e\.fillerManual===true/);
+ assert.match(app,/fillerManual:\s*e\.fillerManual\s*===\s*true/);
  assert.match(app,/fillerPagesChecked:/);
  assert.match(app,/!force&&s\.fillerPagesChecked\?\.includes\(metadataPage\)/);
  assert.match(app,/data-filler-manual/);
@@ -86,7 +87,7 @@ test('12.10.2 Jikan pages are marked complete only when all flags are present',(
  assert.equal(f.storedPageVerified(shared,2,true),false);
 });
 test('12.10.2 transient and partial API results do not permanently suppress retries or invent canon',()=>{
- const app=read('src/app.js'),src=read('src/modules/filler.js');
+ const app=readCoreSource(),src=read('src/modules/filler.js');
  assert.match(app,/fillerPageRetryUntil\.set\(key,Date\.now\(\)\+6\*60\*60\*1000\)/);
  assert.match(app,/fillerPageRetryUntil\.set\(key,Date\.now\(\)\+30\*60\*1000\)/);
  assert.match(app,/pageVerified\(j\.data\)&&window\.ATFiller1210\.storedPageVerified/);

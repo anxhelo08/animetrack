@@ -1,10 +1,11 @@
 import {navIcon} from './nav-icons.js';
+import {createProductExperience} from './product-experience.js';
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
-window.AnimeTrackPro=function AnimeTrackPro(ctx){
+export function createFeatures(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,pwaUpdater=null,updateRequested=false;
  let achievementsOwner='',achievementsKnown=null;
- const product=window.ATProductExperience?.(ctx);
+ const product=createProductExperience(ctx);
  const proPages=['notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>window.ATHTML.html`<button type="button" class="pro-btn" data-pro-action="${action}" data-id="${id}">${label}</button>`;
  const modules={
@@ -237,4 +238,4 @@ window.AnimeTrackPro=function AnimeTrackPro(ctx){
   }catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120))}
  }
  return{product,init,open,hide,syncMobile,onAccount,onStateChange,renderRewatch,renderHome,render,renderBackground,modules};
-};
+}

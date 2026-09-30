@@ -53,8 +53,8 @@ test('13.6.0 app routes TVMaze away from MAL/Jikan hydration and loads guard bef
  const app=read('src/app.js'),main=read('src/main.js');
  assert.match(app,/String\(entry\.source\|\|''\)\.toLowerCase\(\)==='tvmaze'/);
  assert.match(app,/syncTVFranchise\(id,force,silent\)/);
- assert.match(app,/ATReleaseGuard1352\?\.tvmazeReleasedCount/);
- assert.match(app,/String\(s\.source\|\|''\)\.toLowerCase\(\)==='tvmaze'\)return;/);
+ assert.match(app,/ATReleaseGuard1352\.tvmazeReleasedCount/);
+ assert.match(read('src/core/library-model.js'),/String\(s.source\s*\|\|\s*''\).toLowerCase\(\)\s*===\s*'tvmaze'/);
  assert.ok(main.indexOf('./modules/release-guard.js')<main.indexOf('./app.js'));
 });
 

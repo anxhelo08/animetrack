@@ -1,3 +1,10 @@
+# 14.1.0
+
+- Ndarje e modelit të bibliotekës, transportit të katalogut dhe lidhjeve të UI nga app.js; importe/eksporte reale dhe startApp eksplicit.
+- Store i përbashkët me getState/subscribe, një burim kanonik dhe njoftime vetëm pas ruajtjes së suksesshme.
+- Heqje e dy objekteve globale të migrimit dhe e listener-it të dyfishtë të filtrave; delegim i organizuar që trajton edhe SVG brenda butonave.
+- JSDoc/checkJs strikt për store dhe event delegation; teste për normalizimin, ndërrimin e llogarisë, rollback dhe pastrimin e listener-ave.
+
 # 14.0.0
 
 - Pesë hyrje kryesore dhe mjete dytësore sipas faqes; etiketa kryesore të unifikuara në shqip.
@@ -23,7 +30,7 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.9.0` / package version `13.9.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `14.1.0` / package version `14.1.0`.
 
 ## [Unreleased]
 

@@ -1,3 +1,4 @@
+import {readCoreSource} from '../helpers/core-source.js';
 import {navIcon} from '../../src/modules/nav-icons.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
@@ -12,16 +13,16 @@ const vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
 const names=['recommendations','wrapped','calendar-wrapped','diary','watch','rich-details','provider-sync','profiles','friends','moderation','notifications','rewatch','home','seasonal','episode-hub','filler','franchise','iphone','tv-episodes','tv','tv-unified','unified','daily','journey','smart-airing','push','collections','experience','features'];
 function load(extra={}){
- const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},navIcon,console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},navIcon,createProductExperience:()=>undefined,console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
- for(const name of names)vm.runInContext(fs.readFileSync(path.join(root,'src/modules',name+'.js'),'utf8').replace(/^import \{navIcon\} from '\.\/nav-icons\.js';\n/,''),sandbox,{filename:name+'.js'});
+ for(const name of names)vm.runInContext(fs.readFileSync(path.join(root,'src/modules',name+'.js'),'utf8').replace(/^import .*;\n/gm,'').replace('export function createFeatures(ctx)', 'window.AnimeTrackPro=function createFeatures(ctx)'),sandbox,{filename:name+'.js'});
  return sandbox.window;
 }
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATDiary132','ATWatch133','ATRich134','ATProviderSync135','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','ATCollections110','AnimeTrackPro','ATExperience112'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
 test('Vite entry references every feature module and public PWA resources exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');for(const name of names)assert.ok(main.includes('./modules/'+name+'.js'),name);for(const p of ['src/app.js','src/config.js','src/styles/index.css','public/manifest.webmanifest','src/sw.js','public/icon.svg','public/icon-192.png','public/icon-512.png'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'public/manifest.webmanifest'),'utf8')))});
-test('core JS parses after modular extraction',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');assert.doesNotThrow(()=>new vm.Script(src));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/);assert.match(src,/data\.user\.identities\.length===0/);assert.match(src,/at116EmailIssue\(email\)/);assert.match(src,/resetPasswordForEmail/)});
+test('core JS parses after modular extraction',()=>{const src=readCoreSource();assert.doesNotThrow(()=>new vm.Script(src.replace(/^import .*;$/gm,'')));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/);assert.match(src,/data\.user\.identities\.length===0/);assert.match(src,/at116EmailIssue\(email\)/);assert.match(src,/resetPasswordForEmail/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
  const store=new Map(),media=[
@@ -151,10 +152,10 @@ test('compact 10.4 desktop focus and clearer advancing cards are wired',()=>{
  assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 test('cloud round-trip preserves watch session and reminder preferences',()=>{
- const core=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
+ const core=readCoreSource();
  assert.match(core,/preferences:normalizePreferences\(data.preferences\)/);
- assert.match(core,/homeQueue:Array.isArray\(p.homeQueue\)/);
- assert.match(core,/calendarReminders:Object.fromEntries/);
+ assert.match(core,/homeQueue:\s*Array.isArray\(p.homeQueue\)/);
+ assert.match(core,/calendarReminders:\s*Object.fromEntries/);
  assert.match(core,/async function accountPullQuiet/);
  assert.match(core,/upcomingCheckedAt<30\*60000/);
 });
@@ -166,7 +167,7 @@ test('watched notifications are excluded and foreground sync refreshes views',()
 });
 
 test('PWA update notification checks new workers and avoids reload during unsaved cloud writes',()=>{
- const features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/foundation.css'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
+ const features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),core=readCoreSource(),css=fs.readFileSync(path.join(root,'src/styles/foundation.css'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
  const pwa=fs.readFileSync(path.join(root,'src/modules/pwa.js'),'utf8');
  assert.match(features,/window\.ATPWA136\.register/);assert.match(features,/onNeedRefresh:showUpdate/);assert.match(features,/reg.update\(\)/);assert.match(features,/reload-update/);
  assert.match(pwa,/virtual:pwa-register/);assert.match(pwa,/onNeedRefresh/);
@@ -224,7 +225,7 @@ test('desktop controls are isolated from iPhone and cache includes their stylesh
  const css=fs.readFileSync(path.join(root,'src/styles/layout-social.css'),'utf8'),
  html=fs.readFileSync(path.join(root,'index.html'),'utf8'),
  sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8'),
- core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),
+ core=readCoreSource(),
  pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8');
  assert.match(css,/@media \(min-width:761px\)/);
  assert.match(css,/at-pc-watch-search/);
@@ -234,7 +235,7 @@ test('desktop controls are isolated from iPhone and cache includes their stylesh
 });
 
 test('episode transactions roll back on failed local persistence',()=>{
- const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
+ const src=readCoreSource();
  assert.match(src,/if\(!save\(\)\)\{state\.anime\[index\]=before;state\.history=historyBefore;return false\}/);
  assert.match(src,/return updateSeasonEpisode\(id,ep\.season\.id,ep\.n,true\)/);
  assert.match(src,/Episode transaction rolled back/);
@@ -282,7 +283,7 @@ test('10.7 recoverable widgets, status text, and stylesheet are wired',()=>{
 test('11.0 removes Franchise Hub, keeps native seasons and cross-season episode navigation',()=>{
  const w=load(),c=context(),s1={id:'s1',title:'Sezoni 1',total:12,watched:[1,2]},s2={id:'s2',title:'Sezoni 2',total:12,watched:[]},a={id:'a',title:'Sample Series',seasons:[s1,s2]};
  c.released=s=>s.total;
- const journey=w.ATJourney(c),before=JSON.stringify(a),src=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/layout-social.css'),'utf8');
+ const journey=w.ATJourney(c),before=JSON.stringify(a),src=readCoreSource(),css=fs.readFileSync(path.join(root,'src/styles/layout-social.css'),'utf8');
  assert.equal(typeof journey.detail,'undefined');
  assert.equal(typeof journey.family,'undefined');
  assert.doesNotMatch(src,/atJourney\\.renderDetail/);
@@ -293,7 +294,7 @@ test('11.0 removes Franchise Hub, keeps native seasons and cross-season episode 
  assert.equal(JSON.stringify(a),before);
 });
 test('10.8 Episode Hub tab/next navigation hooks preserve existing spoiler comments',()=>{
- const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),
+ const app=readCoreSource(),
  journey=fs.readFileSync(path.join(root,'src/modules/journey.js'),'utf8'),
  css=fs.readFileSync(path.join(root,'src/styles/layout-social.css'),'utf8'),
  html=fs.readFileSync(path.join(root,'index.html'),'utf8'),
@@ -385,7 +386,7 @@ test('11.0 collections roll back failed saves and are linked on phone/desktop',(
  c.state=()=>data;c.user=()=>({id:'u1'});c.uuid=()=> 'safe-01';c.save=()=>false;c.toast=()=>{};c.rerender=()=>{};
  const lists=w.ATCollections110(c);assert.equal(lists.make('Saved title'),false);
  assert.equal(data.preferences.customLists.length,0);
- const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),
+ const src=readCoreSource(),
  pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),
  index=fs.readFileSync(path.join(root,'index.html'),'utf8'),
  sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8'),
@@ -482,7 +483,7 @@ test('11.3 mobile experience, calendar, library and account features are include
  assert.match(js,/function enhanceEpisode/);assert.match(js,/function signupReady/);assert.match(js,/function signup\(on\)/);assert.doesNotMatch(js,/stopImmediatePropagation/);assert.match(js,/function mountLibrary/);
  assert.match(css,/grid-template-columns:112px minmax\(0,1fr\)/);assert.match(css,/safe-area-inset-top/);assert.match(css,/at113-cal-days/);assert.match(html,/at113-confirm-password/);
 });
-test('11.3 registration explicitly validates confirmation and stronger new passwords',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');assert.match(src,/password.length<10/);assert.match(src,/password!==confirmPassword/);assert.match(src,/signupReady/);assert.match(src,/account-password/);});
+test('11.3 registration explicitly validates confirmation and stronger new passwords',()=>{const src=readCoreSource();assert.match(src,/password.length<10/);assert.match(src,/password!==confirmPassword/);assert.match(src,/signupReady/);assert.match(src,/account-password/);});
 
 test('11.4 mobile To Watch advances atomically and shows watch history',async()=>{
  const store={getItem:()=>null,setItem:()=>{}},w=load({navigator:{onLine:true,userAgent:'iPhone'},window:{matchMedia:()=>({matches:false})},localStorage:store}),c=context();
@@ -555,11 +556,11 @@ test('11.5 daily experience uses shared library, real weekly history and existin
  day.action('undo');assert.equal(undone,1);day.action('calendar');assert.equal(route,'calendar');
 });
 test('11.5 ongoing seasons remain watching and surface the next released episode',()=>{
- const core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),phone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),home=fs.readFileSync(path.join(root,'src/modules/home.js'),'utf8');
- assert.match(core,/a\.status=future\?'watching':'completed'/);assert.match(phone,/\['watching','waiting'\]\.includes\(a\?\.status\)/);assert.match(phone,/a\?\.status==='completed'&&returns\.has\(a\.id\)/);assert.match(home,/\['watching','waiting','completed'\]\.includes\(a\.status\)/);
+ const core=readCoreSource(),phone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),home=fs.readFileSync(path.join(root,'src/modules/home.js'),'utf8');
+ assert.match(core,/a\.status\s*=\s*future\s*\?\s*'watching'\s*:\s*'completed'/);assert.match(phone,/\['watching','waiting'\]\.includes\(a\?\.status\)/);assert.match(phone,/a\?\.status==='completed'&&returns\.has\(a\.id\)/);assert.match(home,/\['watching','waiting','completed'\]\.includes\(a\.status\)/);
 });
 test('11.5 guarded cloud write uses updated_at CAS and does not silently overwrite other devices',()=>{
- const core=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
+ const core=readCoreSource();
  assert.match(core,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
  assert.match(core,/if\(!result\.data\?\.updated_at\)throw Object\.assign/);
  assert.match(core,/cloudConflict=true/);assert.match(core,/cloudDirty&&!cloudSaving&&!cloudConflict/);
@@ -567,7 +568,7 @@ test('11.5 guarded cloud write uses updated_at CAS and does not silently overwri
 });
 
 test('11.6 auth has explicit login/signup tabs and no event capture to suppress form submission',()=>{
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8');
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const core=readCoreSource(),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8');
  for(const id of ['at116-tab-login','at116-tab-signup','at116-back-login','at116-pending-email','at116-resend-email'])assert.match(html,new RegExp(id));
  assert.match(core,/signupReady\?\.\(\)\?accountRegister\(\):accountLogin\(e\)/);
  assert.match(core,/auth\.resend\(\{type:'signup'/);
@@ -577,7 +578,7 @@ test('11.6 auth has explicit login/signup tabs and no event capture to suppress 
 });
 
 test('11.6 signup and login implement backend responses independently, including pending confirmation',async()=>{
- const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),section=src.slice(src.indexOf('/* 11.6 auth:'),src.indexOf('async function accountReset()',src.indexOf('/* 11.6 auth:')));
+ const src=readCoreSource(),section=src.slice(src.indexOf('/* 11.6 auth:'),src.indexOf('async function accountReset()',src.indexOf('/* 11.6 auth:')));
  const elements=new Map(),calls=[],messages=[];
  function elem(id){if(!elements.has(id))elements.set(id,{value:'',disabled:false,hidden:true,checkValidity:()=>true});return elements.get(id)}
  elem('account-email').value='friend@example.com';elem('account-password').value='StrongPass123';elem('account-name').value='Friend';elem('at113-confirm-password').value='StrongPass123';
@@ -605,8 +606,8 @@ test('11.6 importer parses quoted AniList CSV and protects existing entries',()=
 });
 
 test('11.6 social activity is opt-in and only accepted friends enter the activity feed',()=>{
- const profile=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),friends=fs.readFileSync(path.join(root,'src/modules/friends.js'),'utf8'),core=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
- assert.match(core,/shareFriendActivity:p\.shareFriendActivity===true/);
+ const profile=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),friends=fs.readFileSync(path.join(root,'src/modules/friends.js'),'utf8'),core=readCoreSource();
+ assert.match(core,/shareFriendActivity:\s*p\.shareFriendActivity\s*===\s*true/);
  assert.match(profile,/state\(\)\.preferences\?\.shareFriendActivity===true/);assert.match(profile,/visibility===false/);
  assert.match(profile,/at116-share-activity/);
  assert.match(friends,/const activity=accepted\.flatMap/);
@@ -621,11 +622,11 @@ test('11.6 profile onboarding creates private handle for newly confirmed account
 });
 
 
-test('11.6.1 mobile profile uses real library data and keeps email confirmation',()=>{const p=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),a=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),h=fs.readFileSync(path.join(root,'index.html'),'utf8'),c=fs.readFileSync(path.join(root,'src/styles/interaction-mobile.css'),'utf8');for(const v of ['at1161-profile','at1161-posters','at1161-metrics','profile-anime'])assert.match(p,new RegExp(v));assert.match(a,/email_address_not_authorized/);assert.match(a,/identities\.length===0/);assert.match(a,/nuk garanton mbërritjen/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(c,/safe-area-inset-bottom/);});
+test('11.6.1 mobile profile uses real library data and keeps email confirmation',()=>{const p=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),a=readCoreSource(),h=fs.readFileSync(path.join(root,'index.html'),'utf8'),c=fs.readFileSync(path.join(root,'src/styles/interaction-mobile.css'),'utf8');for(const v of ['at1161-profile','at1161-posters','at1161-metrics','profile-anime'])assert.match(p,new RegExp(v));assert.match(a,/email_address_not_authorized/);assert.match(a,/identities\.length===0/);assert.match(a,/nuk garanton mbërritjen/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(c,/safe-area-inset-bottom/);});
 
-test('11.6.2 signup uses canonical production redirect and handles consumed links safely',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8');const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/ANIMETRACK_AUTH_REDIRECT='https:\/\/animetrack-flax\.vercel\.app\/'/);assert.match(src,/emailRedirectTo:accountRedirectURL\(\)/);assert.match(src,/redirectTo:accountRedirectURL\(\)/);assert.match(src,/otp_expired/);assert.match(src,/provo Hyr/);assert.match(html,/AnimeTrack \d+\.\d+\.\d+/)});
+test('11.6.2 signup uses canonical production redirect and handles consumed links safely',()=>{const src=readCoreSource();const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/ANIMETRACK_AUTH_REDIRECT='https:\/\/animetrack-flax\.vercel\.app\/'/);assert.match(src,/emailRedirectTo:accountRedirectURL\(\)/);assert.match(src,/redirectTo:accountRedirectURL\(\)/);assert.match(src,/otp_expired/);assert.match(src,/provo Hyr/);assert.match(html,/AnimeTrack \d+\.\d+\.\d+/)});
 
-test('11.6.3 password recovery uses authenticated updateUser and requires matching strong password',()=>{const src=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/auth\.updateUser\(\{password\}\)/);assert.match(src,/recoveryReturn&&accountMode==='cloud'/);assert.match(src,/password!==confirm\.value/);for(const id of ['at1162-recovery-panel','at1162-new-password','at1162-confirm-password','at1162-save-password'])assert.match(html,new RegExp(id))});
+test('11.6.3 password recovery uses authenticated updateUser and requires matching strong password',()=>{const src=readCoreSource(),html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/auth\.updateUser\(\{password\}\)/);assert.match(src,/recoveryReturn&&accountMode==='cloud'/);assert.match(src,/password!==confirm\.value/);for(const id of ['at1162-recovery-panel','at1162-new-password','at1162-confirm-password','at1162-save-password'])assert.match(html,new RegExp(id))});
 
 test('11.7 mobile upcoming, discovery and library controls',()=>{const fs=require('node:fs'),path=require('node:path'),root=path.resolve(__dirname,'../..');const iphone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),recs=fs.readFileSync(path.join(root,'src/modules/recommendations.js'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(iphone,/upcomingWindow=7/);assert.match(iphone,/data-ios-action="horizon"/);assert.match(iphone,/at117-upcoming-action/);assert.match(features,/at117-mobile-discover/);assert.match(features,/data-mobile-nav="explore"/);assert.doesNotMatch(features,/data-mobile-nav="calendar"/);assert.match(mobile,/data-at117-sort/);assert.match(recs,/function trending\(\)/);assert.match(main,/styles\/index\.css/)});
 
@@ -677,7 +678,7 @@ test('11.8.1 TV resume, bulk prior episodes, season all and grouped Dexter',()=>
  assert.equal(state.anime.length,1);assert.deepEqual(Array.from(newBlood.watched),[]);
 });
 test('11.8 TV resources, cloud normalization and mobile entry are wired',()=>{
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),app=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),app=readCoreSource(),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
  const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.match(main,/modules\/tv\.js/);assert.match(styles,/tv\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(app,/function normalizeTVShows/);assert.match(app,/ATTVUnified120\.migrate/);
  assert.doesNotMatch(pro,/data-mobile-nav="tv"/);assert.match(pro,/modules\.tv\.render/);
@@ -691,7 +692,7 @@ test('11.9 unified library: TV totals, progress and content switch without chang
  assert.equal(w.ATUnified119.total(state.anime[1]),2);
  assert.equal(w.ATUnified119.percent(state.anime[1]),50);
  assert.equal(state.anime[0].seasons[0].watched.length,2);
- const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/media-workflow.css'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),core=readCoreSource(),features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/media-workflow.css'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
  assert.match(html,/data-media-filter="all"/);assert.match(html,/data-media-filter="anime"/);assert.match(html,/data-media-filter="tv"/);
  assert.match(core,/ATUnified119\?\.render/);assert.match(features,/modules\.day\.render\(true\)/);
  assert.match(features,/data-at119-add-tv/);assert.match(css,/\.at117-library-tools button\.active/);
@@ -699,7 +700,7 @@ test('11.9 unified library: TV totals, progress and content switch without chang
 });
 
 test('11.9.1 single catalog searches anime and TV, opens TV from results and retains one library',()=>{
- const app=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),tv=fs.readFileSync(path.join(root,'src/modules/tv.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),unified=fs.readFileSync(path.join(root,'src/modules/unified.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ const app=readCoreSource(),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),tv=fs.readFileSync(path.join(root,'src/modules/tv.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),unified=fs.readFileSync(path.join(root,'src/modules/unified.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  assert.match(app,/async function fetchTVmazeCatalog/);
  assert.match(app,/Promise\.allSettled\(\[animeWork,tvWork\]\)/);
  assert.match(app,/data-tv-search-preview/);
@@ -732,7 +733,7 @@ test('12.13 TVMaze conversion never title-merges separate shows before franchise
  assert.doesNotMatch(fs.readFileSync(path.join(root,'src/modules/tv-unified.js'),'utf8'),/dexterNames/);
 });
 test('12.0 shared UI, catalog, calendar and cloud migration are connected',()=>{
- const core=fs.readFileSync(path.join(root,'src/app.js'),'utf8'),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
+ const core=readCoreSource(),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
  assert.match(core,/ATTVUnified120\.migrate/);assert.match(core,/ATTVUnified120\.merge/);
  assert.match(core,/at120-unified-tv-open/);assert.match(core,/data-media=/);
  assert.match(core,/function refreshUpcoming/);assert.match(core,/source:'TVmaze'/);
@@ -741,7 +742,7 @@ test('12.0 shared UI, catalog, calendar and cloud migration are connected',()=>{
 });
 
 test('12.0.1 TV search opens preview without forced library mutation',()=>{
- const core=fs.readFileSync(path.join(root,'src/app.js'),'utf8');
+ const core=readCoreSource();
  assert.match(core,/let pendingTVPreview=null,openingTVPreview=false/);
  assert.match(core,/function addUnifiedTV\(status\)/);
  assert.match(core,/data-tv-unified-add="watching"/);

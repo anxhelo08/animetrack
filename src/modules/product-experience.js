@@ -338,6 +338,9 @@ export function createProductExperience(ctx) {
     }
   }
   function mount() {
+    ctx.subscribe?.((_state, event) => {
+      if (event.reason === 'account') refresh();
+    });
     const nav = $('side-nav'),
       legacy = document.createElement('div');
     legacy.className = 'product-hidden';
@@ -416,7 +419,6 @@ export function createProductExperience(ctx) {
     const destination = $('product-advanced-content');
     if ($('movie-provider-settings')) destination.append($('movie-provider-settings'));
     if ($('pro-nav-moderation')) destination.append($('pro-nav-moderation'));
-    document.addEventListener('at-account-ui', refresh);
     window.addEventListener('online', sync);
     window.addEventListener('offline', sync);
     document.addEventListener('click', async (event) => {
@@ -474,4 +476,3 @@ export function createProductExperience(ctx) {
   }
   return { mount, refresh, navigation, detail, searchFinished };
 }
-if (typeof window !== 'undefined') window.ATProductExperience = createProductExperience;

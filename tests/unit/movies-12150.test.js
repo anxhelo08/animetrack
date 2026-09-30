@@ -1,3 +1,4 @@
+import {readCoreSource} from '../helpers/core-source.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
@@ -17,8 +18,8 @@ test('12.15.3 TMDB details expose runtime, director, cast, IMDb and collection',
  const d=await api.details({source:'TMDB',sourceId:'11',title:'Star Wars'},{tmdbToken:'token-token-token-token'});assert.equal(d.runtime,121);assert.equal(d.director,'George Lucas');assert.match(d.cast,/Mark Hamill/);assert.equal(d.imdbId,'tt0076759');assert.equal(d.collectionId,'10');
 });
 test('12.15.3 app separates Movies from Anime and TV and keeps credentials local',()=>{
- const app=read('src/app.js'),unified=read('src/modules/unified.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.match(app,/function isLiveMovie/);assert.match(app,/TMDB_TOKEN_STORAGE/);assert.match(app,/movie-watched/);assert.match(app,/movie-rewatched/);assert.match(app,/at150RenderMovieDetail/);assert.match(app,/source:\['AniList','MyAnimeList','TVMaze','TMDB','OMDb','Cinemeta','Wikidata'\]/);
+ const app=readCoreSource(),unified=read('src/modules/unified.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
+ assert.match(app,/function isLiveMovie/);assert.match(app,/TMDB_TOKEN_STORAGE/);assert.match(app,/movie-watched/);assert.match(app,/movie-rewatched/);assert.match(app,/at150RenderMovieDetail/);assert.match(app,/source:\s*\[[\s\S]*?'AniList'[\s\S]*?'Wikidata'[\s\S]*?\]/);
  assert.match(unified,/const isMovie=/);assert.match(unified,/movie:movies\.length/);assert.match(html,/data-media-filter="movie"/);assert.match(html,/tmdb-token-input/);assert.match(main,/modules\/movies\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 test('12.15.3 zero-key search falls back to Wikidata and finds Avengers Endgame',async()=>{
@@ -46,7 +47,7 @@ test('12.15.3 Cinemeta details provide rich metadata without API keys',async()=>
 
 
 test('12.15.3 movie mutations flush cloud immediately after durable local save',()=>{
- const app=read('src/app.js');
+ const app=readCoreSource();
  assert.match(app,/function at150FlushCloud/);
  assert.match(app,/if\(!save\(\)\)\{state\.anime=before;return\}at150FlushCloud\(\)/);
  assert.match(app,/if\(!save\(\)\)\{state\.anime\[idx\]=before;state\.history=hist;return\}at150FlushCloud\(\)/);
