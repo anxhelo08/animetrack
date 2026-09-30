@@ -47,6 +47,6 @@ npm run preview
 
 Vercel përdor `npm run build`, shërben `dist/` dhe vendos politikat e sigurisë nga `vercel.json`. Degët e zhvillimit krijojnë preview; `main` publikon në domenin kryesor. Përfundo një update vetëm pasi testet të kalojnë, deployment-i production të jetë `READY` dhe domeni kryesor të shërbejë versionin e ri.
 
-## Statusi i kandidatit 13.9
+## Verifikimi i 13.9
 
-Shiko `docs/13.9-review.md` për verifikimet dhe kushtet e publikimit. Kodi i këtij kandidati ende nuk është publikuar live.
+Shiko `docs/13.9-review.md` për verifikimet, kufizimet e OAuth dhe backup/PITR. Statusi aktual i testeve ndiqet në GitHub Actions; publikimi në serverin kryesor verifikohet në Vercel.

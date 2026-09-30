@@ -2,9 +2,26 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.8.0` / package version `13.8.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.9.0` / package version `13.9.0`.
 
 ## [Unreleased]
+
+## [13.9.0] - 2026-09-30
+
+### Security
+- Snapshot the complete application schema, grants and RLS policies for reproducible restores; add database ownership, revocation and invitation privacy tests.
+- Convert serverless proxies to ESM with validated inputs, bounded transport, local throttling and an atomic shared database budget.
+- Encrypt AniList/MAL credentials on the authenticated server and remove persistent browser provider-token storage.
+- Throttle exact-handle lookups and invitations, make invitation responses uniform and hide declined requests from senders.
+- Enforce active account sessions in application RLS and keep provider credentials inaccessible to browser roles.
+
+### Added
+- Account data export and permanent account deletion with confirmation and password reauthentication.
+- Behavioral API/vault tests, account privacy browser flow, PostgreSQL restore/RLS checks and database lint in CI.
+
+### Limitations
+- Initial AniList authorization still uses implicit OAuth, followed by transfer to the server vault; a complete authorization-code flow needs configured provider client credentials.
+- Production backup/PITR is not enabled or verified by this release. Schema recreation in CI does not verify a production data backup.
 
 ## [13.8.0] - 2026-09-30
 
