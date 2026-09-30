@@ -70,7 +70,7 @@ test('12.9 simple graphic share exports without new API calls or personal storag
  const source=read('src/modules/wrapped.js');assert.doesNotMatch(source,/localStorage|sessionStorage|fetch\(/);
 });
 test('12.9 integrated Wrapped and profile have new assets, period actions, safe update cache',()=>{
- const feature=read('src/modules/features.js'),calendar=read('src/modules/calendar-wrapped.js'),html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),sw=read('src/sw.js'),css=read('src/styles/tracking-media.css');
+ const feature=read('src/modules/features.js'),calendar=read('src/modules/calendar-wrapped.js'),html=read('index.html'),main=(read('src/main.js')+read('src/startup-factories.js')),styles=read('src/styles/index.css'),sw=read('src/sw.js'),css=read('src/styles/tracking-media.css');
  assert.match(feature,/achievementsMini/);assert.match(feature,/trackAchievements\(true\)/);
  assert.match(feature,/function renderBackground\(\)/);assert.match(read('src/app.js'),/proApp\.renderBackground\(\)/);
  assert.match(calendar,/ATWrapped129\.render/);assert.match(calendar,/wrapped-badges/);

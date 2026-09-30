@@ -1,20 +1,22 @@
 import {cleanupOutdatedCaches,matchPrecache,precacheAndRoute} from 'workbox-precaching';
 import {registerRoute} from 'workbox-routing';
+import {NetworkFirst} from 'workbox-strategies';
+import {ExpirationPlugin} from 'workbox-expiration';
 
+// Register navigation before precache routes: even /index.html must try fresh HTML.
+registerRoute(
+  ({request,url})=>request.mode==='navigate' && url.origin===self.location.origin,
+  new NetworkFirst({
+    cacheName:'animetrack-navigation-v143',
+    networkTimeoutSeconds:3,
+    plugins:[
+      {cachedResponseWillBeUsed:async({cachedResponse})=>cachedResponse || await matchPrecache('/index.html')},
+      new ExpirationPlugin({maxEntries:5,maxAgeSeconds:86400})
+    ]
+  })
+);
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST,{ignoreURLParametersMatching:[/^utm_/,/^fbclid$/]});
-
-registerRoute(
-  ({request})=>request.mode==='navigate',
-  async({event})=>{
-    try{
-      const response=await fetch(event.request);
-      if(response?.ok)return response;
-    }catch{}
-    return (await matchPrecache('/index.html'))||Response.error();
-  }
-);
-
 
 self.addEventListener('activate',event=>{event.waitUntil(caches.delete('animetrack-supabase-sdk'))});
 

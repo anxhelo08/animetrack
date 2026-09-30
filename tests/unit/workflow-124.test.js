@@ -39,7 +39,7 @@ test('12.4 mobile: recently aired is a distinct tab and keeps future dates out',
  assert.deepEqual(anime.seasons[0].watched,[1],'render and filtering do not mutate progress');
 });
 test('12.4 markup: quick search and phone release controls are wired and escaped',()=>{
- const html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),app=read('src/app.js'),mobile=read('src/modules/mobile.js'),css=read('src/styles/media-workflow.css'),sw=read('src/sw.js');
+ const html=read('index.html'),main=(read('src/main.js')+read('src/startup-factories.js')),styles=read('src/styles/index.css'),app=read('src/app.js'),mobile=read('src/modules/mobile.js'),css=read('src/styles/media-workflow.css'),sw=read('src/sw.js');
  assert.match(main,/modules\/command\.js/);assert.match(styles,/workflow\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(app,/ATCommand124/);assert.match(app,/modalReturnFocus/);assert.match(app,/e\.key!=='Tab'/);
  assert.match(mobile,/at124-episode-quickbar/);assert.match(mobile,/action\.dataset\.episodeMark='1'/);

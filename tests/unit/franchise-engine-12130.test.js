@@ -41,7 +41,7 @@ test('12.13 Wikidata + TVMaze resolver discovers all main Dexter TV series in re
  const api=load(fetchMock),resolved=await api.resolveTVFranchise({title:'Dexter',sourceId:'161',existingShowIds:[161,58846,78665]});assert.deepEqual(Array.from(resolved.shows,x=>x.name),['Dexter','Dexter: New Blood','Dexter: Original Sin','Dexter: Resurrection']);const built=api.buildTVTimeline(resolved.shows,[]);assert.equal(built.seasons.at(-1).title,'Sezoni 12');
 });
 test('12.13 anime franchise logic is ID-first and movies never increment season numbering',()=>{
- const app=readCoreSource(),fr=read('src/modules/franchise.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
+ const app=readCoreSource(),fr=read('src/modules/franchise.js'),html=read('index.html'),main=(read('src/main.js')+read('src/startup-factories.js')),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.match(app,/Only official AniList relation edges may add a part/);assert.doesNotMatch(app,/Series title fallback unavailable/);assert.match(app,/return remote\.some\(s=>sameSeriesSeason/);assert.doesNotMatch(app,/localKeys\.some/);assert.doesNotMatch(app,/canonicalTitle\(a\.title\)===canonicalTitle\(item\.title\)/);
- assert.match(fr,/else if\(f==='MOVIE'\)title='Film'/);assert(main.indexOf('./modules/franchise-engine.js')<main.indexOf('./app.js'));assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(fr,/else if\(f==='MOVIE'\)title='Film'/);assert(main.indexOf('./startup-factories.js')<main.indexOf('startApp();'));assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

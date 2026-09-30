@@ -29,6 +29,8 @@ jobs:
         run: npm run audit
       - name: Unit tests and Vite production build
         run: npm test
+      - name: Enforce JavaScript size budget
+        run: npm run test:performance
       - name: Verify content-hashed production assets
         shell: bash
         run: |
@@ -118,4 +120,24 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          retention-days: 14
+
+  performance:
+    name: Lighthouse performance budgets
+    runs-on: ubuntu-latest
+    needs: build-unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run build
+      - name: Measure LCP, blocking time and script transfer
+        run: npx --yes --package=@lhci/cli@0.15.1 lhci collect && npx --yes --package=@lhci/cli@0.15.1 lhci assert
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
           retention-days: 14

@@ -1,3 +1,12 @@
+# 14.3.0
+
+- Ngarkim paralel i varësive të pavarura, kontrolluesit dhe IndexedDB; nisje vetëm pasi të jenë gati.
+- Ditari dhe CSS-ja e tij ngarkohen sipas nevojës, me riprovim dhe mbrojtje kur navigimi ndryshon gjatë ngarkimit.
+- Cache publik i kufizuar me TTL, dedupe, anulim të veçuar dhe backoff për kërkim/metadata AniList, Jikan dhe TVMaze.
+- Planifikues pa mbivendosje që ndalon timer-at në skeda të fshehura dhe rikontrollon në kthim.
+- HTML NetworkFirst me timeout 3 sekonda dhe fallback precache; dimensione posterësh dhe ngarkim i menjëhershëm në detaje.
+- Buxhete për JavaScript, Lighthouse LCP/TBT dhe teste të cache-it, timer-ave e Ditarit lazy.
+
 # 14.2.0
 
 - Migrim i kontrolluar në IndexedDB: snapshot, pending journal dhe revision atomikë; kontroll SHA-256 dhe kopje e mëparshme për rikuperim.

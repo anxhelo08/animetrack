@@ -47,7 +47,7 @@ test('13.6.0 mobile sync re-subscribes and re-fetches when app wakes',()=>{
  assert.match(app,/window\.addEventListener\('online',\(\)=>accountWakeCloud\(true\)\)/);
  assert.match(app,/status==='CHANNEL_ERROR'\|\|status==='TIMED_OUT'\|\|status==='CLOSED'/);
  assert.match(sync,/channel\.subscribe\(\(status,error\)=>/);
- assert.match(features,/window\.addEventListener\('online',check\);\s*check\(\);\s*setInterval\(check,60\*60000\)/);
+ assert.match(features,/window\.addEventListener\('online',check\);\s*check\(\);\s*createVisibleScheduler\(check,\{interval:60\*60000\}\)/);
 });
 
 test('13.6.0 release identity is bumped for PWA cache invalidation',()=>{

@@ -60,7 +60,7 @@ test('13.6 integration merges divergent updated_at revisions before conditional 
  assert.match(sync,/remoteAt>localAt\?'remote-newer':'local-newer'/);
  assert.match(features,/await pwaUpdater\(true\)/);
  assert.match(read('src/sw.js'),/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.match(read('src/main.js'),/modules\/sync\.js/);
+ assert.match((read('src/main.js')+read('src/startup-factories.js')),/modules\/sync\.js/);
 
 });
 
@@ -81,5 +81,5 @@ test('13.6 app cleans realtime on account switches and page lifecycle boundaries
  assert.match(app,/addEventListener\('pagehide',accountStopRealtime\)/);
  assert.match(app,/visibilitychange/);assert.match(app,/pageshow/);assert.match(app,/30000/);
  assert.match(cross,/channel\.unsubscribe/);assert.match(cross,/client\.removeChannel/);
- assert.match(read('src/main.js'),/modules\/cross-sync\.js/);
+ assert.match((read('src/main.js')+read('src/startup-factories.js')),/modules\/cross-sync\.js/);
 });

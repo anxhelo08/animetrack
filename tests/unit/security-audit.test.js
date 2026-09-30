@@ -24,7 +24,7 @@ test('anti-clickjacking, MIME, private referrer and restricted browser permissio
  assert.match(header('Permissions-Policy'),/camera=\(\).*microphone=\(\)/);
 });
 test('authentication SDK is bundled locally with separate public configuration',()=>{
- assert.match(read('src/main.js'),/import\("\.\/config\.js"\)/);
+ assert.match((read('src/main.js')+read('src/startup-factories.js')),/import\("\.\/config\.js"\)/);
  assert.doesNotMatch(html,/cdn\.jsdelivr/);
  assert.match(read('src/modules/supabase-client.js'),/@supabase\/supabase-js/);
  assert.doesNotMatch(html,/<script>\s*window\./);

@@ -9,11 +9,11 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const walk=dir=>fs.existsSync(dir)?fs.readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(path.join(dir,e.name)):[path.join(dir,e.name)]):[];
 
 test('13.1.a uses Vite source/dist architecture and content hashes',()=>{
- const pkg=JSON.parse(read('package.json')),vite=read('vite.config.mjs'),html=read('index.html'),main=read('src/main.js');
+ const pkg=JSON.parse(read('package.json')),vite=read('vite.config.mjs'),html=read('index.html'),main=(read('src/main.js')+read('src/startup-factories.js'));
  assert.equal(pkg.devDependencies.vite,'8.3.1');
  assert.match(vite,/outDir:'dist'/);assert.match(vite,/\[name\]\.\[hash\]\.js/);assert.match(vite,/\[name\]\.\[hash\]\[extname\]/);
  assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotMatch(html,/\/assets\/pro-/);
- assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(main,/import\("\.\/modules\/movies\.js"\)/);assert.match(main,/import\("\.\/app\.js"\)/);
+ assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(main,/import "\.\/modules\/movies\.js"/);assert.match(main,/import\("\.\/app\.js"\)/);
  assert.equal(fs.existsSync(path.join(root,'assets')),false);assert.match(read('.gitignore'),/^dist\/$/m);
 });
 

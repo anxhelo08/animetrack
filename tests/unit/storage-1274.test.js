@@ -52,7 +52,7 @@ test('12.7.4 retrying a cloud mutation retains its original journal and latest s
 });
 test('12.7.4 persistent recovery gate is wired before app, and no site-data reset exists',()=>{
  const html=read('index.html'),sw=read('src/sw.js'),core=read('src/app.js'),css=read('src/styles/tracking-media.css'),pkg=JSON.parse(read('package.json'));
- const main=read('src/main.js');assert.match(main,/modules\/storage\.js/);assert.match(main,/styles\/index\.css/);assert(main.indexOf('./modules/storage.js')<main.indexOf('./app.js'));
+ const main=(read('src/main.js')+read('src/startup-factories.js'));assert.match(read('src/startup-factories.js'),/modules\/storage\.js/);assert.match(main,/styles\/index\.css/);assert(main.indexOf('./startup-factories.js')<main.indexOf('startApp();'));
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 
  assert.match(core,/cloudMirrorUnavailable=!mirror\.ok/);assert.match(core,/data-at128-export/);

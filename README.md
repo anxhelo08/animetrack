@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 14.2.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
+AnimeTrack 14.3.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
 
 **Live:** https://animetrack-flax.vercel.app/ · **Ndryshimet:** [CHANGELOG.md](CHANGELOG.md) · **Siguria:** [SECURITY.md](SECURITY.md)
 
@@ -71,3 +71,11 @@ Modulet e reja përdorin importe dhe eksporte ESM. `features.js` dhe përvoja e 
 Biblioteka, journal-i në pritje dhe revision-i kopjohen në një transaksion IndexedDB dhe verifikohen me SHA-256 pas leximit. Një kopje e mëparshme e verifikuar ruhet për rikuperim. Shkrimet sinkrone vazhdojnë të përdorin kopjen aktuale në localStorage si write-ahead journal: suksesi nuk shfaqet kur kjo ruajtje dështon. Migrimi nuk fshin bibliotekën aktive ose journal-in në pritje. Kur IndexedDB bllokohet, kjo kopje mbetet funksionale. Nëse kopja aktuale mungon, hapja lexon kopjen e verifikuar të kësaj llogarie nga IndexedDB.
 
 Te Profili → Cilësimet → Avancuar mund të verifikosh ruajtjen, të shkarkosh kopjen e mëparshme për import dhe të pastrosh vetëm backup-et historike identike me kopjen e verifikuar. Kopjet e ndryshme, auth dhe ndryshimet në pritje mbahen. Fshirja e llogarisë heq kopjet IndexedDB; nëse databaza lokale nuk hapet, një marker pa të dhëna personale pengon rikthimin dhe kryen pastrimin në hapjen tjetër. Importi, eksporti, kopjet lokale dhe payload-et cloud kontrollohen për strukturë e madhësi përpara përdorimit. `tests/e2e/indexed-storage.spec.js` provon migrimin/rikuperimin dhe refuzimin e input-it të pavlefshëm në shfletues.
+
+## Shpejtësia — 14.3
+
+Modulet e pavarura, kontrolluesi dhe hapja e IndexedDB ngarkohen paralelisht; `startApp()` pret që varësitë dhe kopja lokale të jenë gati. Ditari dhe CSS-ja e tij ngarkohen kur hapet faqja, me riprovim kur ngarkimi dështon. Kërkimet publike AniList/Jikan/TVMaze dhe metadata e katalogut përdorin cache në memorie (100 hyrje, TTL 5 minuta), dedupe dhe cooldown 1–30 sekonda pas dështimit. Anulimi i një kërkimi nuk anulon një konsumues tjetër; kërkesat autentike dhe biblioteka nuk futen në këtë cache.
+
+Planifikuesit ndalojnë timer-at kur skeda fshihet, nuk mbivendosin punën dhe rikontrollojnë kur ajo hapet. PWA përdor NetworkFirst për HTML me timeout 3 sekonda dhe fallback në HTML-në e precache; API-të e llogarisë nuk ruhen në runtime cache. Posterët kryesorë kanë dimensione të deklaruara; posteri në detaje ngarkohet menjëherë.
+
+CI kontrollon madhësinë e JavaScript (330 KB gzip gjithsej), ndërsa Lighthouse kontrollon LCP ≤4.5 sekonda, TBT ≤300 ms dhe JS ≤400 KB në tre hapje të faqes publike. Raportet ruhen si artefakte CI; këto janë matje laboratorike të hapjes pa session dhe jo garanci për çdo pajisje apo bibliotekë.

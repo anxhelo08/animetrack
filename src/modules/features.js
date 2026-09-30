@@ -1,3 +1,4 @@
+import { createVisibleScheduler } from '../core/visible-scheduler.js';
 import {navIcon} from './nav-icons.js';
 import {createProductExperience} from './product-experience.js';
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
@@ -12,7 +13,7 @@ export function createFeatures(ctx){
   notifications:window.ATNotifications(ctx),
   recommendations:window.ATRecommendations(ctx),
   calendar:window.ATCalendarWrapped(ctx),
-  diary:window.ATDiary132(ctx),
+  diary:null,
   watch:window.ATWatch133(ctx),
   rich:window.ATRich134(ctx),
   providerSync:window.ATProviderSync135(ctx),
@@ -40,12 +41,12 @@ export function createFeatures(ctx){
  function renderMobileDiscover(){const node=$('at117-mobile-discover');if(!node)return;const recs=modules.recommendations;window.ATHTML.renderHTML(node,`<section class="at128-mobile-season-link"><div><span>✦ KATALOGU SEZONAL</span><strong>Zbulo anime sipas zhanrit</strong><small>Drama · Thriller · Isekai · Fantasy</small></div><button type="button" data-at128-open-seasons>Shiko sezonet ↗</button></section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>✦ PËR TY</span><h3>Rekomanduar për ty</h3></div><button type="button" data-pro-page="recommendations">Të gjitha ›</button></div>${recs.home()}</section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>◈ ANILIST · POPULLARITETI</span><h3>Popullore për ty</h3></div></div><p class="at117-discover-note">Tituj nga zbulimet e tua, renditur sipas ndjekësve në AniList; jo statistika të AnimeTrack.</p><div class="at117-trending-row">${recs.trending()||'<p class="at117-discover-note">Po ngarkohen titujt nga katalogu…</p>'}</div></section>`)}
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
  function renderBackground(){if(!['collections','profile','friends','moderation','sync'].includes(active))render()}
- function render(force=false){if(!active)return;
+ function render(force=false){if(!active)return;if(active==='diary'&&!modules.diary)return;
   // Background refreshes must never replace a typed, unsubmitted collection name.
   // Explicit collection mutations still use ctx.rerender() and force a fresh view.
   if(!force&&active==='collections'&&$('at110-new-list')?.value.trim())return;
   if(!force&&['profile','friends','sync'].includes(active)&&$('pro-content')?.contains(document.activeElement)&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
-  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:modules.diary.render,watch:modules.watch.render,sync:modules.providerSync.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini()+modules.providerSync.profileCard(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};window.ATHTML.renderHTML($('pro-content'),renderers[active]?.()||'');product?.refresh()}
+  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:()=>modules.diary?.render()||'',watch:modules.watch.render,sync:modules.providerSync.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini()+modules.providerSync.profileCard(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};window.ATHTML.renderHTML($('pro-content'),renderers[active]?.()||'');product?.refresh()}
  async function refreshLive(force=false){
   if(liveBusy)return {status:'busy'};
   if(document.visibilityState==='hidden')return {status:'hidden'};
@@ -82,7 +83,6 @@ export function createFeatures(ctx){
  };
  function init(){
   modules.experience.init();
-  modules.diary.mount();
   modules.watch.mount();
   modules.rich.mount();
   modules.providerSync.mount();
@@ -122,7 +122,7 @@ export function createFeatures(ctx){
       document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
       window.addEventListener('online',check);
       check();
-      setInterval(check,60*60000);
+      createVisibleScheduler(check,{interval:60*60000});
      },
      onError:error=>console.warn('PWA registration failed',error)
     });
@@ -141,14 +141,20 @@ export function createFeatures(ctx){
   document.addEventListener('keydown',e=>{if(e.target?.id==='at118-query'&&e.key==='Enter'){e.preventDefault();void modules.tv.searchNow()}});
   let pcSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at-pc-watch-search')return;const value=e.target.value,caret=e.target.selectionStart,focused=document.activeElement===e.target;clearTimeout(pcSearchTimer);pcSearchTimer=setTimeout(()=>{if(!$('home-view')||$('home-view').classList.contains('hidden'))return;modules.home.search(value);const next=$('at-pc-watch-search');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});
   // Active-tab polling only. The upstream anime schedules are not a push feed.
-  liveTimer=setInterval(()=>{if(document.visibilityState==='visible')void refreshLive(false)},10*60000);
+  liveTimer=createVisibleScheduler(()=>refreshLive(false),{interval:10*60000});
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refreshLive(false)});
   window.addEventListener('online',()=>void refreshLive(false));
   window.addEventListener('focus',()=>void refreshLive(false));
-  setInterval(()=>{if(document.visibilityState==='visible'&&ctx.user())void modules.notifications.refresh()},5*60000);
+  createVisibleScheduler(()=>{if(ctx.user())return modules.notifications.refresh()},{interval:5*60000});
   trackAchievements(false);renderHome();
   void modules.recommendations.refresh(false);
   product?.mount();
+ }
+ let diaryLoading=null;
+ function loadDiary(){
+  if(modules.diary)return Promise.resolve(modules.diary);
+  if(!diaryLoading)diaryLoading=import('./diary-page.js').then(()=>{modules.diary=window.ATDiary132(ctx);modules.diary.mount();return modules.diary}).catch(error=>{diaryLoading=null;throw error});
+  return diaryLoading;
  }
  function open(name){
   if(!proPages.includes(name))return false;
@@ -156,6 +162,7 @@ export function createFeatures(ctx){
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
   $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',diary:'Ditari',watch:'Ku ta shoh ▶',sync:'MAL / AniList Sync ⇄',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤',tv:'Serialet e mia ▣'})[name];setMobileActive(name);
+  if(name==='diary'&&!modules.diary){window.ATHTML.renderHTML($('pro-content'),'<p role="status">Po ngarkohet ditari…</p>');void loadDiary().then(()=>{if(active==='diary')render()}).catch(()=>{if(active==='diary')window.ATHTML.renderHTML($('pro-content'),'<p role="alert">Ditari nuk u ngarkua.</p><button type="button" class="ghost" data-pro-page="diary">Provo përsëri</button>')})}
   if(name==='collections'||name==='tv')setMobileActive('library');if(name==='sync')setMobileActive('profile');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){active='';$('pro-view')?.classList.add('hidden')}
@@ -220,7 +227,7 @@ export function createFeatures(ctx){
    if(op==='more-recommendations')return modules.recommendations.more();
    if(op==='reset-recommendation-filters')return modules.recommendations.resetFilters();
    if(op==='refresh-recommendations')return await modules.recommendations.refresh(true);
-   if(op.startsWith('diary-'))return modules.diary.action(op,id,b);
+   if(op.startsWith('diary-'))return (await loadDiary()).action(op,id,b);
    if(op.startsWith('watch-'))return modules.watch.action(op,id,b);
    if(op.startsWith('notification-'))return await modules.notifications.action(op,id);
    if(op.startsWith('collection-'))return await modules.collections.action(op,id);

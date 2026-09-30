@@ -21,7 +21,7 @@ function load(extra={}){
 function context(){return{el:()=>null,esc:x=>String(x??''),state:()=>({anime:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}),user:()=>null,client:()=>null,accountName:()=> 'Guest',poster:()=>'',count:()=>0,activity:()=>[],upcoming:()=>[],genres:()=>[],seriesRoot:()=>'',mapAniList:()=>({}),inLibrary:()=>null,previewItem:()=>{},rerender:()=>{},released:()=>0,releasedTotal:()=>0,percent:()=>0,nextEpisode:()=>null,markNext:()=>{},openFilter:()=>{},markEpisode:()=>{},refreshAiring:()=>{},isMovie:()=>false,uuid:()=> 'test',toast:()=>{},save:()=>true,openAnime:()=>{},refreshDetail:()=>{},navigate:()=>{},setLocalView:()=>{}}}
 test('all feature modules parse and export factories',()=>{const w=load();for(const key of ['ATRecommendations','ATCalendarWrapped','ATDiary132','ATWatch133','ATRich134','ATProviderSync135','ATProfiles','ATFriends','ATModeration','ATNotifications','ATRewatch','ATSmartAiring','ATPush109','ATCollections110','AnimeTrackPro','ATExperience112'])assert.equal(typeof w[key],'function')});
 test('core feature views render with an empty personal library',()=>{const w=load(),c=context(),p=w.ATProfiles(c);assert.match(w.ATRecommendations(c).render(),/Për ty/);assert.match(w.ATCalendarWrapped(c).calendar(),/Kalendari/);assert.match(w.ATCalendarWrapped(c).wrapped(),/Wrapped/);assert.match(p.render(),/Profili/);assert.match(w.ATFriends(c,p).render(),/Hyr/);assert.match(w.ATNotifications(c).render(),/Njoftimet/);assert.equal(w.ATRewatch(c).render('missing'),'');assert.equal(typeof w.ATHome(c).render,'function');assert.equal(typeof w.AnimeTrackPro(c).init,'function')});
-test('Vite entry references every feature module and public PWA resources exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');for(const name of names)assert.ok(main.includes('./modules/'+name+'.js'),name);for(const p of ['src/app.js','src/config.js','src/styles/index.css','public/manifest.webmanifest','src/sw.js','public/icon.svg','public/icon-192.png','public/icon-512.png'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'public/manifest.webmanifest'),'utf8')))});
+test('Vite entry references every feature module and public PWA resources exist',()=>{const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),main=(fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8'))+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8');for(const name of names)assert.ok(name==='diary'?fs.readFileSync(path.join(root,'src/modules/diary-page.js'),'utf8').includes("import './diary.js'"):main.includes('./modules/'+name+'.js'),name);for(const p of ['src/app.js','src/config.js','src/styles/index.css','public/manifest.webmanifest','src/sw.js','public/icon.svg','public/icon-192.png','public/icon-512.png'])assert.ok(fs.existsSync(path.join(root,p)),p);assert.match(html,/type="module" src="\/src\/main\.js"/);assert.doesNotThrow(()=>JSON.parse(fs.readFileSync(path.join(root,'public/manifest.webmanifest'),'utf8')))});
 test('core JS parses after modular extraction',()=>{const src=readCoreSource();assert.doesNotThrow(()=>new vm.Script(src.replace(/^import .*;$/gm,'')));assert.match(src,/rewatches:/);assert.match(src,/notificationRead:/);assert.match(src,/data\.user\.identities\.length===0/);assert.match(src,/at116EmailIssue\(email\)/);assert.match(src,/resetPasswordForEmail/)});
 
 test('personal discovery filters duplicates, opens preview and remembers hidden series',async()=>{
@@ -123,13 +123,13 @@ test('profile stats tab and goal stay inside profile',()=>{
 });
 test('home module is included ahead of pro app, styles and service worker cache updated',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/foundation.css'),'utf8');
- const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.ok(main.indexOf('./modules/home.js')<main.indexOf('./modules/features.js'));assert.match(styles,/home\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ const main=(fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.ok(main.indexOf('./modules/home.js')<main.indexOf('./modules/features.js'));assert.match(styles,/home\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(css,/#home-view\.at-home-rebuilt > :not\(#at-home-main\)/);
 });
 
 test('mobile-first shell includes bottom navigation and swipe-friendly home CSS',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/foundation.css'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/styles\/index\.css/);
  assert.match(css,/\.at-mobile-nav/);
  assert.match(css,/scroll-snap-type:x mandatory/);
  assert.match(css,/\.at-h3-feature/);
@@ -149,7 +149,7 @@ test('compact 10.4 desktop focus and clearer advancing cards are wired',()=>{
  const css=fs.readFileSync(path.join(root,'src/styles/foundation.css'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8'),home=fs.readFileSync(path.join(root,'src/modules/home.js'),'utf8');
  assert.match(css,/height:300px/);assert.match(css,/at-h4-advance/);
  assert.match(home,/advance-next/);assert.match(home,/sync-now/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/styles\/index\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 test('cloud round-trip preserves watch session and reminder preferences',()=>{
  const core=readCoreSource();
@@ -180,7 +180,7 @@ test('iPhone app shell replaces mobile home and supports install instructions',(
  assert.match(css,/#at-iphone-feed/);assert.match(css,/at-ios-enabled #home-view/);assert.match(css,/env\(safe-area-inset-bottom\)/);
  assert.match(core,/modules.iphone.mount\(\)/);assert.match(core,/data-mobile-nav="home"[^>]*>.*Episodet/);
  assert.match(core,/Add to Home Screen/);assert.match(html,/viewport-fit=cover/);assert.match(html,/apple-mobile-web-app-title/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/modules\/iphone\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/modules\/iphone\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.equal(manifest.display,'standalone');
  assert.match(html,/apple-touch-icon\.png/);
  assert.ok(manifest.icons.some(x=>x.src==='/icon-192.png'&&x.type==='image/png'));
@@ -229,7 +229,7 @@ test('desktop controls are isolated from iPhone and cache includes their stylesh
  pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8');
  assert.match(css,/@media \(min-width:761px\)/);
  assert.match(css,/at-pc-watch-search/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/styles\/index\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(core,/undoEpisode:/);
  assert.match(pro,/setSelectionRange\(caret,caret\)/);
 });
@@ -276,7 +276,7 @@ test('10.7 recoverable widgets, status text, and stylesheet are wired',()=>{
  assert.match(phone,/data-ios-action="undo"/);
  assert.match(phone,/data-ios-action="sync"|Po kontrollohen episodet/);
  assert.match(css,/at-ios-watch-feedback/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/styles\/index\.css/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 
@@ -304,7 +304,7 @@ test('10.8 Episode Hub tab/next navigation hooks preserve existing spoiler comme
  assert.doesNotMatch(app,/setTimeout\(\(\)=>\{if\(accountUser\?\.id===user\.id\)scanAndMergeSeries\(true\)\}/);
  assert.match(journey,/data-journey-action="tab"/);assert.match(journey,/if\(op===\x27prev\x27\|\|op===\x27next\x27\)/);
  assert.match(css,/data-at108-tab="discussion"/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/modules\/journey\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/modules\/journey\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(app,/v98-spoiler-reveal/);assert.match(app,/v98DiscussionHTML\(currentKey\)/);
 });
 
@@ -348,8 +348,8 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  assert.match(sql,/public\.anime_push_subscriptions to service_role/);
  assert.match(sql,/public\.anime_push_reminders to service_role/);
  assert.match(sw,/addEventListener\('push'/);assert.match(sw,/showNotification/);
- const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(main,/modules\/smart-airing\.js/);assert.match(main,/modules\/push\.js/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
+ const main=(fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8'))+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8');assert.match(main,/modules\/smart-airing\.js/);assert.match(main,/modules\/push\.js/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/styles\/index\.css/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(sw,/from 'workbox-precaching'/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
@@ -394,7 +394,7 @@ test('11.0 collections roll back failed saves and are linked on phone/desktop',(
  assert.match(src,/customLists/);assert.match(src,/data-pro-action="collection-pick"/);
  assert.match(pro,/collections:modules\.collections\.render/);
  assert.match(pro,/modules\.collections\.mountLibrary\(\)/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/modules\/collections\.js/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/modules\/collections\.js/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(file,/Listat e mia/);
 });
@@ -413,7 +413,7 @@ test('iPhone 11.0.1 safe-area, touch targets and PWA caching are present',()=>{
  assert.match(css,/orientation:landscape/);
  assert.match(css,/#episode-detail-modal \{z-index:1170/);
  assert.match(css,/\.at-mobile-nav \{[\s\S]*z-index:900/);
- assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);
+ assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/styles\/index\.css/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(html,/viewport-fit=cover/);
@@ -434,7 +434,7 @@ test('11.2 phone filters and order are UI-only and are cached in the PWA shell',
  const phone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
  assert.match(phone,/at114-top-tabs/);assert.match(phone,/at114-view-actions/);
  assert.match(phone,/HISTORIKU I SHIKIMIT/);assert.match(phone,/S’KE PARË PREJ 7+ DITËSH|STALE_MS/);
- const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(main,/styles\/index\.css/);assert.match(main,/modules\/experience\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ const main=(fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8'))+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8');assert.match(main,/styles\/index\.css/);assert.match(main,/modules\/experience\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 
 test('11.2 exact-handle private friends invite does not expose library snapshots',()=>{
@@ -479,7 +479,7 @@ test('11.2 private friends can be located only by exact handle and invited throu
 test('11.3 mobile experience, calendar, library and account features are included in PWA shell',()=>{
  const js=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),css=fs.readFileSync(path.join(root,'src/styles/interaction-mobile.css'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
  assert.doesNotThrow(()=>new vm.Script(js));
- const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.match(main,/modules\/mobile\.js/);assert.match(styles,/mobile-controls\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ const main=(fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.match(main,/modules\/mobile\.js/);assert.match(styles,/mobile-controls\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(js,/function enhanceEpisode/);assert.match(js,/function signupReady/);assert.match(js,/function signup\(on\)/);assert.doesNotMatch(js,/stopImmediatePropagation/);assert.match(js,/function mountLibrary/);
  assert.match(css,/grid-template-columns:112px minmax\(0,1fr\)/);assert.match(css,/safe-area-inset-top/);assert.match(css,/at113-cal-days/);assert.match(html,/at113-confirm-password/);
 });
@@ -622,13 +622,13 @@ test('11.6 profile onboarding creates private handle for newly confirmed account
 });
 
 
-test('11.6.1 mobile profile uses real library data and keeps email confirmation',()=>{const p=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),a=readCoreSource(),h=fs.readFileSync(path.join(root,'index.html'),'utf8'),c=fs.readFileSync(path.join(root,'src/styles/interaction-mobile.css'),'utf8');for(const v of ['at1161-profile','at1161-posters','at1161-metrics','profile-anime'])assert.match(p,new RegExp(v));assert.match(a,/email_address_not_authorized/);assert.match(a,/identities\.length===0/);assert.match(a,/nuk garanton mbërritjen/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/styles\/index\.css/);assert.match(c,/safe-area-inset-bottom/);});
+test('11.6.1 mobile profile uses real library data and keeps email confirmation',()=>{const p=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8'),a=readCoreSource(),h=fs.readFileSync(path.join(root,'index.html'),'utf8'),c=fs.readFileSync(path.join(root,'src/styles/interaction-mobile.css'),'utf8');for(const v of ['at1161-profile','at1161-posters','at1161-metrics','profile-anime'])assert.match(p,new RegExp(v));assert.match(a,/email_address_not_authorized/);assert.match(a,/identities\.length===0/);assert.match(a,/nuk garanton mbërritjen/);assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/styles\/index\.css/);assert.match(c,/safe-area-inset-bottom/);});
 
 test('11.6.2 signup uses canonical production redirect and handles consumed links safely',()=>{const src=readCoreSource();const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/ANIMETRACK_AUTH_REDIRECT='https:\/\/animetrack-flax\.vercel\.app\/'/);assert.match(src,/emailRedirectTo:accountRedirectURL\(\)/);assert.match(src,/redirectTo:accountRedirectURL\(\)/);assert.match(src,/otp_expired/);assert.match(src,/provo Hyr/);assert.match(html,/AnimeTrack \d+\.\d+\.\d+/)});
 
 test('11.6.3 password recovery uses authenticated updateUser and requires matching strong password',()=>{const src=readCoreSource(),html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(src,/auth\.updateUser\(\{password\}\)/);assert.match(src,/recoveryReturn&&accountMode==='cloud'/);assert.match(src,/password!==confirm\.value/);for(const id of ['at1162-recovery-panel','at1162-new-password','at1162-confirm-password','at1162-save-password'])assert.match(html,new RegExp(id))});
 
-test('11.7 mobile upcoming, discovery and library controls',()=>{const fs=require('node:fs'),path=require('node:path'),root=path.resolve(__dirname,'../..');const iphone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),recs=fs.readFileSync(path.join(root,'src/modules/recommendations.js'),'utf8'),main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(iphone,/upcomingWindow=7/);assert.match(iphone,/data-ios-action="horizon"/);assert.match(iphone,/at117-upcoming-action/);assert.match(features,/at117-mobile-discover/);assert.match(features,/data-mobile-nav="explore"/);assert.doesNotMatch(features,/data-mobile-nav="calendar"/);assert.match(mobile,/data-at117-sort/);assert.match(recs,/function trending\(\)/);assert.match(main,/styles\/index\.css/)});
+test('11.7 mobile upcoming, discovery and library controls',()=>{const fs=require('node:fs'),path=require('node:path'),root=path.resolve(__dirname,'../..');const iphone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8'),recs=fs.readFileSync(path.join(root,'src/modules/recommendations.js'),'utf8'),main=(fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8'))+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8');assert.match(iphone,/upcomingWindow=7/);assert.match(iphone,/data-ios-action="horizon"/);assert.match(iphone,/at117-upcoming-action/);assert.match(features,/at117-mobile-discover/);assert.match(features,/data-mobile-nav="explore"/);assert.doesNotMatch(features,/data-mobile-nav="calendar"/);assert.match(mobile,/data-at117-sort/);assert.match(recs,/function trending\(\)/);assert.match(main,/styles\/index\.css/)});
 
 test('11.8 TV series are isolated, normalize by TVMaze ID and preserve episode progress',()=>{
  const w=load();assert.equal(typeof w.ATTVShows,'function');
@@ -679,7 +679,7 @@ test('11.8.1 TV resume, bulk prior episodes, season all and grouped Dexter',()=>
 });
 test('11.8 TV resources, cloud normalization and mobile entry are wired',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),app=readCoreSource(),pro=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
- const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8'),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.match(main,/modules\/tv\.js/);assert.match(styles,/tv\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ const main=(fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),styles=fs.readFileSync(path.join(root,'src/styles/index.css'),'utf8');assert.match(main,/modules\/tv\.js/);assert.match(styles,/tv\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(app,/function normalizeTVShows/);assert.match(app,/ATTVUnified120\.migrate/);
  assert.doesNotMatch(pro,/data-mobile-nav="tv"/);assert.match(pro,/modules\.tv\.render/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
@@ -737,7 +737,7 @@ test('12.0 shared UI, catalog, calendar and cloud migration are connected',()=>{
  assert.match(core,/ATTVUnified120\.migrate/);assert.match(core,/ATTVUnified120\.merge/);
  assert.match(core,/at120-unified-tv-open/);assert.match(core,/data-media=/);
  assert.match(core,/function refreshUpcoming/);assert.match(core,/source:'TVmaze'/);
- assert.match(pro,/at120-unified-tv-open/);assert.match(fs.readFileSync(path.join(root,'src/main.js'),'utf8'),/modules\/tv-unified\.js/);
+ assert.match(pro,/at120-unified-tv-open/);assert.match((fs.readFileSync(path.join(root,'src/main.js'),'utf8')+fs.readFileSync(path.join(root,'src/startup-factories.js'),'utf8')),/modules\/tv-unified\.js/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 

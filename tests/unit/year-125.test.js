@@ -37,7 +37,7 @@ test('12.5 sort: newest/oldest, missing years at the end and stable ties',()=>{
 });
 test('12.5 integration: one sorting control for anime and TV in both viewports',()=>{
  const read=p=>fs.readFileSync(path.join(root,p),'utf8');
- const html=read('index.html'),main=read('src/main.js'),styles=read('src/styles/index.css'),core=read('src/app.js'),mobile=read('src/modules/mobile.js'),sw=read('src/sw.js');
+ const html=read('index.html'),main=(read('src/main.js')+read('src/startup-factories.js')),styles=read('src/styles/index.css'),core=read('src/app.js'),mobile=read('src/modules/mobile.js'),sw=read('src/sw.js');
  assert.match(html,/value="year-new"/);assert.match(html,/value="year-old"/);
  assert.match(mobile,/data-at117-sort="year-new"/);assert.match(mobile,/data-at117-sort="year-old"/);
  assert.match(core,/ATLibraryYear125\.sort\(anime,sort\)/);assert.match(core,/data-release-year=/);

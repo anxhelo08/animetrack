@@ -51,7 +51,7 @@ test('13.5 read-only provider-only entries are classified for manual import',()=
 });
 
 test('13.5 release wires provider sync into Pro profile/navigation and PWA version',()=>{
- const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=readCoreSource(),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
+ const main=(read('src/main.js')+read('src/startup-factories.js')),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=readCoreSource(),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.match(main,/modules\/provider-sync\.js/);assert.match(styles,/provider-sync\.css/);
  assert.match(features,/providerSync:window\.ATProviderSync135/);assert.match(features,/MAL \/ AniList Sync/);assert.match(features,/providerSync\.profileCard/);assert.match(app,/providerAutoSync/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

@@ -50,12 +50,12 @@ test('13.6.0 guard only owns TVMaze seasons',()=>{
 });
 
 test('13.6.0 app routes TVMaze away from MAL/Jikan hydration and loads guard before app',()=>{
- const app=read('src/app.js'),main=read('src/main.js');
+ const app=read('src/app.js'),main=(read('src/main.js')+read('src/startup-factories.js'));
  assert.match(app,/String\(entry\.source\|\|''\)\.toLowerCase\(\)==='tvmaze'/);
  assert.match(app,/syncTVFranchise\(id,force,silent\)/);
  assert.match(app,/ATReleaseGuard1352\.tvmazeReleasedCount/);
  assert.match(read('src/core/library-model.js'),/String\(s.source\s*\|\|\s*''\).toLowerCase\(\)\s*===\s*'tvmaze'/);
- assert.ok(main.indexOf('./modules/release-guard.js')<main.indexOf('./app.js'));
+ assert.ok(main.indexOf('./startup-factories.js')<main.indexOf('startApp();'));
 });
 
 test('13.6.0 scroll performance keeps visual design while reducing offscreen work',()=>{

@@ -54,9 +54,9 @@ test('13.2 Diary metadata remains inside compact cloud history and rewatches',()
  assert.equal(compact.anime[0].rewatches[0].episodes[0].diaryNote,'Rewatch note');
 });
 test('13.2 release wires Diary into Pro navigation, mobile navigation and watch records',()=>{
- const app=read('src/app.js'),features=read('src/modules/features.js'),main=read('src/main.js'),styles=read('src/styles/index.css'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
+ const app=read('src/app.js'),features=read('src/modules/features.js'),main=(read('src/main.js')+read('src/startup-factories.js')),styles=read('src/styles/index.css'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
 
- assert.match(main,/modules\/diary\.js/);assert.match(styles,/diary\.css/);
+ assert.match(read('src/modules/diary-page.js'),/diary\.js/);assert.match(styles,/diary\.css/);
  assert.match(features,/['"]diary['"]/);assert.match(features,/data-mobile-nav="diary"/);assert.match(features,/op\.startsWith\('diary-'\)/);assert.match(read('src/modules/diary.js'),/diary-edit/);
  assert.match(app,/eventId:uuid\(\)/);assert.match(app,/diaryNote/);assert.match(app,/diaryRating/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);

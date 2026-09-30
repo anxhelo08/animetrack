@@ -5,57 +5,19 @@ import {safeAvatarURL} from "./modules/avatar.js";
 Object.defineProperty(window, "ATHTML", {value:createHTML(window)});
 Object.defineProperty(window, "ATAvatar", {value:Object.freeze({safeURL:safeAvatarURL})});
 
+// Start downloading the controller and opening local storage while factories load.
+// startApp still waits for every dependency and the verified repository.
+const controllerReady=import("./app.js");
+const repositoryReady=import("./core/browser-storage.js").then(async ({libraryRepository})=>{await libraryRepository.prepare()});
+
 await import("./config.js");
 await import("./modules/security.js");
-await import("./modules/pwa.js");
-const {default:createClient}=await import("./modules/supabase-client.js");
+const [{default:createClient},{startApp}]=await Promise.all([
+  import("./modules/supabase-client.js"),
+  controllerReady,
+  repositoryReady,
+  import("./modules/pwa.js"),
+  import("./startup-factories.js")
+]);
 Object.defineProperty(window, "supabase", {value:Object.freeze({createClient}),configurable:false,writable:false});
-await import("./modules/recommendations.js");
-await import("./modules/wrapped.js");
-await import("./modules/calendar-wrapped.js");
-await import("./modules/diary.js");
-await import("./modules/watch.js");
-await import("./modules/rich-details.js");
-await import("./modules/account-service.js");
-await import("./modules/provider-sync.js");
-await import("./modules/profiles.js");
-await import("./modules/friends.js");
-await import("./modules/import-library.js");
-await import("./modules/moderation.js");
-await import("./modules/notifications.js");
-await import("./modules/rewatch.js");
-await import("./modules/home.js");
-await import("./modules/episode-hub.js");
-await import("./modules/iphone.js");
-await import("./modules/daily.js");
-await import("./modules/journey.js");
-await import("./modules/smart-airing.js");
-await import("./modules/push.js");
-await import("./modules/collections.js");
-await import("./modules/experience.js");
-await import("./modules/mobile.js");
-await import("./modules/tv.js");
-await import("./modules/product-experience.js");
-await import("./modules/features.js");
-await import("./modules/tv-unified.js");
-await import("./modules/unified.js");
-await import("./modules/resume.js");
-await import("./modules/command.js");
-await import("./modules/year.js");
-await import("./modules/sync.js");
-await import("./modules/storage.js");
-await import("./modules/seasonal.js");
-await import("./modules/tv-episodes.js");
-await import("./modules/filler.js");
-await import("./modules/franchise.js");
-await import("./modules/cloud-local.js");
-await import("./modules/provider-bridge.js");
-await import("./modules/franchise-engine.js");
-await import("./modules/movies.js");
-await import("./modules/cross-sync.js");
-await import("./modules/release-guard.js");
-await import("./modules/library-identity.js");
-const {libraryRepository}=await import("./core/browser-storage.js");
-await libraryRepository.prepare();
-const {startApp}=await import("./app.js");
 startApp();

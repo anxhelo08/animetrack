@@ -52,9 +52,9 @@ test('12.8 AniList tag handling removes spoiler tags and low-confidence tags',()
  assert.deepEqual(Array.from(tags),['Isekai','Thriller']);
 });
 test('12.8 seasonal UI, mobile entry, provider queries and bounded regenerative caches',()=>{
- const app=read('src/app.js'),html=read('index.html'),features=read('src/modules/features.js'),main=read('src/main.js'),styles=read('src/styles/index.css'),sw=read('src/sw.js'),css=read('src/styles/tracking-media.css');
+ const app=read('src/app.js'),html=read('index.html'),features=read('src/modules/features.js'),main=(read('src/main.js')+read('src/startup-factories.js')),styles=read('src/styles/index.css'),sw=read('src/sw.js'),css=read('src/styles/tracking-media.css');
  for(const ref of ['season-genres','season-genre-search','season-filter-reset'])assert(html.includes(ref),ref);assert.match(main,/modules\/seasonal\.js/);assert.match(styles,/seasonal\.css/);
- assert(main.indexOf('./modules/seasonal.js')<main.indexOf('./app.js'));
+ assert(main.indexOf('./startup-factories.js')<main.indexOf('startApp();'));
  assert.match(app,/ATSeasonal128\.list/);assert.match(app,/ATSeasonal128\.safeTags/);
  assert.match(app,/tags\{name rank isMediaSpoiler isGeneralSpoiler\}/);
  assert.match(app,/slice\(0,8\)/);

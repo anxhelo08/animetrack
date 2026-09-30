@@ -1,7 +1,7 @@
 {
   "name": "animetrack",
-  "version": "14.2.0",
-  "releaseLabel": "14.2.0",
+  "version": "14.3.0",
+  "releaseLabel": "14.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,10 +13,11 @@
     "test": "npm run typecheck && npm run test:unit && npm run build",
     "lint": "eslint src api server supabase/functions/**/*.js",
     "format": "prettier --write .",
-    "format:check": "prettier --check src/modules/safe-html.js src/modules/avatar.js src/modules/supabase-client.js tests/unit/safe-html.test.js eslint.config.js SECURITY.md src/modules/account-service.js api server supabase/functions/**/*.js tests/unit/server-api.test.js tests/unit/account-server.test.js scripts/test-database.mjs tests/unit/push-delivery.test.js src/modules/nav-icons.js src/styles/accessibility.css tests/e2e/accessibility.spec.js src/modules/product-experience.js src/styles/product-experience.css tests/unit/product-experience.test.js tests/e2e/product-experience.spec.js src/core jsconfig.json tests/helpers/core-source.js tests/unit/library-model.test.js tests/unit/store.test.js tests/unit/ui-events.test.js src/modules/storage-settings.js tests/unit/indexed-library.test.js tests/unit/library-schema.test.js tests/e2e/indexed-storage.spec.js",
+    "format:check": "prettier --check src/modules/safe-html.js src/modules/avatar.js src/modules/supabase-client.js tests/unit/safe-html.test.js eslint.config.js SECURITY.md src/modules/account-service.js api server supabase/functions/**/*.js tests/unit/server-api.test.js tests/unit/account-server.test.js scripts/test-database.mjs tests/unit/push-delivery.test.js src/modules/nav-icons.js src/styles/accessibility.css tests/e2e/accessibility.spec.js src/modules/product-experience.js src/styles/product-experience.css tests/unit/product-experience.test.js tests/e2e/product-experience.spec.js src/core jsconfig.json tests/helpers/core-source.js tests/unit/library-model.test.js tests/unit/store.test.js tests/unit/ui-events.test.js src/modules/storage-settings.js tests/unit/indexed-library.test.js tests/unit/library-schema.test.js tests/e2e/indexed-storage.spec.js src/core/request-cache.js src/core/visible-scheduler.js tests/unit/performance.test.js tests/e2e/performance.spec.js scripts/check-performance.mjs lighthouserc.cjs",
     "audit": "npm audit --audit-level=high",
     "test:db": "node scripts/test-database.mjs",
-    "typecheck": "tsc -p jsconfig.json"
+    "typecheck": "tsc -p jsconfig.json",
+    "test:performance": "node scripts/check-performance.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",

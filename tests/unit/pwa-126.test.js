@@ -33,7 +33,7 @@ test('13.6 generated worker preserves offline navigation, same-origin precache a
 });
 
 test('13.6 PWA update bridge never bypasses the durable cloud-save reload guard',()=>{
- const features=read('src/modules/features.js'),bridge=read('src/modules/pwa.js'),core=read('src/app.js'),main=read('src/main.js');
+ const features=read('src/modules/features.js'),bridge=read('src/modules/pwa.js'),core=read('src/app.js'),main=(read('src/main.js')+read('src/startup-factories.js'));
  assert.match(bridge,/virtual:pwa-register/);
  assert.match(bridge,/onNeedRefresh/);
  assert.match(features,/window\.ATPWA136\.register/);
