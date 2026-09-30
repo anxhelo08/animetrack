@@ -21,7 +21,8 @@ test('server provider connection, full export and confirmed account deletion',as
   await route.fulfill({status:200,contentType:'application/json',headers:{'Access-Control-Allow-Origin':'http://127.0.0.1:8765'},body:JSON.stringify(body)});
  });
  await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
- await expect(page.locator('body')).not.toHaveClass(/auth-required/);
+ await expect(page.locator('body')).not.toHaveClass(/account-booting|auth-required/);
+ await expect(page.locator('#pro-nav-sync')).toBeAttached();
  // The profile's provider link is available on desktop and mobile.
  await page.evaluate(()=>document.querySelector('[data-pro-page="sync"]')?.click());
  // Navigation buttons have stable IDs even when their desktop group is hidden.
