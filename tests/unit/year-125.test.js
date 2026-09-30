@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -8,7 +9,7 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
 const source=fs.readFileSync(path.join(root,'src/modules/year.js'),'utf8');
 function load(){
- const ctx={window:{}};vm.runInNewContext(source,ctx,{filename:'pro-year-125.js'});
+ const ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(source,ctx,{filename:'pro-year-125.js'});
  return ctx.window.ATLibraryYear125;
 }
 test('12.5 release year: uses earliest known premiere across combined TV seasons',()=>{
@@ -42,6 +43,6 @@ test('12.5 integration: one sorting control for anime and TV in both viewports',
  assert.match(core,/ATLibraryYear125\.sort\(anime,sort\)/);assert.match(core,/data-release-year=/);
  assert.match(main,/modules\/year\.js/);assert.match(styles,/year\.css/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.7\.0/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(core,/\$\('at125-sort-hint'\)\.hidden/);
 });

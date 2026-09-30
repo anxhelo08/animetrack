@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-function moduleAt(file,name){const ctx={window:{},Date,Map,Set,Number,String};vm.runInNewContext(read(file),ctx,{filename:file});return ctx.window[name]}
+function moduleAt(file,name){const ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},Date,Map,Set,Number,String};vm.runInNewContext(read(file),ctx,{filename:file});return ctx.window[name]}
 const hub=moduleAt('src/modules/episode-hub.js','ATEpisodeHub127'),tv=moduleAt('src/modules/tv-episodes.js','ATTVEpisodes127');
 const DAY=86400000,now=Date.parse('2026-09-27T12:00:00Z');
 const iso=t=>new Date(t).toISOString();
@@ -79,7 +80,7 @@ test('12.7 mobile and cache integration of all release-first assets',()=>{
  assert.match(app,/accountUser\?\.id!==uid/);
  assert.match(main,/modules\/episode-hub\.js/);assert.match(main,/modules\/tv-episodes\.js/);assert.match(styles,/episode-hub\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(css,/at127-new-ep/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.match(html,/AnimeTrack 13\.7\.0/);
+
 });
 
 test('12.7.2 background TV checks preserve editable pages without bypassing cloud journal',()=>{

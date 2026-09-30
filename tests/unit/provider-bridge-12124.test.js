@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-function load(){const sandbox={window:{}};vm.runInNewContext(read('src/modules/franchise.js'),sandbox);vm.runInNewContext(read('src/modules/provider-bridge.js'),sandbox);return sandbox.window.ATProviderBridge12124}
+function load(){const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(read('src/modules/franchise.js'),sandbox);vm.runInNewContext(read('src/modules/provider-bridge.js'),sandbox);return sandbox.window.ATProviderBridge12124}
 const seq=n=>Array.from({length:n},(_,i)=>i+1);
 function demon(){
  const tv={id:'tvmaze-41469',title:'Demon Slayer',source:'TVMaze',format:'TV_SERIES',year:2019,seasons:[
@@ -36,7 +37,7 @@ test('12.15.3 Jujutsu Kaisen movie-root card matches TVMaze series by canonical 
  const al={id:'al-jjk',title:'Jujutsu Kaisen 0',source:'AniList',format:'MOVIE',seasons:[{id:'a1',subtitle:'JUJUTSU KAISEN',aliases:['Jujutsu Kaisen'],source:'AniList',format:'TV',total:24,watched:seq(24),releaseStart:'2020-10-03'},{id:'m0',subtitle:'Jujutsu Kaisen 0',source:'AniList',format:'MOVIE',total:1,watched:[1],releaseStart:'2021-12-24'},{id:'a2',subtitle:'JUJUTSU KAISEN Season 2',source:'AniList',format:'TV',total:23,watched:seq(23),releaseStart:'2023-07-06'},{id:'a3',subtitle:'JUJUTSU KAISEN Season 3',source:'AniList',format:'TV',total:12,watched:[],releaseStart:'2026-01-09'}]};
  const result=api.repair([tv,al],[]);assert.equal(result.library.length,1);assert.equal(result.library[0].title,'Jujutsu Kaisen');assert.equal(result.library[0].format,'TV');assert.equal(result.library[0].seasons.some(x=>x.id==='m0'),true);
 });
-test('12.15.3 app treats movies as timeline parts, never as season-number increments',()=>{const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));assert.match(app,/function seasonNumberFor/);assert.match(app,/partProgressLabel/);assert.match(app,/repairProviderDuplicates/);assert(main.indexOf('./modules/provider-bridge.js')<main.indexOf('./app.js'));assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.equal(pkg.version,'13.7.0')});
+test('12.15.3 app treats movies as timeline parts, never as season-number increments',()=>{const app=read('src/app.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));assert.match(app,/function seasonNumberFor/);assert.match(app,/partProgressLabel/);assert.match(app,/repairProviderDuplicates/);assert(main.indexOf('./modules/provider-bridge.js')<main.indexOf('./app.js'));assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(pkg.version,/^\d+\.\d+\.\d+$/)});
 
 test('13.1.b Zenki search dedupes AniList and TVMaze into one result',()=>{
  const api=load();

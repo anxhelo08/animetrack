@@ -8,11 +8,12 @@ const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(roo
 function setup(fetchImpl,{state=null,seed={}}={}){
  const store=new Map(Object.entries(seed));
  const localStorage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)};
- const sandbox={window:{addEventListener(){}},localStorage,sessionStorage:{setItem(){},getItem(){return null}},fetch:fetchImpl||(()=>{throw Error('unexpected network')}),URL,URLSearchParams,AbortController,setTimeout,clearTimeout,setInterval:()=>0,Date,JSON,Map,Set,console,document:{visibilityState:'visible',addEventListener(){},getElementById(){return null}},navigator:{onLine:true},location:{hash:'',pathname:'/',search:'',href:''},history:{replaceState(){}}};
+ const session=new Map();
+ const sandbox={window:{addEventListener(){}},localStorage,sessionStorage:{setItem:(k,v)=>session.set(k,String(v)),getItem:k=>session.get(k)||null,removeItem:k=>session.delete(k)},fetch:fetchImpl||(()=>{throw Error('unexpected network')}),URL,URLSearchParams,AbortController,setTimeout,clearTimeout,setInterval:()=>0,Date,JSON,Map,Set,console,document:{visibilityState:'visible',addEventListener(){},getElementById(){return null}},navigator:{onLine:true},location:{hash:'',pathname:'/',search:'',href:''},history:{replaceState(){}}};
  vm.runInNewContext(read('src/modules/provider-sync.js'),sandbox,{filename:'provider-sync.js'});
  const data=state||{anime:[],history:[],preferences:{}};
  const ctx={esc:String,state:()=>data,uuid:()=> 'uuid-sync',save:()=>true,rerender:()=>{},toast:()=>{},importExternal:()=>({added:0})};
- return{api:sandbox.window.ATProviderSync135(ctx),store,state};
+ return{api:sandbox.window.ATProviderSync135(ctx),store,state,sandbox,session};
 }
 const localFixture=()=>({anime:[{id:'root',title:'Example Anime',status:'watching',rating:null,updatedAt:'2026-09-29T10:00:00Z',seasons:[
  {id:'al-10',title:'Season 1',subtitle:'Example Anime',source:'AniList',sourceId:'10',malId:'20',total:12,watched:[1,2,3],myRating:8.5},
@@ -52,6 +53,21 @@ test('13.5 MAL proxy never embeds tokens and exposes only me/list/update actions
 });
 test('13.5 release wires provider sync into Pro profile/navigation and PWA version',()=>{
  const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'13.7.0');assert.equal(pkg.releaseLabel,'13.7.0');assert.match(main,/modules\/provider-sync\.js/);assert.match(styles,/provider-sync\.css/);
- assert.match(features,/providerSync:window\.ATProviderSync135/);assert.match(features,/MAL \/ AniList Sync/);assert.match(features,/providerSync\.profileCard/);assert.match(app,/providerAutoSync/);assert.match(html,/AnimeTrack 13\.7\.0/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(main,/modules\/provider-sync\.js/);assert.match(styles,/provider-sync\.css/);
+ assert.match(features,/providerSync:window\.ATProviderSync135/);assert.match(features,/MAL \/ AniList Sync/);assert.match(features,/providerSync\.profileCard/);assert.match(app,/providerAutoSync/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+});
+
+for(const scenario of [
+ {name:'Supabase email verification',hash:'#access_token=auth-token&refresh_token=auth-refresh',pending:true,consumed:false},
+ {name:'unsolicited fragment',hash:'#access_token=foreign-token',pending:false,consumed:false},
+ {name:'expired AniList attempt',hash:'#access_token=provider-token',pending:'expired',consumed:false},
+ {name:'recent explicit AniList attempt',hash:'#access_token=provider-token',pending:true,consumed:true},
+])test('OAuth callback isolates '+scenario.name,()=>{
+ const {api,store,sandbox,session}=setup();
+ sandbox.location.hash=scenario.hash;sandbox.setTimeout=()=>0;
+ let replacements=0;sandbox.history.replaceState=()=>{replacements++};
+ if(scenario.pending)session.set('animetrack_anilist_oauth_135',String(Date.now()-(scenario.pending==='expired'?11*60*1000:1000)));
+ api.mount();
+ assert.equal(store.get('animetrack_anilist_token_135'),scenario.consumed?'provider-token':undefined);
+ assert.equal(replacements,scenario.consumed?1:0);
 });

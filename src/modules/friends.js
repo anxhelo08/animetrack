@@ -7,7 +7,7 @@ window.ATFriends=function ATFriends(ctx,profiles){
  const peer=f=>f.requester_id===myId()?f.recipient_id:f.requester_id;
  const relation=id=>friends.find(f=>peer(f)===id&&f.status==='accepted')||friends.find(f=>peer(f)===id&&f.status==='pending')||friends.find(f=>peer(f)===id&&f.status==='declined');
  const counts=()=>({accepted:friends.filter(f=>f.status==='accepted').length,pending:friends.filter(f=>f.status==='pending'&&f.recipient_id===myId()).length,outgoing:friends.filter(f=>f.status==='pending'&&f.requester_id===myId()).length});
- const avatar=p=>`<span class="at11-social-avatar">${ctx.poster(p.avatar_url)?`<img src="${esc(ctx.poster(p.avatar_url))}" alt="" loading="lazy" referrerpolicy="no-referrer">`:esc(p.avatar_emoji||'🎌')}</span>`;
+ const avatar=p=>`<span class="at11-social-avatar">${window.ATAvatar.safeURL(p.avatar_url)?`<img src="${esc(window.ATAvatar.safeURL(p.avatar_url))}" alt="" loading="lazy" referrerpolicy="no-referrer">`:esc(p.avatar_emoji||'🎌')}</span>`;
  const row=(p,actions='',subtitle='')=>`<article class="at11-person">${avatar(p)}<div class="at11-person-info"><strong>${esc(display(p))}</strong><small>@${esc(p.handle||'privat')}${subtitle?' · '+esc(subtitle):''}</small></div><div class="at11-person-actions">${actions}</div></article>`;
  const btn=(label,op,id,primary=false)=>`<button type="button" class="pro-btn ${primary?'primary':''}" data-pro-action="${op}" data-id="${esc(id)}">${label}</button>`;
  const pById=id=>people.find(p=>p.user_id===id)||results.find(p=>p.user_id===id)||{user_id:id,display_name:'Profil privat'};
@@ -69,7 +69,7 @@ window.ATFriends=function ATFriends(ctx,profiles){
    searchState=results.length?'':responses.every(r=>r.error)?'Kërkimi nuk u krye. Kontrollo lidhjen dhe provo përsëri.':'';showResults();
   }catch(err){if(seq!==searchSerial)return;results=[];searchState='Kërkimi nuk u krye. Kontrollo lidhjen dhe provo përsëri.';showResults();console.warn('Friend search',err)}
  }
- function showResults(){const slot=ctx.el('pro-find-results');if(slot)slot.innerHTML=resultMarkup()}
+ function showResults(){const slot=ctx.el('pro-find-results');if(slot)window.ATHTML.renderHTML(slot,resultMarkup())}
  async function send(id){
   if(!user()||id===myId()||busy)return;const person=results.find(p=>p.user_id===id);if(!person?.handle)return;
   busy=true;try{

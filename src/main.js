@@ -1,15 +1,15 @@
 import "./styles/index.css";
 
-const waitForSupabase=async()=>{
-  const deadline=Date.now()+12000;
-  while(!window.supabase?.createClient&&Date.now()<deadline)await new Promise(r=>setTimeout(r,25));
-  if(!window.supabase?.createClient)throw new Error('Supabase SDK failed to load');
-};
+import {createHTML} from "./modules/safe-html.js";
+import {safeAvatarURL} from "./modules/avatar.js";
+Object.defineProperty(window, "ATHTML", {value:createHTML(window)});
+Object.defineProperty(window, "ATAvatar", {value:Object.freeze({safeURL:safeAvatarURL})});
 
 await import("./config.js");
 await import("./modules/security.js");
 await import("./modules/pwa.js");
-await waitForSupabase();
+const {default:createClient}=await import("./modules/supabase-client.js");
+Object.defineProperty(window, "supabase", {value:Object.freeze({createClient}),configurable:false,writable:false});
 await import("./modules/recommendations.js");
 await import("./modules/wrapped.js");
 await import("./modules/calendar-wrapped.js");

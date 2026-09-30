@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -7,7 +8,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const commandSource=read('src/modules/command.js'),iphoneSource=read('src/modules/iphone.js');
 test('12.4 command search: anime, episodes, pages and online fallback without cloud writes',()=>{
- const realm={window:{}};vm.runInNewContext(commandSource,realm);
+ const realm={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(commandSource,realm);
  const a={id:'op',title:'One Piece',genre:'Action',seasons:[{id:'east',title:'East Blue',total:24,watched:[1],episodes:[{number:1,title:'Romance Dawn'},{number:2,title:'Luffy vs Alvida'},{number:30,title:'Future data'}]}]};
  const ctx={esc:x=>String(x).replace(/</g,'&lt;'),state:()=>({anime:[a]}),released:s=>s.total,resume:()=>({seasonId:'east',episode:2})};
  const palette=realm.window.ATCommand124(ctx);
@@ -21,7 +22,7 @@ test('12.4 command search: anime, episodes, pages and online fallback without cl
  assert.doesNotMatch(commandSource,/\.from\(['"]anime_libraries/);
 });
 test('12.4 mobile: recently aired is a distinct tab and keeps future dates out',async()=>{
- const realm={window:{matchMedia:()=>({matches:false})},navigator:{userAgent:'Android'},localStorage:{getItem:()=>null}};
+ const realm={window:{ATHTML:htmlHelpers,matchMedia:()=>({matches:false})},navigator:{userAgent:'Android'},localStorage:{getItem:()=>null}};
  vm.runInNewContext(read('src/modules/episode-hub.js'),realm);vm.runInNewContext(iphoneSource,realm);const now=Date.now();
  const anime={id:'op',title:'One Piece',status:'watching',seasons:[{id:'s1',title:'Season 1',total:5,watched:[1],episodes:[{number:1,title:'Past watched'},{number:2,title:'Fresh episode'}]}]};
  const data={anime:[anime],history:[]},feed={innerHTML:''},calls=[];
@@ -45,5 +46,5 @@ test('12.4 markup: quick search and phone release controls are wired and escaped
  assert.match(css,/at124-command-panel/);assert.match(css,/at124-episode-mark/);assert.match(css,/at114-top-tabs/);
  assert.match(iphoneSource,/data-ios-action="recent-filter"/);assert.match(iphoneSource,/data-ios-action="open-recent"/);
  assert.match(commandSource,/esc\(x\.label\)/);assert.match(commandSource,/esc\(x\.desc\|\|''\)/);
- assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.7\.0/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

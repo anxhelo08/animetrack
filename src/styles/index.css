@@ -15,3 +15,5 @@ unified.css tv-unified.css studio.css auth-compact.css refresh.css workflow.css 
 episode-hub.css storage.css seasonal.css wrapped.css filler.css season-ux.css movies.css
 franchise.css diary.css watch.css rich-details.css provider-sync.css performance.css
 */
+
+@import "./security.css";

@@ -20,9 +20,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
       - name: Install pinned toolchain
         run: npm ci --no-audit --no-fund
+      - name: Security lint and format checks
+        run: npm run lint && npm run format:check
+      - name: Dependency security audit
+        run: npm run audit
       - name: Unit tests and Vite production build
         run: npm test
       - name: Verify content-hashed production assets
@@ -65,7 +69,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: '.nvmrc'
       - name: Install pinned toolchain
         run: npm ci --no-audit --no-fund
       - name: Build production bundle

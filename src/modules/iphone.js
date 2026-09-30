@@ -201,7 +201,7 @@ window.ATiPhone=function ATiPhone(ctx){
  }
  function refresh(){
   const node=ctx.el('at-iphone-feed');if(!node)return;
-  try{node.innerHTML=render()}catch(err){console.warn('iPhone feed failed to render',err);node.innerHTML='<section class="at-ios-empty" role="alert"><span>✦</span><h3>Nuk u ngarkuan episodet</h3><p>Mund të ketë një problem të përkohshëm me të dhënat. Provo përsëri ose hap Bibliotekën; progresi yt ruhet.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>';}
+  try{window.ATHTML.renderHTML(node,render())}catch(err){console.warn('iPhone feed failed to render',err);window.ATHTML.renderHTML(node,'<section class="at-ios-empty" role="alert"><span>✦</span><h3>Nuk u ngarkuan episodet</h3><p>Mund të ketë një problem të përkohshëm me të dhënat. Provo përsëri ose hap Bibliotekën; progresi yt ruhet.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>');}
  }
  async function action(op,id,b){
   const a=(state().anime||[]).find(anime=>anime.id===id);

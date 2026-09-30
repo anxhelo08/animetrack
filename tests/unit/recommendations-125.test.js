@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -16,7 +17,7 @@ function fixture(){
   if(String(url).includes('tvmaze.com/shows?page='))return {ok:true,json:async()=>shows};
   return {ok:true,json:async()=>({data:{Page:{media}}})};
  };
- const sandbox={window:{},localStorage:{getItem:key=>store.get(key)||null,setItem:(key,v)=>store.set(key,v)},fetch,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController};vm.runInNewContext(source,sandbox);
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},localStorage:{getItem:key=>store.get(key)||null,setItem:(key,v)=>store.set(key,v)},fetch,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController};vm.runInNewContext(source,sandbox);
  const ctx={esc:x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;'),user:()=>owner,state:()=>({anime:library}),poster:x=>x,genres:a=>String(a.genre||'').split(',').map(x=>x.trim()),seriesRoot:x=>String(x||'').toLowerCase(),mapAniList:m=>({key:'al-'+m.id,source:'AniList',sourceId:String(m.id),malId:String(m.idMal),title:m.title.romaji,genre:m.genres.join(', '),cover:m.coverImage.large,score:m.averageScore,format:m.format,year:m.seasonYear,total:m.episodes,synopsis:m.description}),inLibrary:x=>library.find(a=>a.title.toLowerCase()===String(x.title||'').toLowerCase()||x.kind==='tv'&&a.sourceId===String(x.sourceId)),rerender:()=>{},toast:()=>{},previewItem:x=>previews.push(x),addItem:async()=>{}};
  return {rec:sandbox.window.ATRecommendations(ctx),store,calls,previews,library,owner};
 }

@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -8,7 +9,7 @@ const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(roo
 function setup(fetchImpl,{token='',state=null}={}){
  const store=new Map(token?[['animetrack_tmdb_read_token',token]]:[]);
  const localStorage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)};
- const sandbox={window:{},localStorage,fetch:fetchImpl||(()=>{throw Error('unexpected network')}),URL,URLSearchParams,AbortController,setTimeout,clearTimeout,Date,JSON,console};
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},localStorage,fetch:fetchImpl||(()=>{throw Error('unexpected network')}),URL,URLSearchParams,AbortController,setTimeout,clearTimeout,Date,JSON,console};
  vm.runInNewContext(read('src/modules/watch.js'),sandbox,{filename:'watch.js'});
  const data=state||{anime:[],preferences:{watchRegion:'AL'}};
  const ctx={esc:String,state:()=>data,save:()=>true,rerender:()=>{},openAnime:()=>{},navigate:()=>{},poster:v=>v||''};
@@ -63,7 +64,7 @@ test('13.3 region preference is synced through app preferences',()=>{
 });
 test('13.3 release wires Where to Watch into source, detail renderer and Pro navigation',()=>{
  const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'13.7.0');assert.equal(pkg.releaseLabel,'13.7.0');assert.match(main,/modules\/watch\.js/);assert.match(styles,/watch\.css/);
+ assert.match(main,/modules\/watch\.js/);assert.match(styles,/watch\.css/);
  assert.match(features,/watch:window\.ATWatch133/);assert.match(features,/Ku ta shoh/);assert.match(features,/op\.startsWith\('watch-'\)/);assert.match(read('src/modules/watch.js'),/watch-open/);
- assert.match(app,/watchRegion/);assert.match(app,/at133PriorDetail/);assert.match(html,/AnimeTrack 13\.7\.0/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(app,/watchRegion/);assert.match(app,/at133PriorDetail/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

@@ -1,3 +1,4 @@
+import {htmlHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -11,8 +12,8 @@ const headers=JSON.parse(read('vercel.json')).headers[0].headers;
 const header=name=>headers.find(h=>h.key.toLowerCase()===name.toLowerCase())?.value||'';
 test('CSP prohibits executable objects, third-party embedding and foreign scripts',()=>{
  const v=header('Content-Security-Policy');
- for(const directive of ["default-src 'self'","script-src 'self' https://cdn.jsdelivr.net","object-src 'none'","base-uri 'self'","frame-ancestors 'none'","worker-src 'self'","form-action 'self'"])assert.ok(v.includes(directive),directive);
- assert.ok(!v.includes("'unsafe-eval'"));assert.ok(!v.includes("script-src 'self' https://cdn.jsdelivr.net 'unsafe-inline'"));
+ for(const directive of ["default-src 'self'","script-src 'self'","object-src 'none'","base-uri 'self'","frame-ancestors 'none'","worker-src 'self'","form-action 'self'"])assert.ok(v.includes(directive),directive);
+ assert.ok(!v.includes("'unsafe-eval'"));assert.ok(!v.includes("script-src 'self' 'unsafe-inline'"));
 });
 test('anti-clickjacking, MIME, private referrer and restricted browser permissions',()=>{
  assert.equal(header('X-Frame-Options'),'DENY');
@@ -20,22 +21,19 @@ test('anti-clickjacking, MIME, private referrer and restricted browser permissio
  assert.equal(header('Referrer-Policy'),'no-referrer');
  assert.match(header('Permissions-Policy'),/camera=\(\).*microphone=\(\)/);
 });
-test('only pinned external authentication script and separate public configuration',()=>{
+test('authentication SDK is bundled locally with separate public configuration',()=>{
  assert.match(read('src/main.js'),/import\("\.\/config\.js"\)/);
- assert.match(html,/supabase-js@2\.58\.0/);
+ assert.doesNotMatch(html,/cdn\.jsdelivr/);
+ assert.match(read('src/modules/supabase-client.js'),/@supabase\/supabase-js/);
  assert.doesNotMatch(html,/<script>\s*window\./);
  const conf=read('src/config.js');
- assert.match(conf,/window\.ANIMETRACK_CONFIG/);
+ assert.match(conf,/Object\.defineProperty\(window, 'ANIMETRACK_CONFIG'/);
  assert.doesNotMatch(conf,/sb_secret_|service_role|SUPABASE_SERVICE_ROLE_KEY/i);
  assert.match(read('src/sw.js'),/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 test('browser-owned content is HTML escaped',()=>{
- const m=core.match(/function escapeHTML\(s\)\{[^\n]+\}/);
- assert.ok(m,'central escape helper');
- const escaped=vm.runInNewContext('(()=>{'+m[0]+';return escapeHTML(\'"><img src=x onerror=alert(1)> &\')})()',{}).toString();
- assert.ok(escaped.includes('&lt;img'));
- assert.ok(!escaped.includes('<img'));
- assert.ok(!escaped.includes('"'));
+ const escaped=htmlHelpers.escapeHTML('"><img src=x onerror=alert(1)> &');
+ assert.ok(escaped.includes('&lt;img'));assert.ok(!escaped.includes('<img'));assert.ok(!escaped.includes('"'));
 });
 test('untrusted poster schemes cannot become javascript URLs',()=>{
  const m=core.match(/function validPoster\(s\)\{[^\n]+\}/);assert.ok(m);

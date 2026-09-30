@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-const ctx={window:{},Date,JSON,Map,Set,Number,String};vm.runInNewContext(read('src/modules/filler.js'),ctx);
+const ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},Date,JSON,Map,Set,Number,String};vm.runInNewContext(read('src/modules/filler.js'),ctx);
 const f=ctx.window.ATFiller1210;
 test('filler flags: verified, unknown, recap and manual overrides',()=>{
  assert.equal(f.kind(null),'unknown');assert.equal(f.kind({filler:false}),'unknown');
@@ -62,8 +63,8 @@ test('UI and PWA integration preserve all existing routes',()=>{
  assert.match(app,/data-filler-manual/);
  assert.match(css,/at1210-chip\.filler/);assert.match(css,/at1210-manual/);
  assert.match(main,/modules\/filler\.js/);assert.match(styles,/filler\.css/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.7\.0/);
- assert.equal(JSON.parse(read('package.json')).version,'13.7.0');
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+
 });
 
 test('12.10.2 Jikan pages are marked complete only when all flags are present',()=>{

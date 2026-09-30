@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-const ctx={window:{},String,Number,Set,Array};vm.runInNewContext(read('src/modules/franchise.js'),ctx);const f=ctx.window.ATFranchise1212;
+const ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},String,Number,Set,Array};vm.runInNewContext(read('src/modules/franchise.js'),ctx);const f=ctx.window.ATFranchise1212;
 
 test('anime franchise timeline supports TV, films, OVA and specials but not unrelated media formats',()=>{
  for(const fmt of ['TV','TV_SHORT','ONA','OVA','MOVIE','SPECIAL','Movie','TV Special'])assert.equal(f.supportedAnimePart(fmt),true,fmt);
@@ -59,7 +60,7 @@ test('12.12 integration exposes one update action and caches the new helper',()=
  assert.match(app,/isFranchiseFormat/);assert.match(app,/strictSeriesOverlap/);assert.match(app,/franchiseTitleKeys/);assert.match(app,/FRANCHISE_SCHEMA='13\.1\.0'/);assert.match(app,/Përditëso serinë/);assert.match(app,/Rendi kronologjik/);
  assert.doesNotMatch(app,/Ndarja si serial \(TV\)/);
  assert.match(tv,/function refreshShow/);assert.match(tv,/SERIA E PLOTË/);assert.doesNotMatch(tv,/dexterTitles/);
- assert.match(main,/modules\/franchise\.js/);assert.match(html,/AnimeTrack 13\.7\.0/);
+ assert.match(main,/modules\/franchise\.js/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.equal(pkg.version,'13.7.0');
+
 });

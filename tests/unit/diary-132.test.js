@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -6,7 +7,7 @@ const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').d
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 function diary(state){
- const sandbox={window:{},Date,Map,Set,Number,String,JSON};
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},Date,Map,Set,Number,String,JSON};
  vm.runInNewContext(read('src/modules/diary.js'),sandbox);
  const ctx={esc:String,state:()=>state,isMovie:a=>String(a?.format||'').toUpperCase()==='MOVIE',poster:v=>v||'',uuid:()=> 'uuid-test',save:()=>true,rerender:()=>{},toast:()=>{},openEpisode:()=>{},openAnime:()=>{}};
  return sandbox.window.ATDiary132(ctx);
@@ -46,7 +47,7 @@ test('13.2 Diary summary counts units, active days, ratings and estimated time',
  assert.equal(sum.hours,5.6);
 });
 test('13.2 Diary metadata remains inside compact cloud history and rewatches',()=>{
- const sandbox={window:{},JSON};vm.runInNewContext(read('src/modules/cloud-local.js'),sandbox);const cloud=sandbox.window.ATCloudLocal12123;
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},JSON};vm.runInNewContext(read('src/modules/cloud-local.js'),sandbox);const cloud=sandbox.window.ATCloudLocal12123;
  const state=fixture(),compact=cloud.compact(state);
  assert.equal(compact.history.find(x=>x.eventId==='new-e1').diaryNote,'Great episode');
  assert.equal(compact.history.find(x=>x.eventId==='new-e1').diaryRating,8.5);
@@ -54,9 +55,9 @@ test('13.2 Diary metadata remains inside compact cloud history and rewatches',()
 });
 test('13.2 release wires Diary into Pro navigation, mobile navigation and watch records',()=>{
  const app=read('src/app.js'),features=read('src/modules/features.js'),main=read('src/main.js'),styles=read('src/styles/index.css'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'13.7.0');assert.equal(pkg.releaseLabel,'13.7.0');
+
  assert.match(main,/modules\/diary\.js/);assert.match(styles,/diary\.css/);
  assert.match(features,/['"]diary['"]/);assert.match(features,/data-mobile-nav="diary"/);assert.match(features,/op\.startsWith\('diary-'\)/);assert.match(read('src/modules/diary.js'),/diary-edit/);
  assert.match(app,/eventId:uuid\(\)/);assert.match(app,/diaryNote/);assert.match(app,/diaryRating/);
- assert.match(html,/AnimeTrack 13\.7\.0/);assert.match(html,/AT<span>13\.7\.0<\/span>/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

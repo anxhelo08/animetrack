@@ -18,7 +18,7 @@ window.ATUnified119=(()=>{
   });
   const visible=[...grid.querySelectorAll('.anime-card')].filter(n=>!n.hidden);
   grid.querySelectorAll('.empty').forEach(n=>{n.hidden=visible.length>0});
-  if(!visible.length&&!grid.querySelector('.empty'))grid.insertAdjacentHTML('beforeend','<div class="empty"><div class="symbol">✦</div><h3>Nuk ka tituj në këtë filtër</h3><p>Ndrysho filtrin ose kërko një anime apo serial.</p><button type="button" class="primary" data-at119-add-tv>+ Shto titull</button></div>');
+  if(!visible.length&&!grid.querySelector('.empty'))window.ATHTML.insertHTML(grid,'beforeend','<div class="empty"><div class="symbol">✦</div><h3>Nuk ka tituj në këtë filtër</h3><p>Ndrysho filtrin ose kërko një anime apo serial.</p><button type="button" class="primary" data-at119-add-tv>+ Shto titull</button></div>');
   const counts={all:all.length,anime:anime.length,tv:tv.length,movie:movies.length,watching:all.filter(a=>a.status==='watching').length,completed:all.filter(a=>a.status==='completed').length,planning:all.filter(a=>a.status==='planning').length,paused:all.filter(a=>a.status==='paused').length,dropped:all.filter(a=>a.status==='dropped').length,waiting:all.filter(waiting).length};
   document.querySelectorAll('[data-media-filter]').forEach(b=>{const on=b.dataset.mediaFilter===media;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));b.querySelector('[data-at119-count]')?.replaceChildren(document.createTextNode(String(counts[b.dataset.mediaFilter]||0)))});
   const sub=$('library-subtitle');if(sub)sub.textContent=visible.length+' tituj · '+(media==='all'?'Anime · Seriale TV · Filma':media==='anime'?'Anime':media==='tv'?'Seriale TV':'Filma');

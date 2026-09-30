@@ -29,7 +29,7 @@ window.ATHome=function ATHome(ctx){
  function img(a,cls=''){const url=poster(a);return url?`<img class="${cls}" loading="lazy" decoding="async" fetchpriority="low" referrerpolicy="no-referrer" src="${esc(url)}" alt="Posteri i ${esc(a.title)}">`:`<span class="at-h2-poster-empty">✦</span>`}
  function mount(home,recommend,dash){
   if(ctx.el('at-home-main'))return;
-  const main=document.createElement('div');main.id='at-home-main';main.innerHTML='<div id="at-home-top"></div><div class="at-h2-top-grid"><section id="at-home-focus" aria-label="Vazhdo shikimin"></section><section id="at-home-session" aria-label="Lista e shikimit"></section></div><section id="at-home-lineup"></section><section id="at-home-releases"></section><section id="at-home-discovery"></section><section id="at-home-brief"></section><section id="at-home-seasons"></section>';
+  const main=document.createElement('div');main.id='at-home-main';window.ATHTML.renderHTML(main,'<div id="at-home-top"></div><div class="at-h2-top-grid"><section id="at-home-focus" aria-label="Vazhdo shikimin"></section><section id="at-home-session" aria-label="Lista e shikimit"></section></div><section id="at-home-lineup"></section><section id="at-home-releases"></section><section id="at-home-discovery"></section><section id="at-home-brief"></section><section id="at-home-seasons"></section>');
   home.insertBefore(main,home.firstChild);
   home.classList.add('at-home-rebuilt');
   ctx.el('at-home-discovery').append(recommend);
@@ -52,7 +52,7 @@ window.ATHome=function ATHome(ctx){
    <div class="at-h3-feature-visual">${img(a)}<span class="at-h3-feature-gradient"></span><div class="at-h3-feature-over"><span class="at-h2-kicker">VAZHDO NGA KU E LE</span><h3>${esc(a.title)}</h3><div class="at-h3-feature-badges"><span>▶ ${left} ${left===1?'episod':'episode'} gati</span>${a.favorite?'<span>♥ Favorite</span>':''}</div></div></div>
    <div class="at-h3-feature-panel">
     <div class="at-h3-nextline"><div><small>EPISODI I RADHËS</small><strong>${hasNext?`Sezoni ${seas} · Episodi ${nx.n}`:'Nuk ka episod të radhës'}</strong></div><b>${total?pct+'%':'—'}</b></div>
-    <div class="at-h3-progress"><span style="width:${Math.max(0,Math.min(100,pct))}%"></span></div>
+    <div class="at-h3-progress"><span class="${window.ATHTML.percentClass(Math.max(0,Math.min(100,pct)),'w')}"></span></div>
     <div class="at-h3-progress-copy"><span>${n} të parë</span><span>${left} për t’u parë</span><span>${total||'?'} të transmetuar</span></div>
     ${episodePills.length?`<div class="at-h3-episode-strip" aria-label="Episode të ardhshme">${episodePills.join('')}</div>`:''}
     <div class="at-h3-feature-actions">${hasNext?`<button type="button" class="at-h3-watch-btn" data-home-action="open-next" data-id="${esc(a.id)}">▶ Hap episodin ${nx.n}</button><button type="button" class="at-h3-check-btn" data-home-action="mark-next" data-id="${esc(a.id)}">✓ E pashë</button>`:`<button type="button" class="at-h3-watch-btn" data-home-action="open-anime" data-id="${esc(a.id)}">Hap animen →</button>`}<button type="button" class="at-h3-more-btn" data-home-action="open-anime" data-id="${esc(a.id)}" aria-label="Më shumë detaje">•••</button></div>

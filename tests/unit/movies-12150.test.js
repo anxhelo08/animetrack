@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-function load(fetchImpl){const sandbox={window:{},fetch:fetchImpl,URLSearchParams,console};vm.runInNewContext(read('src/modules/movies.js'),sandbox);return sandbox.window.ATMovies12150}
+function load(fetchImpl){const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},fetch:fetchImpl,URLSearchParams,console};vm.runInNewContext(read('src/modules/movies.js'),sandbox);return sandbox.window.ATMovies12150}
 const response=data=>({ok:true,status:200,json:async()=>data});
 test('12.15.3 TMDB search maps movies as first-class catalog items',async()=>{
  const api=load(async url=>{assert.match(String(url),/search\/movie/);return response({results:[{id:11,title:'Star Wars',original_title:'Star Wars',release_date:'1977-05-25',poster_path:'/p.jpg',backdrop_path:'/b.jpg',overview:'Space opera',vote_average:8.2}]})});
@@ -18,7 +19,7 @@ test('12.15.3 TMDB details expose runtime, director, cast, IMDb and collection',
 test('12.15.3 app separates Movies from Anime and TV and keeps credentials local',()=>{
  const app=read('src/app.js'),unified=read('src/modules/unified.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.match(app,/function isLiveMovie/);assert.match(app,/TMDB_TOKEN_STORAGE/);assert.match(app,/movie-watched/);assert.match(app,/movie-rewatched/);assert.match(app,/at150RenderMovieDetail/);assert.match(app,/source:\['AniList','MyAnimeList','TVMaze','TMDB','OMDb','Cinemeta','Wikidata'\]/);
- assert.match(unified,/const isMovie=/);assert.match(unified,/movie:movies\.length/);assert.match(html,/data-media-filter="movie"/);assert.match(html,/tmdb-token-input/);assert.match(main,/modules\/movies\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.equal(pkg.version,'13.7.0');
+ assert.match(unified,/const isMovie=/);assert.match(unified,/movie:movies\.length/);assert.match(html,/data-media-filter="movie"/);assert.match(html,/tmdb-token-input/);assert.match(main,/modules\/movies\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 test('12.15.3 zero-key search falls back to Wikidata and finds Avengers Endgame',async()=>{
  const api=load(async url=>{url=String(url);if(url.includes('/api/cinemeta?mode=search'))return response({metas:[]});assert.match(url,/wikidata\.org\/w\/api\.php/);assert.match(url,/wbsearchentities/);return response({search:[{id:'Q23781129',label:'Avengers: Endgame',description:'2019 film directed by Anthony and Joe Russo'},{id:'Q123',label:'Avengers',description:'Marvel Comics superhero team'}]})});

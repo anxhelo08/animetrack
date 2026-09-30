@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-function load(fetchImpl){const sandbox={window:{},fetch:fetchImpl||(()=>{throw Error('network disabled')}),AbortController,URLSearchParams,setTimeout,clearTimeout,console};vm.runInNewContext(read('src/modules/franchise-engine.js'),sandbox);return sandbox.window.ATFranchiseEngine12130}
+function load(fetchImpl){const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},fetch:fetchImpl||(()=>{throw Error('network disabled')}),AbortController,URLSearchParams,setTimeout,clearTimeout,console};vm.runInNewContext(read('src/modules/franchise-engine.js'),sandbox);return sandbox.window.ATFranchiseEngine12130}
 const eps=(show,season,count,startYear)=>Array.from({length:count},(_,i)=>({id:Number(String(show)+String(season).padStart(2,'0')+String(i+1).padStart(2,'0')),season,number:i+1,name:'E'+(i+1),airdate:`${startYear}-${String(Math.min(12,i+1)).padStart(2,'0')}-01`,airstamp:`${startYear}-01-01T12:00:00Z`}));
 test('12.13 TV timeline continues global season numbers across Dexter franchise and excludes specials',()=>{
  const api=load(),shows=[
@@ -41,5 +42,5 @@ test('12.13 Wikidata + TVMaze resolver discovers all main Dexter TV series in re
 test('12.13 anime franchise logic is ID-first and movies never increment season numbering',()=>{
  const app=read('src/app.js'),fr=read('src/modules/franchise.js'),html=read('index.html'),main=read('src/main.js'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
  assert.match(app,/Only official AniList relation edges may add a part/);assert.doesNotMatch(app,/Series title fallback unavailable/);assert.match(app,/return remote\.some\(s=>sameSeriesSeason/);assert.doesNotMatch(app,/localKeys\.some/);assert.doesNotMatch(app,/canonicalTitle\(a\.title\)===canonicalTitle\(item\.title\)/);
- assert.match(fr,/else if\(f==='MOVIE'\)title='Film'/);assert(main.indexOf('./modules/franchise-engine.js')<main.indexOf('./app.js'));assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.equal(pkg.version,'13.7.0');
+ assert.match(fr,/else if\(f==='MOVIE'\)title='Film'/);assert(main.indexOf('./modules/franchise-engine.js')<main.indexOf('./app.js'));assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

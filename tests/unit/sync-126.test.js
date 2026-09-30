@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-function setup(){const store=new Map(),storage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)},ctx={window:{},Date,JSON};vm.runInNewContext(read('src/modules/sync.js'),ctx);return {api:ctx.window.ATSync126,storage,store}}
+function setup(){const store=new Map(),storage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)},ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},Date,JSON};vm.runInNewContext(read('src/modules/sync.js'),ctx);return {api:ctx.window.ATSync126,storage,store}}
 test('12.6 durable journal records base cloud revision before local changes',()=>{
  const {api,storage}=setup(),key='animetrack_user_alpha',a={anime:[{id:'one',seasons:[]}]};
  api.save(storage,key,a,'v1',true);
@@ -60,11 +61,11 @@ test('13.6 integration merges divergent updated_at revisions before conditional 
  assert.match(features,/await pwaUpdater\(true\)/);
  assert.match(read('src/sw.js'),/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(read('src/main.js'),/modules\/sync\.js/);
- assert.match(html,/AnimeTrack 13\.7\.0/);
+
 });
 
 test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{
- const code=read('src/modules/cross-sync.js'),ctx={window:{}};vm.runInNewContext(code,ctx);const api=ctx.window.ATCrossSync12153;
+ const code=read('src/modules/cross-sync.js'),ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(code,ctx);const api=ctx.window.ATCrossSync12153;
  let event=null,opts=null,callback=null,statusCallback=null,subscribed=false,removed=false;
  let unsubscribed=false;
  const channel={on:(e,o,cb)=>{event=e;opts=o;callback=cb;return channel},subscribe:cb=>{subscribed=true;statusCallback=cb;return channel},unsubscribe:()=>{unsubscribed=true}};

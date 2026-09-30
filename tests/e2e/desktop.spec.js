@@ -13,7 +13,7 @@ test('desktop regression',async({browser},testInfo)=>{
   })),history:[{eventId:'desktop-diary-1',id:'demo0',seasonId:'season0',episode:1,action:'watched',date:new Date(Date.now()-2*60*60*1000).toISOString(),diaryNote:'',diaryRating:null}],preferences:{weeklyGoal:10,notificationRead:[]}
  };
  const stub='(()=>{const payload='+JSON.stringify(fixture)+';const chain=table=>{const q={};for(const name of ["select","eq","order","limit","in","not","or","insert","upsert","update","delete","range","neq","gte","lte","contains"])q[name]=()=>q;q.maybeSingle=async()=>({data:table==="anime_libraries"?{payload,updated_at:new Date().toISOString()}:null,error:null});q.single=q.maybeSingle;q.then=(yes,no)=>Promise.resolve({data:[],error:null}).then(yes,no);return q;};window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:"desktop-demo",email:"demo@example.com"}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain("rpc")})};})();';
- await page.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2*',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub}));
+ await page.route('**/assets/supabase-client.*.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub+'\nexport default window.supabase.createClient;'}));
  const seasonalMedia=[
   {id:12801,idMal:12801,title:{romaji:'Parallel World',english:'Parallel World'},episodes:12,averageScore:83,format:'TV',genres:['Action','Fantasy'],description:'A new world.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12801',seasonYear:2026,startDate:{year:2026,month:9,day:3},tags:[{name:'Isekai',rank:95,isMediaSpoiler:false,isGeneralSpoiler:false}]},
   {id:12802,idMal:12802,title:{romaji:'Hidden Truth',english:'Hidden Truth'},episodes:12,averageScore:81,format:'TV',genres:['Drama','Mystery'],description:'A mystery.',coverImage:{large:''},siteUrl:'https://anilist.co/anime/12802',seasonYear:2026,startDate:{year:2026,month:9,day:3},tags:[{name:'Thriller',rank:86,isMediaSpoiler:false,isGeneralSpoiler:false},{name:'Secret culprit',rank:100,isMediaSpoiler:true,isGeneralSpoiler:false}]},
@@ -137,7 +137,7 @@ test('desktop regression',async({browser},testInfo)=>{
  await page.locator('[data-pro-action="collection-back"]').click();
  assert(await page.locator('#library-view').isVisible(),'Back to library works');
  assert(await page.locator('#at110-open-lists').isVisible(),'Library offers My Lists shortcut');
- 
+
  await page.locator('#pro-nav-calendar').click();
  assert(await page.locator('#pro-view').isVisible(),'Calendar should open');
  assert(await page.locator('#pro-content .at109-smart-week').isVisible(),'Desktop personal weekly calendar should render');
@@ -291,7 +291,7 @@ test('desktop regression',async({browser},testInfo)=>{
    return original.call(this,key,value);
   };
  });
- await quotaPage.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2*',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub}));
+ await quotaPage.route('**/assets/supabase-client.*.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub+'\nexport default window.supabase.createClient;'}));
  await quotaPage.route('https://graphql.anilist.co',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({data:{Page:{media:[],pageInfo:{hasNextPage:false}}}})}));
  await quotaPage.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
  await quotaPage.waitForFunction(()=>!document.body.classList.contains('account-booting'));

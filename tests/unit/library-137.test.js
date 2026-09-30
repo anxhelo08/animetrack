@@ -1,9 +1,10 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test,expect} from 'vitest';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {demonFixture,seq} from '../fixtures/franchise-137.js';
 function load(){
- const ctx={window:{}};
+ const ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};
  for(const file of ['franchise','provider-bridge','cloud-local','library-identity'])vm.runInNewContext(fs.readFileSync(new URL('../../src/modules/'+file+'.js',import.meta.url),'utf8'),ctx);
  return ctx.window;
 }

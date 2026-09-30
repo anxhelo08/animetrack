@@ -1,7 +1,5 @@
 import {cleanupOutdatedCaches,matchPrecache,precacheAndRoute} from 'workbox-precaching';
 import {registerRoute} from 'workbox-routing';
-import {StaleWhileRevalidate} from 'workbox-strategies';
-import {ExpirationPlugin} from 'workbox-expiration';
 
 cleanupOutdatedCaches();
 precacheAndRoute(self.__WB_MANIFEST,{ignoreURLParametersMatching:[/^utm_/,/^fbclid$/]});
@@ -17,13 +15,8 @@ registerRoute(
   }
 );
 
-registerRoute(
-  ({url})=>url.origin==='https://cdn.jsdelivr.net'&&url.pathname.includes('/@supabase/supabase-js@'),
-  new StaleWhileRevalidate({
-    cacheName:'animetrack-supabase-sdk',
-    plugins:[new ExpirationPlugin({maxEntries:4,maxAgeSeconds:30*24*60*60,purgeOnQuotaError:true})]
-  })
-);
+
+self.addEventListener('activate',event=>{event.waitUntil(caches.delete('animetrack-supabase-sdk'))});
 
 self.addEventListener('message',event=>{
   if(event.data?.type==='SKIP_WAITING')self.skipWaiting();

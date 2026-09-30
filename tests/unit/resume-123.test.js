@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),script=fs.readFileSync(path.join(root,'src/modules/resume.js'),'utf8');
-const w={window:{}};vm.runInNewContext(script,w);const resolve=w.window.ATResume123.resolve;
+const w={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(script,w);const resolve=w.window.ATResume123.resolve;
 const season=(id,total,watched=[])=>({id,title:id,total,watched,releaseStatus:'FINISHED'});
 const aired=s=>s.releaseStatus==='NOT_YET_RELEASED'?0:s.total;
 test('One Piece resumes at last watched season and correct 24-episode page',()=>{

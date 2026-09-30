@@ -1,8 +1,11 @@
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
+import {readFileSync} from 'node:fs';
+const headers=Object.fromEntries(JSON.parse(readFileSync(new URL('./vercel.json',import.meta.url),'utf8')).headers[0].headers.map(({key,value})=>[key,value.replace('; upgrade-insecure-requests','')]));
 
 export default defineConfig({
   publicDir:'public',
+  preview:{headers},
   plugins:[
     VitePWA({
       strategies:'injectManifest',

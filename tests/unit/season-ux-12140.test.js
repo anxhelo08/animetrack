@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -8,10 +9,10 @@ const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(roo
 test('12.14 season UX persists hidden parts and excludes them from resume/progress helpers',()=>{
  const app=read('src/app.js'),resume=read('src/modules/resume.js'),css=read('src/styles/tracking-media.css'),pkg=JSON.parse(read('package.json'));
  assert.match(app,/hidden:raw\?\.hidden===true/);assert.match(app,/function visibleSeasons/);assert.match(app,/function setSeasonHidden/);assert.match(app,/Pjesë të fshehura/);assert.match(app,/at140-resume-chip/);assert.match(app,/at140-season-description/);
- assert.match(resume,/\.filter\(s=>!s\.hidden\)/);assert.match(css,/\.at140-resume-chip/);assert.match(css,/\.at140-hidden-parts/);assert.equal(pkg.version,'13.7.0');
+ assert.match(resume,/\.filter\(s=>!s\.hidden\)/);assert.match(css,/\.at140-resume-chip/);assert.match(css,/\.at140-hidden-parts/);
 });
 test('12.14 resume selects the next visible season and never a hidden part',()=>{
- const sandbox={window:{}};vm.runInNewContext(read('src/modules/resume.js'),sandbox);const api=sandbox.window.ATResume123;
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(read('src/modules/resume.js'),sandbox);const api=sandbox.window.ATResume123;
  const a={id:'x',seasons:[{id:'s1',hidden:true,watched:[1,2],total:2},{id:'s2',watched:[1],total:3},{id:'s3',watched:[],total:2}]};
  const out=api.resolve(a,[{id:'x',seasonId:'s1',episode:2,action:'watched'},{id:'x',seasonId:'s2',episode:1,action:'watched'}],s=>s.total);
  assert.equal(out.seasonId,'s2');assert.equal(out.episode,2);

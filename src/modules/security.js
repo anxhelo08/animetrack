@@ -23,7 +23,7 @@ function html(value){
 
 function setHTML(node,markup){
   if(!node)return;
-  node.innerHTML=html(markup);
+  window.ATHTML.renderHTML(node,html(markup));
 }
 
 window.ATSecurity136=Object.freeze({text,html,setHTML});

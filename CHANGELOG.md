@@ -2,9 +2,24 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.7.0` / package version `13.7.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `13.8.0` / package version `13.8.0`.
 
 ## [Unreleased]
+
+## [13.8.0] - 2026-09-30
+
+### Security
+- Bundle the exact npm Supabase SDK locally; remove jsDelivr loading, its runtime cache and the SDK polling loop.
+- Route 116 HTML insertions through a shared DOMPurify boundary. Add an auto-escaping tagged template for shared controls and regression tests for XSS, decoded text and nested fragments.
+- Freeze the public cloud configuration and remove the technical setup panel and localStorage configuration writer.
+- Restrict avatars to this project's Supabase Storage objects with emoji fallback, including existing friends' profiles.
+- Enforce same-origin scripts/styles, explicit API connection hosts, no inline handlers/styles, and HSTS includeSubDomains. Replace inline progress/background styles with finite classes and image elements.
+- Disclose AniList token storage risks and distinguish explicit provider callbacks from Supabase email verification.
+- Add SECURITY.md, weekly Dependabot checks, security lint, Prettier baseline, pinned Node configuration and npm audit in CI.
+
+### Tests
+- Browser regression tests use the bundled SDK network boundary; a guest bootstrap test loads the real SDK under production CSP.
+- Remove release-number equality assertions unrelated to behavior.
 
 ## [13.7.0] - 2026-09-29
 

@@ -176,11 +176,11 @@ window.ATRich134=function ATRich134(ctx){
  function shell(){return'<section class="at134-rich"><header><div><span class="eyebrow">ANIMETRACK 13.4 · RICH DETAILS</span><h4>Cast, Regji & Staff ✦</h4><p>Hap një person dhe eksploro filmat, serialet ose animet ku ka punuar.</p></div><button type="button" class="ghost" data-at134-refresh>↻</button></header><div class="at134-body"><div class="at134-loading"><span></span><div><strong>Po ngarkohen njerëzit…</strong><small>Cast, staff dhe lidhjet e veprave.</small></div></div></div></section>'}
  async function attach(root,a,part){
   if(!root||!a)return;root.querySelector('.at134-rich')?.remove();
-  const host=document.createElement('div');host.innerHTML=shell();
+  const host=document.createElement('div');window.ATHTML.renderHTML(host,shell());
   const section=host.firstElementChild,anchor=root.querySelector('.at133-watch')||root.querySelector('.seasons-topline')||root.querySelector('.at150-movie-stats')||root.firstElementChild;
   if(anchor?.parentNode)anchor.parentNode.insertBefore(section,anchor);else root.append(section);
   const body=section.querySelector('.at134-body'),seq=++requestSeq;
-  const paint=async force=>{body.innerHTML='<div class="at134-loading"><span></span><div><strong>Po ngarkohen njerëzit…</strong><small>Cast, staff dhe filmografia.</small></div></div>';try{const data=await loadTitle(a,part,{force});if(seq===requestSeq&&section.isConnected)body.innerHTML=titleHTML(data)}catch(err){console.warn('Rich Details',err);if(seq===requestSeq&&section.isConnected)body.innerHTML='<div class="at134-empty">Detajet e avancuara nuk u ngarkuan. Provo rifresko.</div>'}};
+  const paint=async force=>{window.ATHTML.renderHTML(body,'<div class="at134-loading"><span></span><div><strong>Po ngarkohen njerëzit…</strong><small>Cast, staff dhe filmografia.</small></div></div>');try{const data=await loadTitle(a,part,{force});if(seq===requestSeq&&section.isConnected)window.ATHTML.renderHTML(body,titleHTML(data))}catch(err){console.warn('Rich Details',err);if(seq===requestSeq&&section.isConnected)window.ATHTML.renderHTML(body,'<div class="at134-empty">Detajet e avancuara nuk u ngarkuan. Provo rifresko.</div>')}};
   section.querySelector('[data-at134-refresh]')?.addEventListener('click',()=>void paint(true));
   section.addEventListener('click',e=>{if(!e.target.closest('[data-at134-settings]'))return;ctx.closeDetail?.();ctx.navigate('explore');requestAnimationFrame(()=>{const d=document.getElementById('movie-provider-settings');if(d){d.open=true;d.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('tmdb-token-input')?.focus()}})});
   await paint(false);
@@ -188,7 +188,7 @@ window.ATRich134=function ATRich134(ctx){
 
  function ensureDialog(){
   let d=document.getElementById('at134-person-dialog');if(d)return d;
-  document.body.insertAdjacentHTML('beforeend','<dialog id="at134-person-dialog" class="at134-dialog"><button type="button" class="at134-close" data-at134-close aria-label="Mbyll">×</button><div id="at134-person-content"></div></dialog>');
+  window.ATHTML.insertHTML(document.body,'beforeend','<dialog id="at134-person-dialog" class="at134-dialog"><button type="button" class="at134-close" data-at134-close aria-label="Mbyll">×</button><div id="at134-person-content"></div></dialog>');
   return document.getElementById('at134-person-dialog');
  }
  function workCard(w){
@@ -205,8 +205,8 @@ window.ATRich134=function ATRich134(ctx){
  }
  async function openPerson(provider,id,role){
   const d=ensureDialog(),box=document.getElementById('at134-person-content');if(!d||!box)return;
-  activePerson={provider,id,role};box.innerHTML='<div class="at134-person-loading"><span></span><strong>Po hapet profili…</strong></div>';if(!d.open)d.showModal?.();
-  try{const p=await loadPerson(provider,id,role);if(activePerson?.provider===provider&&activePerson?.id===id)box.innerHTML=personHTML(p)}catch(err){console.warn('Person profile',err);box.innerHTML='<div class="at134-person-error"><strong>Profili nuk u ngarkua.</strong><p>Provo përsëri më vonë ose kontrollo lidhjen/TMDB.</p></div>'}
+  activePerson={provider,id,role};window.ATHTML.renderHTML(box,'<div class="at134-person-loading"><span></span><strong>Po hapet profili…</strong></div>');if(!d.open)d.showModal?.();
+  try{const p=await loadPerson(provider,id,role);if(activePerson?.provider===provider&&activePerson?.id===id)window.ATHTML.renderHTML(box,personHTML(p))}catch(err){console.warn('Person profile',err);window.ATHTML.renderHTML(box,'<div class="at134-person-error"><strong>Profili nuk u ngarkua.</strong><p>Provo përsëri më vonë ose kontrollo lidhjen/TMDB.</p></div>')}
  }
  function openWork(key){
   const w=workMap.get(key);if(!w)return;ensureDialog().close?.();activePerson=null;ctx.closeDetail?.();

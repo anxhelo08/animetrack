@@ -21,7 +21,7 @@ test('auth registration and confirmation flow',async({browser,browserName},testI
  signOut:async()=>{store.session=null;return {error:null}}},from:query,rpc:async()=>({data:[],error:null})};
  window.supabase={createClient:()=>client};
  })();`;
- await page.route('**/cdn.jsdelivr.net/npm/@supabase/supabase-js@2*',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub}));
+ await page.route('**/assets/supabase-client.*.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub+'\nexport default window.supabase.createClient;'}));
  await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
  await page.locator('#account-modal.show').waitFor({timeout:12000});
  const signupTab=page.locator('#at116-tab-signup'),submit=page.locator('#account-login');

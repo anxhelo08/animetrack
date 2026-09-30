@@ -119,13 +119,13 @@ window.ATWatch133=function ATWatch133(ctx){
  }
  async function attach(root,anime,part){
   if(!root||!anime)return;root.querySelector('.at133-watch')?.remove();
-  const host=document.createElement('div');host.innerHTML=detailShell(anime,part);const section=host.firstElementChild,anchor=root.querySelector('.seasons-topline')||root.querySelector('.at150-movie-stats')||root.firstElementChild;
+  const host=document.createElement('div');window.ATHTML.renderHTML(host,detailShell(anime,part));const section=host.firstElementChild,anchor=root.querySelector('.seasons-topline')||root.querySelector('.at150-movie-stats')||root.firstElementChild;
   if(anchor?.parentNode)anchor.parentNode.insertBefore(section,anchor);else root.append(section);
   const body=section.querySelector('.at133-result'),select=section.querySelector('[data-at133-region]');
   const paint=async force=>{
-   body.innerHTML='<div class="at133-loading"><span></span><div><strong>Po kontrollohen providerët…</strong><small>'+esc(regionName(select.value))+'</small></div></div>';
-   try{const data=await load(anime,part,{force,reg:select.value});if(section.isConnected)body.innerHTML=resultHTML(data)}
-   catch(err){console.warn('Where to Watch',err);if(section.isConnected)body.innerHTML='<div class="at133-empty"><span>!</span><div><strong>Availability nuk u ngarkua</strong><p>Kontrollo internetin dhe provo përsëri.</p></div></div>'}
+   window.ATHTML.renderHTML(body,'<div class="at133-loading"><span></span><div><strong>Po kontrollohen providerët…</strong><small>'+esc(regionName(select.value))+'</small></div></div>');
+   try{const data=await load(anime,part,{force,reg:select.value});if(section.isConnected)window.ATHTML.renderHTML(body,resultHTML(data))}
+   catch(err){console.warn('Where to Watch',err);if(section.isConnected)window.ATHTML.renderHTML(body,'<div class="at133-empty"><span>!</span><div><strong>Availability nuk u ngarkua</strong><p>Kontrollo internetin dhe provo përsëri.</p></div></div>')}
   };
   select.addEventListener('change',()=>{setRegion(select.value,false);void paint(false)});
   section.querySelector('[data-at133-refresh]')?.addEventListener('click',()=>void paint(true));

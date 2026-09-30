@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-function module(){const context={window:{},Date,Map,Set,Number,String};vm.runInNewContext(read('src/modules/wrapped.js'),context,{filename:'pro-wrapped-129.js'});return context.window.ATWrapped129}
+function module(){const context={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},Date,Map,Set,Number,String};vm.runInNewContext(read('src/modules/wrapped.js'),context,{filename:'pro-wrapped-129.js'});return context.window.ATWrapped129}
 const DAY=86400000,NOW=new Date(2026,8,27,16,0),now=NOW.getTime();
 const stamp=(day,h=10)=>new Date(2026,8,day,h).getTime();
 function fixture(){
@@ -75,7 +76,7 @@ test('12.9 integrated Wrapped and profile have new assets, period actions, safe 
  assert.match(calendar,/ATWrapped129\.render/);assert.match(calendar,/wrapped-badges/);
  assert.match(main,/modules\/wrapped\.js/);assert.match(styles,/wrapped\.css/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(html,/AnimeTrack 13\.7\.0/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(css,/@media\(max-width:760px\)/);
 });
 

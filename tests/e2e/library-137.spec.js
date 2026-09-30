@@ -11,8 +11,8 @@ test('one complete Demon Slayer card survives login, realtime, reload and episod
  window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:'franchise-test',email:'fixture@example.com'}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain('rpc'),channel:()=>{const c={on:(_type,_filter,callback)=>{onRemote=callback;return c},subscribe:callback=>{callback?.('SUBSCRIBED');return c},unsubscribe(){}};return c},removeChannel(){}})};})();`;
  await page.route('**/*',route=>{
   const url=route.request().url();
+  if(/\/assets\/supabase-client\.[^/]+\.js$/.test(new URL(url).pathname))return route.fulfill({status:200,contentType:'application/javascript',body:stub+'\nexport default window.supabase.createClient;'});
   if(new URL(url).hostname==='127.0.0.1')return route.continue();
-  if(url.includes('cdn.jsdelivr.net/npm/@supabase/supabase-js@2'))return route.fulfill({status:200,contentType:'application/javascript',body:stub});
   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(url.includes('graphql')?{data:{Page:{media:[],pageInfo:{hasNextPage:false}},Media:null}}:{data:[],results:[]})});
  });
  await page.goto('/');

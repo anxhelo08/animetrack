@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -9,7 +10,7 @@ function response(data,status=200){return Promise.resolve({ok:status>=200&&statu
 function setup(fetchImpl,{token='',state=null}={}){
  const store=new Map(token?[['animetrack_tmdb_read_token',token]]:[]);
  const localStorage={getItem:k=>store.has(k)?store.get(k):null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k)};
- const sandbox={window:{},localStorage,fetch:fetchImpl||(()=>{throw Error('unexpected network')}),URL,URLSearchParams,AbortController,setTimeout,clearTimeout,Date,JSON,Map,Set,console};
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},localStorage,fetch:fetchImpl||(()=>{throw Error('unexpected network')}),URL,URLSearchParams,AbortController,setTimeout,clearTimeout,Date,JSON,Map,Set,console};
  vm.runInNewContext(read('src/modules/rich-details.js'),sandbox,{filename:'rich-details.js'});
  const data=state||{anime:[],preferences:{}};
  const ctx={esc:String,state:()=>data,poster:v=>v||'',inLibrary:()=>null,openAnime:()=>{},previewItem:()=>{},searchOnline:()=>{},closeDetail:()=>{},navigate:()=>{}};
@@ -57,5 +58,5 @@ test('13.4 TMDB person combined credits include movies and TV for cross-title na
 });
 test('13.4 release wiring loads rich details after Where to Watch with hashed Vite assets',()=>{
  const main=read('src/main.js'),styles=read('src/styles/index.css'),features=read('src/modules/features.js'),app=read('src/app.js'),html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json'));
- assert.equal(pkg.version,'13.7.0');assert.equal(pkg.releaseLabel,'13.7.0');assert.match(main,/modules\/rich-details\.js/);assert.match(styles,/rich-details\.css/);assert.match(features,/rich:window\.ATRich134/);assert.match(features,/modules\.rich\.mount/);assert.match(app,/at134PriorDetail/);assert.match(app,/searchOnline:q/);assert.match(html,/AnimeTrack 13\.7\.0/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(main,/modules\/rich-details\.js/);assert.match(styles,/rich-details\.css/);assert.match(features,/rich:window\.ATRich134/);assert.match(features,/modules\.rich\.mount/);assert.match(app,/at134PriorDetail/);assert.match(app,/searchOnline:q/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });

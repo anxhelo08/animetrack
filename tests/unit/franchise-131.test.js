@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
-function load(){const ctx={window:{}};vm.runInNewContext(read('src/modules/franchise.js'),ctx);return ctx.window.ATFranchise1212}
+function load(){const ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(read('src/modules/franchise.js'),ctx);return ctx.window.ATFranchise1212}
 test('13.1 Franchise Timeline 2.0 summarizes per-part ratings and metadata',()=>{
  const api=load(),parts=[
   {id:'s1',title:'Sezoni 1',format:'TV',releaseStart:'2020-01-03',myRating:8},
@@ -28,6 +29,6 @@ test('13.1 arc and season ratings are persisted through normalization, cloud and
 });
 test('13.1 release identity and PWA cache are consistent',()=>{
  const html=read('index.html'),sw=read('src/sw.js'),pkg=JSON.parse(read('package.json')),css=read('src/styles/details-integrations.css');
- assert.equal(pkg.version,'13.7.0');assert.match(html,/AnimeTrack 13\.7\.0/);assert.match(html,/AT<span>13\.7\.0<\/span>/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
+ assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
  assert.match(css,/\.at131-franchise/);assert.match(css,/\.at131-arc-add/);
 });

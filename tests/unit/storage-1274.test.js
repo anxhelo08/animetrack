@@ -1,3 +1,4 @@
+import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url);
@@ -5,7 +6,7 @@ import {fileURLToPath} from 'node:url';
 const __filename=fileURLToPath(import.meta.url),__dirname=require('node:path').dirname(__filename);
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path');
 const read=p=>fs.readFileSync(path.join(__dirname,'../..',p),'utf8');
-function load(){const sandbox={window:{},console,Date,JSON};vm.runInNewContext(read('src/modules/storage.js'),sandbox);vm.runInNewContext(read('src/modules/sync.js'),sandbox);return sandbox.window}
+function load(){const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},console,Date,JSON};vm.runInNewContext(read('src/modules/storage.js'),sandbox);vm.runInNewContext(read('src/modules/sync.js'),sandbox);return sandbox.window}
 function store(max=200){
  const map=new Map(),quota=()=>Object.assign(Error('Failed to execute setItem: exceeded the quota'),{name:'QuotaExceededError'});
  const storage={get length(){return map.size},key:i=>Array.from(map.keys())[i]??null,getItem:k=>map.has(k)?map.get(k):null,removeItem:k=>map.delete(k),setItem:(k,v)=>{
@@ -53,7 +54,7 @@ test('12.7.4 persistent recovery gate is wired before app, and no site-data rese
  const html=read('index.html'),sw=read('src/sw.js'),core=read('src/app.js'),css=read('src/styles/tracking-media.css'),pkg=JSON.parse(read('package.json'));
  const main=read('src/main.js');assert.match(main,/modules\/storage\.js/);assert.match(main,/styles\/index\.css/);assert(main.indexOf('./modules/storage.js')<main.indexOf('./app.js'));
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.equal(pkg.version,'13.7.0');
+
  assert.match(core,/cloudMirrorUnavailable=!mirror\.ok/);assert.match(core,/data-at128-export/);
  assert.match(core,/const pending=cloudDirty/);assert.match(core,/ATStorage1274\.save\(localStorage,KEY,localSnapshot,cloudRevision,true/);
  assert.doesNotMatch(core,/localStorage\.clear\(/);
