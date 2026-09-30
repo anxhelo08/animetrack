@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
       - name: Install pinned toolchain
@@ -71,7 +71,7 @@ jobs:
       DATABASE_URL: postgres://postgres:disposable-ci-password@127.0.0.1:5432/animetrack_security_test?sslmode=disable
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
       - run: npm ci --no-audit --no-fund
@@ -102,7 +102,7 @@ jobs:
             browser: webkit
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
       - name: Install pinned toolchain
@@ -128,7 +128,7 @@ jobs:
     needs: build-unit
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
       - run: npm ci --no-audit --no-fund
