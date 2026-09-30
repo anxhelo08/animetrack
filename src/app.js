@@ -11,7 +11,7 @@ import { createStore } from './core/store.js';
 import { bindLibraryUI } from './core/library-ui.js';
 import { createFeatures } from './modules/features.js';
 
-export function startApp(){'use strict';
+export async function startApp(){'use strict';
 const localStorage=libraryStorage;
 const {validPoster,uuid,now,genresOf,mediaFormat,isMovieAnime,isLiveMovie,mediaKind,movieWatched,isConfirmedFutureSeason,visibleSeasons,hiddenSeasons,futureSeasonOf,tidyNums,normSeason,mediaStartIso,releaseFromMedia,releasedCount,releasedTotal,plannedPending,pendingReleaseText,releasedStatusAfterWatch,syncTotals,normalized,count,percentage,nextSeasonEp,nextEp,normalizePreferences,normalizeTVShows,isSeriesFormat,seasonNumberFor,formatLabel}=createLibraryModel({
  releasedTV:(season,at)=>window.ATReleaseGuard1352.tvmazeReleasedCount(season,at),
@@ -1840,7 +1840,8 @@ const proContext={
 window.ATMobile113.state=libraryStore.getState;
 const proApp=createFeatures(proContext);
 libraryStore.subscribe((_state,event)=>{if(event.reason==='saved')proApp.onStateChange()});
-proApp.init();
+await new Promise(resolve=>setTimeout(resolve,0));
+await proApp.init();
 mountThemeSettings(theme,document.getElementById('product-advanced'),{toast:notify});
 mountStorageSettings({key:()=>KEY,toast:notify},libraryRepository);
 const at124Command=window.ATCommand124({
@@ -1863,6 +1864,7 @@ const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await
 const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
 const proPriorSave=save;save=function(){const result=proPriorSave();if(result)libraryStore.publish('saved');return result};
 
+await new Promise(resolve=>setTimeout(resolve,0));
 render();renderUpcoming();renderHome();setView('home');v8LoadSeason(1);accountBoot();
 
 // AnimeTrack 12.14 — season resume focus, reversible hidden parts and season descriptions.

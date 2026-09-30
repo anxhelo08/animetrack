@@ -21,4 +21,5 @@ const [{default:createClient},{startApp}]=await Promise.all([
   import("./startup-factories.js")
 ]);
 Object.defineProperty(window, "supabase", {value:Object.freeze({createClient}),configurable:false,writable:false});
-startApp();
+await new Promise(resolve=>setTimeout(resolve,0));
+await startApp();
