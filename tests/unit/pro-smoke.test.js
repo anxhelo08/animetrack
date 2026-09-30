@@ -193,7 +193,7 @@ test('iPhone feed uses same watch data and quick marking without duplicating lib
  const data={anime:[a],preferences:{},history:[]};let advanced='',opened='';
  c.state=()=>data;c.nextEpisode=()=>({season,n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.accountName=()=> 'Tester';c.markNext=id=>advanced=id;c.openEpisode=(id,s,n)=>opened=[id,s,n];c.recentAiring=()=>[];c.poster=()=>'';c.upcoming=()=>[];
  const feed=w.ATiPhone(c);const page=feed.render();
- assert.match(page,/PËR T’U PARË/);assert.match(page,/S01 \| E03/);assert.match(page,/data-ios-action="advance"/);assert.match(page,/Fill my shows list/);assert.doesNotMatch(page,/dashboard personal/i);
+ assert.match(page,/PËR T’U PARË/);assert.match(page,/S01 \| E03/);assert.match(page,/data-ios-action="advance"/);assert.match(page,/Shto një titull/);assert.doesNotMatch(page,/dashboard personal/i);
  feed.action('advance','a1');assert.equal(advanced,'a1');
  feed.action('episode','a1');assert.equal(JSON.stringify(opened),'["a1","s1",3]');
  feed.action('tab','upcoming');assert.match(feed.render(),/Nuk ka premiera në 7 ditët e ardhshme/);
@@ -252,7 +252,7 @@ test('iPhone quick +1 supports a real guarded Undo and distinct sync states',asy
  c.markNext=id=>{s.watched.push(3);return true};
  c.undoEpisode=(id,seasonId,n)=>{s.watched=s.watched.filter(v=>v!==n);return true};
  const f=w.ATiPhone(c);
- assert.match(f.render(),/Biblioteka në cloud/);
+ assert.match(f.render(),/Biblioteka e sinkronizuar/);
  await f.action('advance','t1');
  assert.match(f.render(),/Zhbëj EP 3/);
  assert.match(f.render(),/E04/);
@@ -432,7 +432,7 @@ test('11.2 desktop command search matches personal library without changing it',
 test('11.2 phone filters and order are UI-only and are cached in the PWA shell',()=>{
  const phone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8');
  assert.match(phone,/at114-top-tabs/);assert.match(phone,/at114-view-actions/);
- assert.match(phone,/WATCH HISTORY/);assert.match(phone,/S’KE PARË PREJ 7+ DITËSH|STALE_MS/);
+ assert.match(phone,/HISTORIKU I SHIKIMIT/);assert.match(phone,/S’KE PARË PREJ 7+ DITËSH|STALE_MS/);
  const main=fs.readFileSync(path.join(root,'src/main.js'),'utf8');assert.match(main,/styles\/index\.css/);assert.match(main,/modules\/experience\.js/);assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
 
@@ -456,7 +456,7 @@ test('11.2 iPhone glance renders next released episode with a read-only list',()
  const html=w.ATiPhone(c).render();
  assert.match(html,/at114-topbar/);assert.match(html,/PËR T’U PARË/);
  assert.match(html,/S01 \| E03/);assert.match(html,/data-ios-action="advance"/);
- assert.match(html,/Fill my shows list/);
+ assert.match(html,/Shto një titull/);
  assert.deepEqual(s.anime[0].seasons[0].watched,[1,2]);
 });
 
@@ -492,7 +492,7 @@ test('11.4 mobile To Watch advances atomically and shows watch history',async()=
  c.state=()=>data;c.accountName=()=>'Tester';c.poster=()=>'';c.nextEpisode=x=>({season:x.seasons[0],n:x.seasons[0].watched.length+1});c.count=x=>x.seasons[0].watched.length;c.releasedTotal=()=>5;c.percent=x=>x.seasons[0].watched.length*20;
  c.markNext=()=>{const n=s.watched.length+1;s.watched.push(n);data.history.push({id:a.id,seasonId:s.id,episode:n,action:'watched',date:new Date().toISOString()});return true};
  const f=w.ATiPhone(c);assert.match(f.render(),/S01 \| E02/);assert.match(f.render(),/Mystery Begins/);
- await f.action('advance','a');const page=f.render();assert.match(page,/S01 \| E03/);assert.match(page,/The Return/);assert.match(page,/WATCH HISTORY/);assert.match(page,/S01 \| E02/);assert.deepEqual(s.watched,[1,2]);
+ await f.action('advance','a');const page=f.render();assert.match(page,/S01 \| E03/);assert.match(page,/The Return/);assert.match(page,/HISTORIKU I SHIKIMIT/);assert.match(page,/S01 \| E02/);assert.deepEqual(s.watched,[1,2]);
 });
 
 test('11.4 mobile separates shows untouched for at least 7 days',()=>{
@@ -549,7 +549,7 @@ test('11.5 daily experience uses shared library, real weekly history and existin
  c.openEpisode=(...args)=>{opened=args};c.markNext=()=>{marked++;season.watched.push(3);return true};c.undoEpisode=()=>{undone++;season.watched.pop();return true};c.navigate=x=>{route=x};
  const day=w.ATDaily115(c);c.dayBrief=x=>day.render(x);
  const pc=day.render(false),phone=day.render(true);
- assert.match(pc,/YOUR ANIME DAY/);assert.match(pc,/Daily Journey/);assert.match(phone,/at115-day-summary/);day.action('toggle');assert.match(day.render(true),/at115-day-more/);assert.match(pc,/1<small> \/ 6 episode/);assert.match(pc,/SOT NË KALENDAR/);
+ assert.match(pc,/DITA IME/);assert.match(pc,/Daily Journey/);assert.match(phone,/at115-day-summary/);day.action('toggle');assert.match(day.render(true),/at115-day-more/);assert.match(pc,/1<small> \/ 6 episode/);assert.match(pc,/SOT NË KALENDAR/);
  day.action('open-next','anime1');assert.deepEqual(opened,['anime1','s1',3]);
  day.action('mark-next','anime1');assert.equal(marked,1);assert.match(day.render(true),/Zhbëj EP 3/);
  day.action('undo');assert.equal(undone,1);day.action('calendar');assert.equal(route,'calendar');

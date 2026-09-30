@@ -104,7 +104,7 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
 
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
  assert(await page.locator('#at-iphone-feed .at115-day-summary').isVisible(),'Collapsible daily overview should be visible on iPhone');
- assert.match(await page.locator('#at-iphone-feed .at115-day-summary').innerText(),/YOUR ANIME DAY/);
+ assert.match(await page.locator('#at-iphone-feed .at115-day-summary').innerText(),/DITA IME/);
  await page.locator('[data-ios-action="tab"][data-id="upcoming"]').click();
  assert.match(await page.locator('#at-iphone-feed').innerText(),/Episodet që po vijnë/);
  await page.locator('[data-ios-action="horizon"][data-id="30"]').click();
@@ -191,7 +191,11 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
    }
    if(tab==='profile'){
     assert(await page.locator('#pro-content .at129-profile-preview').isVisible(),'Profile displays earned achievement icons');
-    assert(await page.locator('#pro-content .at135-profile-card').isVisible(),'Live Sync shortcut renders on iPhone profile');
+    assert(!(await page.locator('#product-advanced .at135-profile-card').isVisible()),'Provider details stay under Advanced');
+    await page.locator('[data-product-action="settings"]').click();
+    await page.locator('#product-advanced > details > summary').click();
+    assert(await page.locator('#product-advanced .at135-profile-card').isVisible(),'Provider shortcut is available under Advanced');
+    await page.getByRole('button',{name:'Kthehu te përmbledhja',exact:true}).click();
     await page.locator('#pro-content .at129-profile-preview [data-pro-page="wrapped"]').click();
     assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped opens from iPhone profile');
     assert.equal(await page.locator('#pro-content .at129-badge').count(),24,'Achievement collection renders on mobile');
