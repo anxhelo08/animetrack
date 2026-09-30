@@ -18,6 +18,7 @@ export function createDispatcher({
   secret,
   subject,
   configured = true,
+  getVapid,
   now = Date.now,
 }) {
   return async (request) => {
@@ -35,6 +36,12 @@ export function createDispatcher({
     if (!authorized) return new Response('Unauthorized', { status: 401 });
     if (!configured || !validSubject(subject))
       return Response.json({ error: 'Push configuration unavailable' }, { status: 503 });
+    let keys;
+    try {
+      if (getVapid) keys = await getVapid();
+    } catch {
+      return Response.json({ error: 'Push configuration unavailable' }, { status: 503 });
+    }
     const stats = { processed: 0, sent: 0, skipped: 0, retried: 0, failed: 0 };
     try {
       const jobs = (await checked(admin.rpc('anime_claim_push_reminders'))) || [];
@@ -133,7 +140,12 @@ export function createDispatcher({
                       tag: 'animetrack:' + job.event_key,
                       url: '/?source=push',
                     }),
-                    { TTL: 3600, urgency: 'normal', timeout: 10000 },
+                    {
+                      TTL: 3600,
+                      urgency: 'normal',
+                      timeout: 10000,
+                      ...(keys ? { vapidDetails: { subject, ...keys } } : {}),
+                    },
                   );
                   delivery = { ...delivery, status: 'sent' };
                   stats.sent++;

@@ -1,4 +1,4 @@
-export function createConfigHandler({ publicKey, authenticate }) {
+export function createConfigHandler({ publicKey, authenticate, getPublicKey }) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -18,8 +18,14 @@ export function createConfigHandler({ publicKey, authenticate }) {
     }
     if (!valid)
       return Response.json({ error: 'Authentication required' }, { status: 401, headers });
-    if (!/^[A-Za-z0-9_-]{80,100}$/.test(publicKey))
+    let key = publicKey;
+    try {
+      if (getPublicKey) key = await getPublicKey();
+    } catch {
+      key = '';
+    }
+    if (!/^[A-Za-z0-9_-]{80,100}$/.test(key))
       return Response.json({ enabled: false, reason: 'not_configured' }, { status: 503, headers });
-    return Response.json({ enabled: true, publicKey }, { headers });
+    return Response.json({ enabled: true, publicKey: key }, { headers });
   };
 }

@@ -16,6 +16,7 @@ function fixture({
   subscriptions = 2,
   send = async () => {},
   libraryError = false,
+  getVapid,
 } = {}) {
   let time = Date.parse('2026-09-30T12:00:00Z');
   const reminders = Array.from({ length: jobs }, (_, i) => ({
@@ -115,6 +116,7 @@ function fixture({
   };
   const handler = createDispatcher({
     admin,
+    getVapid,
     secret,
     subject,
     now: () => time,
@@ -262,4 +264,37 @@ test('config preflight, authentication, method, missing key and public key only'
       )
     ).status,
   ).toBe(503);
+});
+
+test('server key resolver prefers env and persists a shared vault pair without exposing it to config', async () => {
+  const { resolveVapid } = await import('../../supabase/functions/_shared/push-keys.js');
+  const pair = { publicKey: 'A'.repeat(87), privateKey: 'B'.repeat(43) };
+  const admin = { rpc: async () => ({ data: pair }) };
+  expect(await resolveVapid({ admin, generate: () => pair })).toEqual(pair);
+  expect(
+    await resolveVapid({
+      admin,
+      publicKey: 'env-public',
+      privateKey: 'env-private',
+      generate: () => {
+        throw Error('must not generate');
+      },
+    }),
+  ).toEqual({ publicKey: 'env-public', privateKey: 'env-private' });
+  const h = createConfigHandler({
+    authenticate: async () => true,
+    getPublicKey: async () => pair.publicKey,
+  });
+  const r = await h(
+    new Request('https://test/', { method: 'POST', headers: { Authorization: 'Bearer valid' } }),
+  );
+  expect(await r.json()).toEqual({ enabled: true, publicKey: pair.publicKey });
+});
+
+test('resolved server keys are passed only to the push transport', async () => {
+  const pair = { publicKey: 'A'.repeat(87), privateKey: 'B'.repeat(43) };
+  const f = fixture({ getVapid: async () => pair });
+  const response = await f.handler(request());
+  expect(f.sent[0].options.vapidDetails).toEqual({ subject, ...pair });
+  expect(JSON.stringify(await response.json())).not.toContain(pair.privateKey);
 });

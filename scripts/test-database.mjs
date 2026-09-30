@@ -5,6 +5,9 @@ import pg from 'pg';
 export async function verifyDatabase(db) {
   await db.query(`CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN; CREATE ROLE service_role NOLOGIN BYPASSRLS;
     CREATE SCHEMA auth; CREATE SCHEMA storage;
+    CREATE SCHEMA vault; CREATE TABLE vault.secrets(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),name text UNIQUE,secret text);
+    CREATE VIEW vault.decrypted_secrets AS SELECT id,name,secret AS decrypted_secret FROM vault.secrets;
+    CREATE FUNCTION vault.create_secret(secret text,name text) RETURNS uuid LANGUAGE sql AS $$ INSERT INTO vault.secrets(secret,name) VALUES($1,$2) RETURNING id $$;
     CREATE TABLE auth.users(id uuid PRIMARY KEY);
     CREATE TABLE auth.sessions(id uuid PRIMARY KEY,user_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,created_at timestamptz DEFAULT now());
     CREATE TABLE storage.objects(bucket_id text,name text,owner_id text);
@@ -31,6 +34,12 @@ export async function verifyDatabase(db) {
         '../supabase/migrations/20260930162827_push_delivery_reliability.sql',
         import.meta.url,
       ),
+      'utf8',
+    ),
+  );
+  await db.query(
+    await readFile(
+      new URL('../supabase/migrations/20260930164530_push_vapid_vault.sql', import.meta.url),
       'utf8',
     ),
   );
@@ -289,6 +298,30 @@ export async function verifyDatabase(db) {
       );
     },
   );
+  await check('VAPID initialization is stable and inaccessible to browser roles', async () => {
+    const pair = (
+      await db.query('SELECT public.anime_push_vapid_config($1,$2) AS pair', [
+        'A'.repeat(87),
+        'B'.repeat(43),
+      ])
+    ).rows[0].pair;
+    assert.equal(pair.publicKey, 'A'.repeat(87));
+    assert.deepEqual(
+      (
+        await db.query('SELECT public.anime_push_vapid_config($1,$2) AS pair', [
+          'C'.repeat(87),
+          'D'.repeat(43),
+        ])
+      ).rows[0].pair,
+      pair,
+    );
+    await assert.rejects(
+      as('authenticated', B, SB, () =>
+        db.query('SELECT public.anime_push_vapid_config(null,null)'),
+      ),
+      (e) => e.code === '42501',
+    );
+  });
   return checks;
 }
 if (process.argv[1]?.endsWith('test-database.mjs')) {

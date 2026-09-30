@@ -12,7 +12,7 @@ Endpoint-et lejohen vetëm me HTTPS/port 443, pa kredenciale ose fragment: FCM, 
 
 ## Konfigurimi
 
-- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`: çift ekzistues VAPID; mos e ndrysho pa rilidhur abonimet.
+- `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`: env ka përparësi. Kur mungon çifti i plotë, runtime gjeneron një çift dhe e ruan të enkriptuar në Vault. RPC me lock garanton të njëjtin çift në të gjitha thirrjet/rajonet; vetëm service-role mund ta lexojë. Mos ndrysho një çift aktiv pa rilidhur abonimet.
 - `VAPID_SUBJECT`: mailto kontakt ose HTTPS publik. Për instalimet ekzistuese, vlera rezervë është `https://animetrack-flax.vercel.app`; konfigurimi env ka përparësi. Çelësat privatë nuk dalin në API.
 - Dispatcher: `verify_jwt=false` sepse autentikon `X-Cron-Secret`. Pranon sekretin ekzistues env ose sekretin e scheduler-it nga Vault përmes RPC vetëm për service-role. Nuk është endpoint publik për dërgim.
 - Config: `verify_jwt=true` dhe kontroll i përdoruesit/sesionit aktiv në handler. OPTIONS është preflight; POST kërkon sesion të vlefshëm, kthen vetëm `{enabled:true,publicKey}`. 401 për sesion të pavlefshëm; 503 `{enabled:false,reason:'not_configured'}` për mungesë VAPID; 405 për metoda të tjera; `Cache-Control:no-store`.
