@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { openFixture } from '../fixtures/browser-app.js';
 
-test('one nested-icon click commits exactly one episode through the extracted library router', async ({
+test('one bubbled SVG click commits exactly one episode through the extracted library router', async ({
   page,
 }, info) => {
   const owner = 'core-router';
@@ -42,7 +42,8 @@ test('one nested-icon click commits exactly one episode through the extracted li
   await page.evaluate(() =>
     Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => false }),
   );
-  await next.locator('[data-test-router-icon] rect').click();
+  // This verifies DOM routing; native touch targets are covered by accessibility/iPhone flows.
+  await next.locator('[data-test-router-icon] rect').dispatchEvent('click');
   const saved = await page.evaluate(
     (owner) => ({
       state: window.ATMobile113.state(),
