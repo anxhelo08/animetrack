@@ -36,6 +36,7 @@ test('light theme covers home, library, details and settings, persists and follo
   await page.keyboard.press('Escape');
   await page.locator('[data-product-action="settings"]').dispatchEvent('click');
   await expect(page.locator('#theme-select')).toBeVisible();
+  await audit(page);
   await page.locator('#theme-select').selectOption('auto');
   await page.emulateMedia({ colorScheme: 'dark' });
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
