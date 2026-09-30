@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 13.9.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
+AnimeTrack 13.10.0 ndjek anime, seriale dhe filma, me bibliotekë personale, progres episodesh, kalendar, profile dhe sinkronizim mes pajisjeve.
 
 **Live:** https://animetrack-flax.vercel.app/ · **Ndryshimet:** [CHANGELOG.md](CHANGELOG.md) · **Siguria:** [SECURITY.md](SECURITY.md)
 
@@ -50,3 +50,5 @@ Vercel përdor `npm run build`, shërben `dist/` dhe vendos politikat e siguris�
 ## Verifikimi i 13.9
 
 Shiko `docs/13.9-review.md` për verifikimet, kufizimet e OAuth dhe backup/PITR. Statusi aktual i testeve ndiqet në GitHub Actions; publikimi në serverin kryesor verifikohet në Vercel.
+
+Njoftimet 13.10: shih [push-delivery.md](docs/push-delivery.md) për konfigurimin, riprovimet dhe kufizimet.

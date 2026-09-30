@@ -1,19 +1,10 @@
-// AnimeTrack 10.9: public VAPID key discovery for authenticated users only.
-// This endpoint does not reveal the VAPID private key or create subscriptions.
-const cors = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Cache-Control": "no-store",
-};
-Deno.serve((request: Request) => {
-  if (request.method === "OPTIONS") return new Response("ok", { headers: cors });
-  if (request.method !== "POST") return new Response("Method not allowed", { status: 405, headers: cors });
-  const key = Deno.env.get("VAPID_PUBLIC_KEY") || "";
-  if (!/^[A-Za-z0-9_-]{80,100}$/.test(key)) {
-    return Response.json({ enabled: false, reason: "not_configured" }, { status: 503, headers: cors });
-  }
-  return Response.json({ enabled: true, publicKey: key }, {
-    headers: cors
-  });
-});
+import { createClient } from 'npm:@supabase/supabase-js@2.117.2';
+import { createConfigHandler } from './handler.js';
+const url = Deno.env.get('SUPABASE_URL')!;
+const admin = createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false,autoRefreshToken:false}});
+Deno.serve(createConfigHandler({publicKey:Deno.env.get('VAPID_PUBLIC_KEY') || '',authenticate:async(token:string)=>{
+ const {data,error} = await admin.auth.getUser(token);
+ if(error || !data.user || data.user.is_anonymous)return false;
+ const client = createClient(url,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:'Bearer '+token}},auth:{persistSession:false,autoRefreshToken:false}});
+ const active = await client.rpc('anime_has_active_session');return !active.error && active.data === true;
+}}));

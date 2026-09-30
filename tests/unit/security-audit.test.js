@@ -68,7 +68,7 @@ test('only server push dispatcher can modify claim and sent markers',()=>{
  assert.match(db,/new\.sent_at is distinct from old\.sent_at/);
  assert.match(db,/if current_user = 'authenticated'/);
  assert.match(db,/before insert or update/);
- const fn=read('supabase/functions/anime-push-dispatch/index.ts');
+ const fn=read('supabase/functions/anime-push-dispatch/handler.js');
  assert.match(fn,/safeEqual\(/);assert.match(fn,/X-Cron-Secret/);assert.match(fn,/permittedEndpoint/);
  assert.doesNotMatch(fn,/console\.log\([^)]*SERVICE_ROLE/);
 });

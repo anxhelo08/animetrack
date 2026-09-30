@@ -25,12 +25,12 @@ window.ATPush109=function ATPush109(ctx){
   if(!ctx.client()?.functions?.invoke){phase='unconfigured';return phase}
   try{
    const {data,error}=await ctx.client().functions.invoke('anime-push-config',{body:{}});
-   if(error||!data?.publicKey||!/^[A-Za-z0-9_-]{80,100}$/.test(String(data.publicKey)))throw Error('Serveri nuk ka çelësin publik VAPID');
+   if(error||!data?.enabled||!data?.publicKey||!/^[A-Za-z0-9_-]{80,100}$/.test(String(data.publicKey)))throw Error('Serveri nuk ka çelësin publik VAPID');
    publicKey=String(data.publicKey);
    registration=await navigator.serviceWorker.ready;
    subscription=await registration.pushManager.getSubscription();
    phase='ready';detail='';
-  }catch(err){phase='unconfigured';detail='Funksioni i serverit nuk është publikuar';console.warn('Push preparation unavailable',err)}
+  }catch(err){phase='error';detail='Kontrollo hyrjen në llogari ose provo përsëri';console.warn('Push preparation unavailable',err)}
   ctx.rerender?.();return phase;
  }
  function decodeKey(key){

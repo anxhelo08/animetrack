@@ -1,3 +1,9 @@
+# 13.10.0
+
+- Web Push: lease atomik, 5 përpjekje dhe backoff i qëndrueshëm. Status veçmas për pajisjet; sukseset nuk ridërgohen gjatë riprovimit.
+- Endpoint-e Windows/Edge, pastrim 404/410, lexime të grupuara sipas përdoruesit.
+- VAPID_SUBJECT në env dhe autentikim i plotë në konfigurim.
+
 # Changelog
 
 All notable changes to AnimeTrack are documented here.

@@ -1,7 +1,7 @@
 {
   "name": "animetrack",
-  "version": "13.9.0",
-  "releaseLabel": "13.9.0",
+  "version": "13.10.0",
+  "releaseLabel": "13.10.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,9 +11,9 @@
     "test:unit": "vitest run tests/unit",
     "test:e2e": "playwright test",
     "test": "npm run test:unit && npm run build",
-    "lint": "eslint src api server supabase/functions/anime-account/*.js",
+    "lint": "eslint src api server supabase/functions/**/*.js",
     "format": "prettier --write .",
-    "format:check": "prettier --check src/modules/safe-html.js src/modules/avatar.js src/modules/supabase-client.js tests/unit/safe-html.test.js eslint.config.js SECURITY.md src/modules/account-service.js api server supabase/functions/anime-account/*.js tests/unit/server-api.test.js tests/unit/account-server.test.js scripts/test-database.mjs",
+    "format:check": "prettier --check src/modules/safe-html.js src/modules/avatar.js src/modules/supabase-client.js tests/unit/safe-html.test.js eslint.config.js SECURITY.md src/modules/account-service.js api server supabase/functions/**/*.js tests/unit/server-api.test.js tests/unit/account-server.test.js scripts/test-database.mjs tests/unit/push-delivery.test.js",
     "audit": "npm audit --audit-level=high",
     "test:db": "node scripts/test-database.mjs"
   },

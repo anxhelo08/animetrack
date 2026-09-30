@@ -25,6 +25,15 @@ export async function verifyDatabase(db) {
   );
   await db.query(base);
   await db.query(delta);
+  await db.query(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20260930162827_push_delivery_reliability.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
   const A = '00000000-0000-4000-8000-000000000001',
     B = '00000000-0000-4000-8000-000000000002',
     C = '00000000-0000-4000-8000-000000000003';
@@ -225,6 +234,61 @@ export async function verifyDatabase(db) {
       assert.equal(allowed, 120);
     });
   });
+  await check(
+    'push queue claims once, backoff persists, stale claims recover, exhausted jobs stop',
+    async () => {
+      await db.query(`INSERT INTO public.anime_push_reminders(user_id,event_key,anime_id,season_id,episode,title,air_at,notify_at)
+      VALUES('${B}','queue-test','a','s',1,'Synthetic',now(),now());`);
+      const claimed = (await db.query('SELECT * FROM public.anime_claim_push_reminders()')).rows;
+      assert.equal(claimed.length, 1);
+      assert.equal(claimed[0].attempts, 1);
+      assert.equal(
+        (await db.query('SELECT * FROM public.anime_claim_push_reminders()')).rows.length,
+        0,
+      );
+      await db.query(
+        "UPDATE public.anime_push_reminders SET claimed_at=null,next_attempt_at=now()+interval '1 hour'",
+      );
+      assert.equal(
+        (await db.query('SELECT * FROM public.anime_claim_push_reminders()')).rows.length,
+        0,
+      );
+      await db.query(
+        "UPDATE public.anime_push_reminders SET claimed_at=now()-interval '6 minutes',next_attempt_at=null",
+      );
+      assert.equal(
+        (await db.query('SELECT * FROM public.anime_claim_push_reminders()')).rows[0].attempts,
+        2,
+      );
+      await db.query('UPDATE public.anime_push_reminders SET claimed_at=null,attempts=5');
+      assert.equal(
+        (await db.query('SELECT * FROM public.anime_claim_push_reminders()')).rows.length,
+        0,
+      );
+      assert.equal(
+        (await db.query('SELECT terminal_reason FROM public.anime_push_reminders')).rows[0]
+          .terminal_reason,
+        'failed',
+      );
+    },
+  );
+  await check(
+    'browser cannot change push attempts, read deliveries, or invoke worker claims',
+    async () => {
+      for (const sql of [
+        'UPDATE public.anime_push_reminders SET attempts=0',
+        'SELECT * FROM public.anime_push_deliveries',
+        'SELECT * FROM public.anime_claim_push_reminders()',
+      ])
+        await assert.rejects(
+          as('authenticated', B, SB, () => db.query(sql)),
+          (e) => e.code === '42501',
+        );
+      await as('authenticated', B, SB, () =>
+        db.query("UPDATE public.anime_push_reminders SET title='Changed'"),
+      );
+    },
+  );
   return checks;
 }
 if (process.argv[1]?.endsWith('test-database.mjs')) {

@@ -331,16 +331,16 @@ test('10.9 push is explicitly opt-in and staged server secrets never ship in the
  const w=load(),c=context(),push=w.ATPush109(c),html=push.banner(),
  sw=fs.readFileSync(path.join(root,'src/sw.js'),'utf8'),
  src=fs.readFileSync(path.join(root,'src/modules/push.js'),'utf8'),
- backend=fs.readFileSync(path.join(root,'supabase/functions/anime-push-dispatch/index.ts'),'utf8'),
+ backend=fs.readFileSync(path.join(root,'supabase/functions/anime-push-dispatch/handler.js'),'utf8'),
  sql=fs.readFileSync(path.join(root,'supabase/migrations/20260925235000_anime_push_reminders.sql'),'utf8'),
  index=fs.readFileSync(path.join(root,'index.html'),'utf8');
  assert.match(html,/Njoftimet jashtë aplikacionit/);
  assert.doesNotMatch(src,/VAPID_PRIVATE_KEY|SUPABASE_SERVICE_ROLE_KEY|ANIMETRACK_CRON_SECRET/);
  assert.match(src,/Notification\.requestPermission\(\)/);
- assert.match(backend,/X-Cron-Secret/);assert.match(backend,/stillWanted\(job, library\?\.payload\)/);
+ assert.match(backend,/X-Cron-Secret/);assert.match(backend,/stillWanted\(job, library.get\(job.user_id\)\)/);
  assert.match(sql,/enable row level security/);assert.match(sql,/with check \(user_id=\(select auth\.uid\(\)\)\)/);
- const config=fs.readFileSync(path.join(root,'supabase/functions/anime-push-config/index.ts'),'utf8');
- assert.match(config,/request\.method === "OPTIONS"/);
+ const config=fs.readFileSync(path.join(root,'supabase/functions/anime-push-config/handler.js'),'utf8');
+ assert.match(config,/request\.method === 'OPTIONS'/);
  assert.match(config,/Access-Control-Allow-Headers/);
  assert.match(config,/Access-Control-Allow-Origin/);
  assert.match(sql,/public\.anime_push_subscriptions to service_role/);
