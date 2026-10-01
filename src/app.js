@@ -743,7 +743,7 @@ const DAILY_QUERY=`query($ids:[Int],$malIds:[Int]){a:Page(page:1,perPage:50){med
 async function refreshReleaseEvidence(entries,owner,storageKey){
  const {verifiedTVEpisodes}=await import('./core/episode-details.js');
  const current=()=>owner===(accountUser?.id||null)&&storageKey===KEY;
- const targets=entries.flatMap(a=>a.seasons.map(s=>({a,s}))).filter(({a,s})=>['watching','waiting','completed'].includes(a.status)&&mediaFormat(s.format)!=='MOVIE'&&(!s.nextAiringEpisode||s.source?.toLowerCase()==='tvmaze')&&(!s.airedCheckedAt||Date.now()-Date.parse(s.airedCheckedAt)>6*3600000||Number(s.airedCount)>=s.total||!s.releaseEvidence)).slice(0,24);
+ const targets=entries.flatMap(a=>a.seasons.map(s=>({a,s}))).filter(({a,s})=>['watching','waiting','completed'].includes(a.status)&&mediaFormat(s.format)!=='MOVIE'&&(!s.nextAiringEpisode||s.source?.toLowerCase()==='tvmaze')&&(!s.airedCheckedAt||Date.now()-Date.parse(s.airedCheckedAt)>6*3600000||Number(s.airedCount)>=s.total||!s.releaseEvidence)).sort((x,y)=>Number(y.s.year||0)-Number(x.s.year||0)||Date.parse(y.a.updatedAt||0)-Date.parse(x.a.updatedAt||0)).slice(0,24);
  for(let i=0;i<targets.length;i+=3){if(!current())return;await Promise.allSettled(targets.slice(i,i+3).map(async({a,s})=>{
   let evidence=null;
   try{evidence=await verifiedTVEpisodes(a,s)}catch{}

@@ -86,3 +86,9 @@ test('14.6.1 incomplete TVmaze schedule with real future dates cannot expose all
  assert.equal(api.tvmazeReleasedCount(season),2);
  assert.equal(season.watched.length,12);
 });
+
+
+test('a current-year partial TVmaze season never treats its planned twelve as released when the future schedule is missing',()=>{
+ const season={source:'TVMaze',year:new Date().getUTCFullYear(),total:12,watched:[1,2],episodes:eps(2,2)};
+ assert.equal(guard().tvmazeReleasedCount(season),2);
+});

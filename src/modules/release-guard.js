@@ -30,6 +30,10 @@ window.ATReleaseGuard1352=(()=>{
     return Math.min(total||10000,limit,Math.max(watchedMax,dated));
   }
   if(s.releaseEvidence===true)return Math.min(total||10000,Math.max(0,Number(s.airedCount)||0));
+  if(Number(s.year)>=new Date(at).getUTCFullYear()&&!/FINISHED|ENDED/i.test(String(s.releaseStatus||''))){
+    const dated=Math.max(0,...episodes.filter(ep=>dateOf(ep)<=at).map(ep=>Number(ep.number)));
+    return Math.min(total||10000,Math.max(watchedMax,dated));
+  }
 
   if(catalogComplete){
     let dated=0,validDates=0;
