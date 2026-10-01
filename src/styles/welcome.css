@@ -61,9 +61,9 @@ body.auth-required #account-guest-user>.account-note{display:none!important}
  .welcome-header{padding:calc(16px + env(safe-area-inset-top)) 20px 18px;position:relative;z-index:2}
  .welcome-brand{font-size:21px;letter-spacing:-.7px;gap:8px}.welcome-brand img{width:30px;height:30px}
  .welcome-login{border-radius:12px;padding:8px 18px;font-size:14px;font-weight:700;background:#ffffff14}
- .welcome-hero{display:block;position:relative;isolation:isolate;min-height:calc(100svh - 90px);padding:325px 20px calc(28px + env(safe-area-inset-bottom));overflow:hidden}
- .welcome-showcase{position:absolute;inset:0 16px auto;height:590px;z-index:-1;border:1px solid #ffffff18;border-radius:24px;overflow:hidden;background:#201624}
- .welcome-showcase:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#100d1700 15%,#100d1760 42%,#100d17ed 72%,#100d17 100%);pointer-events:none}
+ .welcome-hero{display:block;position:relative;isolation:isolate;min-height:calc(100svh - 90px);padding:clamp(190px,calc(100svh - 480px),325px) 20px calc(28px + env(safe-area-inset-bottom));overflow:hidden}
+ .welcome-showcase{position:absolute;inset:0 16px auto;height:min(590px,calc(100svh - 90px));z-index:-1;border:1px solid #ffffff18;border-radius:24px;overflow:hidden;background:#201624}
+ .welcome-showcase:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#100d1700 12%,#100d17b3 35%,#100d17ed 65%,#100d17 100%);pointer-events:none}
  .welcome-mosaic{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px;transform:translateY(0);animation:welcome-wall-enter 4s ease-out both}
  .welcome-mosaic img{width:100%;height:178px;object-fit:cover;border-radius:12px;display:block}
  .welcome-mosaic img:nth-child(3n+2){transform:translateY(25px)}
@@ -76,5 +76,5 @@ body.auth-required #account-guest-user>.account-note{display:none!important}
  .welcome-features{background:#100d17}.welcome-features>div{padding:24px}.welcome-features h2{font-size:30px}
 }
 @keyframes welcome-wall-enter{from{transform:translateY(18px)}to{transform:translateY(0)}}
-@media(max-width:380px){.welcome-hero{padding-top:285px}.welcome-mosaic img{height:158px}.welcome-showcase{height:540px}.welcome-copy h1{font-size:37px}}
+@media(max-width:380px){.welcome-mosaic img{height:158px}.welcome-copy h1{font-size:37px}}
 @media(prefers-reduced-motion:reduce){.welcome-mosaic{animation:none}}
