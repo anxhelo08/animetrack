@@ -455,3 +455,121 @@ test('a completed airing series surfaces episode seven at its confirmed release 
     [1, 2, 3, 4, 5, 6, 7],
   );
 });
+
+test('watching opens first, history can be unmarked and navigation does not sync the library', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'iphone-chromium', 'Phone-specific presentation.');
+  const second = structuredClone(payload.anime[0]);
+  second.id = 'another-story';
+  second.title = 'Another story';
+  second.sourceId = '2222';
+  const library = {
+    ...structuredClone(payload),
+    anime: [structuredClone(payload.anime[0]), second],
+    history: [
+      {
+        id: second.id,
+        seasonId: 'season-two',
+        episode: 1,
+        action: 'watched',
+        date: '2026-09-30T11:00:00Z',
+      },
+    ],
+  };
+  await openFixture(page, { payload: library, owner: 'mobile-fluid-tracking' });
+  const watching = page.locator('#mobile-continue');
+  await expect
+    .poll(() =>
+      watching.evaluate((n) => {
+        const top = n.getBoundingClientRect().top;
+        return top >= 0 && top <= 16;
+      }),
+    )
+    .toBe(true);
+  await expect(page.locator('#product-sync')).toHaveAttribute('data-state', 'synced');
+  await expect(page.locator('#product-sync')).not.toBeVisible();
+  const calls = () => page.evaluate(() => ({ ...window.__ATFixtureLibraryCalls }));
+  // Complete the startup metadata save before measuring read-only navigation.
+  await expect.poll(async () => (await calls()).write).toBeGreaterThan(0);
+  await expect(page.locator('#product-sync')).toHaveAttribute('data-state', 'synced');
+  const before = await calls();
+  const initial = await state(page);
+  for (const destination of ['explore', 'library', 'diary', 'profile', 'home']) {
+    await page.locator(`[data-mobile-nav="${destination}"]`).tap();
+    await expect(page.locator(`[data-mobile-nav="${destination}"]`)).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  }
+  expect(await calls()).toEqual(before);
+  expect(await state(page)).toBe(initial);
+  await expect
+    .poll(() =>
+      watching.evaluate((n) => {
+        const top = n.getBoundingClientRect().top;
+        return top >= 0 && top <= 16;
+      }),
+    )
+    .toBe(true);
+  await page.locator('[data-mobile-home-tab="upcoming"]').tap();
+  await page.locator('[data-mobile-nav="home"]').tap();
+  await expect(page.locator('[data-mobile-nav="home"]')).toHaveClass(/mobile-tap-feedback/);
+  await expect(page.locator('[data-mobile-home-tab="watch"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect
+    .poll(() =>
+      watching.evaluate((n) => {
+        const top = n.getBoundingClientRect().top;
+        return top >= 0 && top <= 16;
+      }),
+    )
+    .toBe(true);
+  await page.evaluate(() => {
+    window.retainedWatchRow = document.querySelector(
+      '#mobile-continue [data-watch-key="another-story:season-two:2:next"]',
+    );
+  });
+  await watching.locator('[data-ios-action="advance"][data-id="mobile-story"]').tap();
+  const recent = page.locator('#mobile-history .watch-row').first();
+  await expect(recent).toHaveAttribute('data-watch-key', 'mobile-story:season-two:2:seen');
+  await expect(recent).toHaveClass(/watch-row--seen/);
+  expect(
+    await page.evaluate(
+      () =>
+        window.retainedWatchRow ===
+        document.querySelector(
+          '#mobile-continue [data-watch-key="another-story:season-two:2:next"]',
+        ),
+    ),
+  ).toBe(true);
+  await expect.poll(async () => (await calls()).write).toBeGreaterThan(before.write);
+  const progress = () =>
+    page.evaluate(
+      () =>
+        window.ATMobile113.state()
+          .anime.find((a) => a.id === 'mobile-story')
+          .seasons.find((s) => s.id === 'season-two').watched,
+    );
+  expect(await progress()).toEqual([1, 2]);
+  await recent.locator('[data-mobile-action="unwatch"]').tap();
+  await expect.poll(progress).toEqual([1]);
+  await expect(watching).toContainText('S2 EP2');
+  await expect
+    .poll(() =>
+      watching.evaluate((n) => {
+        const top = n.getBoundingClientRect().top;
+        return top >= 0 && top <= 16;
+      }),
+    )
+    .toBe(true);
+  await expect(page.locator('body > .watch-row[aria-hidden="true"]')).toHaveCount(0);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await watching.locator('[data-ios-action="advance"][data-id="mobile-story"]').tap();
+  await expect.poll(progress).toEqual([1, 2]);
+  await expect(page.locator('body > .watch-row[aria-hidden="true"]')).toHaveCount(0);
+  await expect(page.locator('#mobile-home .mobile-tap-feedback')).toHaveCount(0);
+  await page.screenshot({ path: info.outputPath('watching-and-history.png'), fullPage: true });
+});

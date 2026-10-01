@@ -28,7 +28,7 @@ The light/system theme preference remains available.
 The guest welcome contains nine distinct anime titles. Three original covers are
 served locally at 840px; six additional covers use remote sources and AniList
 extraLarge metadata without blocking authentication. Broken artwork is hidden.
-External poster downloads remain blocked by the cloud network proxy.
+Poster hosts are allowed by the cloud network policy; fixture tests use local artwork.
 
 ## Implementation
 
@@ -85,6 +85,21 @@ no network request or library mutation is needed to unlock a known airing date.
 The timer pauses when hidden and rechecks when returning. Marking the episode
 removes the badge. Unknown planned episode totals never create new-release badges.
 Discover and library tools wrap within the safe area; filter chips are all visible.
-Navigation feedback uses a 120ms entrance and 100ms press transition, disabled by
+Navigation uses a 120ms entrance and 240ms press feedback, disabled by
 reduced-motion preferences. Tests exercise the six-watched → seventh-released
 scenario using the browser clock, including marking and preservation of progress.
+
+
+Entering Home returns to the Watching tab and scrolls toward its next episodes.
+Last-watched rows appear dimmer above it; their green check removes that exact
+episode from watched progress through the existing controller. Marking or unmarking
+updates progress immediately and animates the row for 220ms without delaying the
+transaction. Unchanged episode rows keep their DOM nodes and artwork. History
+selects the latest valid watched event per title in one scan before sorting titles.
+Reduced-motion preferences disable movement and press effects.
+
+The successful sync banner is hidden on phones. Saving and pending changes use
+a compact floating status above navigation, keeping list positions stable.
+Offline states, conflicts and errors remain visible. Navigation does not initiate a library read
+or upload. A fixture test counts library queries across all five destinations and
+confirms that an episode transaction still uploads. Background sync remains active.

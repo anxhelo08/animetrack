@@ -25,7 +25,10 @@ export function createMobilePresentation(ctx) {
     return mobileEpisodeLabel(next.season, ctx.seasonNumber(item, next.season), next.n);
   }
   let lastHomeMarkup = '',
-    releaseTimer;
+    releaseTimer,
+    pendingMove,
+    focusFrame,
+    focusHome = true;
   let homeTab = 'watch',
     homeLayout = 'list';
   function home() {
@@ -85,21 +88,21 @@ export function createMobilePresentation(ctx) {
     const row = (a, next, options = {}) => {
       const meta = next.season.episodes?.find((e) => e.number === next.n);
       const poster = ctx.poster(a.cover || '');
-      return `<article class="watch-row${options.fresh ? ' watch-row--fresh' : ''}"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button>${options.fresh ? '<span class="watch-row-new">Episod i ri</span>' : ''}<button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || 'Episodi i radhës')}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div>${options.upcoming ? '<span class="watch-row-pending" aria-label="Ende pa transmetuar">◷</span>' : options.seen ? '<span class="watch-row-seen" aria-label="Episod i parë">✓</span>' : `<button type="button" class="media-card-mark watch-row-mark" data-ios-action="advance" data-id="${esc(a.id)}" aria-label="Shëno episodin e radhës të ${esc(a.title)} si të parë">${navIcon('watch')}</button>`}</article>`;
+      return `<article class="watch-row${options.fresh ? ' watch-row--fresh' : ''}${options.seen ? ' watch-row--seen' : ''}" data-watch-key="${esc(a.id)}:${esc(next.season.id)}:${next.n}:${options.seen ? 'seen' : options.upcoming ? 'future' : 'next'}"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button>${options.fresh ? '<span class="watch-row-new">Episod i ri</span>' : ''}<button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || 'Episodi i radhës')}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div>${options.upcoming ? '<span class="watch-row-pending" aria-label="Ende pa transmetuar">◷</span>' : options.seen ? `<button type="button" class="watch-row-seen" data-mobile-action="unwatch" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}" aria-label="Hiq shënimin e episodit ${next.n} të ${esc(a.title)}" title="Hiq nga episodet e parë">✓</button>` : `<button type="button" class="media-card-mark watch-row-mark" data-ios-action="advance" data-id="${esc(a.id)}" aria-label="Shëno episodin e radhës të ${esc(a.title)} si të parë">${navIcon('watch')}</button>`}</article>`;
     };
     const recent = new Map();
     const byId = new Map(items.map((a) => [a.id, a]));
-    for (const event of history
-      .slice()
-      .sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0))) {
-      if (!['watched', 'season-watched'].includes(event.action) || recent.has(event.id)) continue;
+    for (const event of history) {
+      if (!['watched', 'season-watched'].includes(event.action)) continue;
       const a = byId.get(event.id),
         season = a?.seasons.find((s) => s.id === event.seasonId);
       const n =
         event.action === 'season-watched'
           ? Math.max(...(event.episodes || season?.watched || []))
           : Number(event.episode);
-      if (season?.watched.includes(n)) recent.set(a.id, { a, season, n });
+      const at = Date.parse(event.date) || 0;
+      if (season?.watched.includes(n) && (!recent.has(a.id) || at > recent.get(a.id).at))
+        recent.set(a.id, { a, season, n, at });
     }
     // Imported progress may have no event log: show its last known watched episode.
     for (const a of items) {
@@ -135,11 +138,12 @@ export function createMobilePresentation(ctx) {
         );
     }
     const label = (text) => `<h2 class="watch-group-label"><span>${text}</span></h2>`;
-    const markup = `<div class="watch-home-tabs" role="group" aria-label="Lista e episodeve"><button type="button" data-mobile-home-tab="watch" aria-pressed="${homeTab === 'watch'}">Për të parë</button><button type="button" data-mobile-home-tab="upcoming" aria-pressed="${homeTab === 'upcoming'}">Së shpejti</button></div><div class="watch-home-toolbar"><button type="button" data-mobile-action="navigate" data-mobile-target="diary">Historiku</button><div><button type="button" data-mobile-home-layout="list" aria-pressed="${homeLayout === 'list'}" aria-label="Shfaq listën">☷</button><button type="button" data-mobile-home-layout="grid" aria-pressed="${homeLayout === 'grid'}" aria-label="Shfaq rrjetën">⊞</button></div></div><div class="watch-home-content" data-layout="${homeLayout}">${
+    const markup = `<div class="watch-home-tabs" role="group" aria-label="Lista e episodeve"><button type="button" data-mobile-home-tab="watch" aria-pressed="${homeTab === 'watch'}">Për të parë</button><button type="button" data-mobile-home-tab="upcoming" aria-pressed="${homeTab === 'upcoming'}">Së shpejti</button></div><div class="watch-home-toolbar"><button type="button" data-mobile-action="history">Historiku</button><div><button type="button" data-mobile-home-layout="list" aria-pressed="${homeLayout === 'list'}" aria-label="Shfaq listën">☷</button><button type="button" data-mobile-home-layout="grid" aria-pressed="${homeLayout === 'grid'}" aria-label="Shfaq rrjetën">⊞</button></div></div><div class="watch-home-content" data-layout="${homeLayout}">${
       homeTab === 'watch'
         ? `<section id="mobile-history" aria-label="Historiku i fundit">${label('Historiku · Episodet e fundit')}${
             recent.size
               ? [...recent.values()]
+                  .sort((a, b) => (b.at || 0) - (a.at || 0))
                   .slice(0, 6)
                   .map(({ a, season, n }) => row(a, { season, n }, { seen: true }))
                   .join('')
@@ -148,8 +152,91 @@ export function createMobilePresentation(ctx) {
         : `<section id="mobile-upcoming" aria-label="Episodet e ardhshme">${groups.size ? [...groups].map(([date, rows]) => label(esc(date)) + rows.join('')).join('') : empty('Nuk ka episode të ardhshme me datë të konfirmuar në bibliotekën tënde.')}</section>`
     }</div><div class="watch-home-links"><button type="button" data-mobile-action="navigate" data-mobile-target="calendar">Kalendari</button><button type="button" data-mobile-action="navigate" data-mobile-target="notifications">Njoftimet</button><button type="button" data-mobile-action="navigate" data-mobile-target="friends">Miqtë</button></div>`;
     if (markup !== lastHomeMarkup) {
-      window.ATHTML.renderHTML($('mobile-home'), markup);
+      const root = $('mobile-home'),
+        oldTop = $('mobile-continue')?.getBoundingClientRect().top;
+      const oldRows = new Map(
+        [...root.querySelectorAll('[data-watch-key]')].map((node) => [node.dataset.watchKey, node]),
+      );
+      const draft = document.createElement('div');
+      window.ATHTML.renderHTML(draft, markup);
+      for (const next of draft.querySelectorAll('[data-watch-key]')) {
+        const old = oldRows.get(next.dataset.watchKey);
+        if (old?.outerHTML === next.outerHTML) next.replaceWith(old);
+      }
+      root.replaceChildren(...draft.childNodes);
       lastHomeMarkup = markup;
+      if (!focusHome && Number.isFinite(oldTop) && window.scrollY > 0 && $('mobile-continue'))
+        window.scrollBy({
+          top: $('mobile-continue').getBoundingClientRect().top - oldTop,
+          behavior: 'instant',
+        });
+      if (pendingMove) {
+        const move = pendingMove;
+        pendingMove = null;
+        const current = ctx
+          .state()
+          .anime.find((a) => a.id === move.id)
+          ?.seasons.find((s) => s.id === move.season);
+        if (current?.watched.includes(move.number) === move.seen) {
+          const targetKey =
+            move.id + ':' + move.season + ':' + move.number + ':' + (move.seen ? 'seen' : 'next');
+          const target = [...root.querySelectorAll('[data-watch-key]')].find(
+            (node) => node.dataset.watchKey === targetKey,
+          );
+          if (!move.seen) focusHome = true;
+          if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            target?.animate(
+              [
+                { transform: 'translateY(18px)', opacity: 0.4 },
+                { transform: 'translateY(0)', opacity: 1 },
+              ],
+              { duration: 220, easing: 'ease-out' },
+            );
+            const ghost = move.node.cloneNode(true);
+            ghost.inert = true;
+            ghost.setAttribute('aria-hidden', 'true');
+            Object.assign(ghost.style, {
+              position: 'fixed',
+              top: move.rect.top + 'px',
+              left: move.rect.left + 'px',
+              width: move.rect.width + 'px',
+              height: move.rect.height + 'px',
+              margin: '0',
+              pointerEvents: 'none',
+              zIndex: '950',
+            });
+            document.body.append(ghost);
+            const dy = Math.max(
+              -240,
+              Math.min(
+                240,
+                (target?.getBoundingClientRect().top ?? move.rect.top - 100) - move.rect.top,
+              ),
+            );
+            ghost
+              .animate(
+                [
+                  { transform: 'translateY(0)', opacity: 0.85 },
+                  { transform: `translateY(${dy}px) scale(.96)`, opacity: 0 },
+                ],
+                { duration: 220, easing: 'ease-out' },
+              )
+              .finished.then(
+                () => ghost.remove(),
+                () => ghost.remove(),
+              );
+          }
+        }
+      }
+    }
+    if (focusHome) {
+      focusHome = false;
+      cancelAnimationFrame(focusFrame);
+      focusFrame = requestAnimationFrame(() => {
+        if (page === 'home' && homeTab === 'watch' && !ctx.state().anime.length) return;
+        if (page === 'home' && homeTab === 'watch')
+          $('mobile-continue')?.scrollIntoView({ block: 'start', behavior: 'instant' });
+      });
     }
     clearTimeout(releaseTimer);
     if (document.visibilityState === 'hidden' || page !== 'home') return;
@@ -247,6 +334,8 @@ export function createMobilePresentation(ctx) {
     $('clear-global').addEventListener('click', () => {
       filter = 'all';
       homeTab = 'watch';
+      focusHome = true;
+      pendingMove = null;
       homeLayout = 'list';
       searchState();
     });
@@ -623,6 +712,8 @@ export function createMobilePresentation(ctx) {
       owner = current;
       filter = 'all';
       homeTab = 'watch';
+      focusHome = true;
+      pendingMove = null;
       homeLayout = 'list';
       detailId = '';
       detailTab = 'episodes';
@@ -638,6 +729,10 @@ export function createMobilePresentation(ctx) {
   }
   function navigation(next) {
     if (phone.matches && next !== page) window.scrollTo({ top: 0, behavior: 'instant' });
+    if (next === 'home' && next !== page) {
+      homeTab = 'watch';
+      focusHome = true;
+    }
     page = next;
     if (page !== 'home') clearTimeout(releaseTimer);
     document.body.dataset.mobilePage = page;
@@ -650,6 +745,48 @@ export function createMobilePresentation(ctx) {
     $('product-onboarding').after(homeNode);
     mountDiscover();
     library();
+    document.addEventListener(
+      'click',
+      (event) => {
+        const b = event.target.closest('button');
+        if (!b || !phone.matches) return;
+        if (
+          b.matches('.at-mobile-nav button,#mobile-home button') &&
+          !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ) {
+          b.classList.add('mobile-tap-feedback');
+          setTimeout(() => b.classList.remove('mobile-tap-feedback'), 260);
+        }
+        if (b.dataset.mobileNav === 'home' && page === 'home') {
+          if (homeTab !== 'watch') {
+            homeTab = 'watch';
+            home();
+          }
+          $('mobile-continue')?.scrollIntoView({ block: 'start', behavior: 'instant' });
+        }
+        if (b.dataset.iosAction === 'advance' || b.dataset.mobileAction === 'unwatch') {
+          const a = ctx.state().anime.find((a) => a.id === b.dataset.id);
+          const next =
+            b.dataset.mobileAction === 'unwatch'
+              ? {
+                  season: a?.seasons.find((s) => s.id === b.dataset.mobileSeason),
+                  n: Number(b.dataset.mobileEpisode),
+                }
+              : a && ctx.nextEpisode(a);
+          const node = b.closest('#mobile-home .watch-row');
+          if (next?.season && node)
+            pendingMove = {
+              id: a.id,
+              season: next.season.id,
+              number: next.n,
+              seen: b.dataset.iosAction === 'advance',
+              node,
+              rect: node.getBoundingClientRect(),
+            };
+        }
+      },
+      true,
+    );
     document.addEventListener('click', (event) => {
       const b = event.target.closest('button');
       if (!b || !phone.matches) return;
@@ -660,6 +797,20 @@ export function createMobilePresentation(ctx) {
       if (b.dataset.mobileHomeLayout) {
         homeLayout = b.dataset.mobileHomeLayout;
         home();
+      }
+      if (b.dataset.mobileAction === 'history')
+        $('mobile-history')?.scrollIntoView({
+          block: 'start',
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? 'instant'
+            : 'smooth',
+        });
+      if (b.dataset.mobileAction === 'unwatch') {
+        const a = ctx.state().anime.find((a) => a.id === b.dataset.id),
+          season = a?.seasons.find((s) => s.id === b.dataset.mobileSeason),
+          number = Number(b.dataset.mobileEpisode);
+        if (season?.watched.includes(number)) ctx.markEpisode(a.id, season.id, number);
+        pendingMove = null;
       }
       if (b.dataset.mobileAction === 'navigate') ctx.navigate(b.dataset.mobileTarget);
       if (b.dataset.mobileAction === 'detail') ctx.openAnime(b.dataset.id);
