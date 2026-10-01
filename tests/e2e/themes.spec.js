@@ -50,6 +50,7 @@ test('light theme covers home, library, details and settings, persists and follo
 test('light login and signup retain readable controls', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('animetrack_theme_144', 'light'));
   await openFixture(page, { signedIn: false });
+  await page.locator('[data-welcome-auth="login"]').click();
   await expect(page.locator('#account-modal.show')).toBeVisible();
   await audit(page, '#account-modal');
   await page.locator('#at116-tab-signup').click();

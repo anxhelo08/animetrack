@@ -1,3 +1,8 @@
+# 14.7.0
+
+- Faqe publike mirëseardhjeje për vizitorët pa sesion, me karta anime të animuara, pamje mobile dhe hyrje/regjistrim të drejtpërdrejtë.
+- Kontroll ndalimi të animacionit dhe respektim i reduced motion. Llogaritë aktive kalojnë direkt në bibliotekë.
+
 # 14.6.1
 
 - Yield between independent interface mounts to avoid combining catalogue, account and navigation initialization into long main-thread tasks.

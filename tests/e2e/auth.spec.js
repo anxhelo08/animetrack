@@ -23,6 +23,7 @@ test('auth registration and confirmation flow',async({browser,browserName},testI
  })();`;
  await page.route('**/assets/supabase-client.*.js',route=>route.fulfill({status:200,contentType:'application/javascript',body:stub+'\nexport default window.supabase.createClient;'}));
  await page.goto('http://127.0.0.1:8765/',{waitUntil:'domcontentloaded'});
+ await page.locator('[data-welcome-auth="login"]').click();
  await page.locator('#account-modal.show').waitFor({timeout:12000});
  const signupTab=page.locator('#at116-tab-signup'),submit=page.locator('#account-login');
  await signupTab.click();

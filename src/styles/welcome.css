@@ -1,0 +1,27 @@
+.welcome-page[hidden]{display:none}
+.welcome-page{background:radial-gradient(ellipse at 85% 32%,#66314c 0,transparent 46%),radial-gradient(ellipse at 58% 58%,#302341 0,transparent 56%),#100d17;color:#fff;min-height:100dvh;position:relative;z-index:10;font-family:var(--font-sans,system-ui,sans-serif)}
+body.auth-required:has(.welcome-page:not([hidden])) .app,body.auth-required:has(.welcome-page:not([hidden]))>.skip-link{display:none}
+.welcome-header{display:flex;align-items:center;justify-content:space-between;padding:30px 4vw;max-width:1600px;margin:auto}
+.welcome-brand{display:flex;align-items:center;gap:12px;font-size:26px;font-weight:800;color:#fff;text-decoration:none;letter-spacing:-1px}
+.welcome-page button{cursor:pointer;font:inherit;min-height:44px}
+.welcome-login,.welcome-motion{border:1px solid #ffffff40;background:#ffffff08;color:#fff;border-radius:30px;padding:10px 23px}
+.welcome-hero{max-width:1240px;margin:auto;display:grid;grid-template-columns:1.1fr 1fr;align-items:center;gap:80px;padding:60px 40px 100px;min-height:650px}
+.welcome-badge{display:inline-block;border:1px solid #ffffff26;border-radius:30px;padding:7px 14px;color:#dfccec;font-size:12px}
+.welcome-copy h1{font-size:clamp(48px,5.7vw,84px);line-height:1.02;letter-spacing:-4px;margin:26px 0;font-weight:850;color:#fff}
+.welcome-copy h1 span{color:#d6a4ff}
+.welcome-copy>p{max-width:410px;color:#ddd2e6;font-size:18px;line-height:1.6;margin-bottom:30px}
+.welcome-start{border:0;border-radius:32px;background:#b749d5;color:#fff;padding:16px 28px;font-weight:750!important;box-shadow:0 10px 40px #b749d530;transition:transform .2s,background .2s}
+.welcome-start:hover{transform:translateY(-3px);background:#c95ae7}
+.welcome-start span{margin-left:20px}.welcome-copy>small{display:block;font-size:12px;color:#c4b5d0;margin-top:17px}
+.welcome-showcase{text-align:center;min-width:0}.welcome-deck{height:440px;position:relative;max-width:410px;margin:auto;perspective:1200px}
+.welcome-poster{position:absolute;width:280px;height:410px;border-radius:22px;overflow:hidden;background:linear-gradient(145deg,#674979,#211932);box-shadow:0 24px 65px #08041080;border:1px solid #ffffff20;left:20px;top:0}
+.welcome-poster img{width:100%;height:100%;object-fit:cover;display:block}.welcome-poster div{position:absolute;inset:50% 0 0;display:flex;flex-direction:column;justify-content:end;padding:25px;text-align:left;background:linear-gradient(transparent,#120b20f2)}
+.welcome-poster span{font-size:9px;letter-spacing:1.8px;color:#e8c4ff}.welcome-poster h2{font-size:27px;line-height:1.1;margin:9px 0;color:white}
+.welcome-poster-back{transform:translate(100px,36px) rotate(15deg);opacity:.5}.welcome-poster-middle{transform:translate(55px,18px) rotate(8deg);opacity:.8}.welcome-poster-front{animation:welcome-float 7s ease-in-out infinite}
+.welcome-caption{font-size:14px;color:#e5c7f5;margin:20px 0 10px}.welcome-dots{display:flex;gap:5px;justify-content:center}.welcome-dots i{width:23px;height:3px;background:#ffffff25;border-radius:5px}.welcome-dots i:first-child{background:#c66ee9}.welcome-motion{font-size:11px!important;margin-top:16px;padding:7px 13px;color:#ddc9e8}
+.welcome-paused .welcome-poster-front{animation-play-state:paused}
+.welcome-features{border-top:1px solid #ffffff14;display:grid;grid-template-columns:repeat(3,1fr);background:#0c0b11}.welcome-features>div{padding:42px max(25px,4vw);border-right:1px solid #ffffff14}.welcome-features span{font-size:10px;letter-spacing:2px;color:#c19cd4}.welcome-features h2{font-size:46px;color:white;letter-spacing:-2px;margin:12px 0}.welcome-features p{font-size:14px;color:#c1b4ca;line-height:1.7;max-width:320px}
+.welcome-page button:focus-visible,.welcome-brand:focus-visible{outline:3px solid #ecd3ff;outline-offset:5px}
+@keyframes welcome-float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-16px) rotate(1deg)}}
+@media(max-width:760px){.welcome-header{padding:22px}.welcome-brand{font-size:22px}.welcome-hero{grid-template-columns:1fr;gap:45px;padding:35px 24px 55px;min-height:auto}.welcome-copy h1{font-size:60px;letter-spacing:-3px}.welcome-copy>p{font-size:16px}.welcome-deck{height:340px;max-width:310px}.welcome-poster{width:215px;height:320px;left:5px;border-radius:18px}.welcome-poster-back{transform:translate(65px,22px) rotate(12deg)}.welcome-poster-middle{transform:translate(35px,12px) rotate(6deg)}.welcome-poster h2{font-size:24px}.welcome-features{grid-template-columns:1fr}.welcome-features>div{padding:26px;border-right:0;border-bottom:1px solid #ffffff14}.welcome-features h2{font-size:35px}.welcome-features p{margin:0}}
+@media(prefers-reduced-motion:reduce){.welcome-poster-front{animation:none}.welcome-start{transition:none}.welcome-motion{display:none}}

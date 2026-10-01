@@ -30,6 +30,7 @@ async function audit(page, testInfo, name, selector) {
 
 test('login and signup pass WCAG AA checks', async ({ page }, testInfo) => {
   await openFixture(page, { signedIn: false });
+  await page.locator('[data-welcome-auth="login"]').click();
   await expect(page.locator('#account-modal.show')).toBeVisible();
   await audit(page, testInfo, 'login', '#account-modal');
   await page.locator('#at116-tab-signup').click();

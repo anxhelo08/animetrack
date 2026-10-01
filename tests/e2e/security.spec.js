@@ -13,6 +13,7 @@ test('real bundled SDK boots with strict CSP and immutable configuration',async(
  await page.route('https://kwherbtspqirfrehqlfd.supabase.co/**',route=>route.abort());
  await page.route('https://graphql.anilist.co',route=>route.fulfill({contentType:'application/json',body:'{"data":{"Page":{"media":[],"pageInfo":{"hasNextPage":false}}}}'}));
  await page.goto('/');
+ await page.locator('[data-welcome-auth="login"]').click();
  await expect(page.locator('#account-modal.show')).toBeVisible();
  await expect(page.locator('#account-setup')).toHaveCount(0);
  await expect(page.locator('[style]')).toHaveCount(0);
