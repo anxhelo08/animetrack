@@ -31,6 +31,8 @@ export function createFeatures(ctx){
   experience:window.ATExperience112(ctx)
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
+ ctx.mobileRecommendations=()=>modules.recommendations.getItems();
+ ctx.mobileFriends=()=>modules.friends.render();
  ctx.socialCounts=()=>modules.friends.counts();
  ctx.dayBrief=compact=>modules.day.render(!!compact);
  ctx.smartWeek=compact=>modules.smart.panel(!!compact);
@@ -80,6 +82,7 @@ export function createFeatures(ctx){
   const node=$('pro-home-recs');
   if(node)window.ATHTML.renderHTML(node,modules.recommendations.home());
   if(window.matchMedia?.('(max-width:760px)').matches&&active==='')renderMobileDiscover();
+  product?.refresh();
  };
  async function init(){
   modules.experience.init();

@@ -229,5 +229,5 @@ window.ATRecommendations=function ATRecommendations(ctx){
  async function add(key){const x=items.find(x=>x.key===key);if(!x)return;await ctx.addItem(x);rerank()}
  function reset(){requestId++;owner='';candidates=[];items=[];loading=false;error='';redraw()}
  function onLibraryChange(){if(owner===String(ctx.user()?.id||'guest')&&candidates.length)rerank()}
- return {render,home,trending,refresh,add,preview,hide,restore,setMedia,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange};
+ return {render,home,trending,refresh,add,preview,hide,restore,setMedia,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange,getItems:()=>items.slice()};
 };

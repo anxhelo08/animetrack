@@ -37,7 +37,11 @@ test('first account completes three steps without adding demo data and can impor
   await page.reload();
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
   await expect(guide).not.toBeVisible();
-  await expect(page.locator('#product-home-empty')).toBeVisible();
+  await expect(
+    page.locator(
+      info.project.name.startsWith('iphone') ? '#mobile-continue' : '#product-home-empty',
+    ),
+  ).toBeVisible();
   if (info.project.name.startsWith('iphone'))
     await page.locator('[data-mobile-nav="library"]').click();
   else await page.locator('#library-nav').click();
@@ -74,13 +78,19 @@ test('five primary destinations retain secondary tools and details put progress 
   await expect(page.locator('#product-advanced')).not.toBeVisible();
   const before = await page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime));
   await page.locator('#anime-grid .at120-card-poster').click();
-  await expect(page.locator('#detail-body > :first-child')).toHaveClass('product-progress');
-  await expect(page.locator('.product-progress')).toContainText('23 nga 65');
-  await expect(page.locator('.product-progress')).toContainText('Episodi');
+  if (mobile) {
+    await expect(page.locator('#detail-body > :first-child')).toHaveClass(/mobile-detail-hero/);
+    await expect(page.locator('.mobile-detail-cta')).toContainText('Vazhdo');
+    await expect(page.locator('.mobile-watch-next')).toContainText('WATCH NEXT');
+  } else {
+    await expect(page.locator('#detail-body > :first-child')).toHaveClass('product-progress');
+    await expect(page.locator('.product-progress')).toContainText('23 nga 65');
+    await expect(page.locator('.product-progress')).toContainText('Episodi');
+  }
   await expect(page.locator('.product-secondary')).toHaveCount(2);
-  expect(await page.locator('.product-secondary[open]').count()).toBe(0);
+  expect(await page.locator('.product-secondary[open]').count()).toBe(mobile ? 1 : 0);
   await page.screenshot({ path: info.outputPath('detail-progress.png') });
-  await audit(page, '.product-progress');
+  await audit(page, mobile ? '.mobile-watch-next' : '.product-progress');
   await page.locator('#detail-modal [data-close="detail-modal"]').click();
   expect(await page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime))).toBe(before);
   await page.context().setOffline(true);

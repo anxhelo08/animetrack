@@ -1,4 +1,5 @@
 import { navIcon } from './nav-icons.js';
+import { createMobilePresentation } from './mobile-presentation.js';
 
 export function syncPresentation(info = {}, online = true) {
   if (info.mode !== 'cloud')
@@ -57,6 +58,7 @@ export function primaryPage(page) {
 }
 
 export function createProductExperience(ctx) {
+  const mobile = createMobilePresentation(ctx);
   const $ = (id) => document.getElementById(id),
     esc = ctx.esc;
   const finishedOwners = new Set();
@@ -147,6 +149,7 @@ export function createProductExperience(ctx) {
     };
     if ($('page-title')) $('page-title').textContent = titles[page] || 'AnimeTrack';
     refresh();
+    mobile.navigation(next);
   }
   function sync() {
     const presentation = syncPresentation(ctx.watchSaveStatus?.(), navigator.onLine),
@@ -258,6 +261,7 @@ export function createProductExperience(ctx) {
     hidden('product-library-empty', !noLibrary);
     $('library-view')?.classList.toggle('product-is-empty', noLibrary);
     sync();
+    mobile.refresh();
   }
   function searchFinished(query, { count = 0, failed = false } = {}) {
     searchQuery = query;
@@ -336,6 +340,7 @@ export function createProductExperience(ctx) {
       node.before(box);
       box.append(heading, node);
     }
+    mobile.detail(id);
   }
   function mount() {
     ctx.subscribe?.((_state, event) => {
@@ -472,7 +477,8 @@ export function createProductExperience(ctx) {
         }
       }
     });
+    mobile.mount();
     navigation('home');
   }
-  return { mount, refresh, navigation, detail, searchFinished };
+  return { mount, refresh, navigation, detail, searchFinished, preview: mobile.preview };
 }

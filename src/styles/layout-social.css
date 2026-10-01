@@ -409,7 +409,7 @@
  body.at-ios-enabled .sidebar,body.at-ios-enabled .topbar {display:none!important}
  body.at-ios-enabled .main {display:block;max-width:100%;width:100%;padding-top:0!important}
  body.at-ios-enabled .at-mobile-nav {display:grid!important;z-index:900}
- body.at-ios-enabled #home-view.at-home-rebuilt > :not(#at-iphone-feed):not(#product-onboarding):not(#product-home-empty) {display:none!important}
+ body.at-ios-enabled #home-view.at-home-rebuilt > :not(#at-iphone-feed):not(#product-onboarding):not(#product-home-empty):not(#mobile-home) {display:none!important}
  body.at-ios-enabled #home-view.at-home-rebuilt > #at-iphone-feed {display:block!important;visibility:visible!important}
  body.at-ios-enabled #at-iphone-feed {display:block!important}
  .at-ios-shell {padding-top:calc(12px + env(safe-area-inset-top,0px));}

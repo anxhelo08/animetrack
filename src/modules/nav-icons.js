@@ -1,10 +1,10 @@
 // Fixed SVG paths: decorative icons always accompany a visible text label.
 const paths = {
-  home: 'm8 4 12 8-12 8z',
+  home: 'm3 10 9-7 9 7 M5 9v12h5v-7h4v7h5V9',
   explore: 'M10 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14 M15 15l6 6',
   library: 'M4 3h16v18H4z M8 7h8 M8 12h8 M8 17h8',
   collections: 'M4 3h16v18H4z M8 7h8 M8 12h8 M8 17h8',
-  diary: 'm3 17 2 4 4-2L21 7l-4-4z M14 6l4 4',
+  diary: 'M3 12h4l3-8 4 16 3-8h4',
   watch: 'm8 4 12 8-12 8z',
   sync: 'm4 8 4-4H20 M20 16l-4 4H4 M4 4v4h4 M20 20v-4h-4',
   notifications: 'M5 16h14l-2-3V9a5 5 0 0 0-10 0v4z M10 20h4',

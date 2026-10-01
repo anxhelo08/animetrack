@@ -38,12 +38,10 @@ test('one bubbled SVG click commits exactly one episode through the extracted li
     rect.setAttribute('height', '16');
     svg.append(rect);
     button.append(svg);
+    (Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => false }),
+      // Dispatch in the same task so background refresh cannot replace the injected SVG.
+      rect.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   });
-  await page.evaluate(() =>
-    Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => false }),
-  );
-  // This verifies DOM routing; native touch targets are covered by accessibility/iPhone flows.
-  await next.locator('[data-test-router-icon] rect').dispatchEvent('click');
   const saved = await page.evaluate(
     (owner) => ({
       state: window.ATMobile113.state(),
