@@ -533,7 +533,7 @@ test('watching opens first, history can be unmarked and navigation does not sync
     );
   });
   await watching.locator('[data-ios-action="advance"][data-id="mobile-story"]').tap();
-  const recent = page.locator('#mobile-history .watch-row').first();
+  const recent = page.locator('#mobile-history .watch-row').last();
   await expect(recent).toHaveAttribute('data-watch-key', 'mobile-story:season-two:2:seen');
   await expect(recent).toHaveClass(/watch-row--seen/);
   expect(
@@ -572,4 +572,65 @@ test('watching opens first, history can be unmarked and navigation does not sync
   await expect(page.locator('body > .watch-row[aria-hidden="true"]')).toHaveCount(0);
   await expect(page.locator('#mobile-home .mobile-tap-feedback')).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('watching-and-history.png'), fullPage: true });
+});
+
+test('watched episodes enter at the bottom, older episodes rise and rapid navigation clears transition cards', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'iphone-chromium', 'Mobile episode movement.');
+  const story = structuredClone(payload.anime[0]);
+  story.seasons = [
+    {
+      id: 'episode-order',
+      title: 'Sezoni 1',
+      format: 'TV',
+      total: 10,
+      watched: [1],
+      releaseStatus: 'FINISHED',
+      releaseStart: '2020-01-01',
+    },
+  ];
+  await openFixture(page, {
+    payload: { anime: [story], history: [], preferences: {} },
+    owner: 'mobile-episode-order',
+  });
+  for (let n = 2; n <= 8; n++) {
+    await page.locator('#mobile-continue .watch-row-mark').tap();
+    await expect(page.locator('#mobile-history .watch-row').last()).toHaveAttribute(
+      'data-watch-key',
+      `mobile-story:episode-order:${n}:seen`,
+    );
+  }
+  expect(await page.locator('#mobile-history .watch-row-episode').allTextContents()).toEqual([
+    'S1 EP3',
+    'S1 EP4',
+    'S1 EP5',
+    'S1 EP6',
+    'S1 EP7',
+    'S1 EP8',
+  ]);
+  expect(await page.evaluate(() => window.ATMobile113.state().anime[0].seasons[0].watched)).toEqual(
+    [1, 2, 3, 4, 5, 6, 7, 8],
+  );
+  const ghostsAfterNavigation = await page.evaluate(() => {
+    document.querySelector('#mobile-continue .watch-row-mark').click();
+    document.querySelector('[data-mobile-nav="library"]').click();
+    return document.querySelectorAll('body > .watch-row[aria-hidden="true"]').length;
+  });
+  expect(ghostsAfterNavigation).toBe(0);
+  await expect(page.locator('#library-view')).toBeVisible();
+  await page.locator('[data-mobile-nav="home"]').tap();
+  await expect(page.locator('#mobile-history .watch-row').last()).toHaveAttribute(
+    'data-watch-key',
+    'mobile-story:episode-order:9:seen',
+  );
+  await page
+    .locator('#mobile-history .watch-row')
+    .last()
+    .locator('[data-mobile-action="unwatch"]')
+    .tap();
+  await expect(page.locator('#mobile-continue')).toContainText('S1 EP9');
+  expect(await page.evaluate(() => window.ATMobile113.state().anime[0].seasons[0].watched)).toEqual(
+    [1, 2, 3, 4, 5, 6, 7, 8],
+  );
 });

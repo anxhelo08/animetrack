@@ -1,0 +1,5 @@
+/* Available before the release stylesheet, including on a failed download. */
+.app[hidden] { display: none !important; }
+body.account-booting { margin: 0; background: #10101b; color: #e9dfff; }
+body.account-booting .account-boot-screen { display: flex; position: fixed; inset: 0; z-index: 10000; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 24px; box-sizing: border-box; background: #10101b; text-align: center; font: 16px/1.5 system-ui, sans-serif; }
+body.account-booting #startup-retry:not([hidden]) { min-height: 44px; padding: 10px 18px; border: 0; border-radius: 12px; background: #9690ff; color: #10101b; font: inherit; cursor: pointer; }

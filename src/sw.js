@@ -1,24 +1,41 @@
-import {cleanupOutdatedCaches,matchPrecache,precacheAndRoute} from 'workbox-precaching';
+import {PrecacheController,PrecacheRoute} from 'workbox-precaching';
 import {registerRoute} from 'workbox-routing';
-import {NetworkFirst} from 'workbox-strategies';
-import {ExpirationPlugin} from 'workbox-expiration';
 
-// Register navigation before precache routes: even /index.html must try fresh HTML.
+// A worker serves one complete release. Fresh HTML must not reference assets
+// absent from the installed worker when a deployment or connection changes.
+function precacheAndRoute(manifest){
+const revision=manifest.find(entry=>entry.url==='index.html')?.revision;
+const cacheName='animetrack-shell-'+revision;
+const precache=new PrecacheController({cacheName});
+precache.precache(manifest);
 registerRoute(
-  ({request,url})=>request.mode==='navigate' && url.origin===self.location.origin,
-  new NetworkFirst({
-    cacheName:'animetrack-navigation-v143',
-    networkTimeoutSeconds:3,
-    plugins:[
-      {cachedResponseWillBeUsed:async({cachedResponse})=>cachedResponse || await matchPrecache('/index.html')},
-      new ExpirationPlugin({maxEntries:5,maxAgeSeconds:86400})
-    ]
-  })
+  ({request,url})=>request.mode==='navigate' && url.origin===self.location.origin && ['/', '/index.html'].includes(url.pathname),
+  precache.createHandlerBoundToURL('/index.html')
 );
-cleanupOutdatedCaches();
-precacheAndRoute(self.__WB_MANIFEST,{ignoreURLParametersMatching:[/^utm_/,/^fbclid$/]});
+registerRoute(new PrecacheRoute(precache,{ignoreURLParametersMatching:[/^utm_/,/^fbclid$/]}));
 
-self.addEventListener('activate',event=>{event.waitUntil(caches.delete('animetrack-supabase-sdk'))});
+return cacheName;
+}
+const cacheName=precacheAndRoute(self.__WB_MANIFEST);
+
+// Keep public hashed assets for older open tabs after another tab updates.
+registerRoute(
+  ({request,url})=>url.origin===self.location.origin && ['script','style'].includes(request.destination) && /^\/assets\/[^/]+\.[\w-]+\.(?:js|css)$/.test(url.pathname),
+  async ({request})=>{
+    for(const name of (await caches.keys()).reverse()) {
+      if(!name.startsWith('animetrack-shell-')&&!name.startsWith('workbox-precache-'))continue;
+      const response=await (await caches.open(name)).match(request);
+      if(response)return response;
+    }
+    return fetch(request);
+  }
+);
+self.addEventListener('activate',event=>event.waitUntil((async()=>{
+  const previous=(await caches.keys()).filter(name=>name.startsWith('animetrack-shell-')&&name!==cacheName);
+  await Promise.all(previous.slice(0,-2).map(name=>caches.delete(name)));
+  await caches.delete('animetrack-navigation-v143');
+  await caches.delete('animetrack-supabase-sdk');
+})()));
 
 self.addEventListener('message',event=>{
   if(event.data?.type==='SKIP_WAITING')self.skipWaiting();

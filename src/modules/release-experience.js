@@ -47,7 +47,7 @@ export function mountReleaseExperience(ctx) {
   document.addEventListener('pointerdown', (event) => {
     gesture = null;
     if (event.pointerType !== 'touch' || !event.isPrimary || window.innerWidth > 760) return;
-    const card = event.target.closest('.at114-watch-card');
+    const card = event.target.closest('.at114-watch-card, .watch-row');
     const button = card?.querySelector(
       '[data-ios-action="advance"],[data-ios-action="mark-recent"]',
     );
@@ -79,7 +79,7 @@ export function mountReleaseExperience(ctx) {
     (event) => {
       if (
         event.isTrusted &&
-        event.target.closest('.at114-watch-card') &&
+        event.target.closest('.at114-watch-card, .watch-row') &&
         Date.now() < suppressClickUntil
       ) {
         event.preventDefault();

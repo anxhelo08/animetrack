@@ -76,7 +76,7 @@ Te Profili → Cilësimet → Avancuar mund të verifikosh ruajtjen, të shkarko
 
 Modulet e pavarura, kontrolluesi dhe hapja e IndexedDB ngarkohen paralelisht; `startApp()` pret që varësitë dhe kopja lokale të jenë gati. Ditari dhe CSS-ja e tij ngarkohen kur hapet faqja, me riprovim kur ngarkimi dështon. Kërkimet publike AniList/Jikan/TVMaze dhe metadata e katalogut përdorin cache në memorie (100 hyrje, TTL 5 minuta), dedupe dhe cooldown 1–30 sekonda pas dështimit. Anulimi i një kërkimi nuk anulon një konsumues tjetër; kërkesat autentike dhe biblioteka nuk futen në këtë cache.
 
-Planifikuesit ndalojnë timer-at kur skeda fshihet, nuk mbivendosin punën dhe rikontrollojnë kur ajo hapet. PWA përdor NetworkFirst për HTML me timeout 3 sekonda dhe fallback në HTML-në e precache; API-të e llogarisë nuk ruhen në runtime cache. Posterët kryesorë kanë dimensione të deklaruara; posteri në detaje ngarkohet menjëherë.
+Planifikuesit ndalojnë timer-at kur skeda fshihet, nuk mbivendosin punën dhe rikontrollojnë kur ajo hapet. PWA përdor HTML, JS dhe CSS të të njëjtit version nga precache, pa pritur rrjetin gjatë navigimit; përditësimi aktivizohet nga veprimi i mbrojtur “Përditëso tani”. Cache mban tre versione të skedarëve publikë për skedat ende të hapura; API-të e llogarisë nuk ruhen në runtime cache. Posterët kryesorë kanë dimensione të deklaruara; posteri në detaje ngarkohet menjëherë.
 
 CI kontrollon madhësinë e JavaScript (330 KB gzip gjithsej), ndërsa Lighthouse kontrollon LCP ≤4.5 sekonda, TBT ≤300 ms dhe JS ≤400 KB në tre hapje të faqes publike. Raportet ruhen si artefakte CI; këto janë matje laboratorike të hapjes pa session dhe jo garanci për çdo pajisje apo bibliotekë.
 

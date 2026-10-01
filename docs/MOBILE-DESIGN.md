@@ -95,7 +95,10 @@ Last-watched rows appear dimmer above it; their green check removes that exact
 episode from watched progress through the existing controller. Marking or unmarking
 updates progress immediately and animates the row for 220ms without delaying the
 transaction. Unchanged episode rows keep their DOM nodes and artwork. History
-selects the latest valid watched event per title in one scan before sorting titles.
+keeps the latest six distinct watched episodes in chronological order, including
+multiple episodes of the same title. The newest enters at the bottom; existing
+rows shift upward. Imported progress contributes its last unlogged episode from
+the latest watched part without creating history events.
 Reduced-motion preferences disable movement and press effects.
 
 The successful sync banner is hidden on phones. Saving and pending changes use
@@ -103,3 +106,19 @@ a compact floating status above navigation, keeping list positions stable.
 Offline states, conflicts and errors remain visible. Navigation does not initiate a library read
 or upload. A fixture test counts library queries across all five destinations and
 confirms that an episode transaction still uploads. Background sync remains active.
+
+
+Mobile tracking no longer rebuilds a hidden library grid or the retired home panels. Entering Library renders
+the latest progress; repeated navigation reuses unchanged cards, including the
+empty-state handler. The owner boundary clears retained cards before another
+account can use the view. Stress tests exercise 100 titles and 50 consecutive
+navigation actions with Chromium CPU throttled by four.
+
+Installed PWA navigation uses the worker's precached release, so HTML, scripts
+and styles belong together. New workers still require the existing guarded update
+action. Public assets from the current and two preceding releases remain cached
+for older open tabs; authentication requests are never runtime cached. A small
+startup stylesheet and native hidden attribute keep the legacy page invisible if
+a release stylesheet fails, and offer a retry without deleting local progress.
+Fault-injection tests cover a deployment mismatch, missing CSS, offline startup
+and navigation without waiting for the network.

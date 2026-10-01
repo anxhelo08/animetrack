@@ -5,6 +5,11 @@ import {canPreviewWelcome} from './modules/welcome-preview.js';
 import {createHTML} from "./modules/safe-html.js";
 import {safeAvatarURL} from "./modules/avatar.js";
 const {cloudConfig}=await import("./config.js");
+// Do not expose the legacy HTML if a stylesheet download fails.
+if (getComputedStyle(document.documentElement).getPropertyValue('--at-ui-ready').trim() !== '1') {
+  document.dispatchEvent(new Event('at-startup-error'));
+  throw new Error('The application stylesheet did not load.');
+}
 const welcome=document.getElementById('welcome-page');
 try {
   if (canPreviewWelcome(window.localStorage,cloudConfig.url,location)) {
@@ -32,4 +37,6 @@ const [{default:createClient},{startApp}]=await Promise.all([
 Object.defineProperty(window, "supabase", {value:Object.freeze({createClient}),configurable:false,writable:false});
 await new Promise(resolve=>setTimeout(resolve,0));
 await startApp();
+document.querySelector('.app').hidden=false;
+document.dispatchEvent(new Event('at-startup-ready'));
 welcome.inert=false;

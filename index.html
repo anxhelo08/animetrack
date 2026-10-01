@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#0c0d16" /><meta name="color-scheme" content="dark light" /><meta name="apple-mobile-web-app-title" content="AnimeTrack" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20stop-color%3D%22%23a58bfb%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2352dfef%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2217%22%20fill%3D%22%23171625%22%2F%3E%3Crect%20x%3D%225%22%20y%3D%225%22%20width%3D%2254%22%20height%3D%2254%22%20rx%3D%2215%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Cpath%20d%3D%22M13%2043%2026%2018h8l13%2025h-9l-3-6H25l-3%206zm15-12h5l-3-7z%22%20fill%3D%22%23171625%22%2F%3E%3Cpath%20d%3D%22m42%2018%209%206-9%206z%22%20fill%3D%22%23171625%22%2F%3E%3C%2Fsvg%3E" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="stylesheet" href="/boot.css"><script src="/boot.js" defer></script>
 <title>AnimeTrack 14.7.2 — Anime, TV & Movies</title>
 <link rel="manifest" href="/manifest.webmanifest"><link rel="preconnect" href="https://kwherbtspqirfrehqlfd.supabase.co" crossorigin><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -15,7 +16,7 @@
 
 </head>
 <body class="account-booting">
-<div id="account-boot-screen" class="account-boot-screen" aria-live="polite"><div class="logo-mark">A</div><strong>AnimeTrack</strong><span>Po hap llogarinë...</span></div>
+<div id="account-boot-screen" class="account-boot-screen" aria-live="polite"><div class="logo-mark">A</div><strong>AnimeTrack</strong><span id="startup-message">Po hap llogarinë...</span><button type="button" id="startup-retry" hidden>Provo përsëri</button></div>
 <section id="welcome-page" class="welcome-page" aria-labelledby="welcome-title" hidden>
   <header class="welcome-header"><a class="welcome-brand" href="/" aria-label="AnimeTrack — kryefaqja"><img src="/icon.svg" width="36" height="36" alt="">AnimeTrack</a><button type="button" class="welcome-login" data-welcome-auth="login">Hyr</button></header>
   <main class="welcome-hero">
@@ -26,7 +27,7 @@
   <footer class="welcome-features"><div><span>GJEJE</span><h2>Zbulo.</h2><p>Historia tjetër që do të të mbajë para ekranit.</p></div><div><span>RUAJE</span><h2>Ndiqe.</h2><p>Episodet, progresi dhe lista jote në një vend.</p></div><div><span>BËJE TËNDEN</span><h2>Shijo.</h2><p>Një bibliotekë që rritet bashkë me ty.</p></div></footer>
 </section>
 <a class="skip-link" href="#main-content">Kalo te përmbajtja</a>
-<div class="app">
+<div class="app" hidden>
   <aside class="sidebar">
     <div class="logo"><div class="logo-mark">A</div><div class="name">AnimeTrack<small>BIBLIOTEKA IME</small></div></div>
     <div class="aside-title">Navigimi</div>

@@ -48,7 +48,7 @@ test('mobile swipe ignores vertical, left and cancelled gestures and marks once 
   await openFixture(page, { payload });
   async function swipe(dx, dy = 0, cancel = false) {
     await page
-      .locator('.at114-watch-card')
+      .locator('#mobile-continue .watch-row')
       .first()
       .evaluate(
         (card, { dx, dy, cancel }) => {

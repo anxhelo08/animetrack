@@ -38,7 +38,8 @@
     bottom: calc(132px + env(safe-area-inset-bottom, 0px));
     width: calc(100vw - 64px);
   }
-  .at114-watch-card {
+  .at114-watch-card,
+  .watch-row {
     touch-action: pan-y;
   }
 }
