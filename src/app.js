@@ -1926,13 +1926,13 @@ let at113LastEpisodeKey='';const at113EpisodeRender=v81RenderEpisode;v81RenderEp
 const proPriorView=setView;setView=function(which){let result;if(!proApp.open(which)){proApp.hide();proApp.syncMobile(which);result=proPriorView(which)}proApp.product?.navigation(which);return result};
 const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id);const a=state.anime.find(x=>x.id===id),resume=a&&window.ATResume123.resolve(a,state.history,releasedCount),root=$('detail-body');if(!resume||!root)return;const season=a.seasons.find(s=>s.id===resume.seasonId),top=root.querySelector('.seasons-topline');if(!season||!top)return;const button=document.createElement('button');button.type='button';button.className='at123-resume-button';button.dataset.at123Resume=id;window.ATHTML.renderHTML(button,'<span class="at123-resume-icon">▶</span><span><small>VAZHDO NGA KU E LE</small><strong>'+escapeHTML(mediaFormat(season.format)==='MOVIE'?'Film · '+(season.subtitle||season.title):season.title+' · Episodi '+resume.episode)+'</strong></span><span aria-hidden="true">→</span>');top.after(button)};
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-at123-resume]');if(!b)return;const a=state.anime.find(x=>x.id===b.dataset.at123Resume),pos=a&&window.ATResume123.resolve(a,state.history,releasedCount);if(!pos)return;activeSeasonId=pos.seasonId;episodePage=pos.page;renderDetail(a.id);void loadSeasonEpisodes(a.id,pos.seasonId,pos.page);$('detail-body').querySelector('[data-season-ep][data-ep="'+pos.episode+'"]')?.scrollIntoView({block:'center',behavior:'smooth'})});
-const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);void proApp.onAccount().catch(e=>console.warn('Optional account features',e));if(navigator.onLine)void refreshTrackedTV127(false).catch(e=>console.warn('Tracked TV check failed',e))};
+const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);if(!v8Items.length)void v8LoadSeason(1);void proApp.onAccount().catch(e=>console.warn('Optional account features',e));if(navigator.onLine)void refreshTrackedTV127(false).catch(e=>console.warn('Tracked TV check failed',e))};
 const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
 const proPriorSave=save;save=function(){const result=proPriorSave();if(result)libraryStore.publish('saved');return result};
 
 await new Promise(resolve=>setTimeout(resolve,0));
 // Account boot renders the authenticated or empty library once; the app is hidden until it finishes.
-v8LoadSeason(1);accountBoot();
+accountBoot();
 
 // AnimeTrack 12.14 — season resume focus, reversible hidden parts and season descriptions.
 function at140SeasonDescription(s){return String(s?.synopsis||'').replace(/\s+/g,' ').trim()}

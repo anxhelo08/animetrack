@@ -158,7 +158,7 @@ export function createFeatures(ctx){
   createVisibleScheduler(()=>{if(ctx.user())return modules.notifications.refresh()},{interval:5*60000});
   trackAchievements(false);renderHome();
   await new Promise(resolve=>setTimeout(resolve,0));
-  void modules.recommendations.refresh(false);
+  if(ctx.user())void modules.recommendations.refresh(false);
   product?.mount();
  }
  let diaryLoading=null;
