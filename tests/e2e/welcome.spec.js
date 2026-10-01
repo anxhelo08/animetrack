@@ -18,6 +18,9 @@ test('welcome leads guests into signup and supports motion controls', async ({ p
   await expect(page.locator('#account-modal.show')).toBeVisible();
   await expect(page.locator('#account-name')).toBeVisible();
   await expect(page.locator('#account-login')).toContainText('Krijo llogarinë');
+  await page.locator('#account-modal [data-close]').click();
+  await expect(page.locator('#account-modal')).not.toHaveClass(/show/);
+  await expect(page.locator('#welcome-page')).toBeVisible();
 });
 
 test('signed in users bypass welcome', async ({ page }) => {
