@@ -29,7 +29,7 @@ test('successful episode feedback offers keyboard undo and rejects stale history
   await mark(page, info);
   await expect.poll(() => watched(page)).toEqual([1]);
   await expect(page.locator('.release-feedback')).toContainText('Episodi 1 u shënua');
-  await page.locator('.release-feedback button').focus();
+  await page.locator('.release-feedback > button').focus();
   await page.keyboard.press('Enter');
   await expect.poll(() => watched(page)).toEqual([]);
   await expect(page.locator('.release-feedback')).toContainText('Shënimi u zhbë');
@@ -37,7 +37,7 @@ test('successful episode feedback offers keyboard undo and rejects stale history
   await page.evaluate(() =>
     window.ATMobile113.state().history.push({ eventId: 'later-event', action: 'other' }),
   );
-  await page.locator('.release-feedback button').click();
+  await page.locator('.release-feedback > button').click();
   await expect(page.locator('.release-feedback')).toContainText('Progresi ka ndryshuar');
   expect(await watched(page)).toEqual([1]);
 });
@@ -79,7 +79,7 @@ test('mobile swipe ignores vertical, left and cancelled gestures and marks once 
   expect(await watched(page)).toEqual([]);
   await swipe(120);
   await expect.poll(() => watched(page)).toEqual([1]);
-  await page.locator('.release-feedback button').click();
+  await page.locator('.release-feedback > button').click();
   await expect.poll(() => watched(page)).toEqual([]);
 });
 test('PWA shortcuts open the requested destination after account initialization', async ({

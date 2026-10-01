@@ -679,7 +679,7 @@ function confirmEpisode(all){const transactionBefore=JSON.parse(JSON.stringify(s
  s.watched=tidyNums([...s.watched,...newly],s.total);syncTotals(a);a.updatedAt=now();
  releasedStatusAfterWatch(a,true);
  for(const ep of newly)record(a.id,ep,'watched',s.id);
- if(!save()){state=transactionBefore;return false}render();if(detailId===a.id)renderDetail(a.id);renderHome();notify(newly.length+' episode u shënuan ✓');
+ if(!save()){state=transactionBefore;return false}render();if(detailId===a.id)renderDetail(a.id);renderHome();releaseExperience?.episodeSaved({id:a.id,seasonId:s.id,n:action.n,seen:true,format:s.format});notify(newly.length+' episode u shënuan ✓');
 }
 // v5: announcements, not unverified streaming availability.
 const AIRING_QUERY=`query ($id:Int,$idMal:Int){Media(id:$id,idMal:$idMal,type:ANIME){id idMal title{romaji english} nextAiringEpisode{airingAt episode} relations{edges{relationType node{id title{romaji english} format nextAiringEpisode{airingAt episode}}}}}}`;
@@ -896,7 +896,7 @@ $('catalog-more').addEventListener('click',()=>{if(!catalogBusy&&catalogHasNext)
 
 bindLibraryUI({el:$,state:()=>state,detailId:()=>detailId,catalogQuery:()=>catalogQuery,
  activeSeasonId:()=>activeSeasonId,episodePage:()=>episodePage,
- selectSeason:id=>{activeSeasonId=id;episodePage=0},shiftPage:delta=>{episodePage+=delta},
+ selectSeason:id=>{activeSeasonId=id;const a=state.anime.find(x=>x.id===detailId),season=a?.seasons.find(x=>x.id===id),n=season?Array.from({length:releasedCount(season)},(_,i)=>i+1).find(n=>!season.watched.includes(n))||1:1;episodePage=Math.floor((n-1)/24)},focusSeason:()=>focusSeasonEpisodes(),shiftPage:delta=>{episodePage+=delta},
  setSort:value=>{sort=value},setAiringWindow:value=>{airingWindow=value},
  openForm:(...args)=>openForm(...args),
  setFilter:(...args)=>setFilter(...args),
@@ -1917,7 +1917,22 @@ mountThemeSettings(theme,document.getElementById('product-advanced'),{toast:noti
 await new Promise(resolve=>setTimeout(resolve,0));
 mountStorageSettings({key:()=>KEY,toast:notify},libraryRepository);
 await new Promise(resolve=>setTimeout(resolve,0));
-releaseExperience=mountReleaseExperience({owner:()=>accountUser?.id||'guest',history:()=>state.history.at(-1),undo:(id,sid,n)=>updateSeasonEpisode(id,sid,n,false),navigate:page=>setView(page)});
+function episodeJournal(entry,changes=null){
+ if(entry.owner!==(accountUser?.id||'guest'))return null;
+ const a=state.anime.find(x=>x.id===entry.id),s=a?.seasons.find(x=>x.id===entry.seasonId),event=state.history.find(x=>x.eventId===entry.eventId);
+ if(!s?.watched.includes(entry.n)||!event||!['watched','movie-watched','movie-rewatched'].includes(event.action))return null;
+ const ep=s.episodes?.find(x=>x.number===entry.n),air=ep?.airedAt||ep?.aired||upcomingEntries.find(x=>x.animeId===a.id&&x.seasonId===s.id&&Number(x.seasonEpisode||x.episode)===entry.n)?.when;
+ const aired=typeof air==='number'?air:Date.parse(air||''),releaseDate=Number.isFinite(aired)&&aired<=Date.now()?new Date(aired).toISOString():null;
+ if(changes){
+  const date=Date.parse(changes.date??event.date),rating=changes.rating===undefined?event.diaryRating:changes.rating;
+  if(!Number.isFinite(date)||date>Date.now()+10*60000||rating!=null&&(!Number.isFinite(rating)||rating<.5||rating>10))return null;
+  const before={...event};event.date=new Date(date).toISOString();event.diaryRating=rating??null;
+  if(!save()){Object.keys(event).forEach(k=>delete event[k]);Object.assign(event,before);return null}
+  proApp.renderBackground();
+ }
+ return {title:a.title,date:event.date,rating:event.diaryRating??null,releaseDate};
+}
+releaseExperience=mountReleaseExperience({owner:()=>accountUser?.id||'guest',history:()=>state.history.at(-1),journal:episodeJournal,undo:(id,sid,n)=>updateSeasonEpisode(id,sid,n,false),navigate:page=>setView(page)});
 await new Promise(resolve=>setTimeout(resolve,0));
 const at124Command=window.ATCommand124({
  esc:escapeHTML,state:()=>state,released:releasedCount,
@@ -1934,7 +1949,7 @@ window.addEventListener('at119-library-filter',()=>render());
 window.addEventListener('at113-library-search',e=>{search=String(e.detail||'').trim().toLocaleLowerCase();render()});
 let at113LastEpisodeKey='';const at113EpisodeRender=v81RenderEpisode;v81RenderEpisode=function(...args){const panel=$('episode-detail-modal')?.querySelector('.modal-body'),parts=v81EpisodeParts(),key=[parts.a?.id,parts.s?.id,parts.n].join(':');const position=key===at113LastEpisodeKey?(panel?.scrollTop||0):0;at113EpisodeRender(...args);window.ATMobile113.enhanceEpisode();if(panel)panel.scrollTop=position;at113LastEpisodeKey=key};
 const proPriorView=setView;setView=function(which){let result;if(!proApp.open(which)){proApp.hide();proApp.syncMobile(which);result=proPriorView(which)}proApp.product?.navigation(which);return result};
-const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id);const a=state.anime.find(x=>x.id===id),resume=a&&window.ATResume123.resolve(a,state.history,releasedCount),root=$('detail-body');if(!resume||!root)return;const season=a.seasons.find(s=>s.id===resume.seasonId),top=root.querySelector('.seasons-topline');if(!season||!top)return;const button=document.createElement('button');button.type='button';button.className='at123-resume-button';button.dataset.at123Resume=id;window.ATHTML.renderHTML(button,'<span class="at123-resume-icon">▶</span><span><small>VAZHDO NGA KU E LE</small><strong>'+escapeHTML(mediaFormat(season.format)==='MOVIE'?'Film · '+(season.subtitle||season.title):season.title+' · Episodi '+resume.episode)+'</strong></span><span aria-hidden="true">→</span>');top.after(button)};
+const proPriorDetail=renderDetail;renderDetail=function(id){proPriorDetail(id);proApp.renderRewatch(id);const a=state.anime.find(x=>x.id===id),resume=a&&window.ATResume123.resolve(a,state.history,releasedCount),root=$('detail-body');if(!resume||!root)return;const season=a.seasons.find(s=>s.id===resume.seasonId),top=root.querySelector('.detail-content');if(!season||!top)return;const button=document.createElement('button');button.type='button';button.className='at123-resume-button';button.dataset.at123Resume=id;window.ATHTML.renderHTML(button,'<span class="at123-resume-icon">▶</span><span><small>VAZHDO NGA KU E LE</small><strong>'+escapeHTML(mediaFormat(season.format)==='MOVIE'?'Film · '+(season.subtitle||season.title):season.title+' · Episodi '+resume.episode)+'</strong></span><span aria-hidden="true">→</span>');top.querySelector('.detail-actions')?.before(button)};
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-at123-resume]');if(!b)return;const a=state.anime.find(x=>x.id===b.dataset.at123Resume),pos=a&&window.ATResume123.resolve(a,state.history,releasedCount);if(!pos)return;activeSeasonId=pos.seasonId;episodePage=pos.page;renderDetail(a.id);void loadSeasonEpisodes(a.id,pos.seasonId,pos.page);$('detail-body').querySelector('[data-season-ep][data-ep="'+pos.episode+'"]')?.scrollIntoView({block:'center',behavior:'smooth'})});
 const proPriorCloud=accountOpenCloud;accountOpenCloud=async function(user){await proPriorCloud(user);if(!v8Items.length)void v8LoadSeason(1);void proApp.onAccount().catch(e=>console.warn('Optional account features',e));if(navigator.onLine)void refreshTrackedTV127(false).catch(e=>console.warn('Tracked TV check failed',e))};
 const proPriorLogout=accountLogout;accountLogout=async function(){await proPriorLogout();proApp.hide();await proApp.onAccount()};
@@ -2045,9 +2060,10 @@ function at131EnhanceDetail(id){
  if(scroller)scroller.classList.add('at131-legacy-tabs');
  if(active){const banner=root.querySelector('.season-banner');if(banner&&!banner.querySelector('.at131-arcs'))window.ATHTML.insertHTML(banner,'beforeend',at131ArcHTML(a,active))}
 }
+function focusSeasonEpisodes(){const id=detailId,sid=activeSeasonId;requestAnimationFrame(()=>{if(detailId!==id||activeSeasonId!==sid||!$('detail-modal').classList.contains('show'))return;const root=$('detail-body'),target=root.querySelector('.at140-resume-episode')||root.querySelector('.ep-article:not(.seen)')||root.querySelector('.episode-list');target?.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion:reduce)').matches?'instant':'smooth'})})}
 function at131OpenPart(id,seasonId){
  const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId&&!x.hidden);if(!s)return;
- activeSeasonId=s.id;const resume=window.ATResume123.resolve(a,state.history,releasedCount);episodePage=resume?.seasonId===s.id?resume.page:0;renderDetail(id);void loadSeasonEpisodes(id,s.id,episodePage);
+ activeSeasonId=s.id;const n=Array.from({length:releasedCount(s)},(_,i)=>i+1).find(n=>!s.watched.includes(n))||1;episodePage=Math.floor((n-1)/24);renderDetail(id);void loadSeasonEpisodes(id,s.id,episodePage);focusSeasonEpisodes();
 }
 function at131AddArc(id,seasonId){
  const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId),root=$('detail-body');if(!a||!s||!root)return;

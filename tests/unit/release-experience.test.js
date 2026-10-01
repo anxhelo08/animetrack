@@ -58,3 +58,48 @@ test('a shortcut survives sign-in and is consumed once after authentication', ()
     expect(new URL(location.href).searchParams.get('source')).toBe('pwa');
     expect(new URL(location.href).searchParams.has('shortcut')).toBe(false);
   }));
+
+test('episode rating cannot edit the previous account and missing release dates are disabled', () =>
+  fixture(() => {
+    let owner = 'account-a';
+    const journal = vi.fn(() => ({
+      title: 'Episode',
+      date: '2026-09-29T12:00:00Z',
+      rating: null,
+      releaseDate: null,
+    }));
+    const experience = mountReleaseExperience({
+      owner: () => owner,
+      history: () => ({ eventId: 'watched-event' }),
+      journal,
+    });
+    experience.episodeSaved({ id: 'anime', seasonId: 'season', n: 1, seen: true });
+    expect(
+      [...document.querySelectorAll('.release-dates button')].find(
+        (x) => x.textContent === 'Kur doli',
+      ).disabled,
+    ).toBe(true);
+    journal.mockClear();
+    owner = 'account-b';
+    document.querySelector('[data-rating="4"]').click();
+    expect(journal).not.toHaveBeenCalled();
+  }));
+
+test('a rejected rating save retains the existing rating and reports failure', () =>
+  fixture(() => {
+    const journal = vi.fn((_entry, changes) =>
+      changes
+        ? null
+        : { title: 'Episode', date: '2026-09-29T12:00:00Z', rating: 6, releaseDate: null },
+    );
+    const experience = mountReleaseExperience({
+      owner: () => 'account-a',
+      history: () => ({ eventId: 'watched-event' }),
+      journal,
+    });
+    experience.episodeSaved({ id: 'anime', seasonId: 'season', n: 1, seen: true });
+    document.querySelector('[data-rating="5"]').click();
+    expect(document.querySelector('[data-rating="3"]').getAttribute('aria-pressed')).toBe('true');
+    expect(document.querySelector('[data-rating="5"]').getAttribute('aria-pressed')).toBe('false');
+    expect(document.querySelector('.release-journal').textContent).toContain('Nuk u ruajt');
+  }));

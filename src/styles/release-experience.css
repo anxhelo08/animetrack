@@ -18,6 +18,82 @@
 .release-feedback[hidden] {
   display: none;
 }
+.release-feedback:has(.release-journal:not([hidden])) {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  width: min(420px, calc(100vw - 32px));
+  left: auto;
+  right: 24px;
+  transform: none;
+  padding: 20px;
+}
+.release-journal {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.release-journal[hidden],
+.release-journal label[hidden] {
+  display: none;
+}
+.release-journal > strong {
+  overflow-wrap: anywhere;
+}
+.release-stars,
+.release-dates {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.release-feedback .release-stars button[data-rating] {
+  min-width: 38px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 28px;
+  transition:
+    color 150ms,
+    transform 150ms;
+}
+.release-feedback .release-stars button.selected {
+  color: #f5c65b;
+}
+.release-feedback .release-stars button:hover {
+  transform: scale(1.12);
+}
+.release-feedback .release-stars button:last-child {
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+.release-feedback .release-dates button {
+  flex: 1;
+  font-size: 12px;
+  padding: 8px;
+}
+.release-journal label {
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+}
+.release-journal input {
+  width: 100%;
+  min-height: 44px;
+}
+.release-journal small {
+  color: var(--muted);
+}
+.release-feedback button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.release-feedback .release-journal-close {
+  background: transparent;
+  color: var(--text);
+  justify-self: end;
+}
 .release-feedback button {
   min-width: 72px;
   min-height: 44px;
@@ -38,8 +114,23 @@
     bottom: calc(132px + env(safe-area-inset-bottom, 0px));
     width: calc(100vw - 64px);
   }
+  .release-feedback:has(.release-journal:not([hidden])) {
+    right: 16px;
+    width: calc(100vw - 32px);
+    max-height: min(65dvh, calc(100dvh - 160px));
+    overflow: auto;
+    padding: 14px;
+  }
   .at114-watch-card,
   .watch-row {
     touch-action: pan-y;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .release-feedback .release-stars button {
+    transition: none;
+  }
+  .release-feedback .release-stars button:hover {
+    transform: none;
   }
 }

@@ -34,7 +34,8 @@ export function bindLibraryUI(ctx) {
     if (b.dataset.season) {
       ctx.selectSeason(b.dataset.season);
       ctx.renderDetail(b.dataset.id);
-      ctx.loadSeasonEpisodes(b.dataset.id, ctx.activeSeasonId(), 0);
+      ctx.loadSeasonEpisodes(b.dataset.id, ctx.activeSeasonId(), ctx.episodePage());
+      ctx.focusSeason?.();
     }
     if (b.dataset.seasonEp) {
       const a = ctx.state().anime.find((a) => a.id === b.dataset.id),

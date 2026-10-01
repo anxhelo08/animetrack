@@ -165,3 +165,9 @@ button.danger{color:#ffb1b1;border-color:rgba(255,100,100,.18)}
   }
 }
 
+
+.at133-discovery{display:grid;gap:12px;padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface)}
+.at133-discovery small{color:var(--muted);line-height:1.6}
+.at133-discovery .at133-provider{transition:transform 160ms ease,border-color 160ms ease}
+.at133-discovery .at133-provider:hover{transform:translateY(-2px);border-color:var(--purple)}
+@media(prefers-reduced-motion:reduce){.at133-discovery .at133-provider{transition:none}.at133-discovery .at133-provider:hover{transform:none}}

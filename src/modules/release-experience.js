@@ -10,6 +10,57 @@ export function mountReleaseExperience(ctx) {
   undo.type = 'button';
   undo.textContent = 'Zhbëj';
   box.append(message, undo);
+  const journal = document.createElement('section');
+  journal.className = 'release-journal';
+  journal.hidden = true;
+  const title = document.createElement('strong');
+  const stars = document.createElement('div');
+  stars.className = 'release-stars';
+  stars.setAttribute('role', 'group');
+  stars.setAttribute('aria-label', 'Vlerësimi i episodit, nga 1 në 5 yje');
+  const ratingLabel = document.createElement('span');
+  const dates = document.createElement('div');
+  dates.className = 'release-dates';
+  function button(label, action) {
+    const control = document.createElement('button');
+    control.type = 'button';
+    control.textContent = label;
+    control.addEventListener('click', action);
+    return control;
+  }
+  const now = button('E pashë tani', () => updateJournal({ date: new Date().toISOString() }));
+  const aired = button('Kur doli', () => {
+    const entry = ctx.journal?.(latest);
+    if (entry?.releaseDate) updateJournal({ date: entry.releaseDate });
+  });
+  const custom = button('Zgjidh datën', () => {
+    dateLabel.hidden = false;
+    dateInput.focus();
+  });
+  const dateLabel = document.createElement('label');
+  dateLabel.textContent = 'Data dhe ora e shikimit';
+  dateLabel.hidden = true;
+  const dateInput = document.createElement('input');
+  dateInput.type = 'datetime-local';
+  dateInput.addEventListener('change', () => updateJournal({ date: dateInput.value }));
+  dateLabel.append(dateInput);
+  const status = document.createElement('small');
+  status.setAttribute('role', 'status');
+  for (let value = 1; value <= 5; value++) {
+    const star = button('★', () => updateJournal({ rating: value * 2 }));
+    star.dataset.rating = String(value);
+    star.setAttribute('aria-label', `${value} ${value === 1 ? 'yll' : 'yje'}`);
+    stars.append(star);
+  }
+  stars.append(
+    ratingLabel,
+    button('Hiq notën', () => updateJournal({ rating: null })),
+  );
+  dates.append(now, aired, custom);
+  const done = button('Mbyll', hide);
+  done.className = 'release-journal-close';
+  journal.append(title, stars, dates, dateLabel, status, done);
+  box.append(journal);
   document.body.append(box);
   let latest = null,
     timer,
@@ -19,7 +70,34 @@ export function mountReleaseExperience(ctx) {
     latest = null;
     clearTimeout(timer);
     box.hidden = true;
+    journal.hidden = true;
   }
+  function paintJournal(entry) {
+    title.textContent = entry.title;
+    ratingLabel.textContent = entry.rating == null ? 'Pa vlerësim' : `${entry.rating / 2}/5`;
+    stars.querySelectorAll('[data-rating]').forEach((star) => {
+      star.classList.toggle('selected', Number(star.dataset.rating) * 2 <= entry.rating);
+      star.setAttribute('aria-pressed', String(Number(star.dataset.rating) * 2 === entry.rating));
+    });
+    aired.disabled = !entry.releaseDate;
+    aired.title = entry.releaseDate
+      ? 'Përdor datën e konfirmuar të episodit'
+      : 'Data e publikimit ende nuk dihet';
+    const date = new Date(entry.date);
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    dateInput.value = local.toISOString().slice(0, 16);
+  }
+  function updateJournal(changes) {
+    if (!latest || latest.owner !== ctx.owner()) return;
+    const result = ctx.journal?.(latest, changes);
+    status.textContent = result
+      ? 'U ruajt në Diary ✓'
+      : 'Nuk u ruajt. Kontrollo datën dhe provo përsëri.';
+    if (result) paintJournal(result);
+    clearTimeout(timer);
+  }
+  box.addEventListener('focusin', () => clearTimeout(timer));
+  box.addEventListener('pointerenter', () => clearTimeout(timer));
   function episodeSaved(entry) {
     hide();
     if (!entry.seen) return;
@@ -28,7 +106,14 @@ export function mountReleaseExperience(ctx) {
       entry.format === 'MOVIE' ? 'Filmi u shënua ✓' : `Episodi ${entry.n} u shënua ✓`;
     undo.hidden = false;
     box.hidden = false;
-    timer = setTimeout(hide, 12000);
+    const metadata = ctx.journal?.(latest);
+    if (metadata) {
+      journal.hidden = false;
+      dateLabel.hidden = true;
+      status.textContent = 'Vlerësimi është opsional · Shikimi u ruajt';
+      paintJournal(metadata);
+    }
+    timer = setTimeout(hide, metadata ? 40000 : 12000);
   }
   undo.addEventListener('click', () => {
     const entry = latest;

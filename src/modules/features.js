@@ -5,7 +5,7 @@ import {createProductExperience} from './product-experience.js';
 export function createFeatures(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,pwaUpdater=null,updateRequested=false;
- let achievementsOwner='',achievementsKnown=null;
+ let achievementsOwner='',achievementsKnown=null;const homeMarkup=new WeakMap();
  const product=createProductExperience(ctx);
  const proPages=['notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>window.ATHTML.html`<button type="button" class="pro-btn" data-pro-action="${action}" data-id="${id}">${label}</button>`;
@@ -47,8 +47,8 @@ export function createFeatures(ctx){
   // Background refreshes must never replace a typed, unsubmitted collection name.
   // Explicit collection mutations still use ctx.rerender() and force a fresh view.
   if(!force&&active==='collections'&&$('at110-new-list')?.value.trim())return;
-  if(!force&&['profile','friends','sync'].includes(active)&&$('pro-content')?.contains(document.activeElement)&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
-  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:()=>modules.diary?.render()||'',watch:modules.watch.render,sync:modules.providerSync.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini()+modules.providerSync.profileCard(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};window.ATHTML.renderHTML($('pro-content'),renderers[active]?.()||'');product?.refresh()}
+  if(!force&&['profile','friends','sync','diary'].includes(active)&&$('pro-content')?.contains(document.activeElement)&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
+  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:()=>modules.diary?.render()||'',watch:modules.watch.render,sync:modules.providerSync.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini()+modules.providerSync.profileCard(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};const content=$('pro-content'),markup=renderers[active]?.()||'';if(force||homeMarkup.get(content)!==markup){window.ATHTML.renderHTML(content,markup);homeMarkup.set(content,markup)}product?.refresh()}
  async function refreshLive(force=false){
   if(liveBusy)return {status:'busy'};
   if(document.visibilityState==='hidden')return {status:'hidden'};
@@ -67,7 +67,7 @@ export function createFeatures(ctx){
   if($('at-home-main'))try{
    const day=$('at115-desktop-day');if(day)window.ATHTML.renderHTML(day,modules.day.render(true));
    const parts=modules.home.render();
-   for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node)window.ATHTML.renderHTML(node,parts[key])}
+   for(const [key,target] of Object.entries({hero:'at-home-top',feature:'at-home-focus',session:'at-home-session',lineup:'at-home-lineup',releases:'at-home-releases',seasons:'at-home-seasons'})){const node=$(target);if(node&&homeMarkup.get(node)!==parts[key]){window.ATHTML.renderHTML(node,parts[key]);homeMarkup.set(node,parts[key])}}
   }catch(err){
    console.warn('Desktop home recovery',err);
    const focus=$('at-home-focus');if(focus)window.ATHTML.renderHTML(focus,'<section class="at-pro-recovery" role="alert"><h3>Nuk u ngarkua ky seksion</h3><p>Biblioteka jote mbetet e ruajtur. Mund të riprovosh pa rifreskuar gjithë faqen.</p><button type="button" data-home-action="retry-home">Riprovo ↻</button></section>');
