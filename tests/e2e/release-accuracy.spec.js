@@ -317,7 +317,7 @@ test('upgrade refreshes a saved twelve-episode estimate despite a fresh old dail
     .poll(() =>
       page.evaluate(
         () =>
-          window.ATMobile113?.state().anime.find((a) => a.id === 'old-overgeared')?.seasons[0]
+          window.ATMobile113?.state?.()?.anime.find((a) => a.id === 'old-overgeared')?.seasons[0]
             .airedCount,
       ),
     )
