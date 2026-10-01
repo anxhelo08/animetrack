@@ -7,3 +7,5 @@ Original JPEG artwork, downloaded 2026-10-01. Exact animation records matched by
 - Demon Slayer (2019), 1462 × 2048: https://static.tvmaze.com/uploads/images/original_untouched/456/1140750.jpg
 
 Discovery: https://api.tvmaze.com/search/shows. Artwork belongs to its respective rights holders.
+
+The display variants are AVIF encodings at 560 and 840 pixels wide for 2× and 3× poster cards. The full original JPEGs remain available as fallbacks. No artwork or composition was generated or changed.
