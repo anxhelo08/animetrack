@@ -1,5 +1,7 @@
 # 14.6.1
 
+- Yield between independent interface mounts to avoid combining catalogue, account and navigation initialization into long main-thread tasks.
+
 - Refresh release metadata on first login after upgrading, bypassing the previous daily cache. Daily AniList queries include the last confirmed airing, with independent TVmaze and Jikan fallbacks.
 - Reject old full-season estimates for ongoing anime. A dated future episode limits availability even when a TVmaze list is incomplete; watched history is retained without turning future episodes into released episodes.
 - Verified anime TVmaze matches require a unique exact title/alias and premiere year, and are limited to a single TV track. Episode photos and summaries retain source labels.

@@ -83,10 +83,14 @@ export function createFeatures(ctx){
  };
  async function init(){
   modules.experience.init();
+  await new Promise(resolve=>setTimeout(resolve,0));
   modules.watch.mount();
   modules.rich.mount();
+  await new Promise(resolve=>setTimeout(resolve,0));
   modules.providerSync.mount();
+  await new Promise(resolve=>setTimeout(resolve,0));
   window.ATMobile113.init();
+  await new Promise(resolve=>setTimeout(resolve,0));
   window.ATUnified119?.mount();
   await new Promise(resolve=>setTimeout(resolve,0));
   const nav=$('side-nav');
@@ -99,10 +103,13 @@ export function createFeatures(ctx){
   const dash=document.createElement('div');dash.className='at-home-dashboard';window.ATHTML.renderHTML(dash,'<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>');recommend.after(dash);
   await new Promise(resolve=>setTimeout(resolve,0));
   modules.home.mount(home,recommend,dash);
+  await new Promise(resolve=>setTimeout(resolve,0));
   const dayNode=document.createElement('section');dayNode.id='at115-desktop-day';dayNode.setAttribute('aria-label','Your Anime Day');$('at-home-top')?.after(dayNode);
   modules.iphone.mount();
+  await new Promise(resolve=>setTimeout(resolve,0));
   window.ATHTML.insertHTML($('discover'),'beforebegin','<section id="at117-mobile-discover" class="at117-mobile-discover" aria-label="Rekomandimet dhe animet popullore"></section>');
   modules.collections.mountLibrary();
+  await new Promise(resolve=>setTimeout(resolve,0));
   window.ATHTML.insertHTML($('library-view'),'afterbegin','<div class="at119-library-intro"><span>✦ BIBLIOTEKA JOTE</span><strong>Anime dhe seriale, bashkë.</strong><button type="button" data-at119-add-tv>+ Shto anime ose serial</button></div>');
   window.ATImport116?.mount?.(ctx);
   document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}if(e.target?.id==='at11-friend-form'){e.preventDefault();void modules.friends.find()}});
@@ -150,6 +157,7 @@ export function createFeatures(ctx){
   window.addEventListener('focus',()=>void refreshLive(false));
   createVisibleScheduler(()=>{if(ctx.user())return modules.notifications.refresh()},{interval:5*60000});
   trackAchievements(false);renderHome();
+  await new Promise(resolve=>setTimeout(resolve,0));
   void modules.recommendations.refresh(false);
   product?.mount();
  }
