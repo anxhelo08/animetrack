@@ -69,3 +69,21 @@ test('14.2 large offline history merge retains independent events without duplic
  const api=load(),rows=Array.from({length:12000},(_,i)=>({eventId:'event-'+i,id:'a',seasonId:'s',episode:i%12+1,action:'watched',date:'2026-09-30T12:00:00Z'}));
  const merged=api.merge({anime:[],history:rows.slice(0,9000),preferences:{}},{anime:[],history:rows.slice(3000),preferences:{}});assert.equal(merged.history.length,12000);
 });
+
+test('saved watch links survive cloud compaction and removal overrides cached links',()=>{
+ const api=load(),rich=sample(),season=rich.anime[0].seasons[0];
+ season.watchUrl='https://anisuge.org/watch/fixture/ep-1';
+ season.episodes[0].watchUrl='https://cinehd.vc/watch/fixture?ep=1';
+ const remote=api.compact(rich);
+ assert.equal(remote.anime[0].seasons[0].watchUrl,season.watchUrl);
+ assert.equal(api.compact(api.hydrate(remote,rich)).anime[0].seasons[0].episodes.length,2,'hydration must not add empty watch-link rows for every cached episode');
+ assert.equal(remote.anime[0].seasons[0].episodes.find(ep=>ep.number===1).watchUrl,season.episodes[0].watchUrl);
+ const deleted=JSON.parse(JSON.stringify(rich));
+ deleted.anime[0].seasons[0].watchUrl='';
+ deleted.anime[0].seasons[0].episodes[0].watchUrl='';
+ const cleared=api.compact(deleted);
+ for(const result of [api.hydrate(cleared,rich),api.merge(remote,cleared)]){
+  assert.equal(result.anime[0].seasons[0].watchUrl,'');
+  assert.equal(result.anime[0].seasons[0].episodes.find(ep=>ep.number===1).watchUrl,'');
+ }
+});

@@ -133,3 +133,37 @@ test('successful marking opens the episode and keeps date controls bound across 
     experience.episodeSaved({ ...entry, seen: false });
     expect(openEpisode).toHaveBeenCalledTimes(1);
   }));
+
+test('date choices close after a successful save; failed saves and rating changes keep the card open', () =>
+  fixture(() => {
+    const close = vi.fn();
+    let reject = false;
+    const metadata = {
+      title: 'Episode',
+      date: '2026-09-29T12:00:00Z',
+      rating: null,
+      releaseDate: '2026-09-20T12:00:00Z',
+    };
+    const experience = mountReleaseExperience({
+      owner: () => 'account-a',
+      history: () => ({ eventId: 'watched-event' }),
+      close,
+      journal: (_entry, changes) => (changes && reject ? null : metadata),
+    });
+    const entry = { id: 'anime', seasonId: 'season', n: 1, seen: true };
+    for (const label of ['E pashë tani', 'Kur doli']) {
+      experience.episodeSaved(entry);
+      document.querySelector('[data-rating="3"]').click();
+      expect(document.querySelector('.release-journal').hidden).toBe(false);
+      const button = [...document.querySelectorAll('.release-dates button')].find(
+        (x) => x.textContent === label,
+      );
+      reject = true;
+      button.click();
+      expect(document.querySelector('.release-journal').hidden).toBe(false);
+      reject = false;
+      button.click();
+      expect(document.querySelector('.release-journal').hidden).toBe(true);
+    }
+    expect(close).toHaveBeenCalledTimes(2);
+  }));

@@ -1,3 +1,5 @@
+import { episodeWatchURL } from './watch-links.js';
+
 export const STATUS = {
   watching: 'Po shikoj',
   completed: 'Përfunduar',
@@ -155,6 +157,9 @@ export function createLibraryModel(dependencies = {}) {
           imageSource: String(e.imageSource || '').slice(0, 100),
           summarySource: String(e.summarySource || '').slice(0, 100),
           url: validPoster(e.url || ''),
+          ...(e.watchUrl === '' || episodeWatchURL(e.watchUrl)
+            ? { watchUrl: episodeWatchURL(e.watchUrl) }
+            : {}),
           tvmazeEpisodeId: String(e.tvmazeEpisodeId || '').slice(0, 30),
           filler: !!e.filler,
           recap: !!e.recap,
@@ -224,6 +229,9 @@ export function createLibraryModel(dependencies = {}) {
         .trim()
         .slice(0, 1800),
       sourceUrl: validPoster(raw?.sourceUrl || ''),
+      ...(raw?.watchUrl === '' || episodeWatchURL(raw?.watchUrl)
+        ? { watchUrl: episodeWatchURL(raw.watchUrl) }
+        : {}),
     };
   }
 

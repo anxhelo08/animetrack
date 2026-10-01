@@ -98,7 +98,10 @@ export function mountReleaseExperience(ctx) {
       : 'Nuk u ruajt. Kontrollo datën dhe provo përsëri.';
     if (result) {
       paintJournal(result);
-      ctx.refresh?.();
+      if (changes.date !== undefined) {
+        hide();
+        ctx.close?.();
+      } else ctx.refresh?.();
     }
     clearTimeout(timer);
   }

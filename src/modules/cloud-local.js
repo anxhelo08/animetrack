@@ -20,15 +20,18 @@ window.ATCloudLocal12123=(()=>{
   const note=String(ep?.myNote||'').trim();
   const rating=ep?.personalRating==null?null:Number(ep.personalRating);
   const manual=ep?.fillerManual===true?true:ep?.fillerManual===false?false:null;
-  if(!note&&rating==null&&manual==null)return null;
+  const hasWatchUrl=Object.prototype.hasOwnProperty.call(ep,'watchUrl'),watchUrl=String(ep?.watchUrl||'').slice(0,2000);
+  if(!note&&rating==null&&manual==null&&!hasWatchUrl)return null;
   const out={number};
   if(note)out.myNote=note.slice(0,1500);
   if(Number.isFinite(rating))out.personalRating=Math.max(1,Math.min(10,rating));
   if(manual!==null)out.fillerManual=manual;
+  if(hasWatchUrl)out.watchUrl=watchUrl;
   return out;
  }
  function compactSeason(season){
   const out=pick(season,SEASON_FIELDS);
+  out.watchUrl=String(season?.watchUrl||'').slice(0,2000);
   out.episodes=(Array.isArray(season?.episodes)?season.episodes:[]).map(compactEpisode).filter(Boolean);
   return out;
  }
@@ -110,11 +113,12 @@ window.ATCloudLocal12123=(()=>{
   const episodes=[];
   for(const ep of richEpisodes.values()){
    const n=Number(ep.number);
-   episodes.push({...ep,myNote:'',personalRating:null,fillerManual:null,...(remoteEpisodes.get(n)||{})});
+   const metadata={...ep,myNote:'',personalRating:null,fillerManual:null};delete metadata.watchUrl;
+   episodes.push({...metadata,...(remoteEpisodes.get(n)||{})});
    remoteEpisodes.delete(n);
   }
   for(const ep of remoteEpisodes.values())episodes.push(ep);
-  return {...rich,...remote,episodes:episodes.sort((a,b)=>Number(a.number)-Number(b.number))};
+  return {...rich,...remote,watchUrl:remote.watchUrl||'',episodes:episodes.sort((a,b)=>Number(a.number)-Number(b.number))};
  }
  function hydrateAnime(remote,rich){
   if(!rich)return clone(remote);

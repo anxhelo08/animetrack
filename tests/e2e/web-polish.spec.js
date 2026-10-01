@@ -61,54 +61,57 @@ test('background refreshes preserve the desktop next episode card and do not res
     ),
   ).toBe(true);
 });
-test('episode feedback records stars, release date and custom date on the existing Diary event', async ({
-  page,
-}, info) => {
-  await openFixture(page, { payload });
-  await page
-    .locator(
-      info.project.name.startsWith('iphone') ? '[data-ios-action="advance"]' : '.at-h3-check-btn',
-    )
-    .first()
-    .click();
-  const journal = page.locator('.release-journal');
-  await expect(journal).toBeVisible();
-  await expect(page.locator('.episode-card .release-journal')).toBeVisible();
-  await expect(page.locator('#episode-detail-modal')).toHaveClass(/show/);
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
-    'href',
-    'https://cinehd.vc/home',
-  );
-  await journal.getByRole('button', { name: '4 yje', exact: true }).click();
-  await expect.poll(async () => (await snapshot(page)).history.at(-1).diaryRating).toBe(8);
-  await journal.getByRole('button', { name: 'Kur doli', exact: true }).click();
-  await expect
-    .poll(async () => (await snapshot(page)).history.at(-1).date)
-    .toBe('2026-09-20T18:00:00.000Z');
-  await page.screenshot({ path: info.outputPath('episode-journal.png') });
-  await journal.getByRole('button', { name: 'Zgjidh datën', exact: true }).click();
-  await journal.locator('input').fill('2026-09-28T20:10');
-  await journal.locator('input').dispatchEvent('change');
-  await expect
-    .poll(async () => (await snapshot(page)).history.at(-1).date)
-    .toBe('2026-09-28T20:10:00.000Z');
-  await journal.locator('input').fill('2099-01-01T12:00');
-  await journal.locator('input').dispatchEvent('change');
-  await expect(journal).toContainText('Nuk u ruajt');
-  expect((await snapshot(page)).history).toHaveLength(26);
-  expect((await snapshot(page)).anime[0].seasons[0].watched).toEqual([...watched, 26]);
-  await journal.getByRole('button', { name: 'Mbyll', exact: true }).click();
-  await page
-    .locator(
-      info.project.name.startsWith('iphone')
-        ? '.at-mobile-nav [data-mobile-nav="diary"]'
-        : '#pro-nav-diary',
-    )
-    .click();
-  await expect(page.locator('.at132-entry').filter({ hasText: 'Episodi 26' })).toContainText(
-    '★ 8.0',
-  );
-});
+for (const choice of ['E pashë tani', 'Kur doli', 'Zgjidh datën']) {
+  test(`episode feedback records stars and closes only after saving the date: ${choice}`, async ({
+    page,
+  }, info) => {
+    await openFixture(page, { payload });
+    await page
+      .locator(
+        info.project.name.startsWith('iphone') ? '[data-ios-action="advance"]' : '.at-h3-check-btn',
+      )
+      .first()
+      .click();
+    const journal = page.locator('.release-journal');
+    const modal = page.locator('#episode-detail-modal');
+    await expect(journal).toBeVisible();
+    await journal.getByRole('button', { name: '4 yje', exact: true }).click();
+    await expect.poll(async () => (await snapshot(page)).history.at(-1).diaryRating).toBe(8);
+    await expect(modal).toHaveClass(/show/);
+    const current = await page.evaluate(() => new Date().toISOString());
+    await journal.getByRole('button', { name: choice, exact: true }).click();
+    if (choice === 'Zgjidh datën') {
+      await expect(modal).toHaveClass(/show/);
+      await journal.locator('input').fill('2099-01-01T12:00');
+      await journal.locator('input').dispatchEvent('change');
+      await expect(journal).toContainText('Nuk u ruajt');
+      await expect(modal).toHaveClass(/show/);
+      await journal.locator('input').fill('2026-09-28T20:10');
+      await journal.locator('input').dispatchEvent('change');
+    }
+    await expect(modal).not.toHaveClass(/show/);
+    await expect(journal).toBeHidden();
+    const expected =
+      choice === 'Kur doli'
+        ? '2026-09-20T18:00:00.000Z'
+        : choice === 'Zgjidh datën'
+          ? '2026-09-28T20:10:00.000Z'
+          : current;
+    await expect.poll(async () => (await snapshot(page)).history.at(-1).date).toBe(expected);
+    expect((await snapshot(page)).history).toHaveLength(26);
+    expect((await snapshot(page)).anime[0].seasons[0].watched).toEqual([...watched, 26]);
+    await page
+      .locator(
+        info.project.name.startsWith('iphone')
+          ? '.at-mobile-nav [data-mobile-nav="diary"]'
+          : '#pro-nav-diary',
+      )
+      .click();
+    await expect(page.locator('.at132-entry').filter({ hasText: 'Episodi 26' })).toContainText(
+      '★ 8.0',
+    );
+  });
+}
 test('Diary filters scroll with the page and season selection lands on the selected episodes', async ({
   page,
 }, info) => {

@@ -289,3 +289,25 @@ body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-body,
 .episode-card-journal > .episode-card-rating {
   display: none;
 }
+
+.episode-provider-link summary {
+  color: var(--purple);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 6px 0;
+}
+.episode-provider-link label {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0;
+  font-size: 12px;
+}
+.episode-provider-link input {
+  width: 100%;
+  min-height: 44px;
+}
+.episode-provider-link button {
+  min-height: 38px;
+  padding: 6px 12px;
+  border-radius: 10px;
+}

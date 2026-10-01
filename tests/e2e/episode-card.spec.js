@@ -111,7 +111,6 @@ test('a watched episode opens a centered card with artwork and saves stars witho
   expect(
     (await page.evaluate(() => window.ATMobile113.state())).anime[0].seasons[0].watched,
   ).toEqual([1, 2]);
-  await page.locator('[data-close="episode-detail-modal"]').click();
   await expect(dialog).toBeHidden();
 });
 
@@ -135,11 +134,79 @@ test('anime episode links open Anisuge directly and unknown release dates stay d
     'https://anisuge.org/',
   );
   await expect(page.locator('.episode-card-providers a')).toHaveAttribute('target', '_blank');
+  const animeLink = 'https://anisuge.org/watch/fixture-season/ep-1';
+  await page.locator('.episode-provider-link summary').click();
+  await page.locator('[data-episode-watch-url]').fill(animeLink);
+  await page.locator('[data-episode-watch-save]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', animeLink);
+
   await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    animeLink.replace('/ep-1', '/ep-2'),
+  );
   await page.locator('.episode-card [data-episode-mark]').click();
   await expect(
     page
       .locator('.episode-card .release-journal')
       .getByRole('button', { name: 'Kur doli', exact: true }),
   ).toBeDisabled();
+});
+
+test('a saved episode link survives reload and does not leak into the next episode', async ({
+  page,
+}, info) => {
+  await page.addInitScript((value) => {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => false });
+    if (!sessionStorage.getItem('seeded-watch-link')) {
+      const key = 'animetrack_user_accessibility-test';
+      localStorage.setItem(key, JSON.stringify(value));
+      localStorage.setItem(
+        key + '_pending_126',
+        JSON.stringify({ baseRevision: '2026-09-29T20:00:00Z', savedAt: Date.now() }),
+      );
+      localStorage.setItem(key + '_revision_126', '2026-09-29T20:00:00Z');
+      sessionStorage.setItem('seeded-watch-link', '1');
+    }
+  }, payload);
+  await openFixture(page, { payload });
+  async function openEpisode() {
+    if (info.project.name.startsWith('iphone'))
+      await page.locator('#mobile-history [data-mobile-action="episode"]').first().click();
+    else {
+      await page.locator('#library-nav').click();
+      await page.locator('#anime-grid [data-detail="episode-show"]').first().click();
+      await page.locator('#detail-body .ep-info-btn[data-episode-number="1"]').click();
+    }
+  }
+  await openEpisode();
+  await page.locator('.episode-provider-link summary').click();
+  const input = page.locator('[data-episode-watch-url]');
+  await input.fill('https://anisuge.org/watch/fixture-episode');
+  await page.locator('[data-episode-watch-save]').click();
+  await expect(page.locator('[data-episode-watch-status]')).toContainText('CineHD');
+  const url = 'https://cinehd.vc/watch/fixture?episode=1';
+  await input.fill(url);
+  await page.locator('[data-episode-watch-save]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', url);
+  await page.reload();
+  await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
+  await openEpisode();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', url);
+  await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://cinehd.vc/home',
+  );
+  await page.locator('.episode-provider-link summary').click();
+  await page.locator('[data-episode-watch-url]').fill('https://cinehd.vc/tv/5920');
+  await page.locator('[data-episode-watch-save]').click();
+  await page.locator('.episode-card-navigation [data-v98-move="-1"]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', url);
+  await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://cinehd.vc/tv/5920',
+  );
+  await expect(page.locator('.episode-card-providers')).toContainText('zgjidh episodin në CineHD');
 });
