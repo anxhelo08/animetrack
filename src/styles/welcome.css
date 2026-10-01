@@ -1,4 +1,5 @@
 .welcome-page[hidden]{display:none}
+body.welcome-preview .account-boot-screen,body.welcome-preview .app,body.welcome-preview>.skip-link{display:none}
 .welcome-page{background:radial-gradient(ellipse at 85% 32%,#66314c 0,transparent 46%),radial-gradient(ellipse at 58% 58%,#302341 0,transparent 56%),#100d17;color:#fff;min-height:100dvh;position:relative;z-index:10;font-family:var(--font-sans,system-ui,sans-serif)}
 body.auth-required:has(.welcome-page:not([hidden])) .app,body.auth-required:has(.welcome-page:not([hidden]))>.skip-link{display:none}
 .welcome-header{display:flex;align-items:center;justify-content:space-between;padding:30px 4vw;max-width:1600px;margin:auto}

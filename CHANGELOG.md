@@ -1,5 +1,7 @@
 # 14.7.1
 
+- Mirëseardhja shfaqet para inicializimit të plotë për vizitorët e rinj; sesionet ekzistuese dhe kthimet OAuth presin verifikimin.
+
 - Posterë origjinalë mbi 1400 px, të shërbyer nga faqja.
 - Shfletim automatik i kartave, shigjeta, zgjedhje direkte, pauzë dhe respektim i reduced motion.
 - Ekran hyrjeje me posterë në sfond dhe integrim OAuth Google/Apple që kontrollon aktivizimin e provider-ëve; aktivizimi real kërkon kredencialet në Supabase.
