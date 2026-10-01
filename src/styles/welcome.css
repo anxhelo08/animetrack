@@ -10,8 +10,8 @@ body.auth-required:has(.welcome-page:not([hidden])) .app,body.auth-required:has(
 .welcome-copy h1{font-size:clamp(48px,5.7vw,84px);line-height:1.02;letter-spacing:-4px;margin:26px 0;font-weight:850;color:#fff}
 .welcome-copy h1 span{color:#d6a4ff}
 .welcome-copy>p{max-width:410px;color:#ddd2e6;font-size:18px;line-height:1.6;margin-bottom:30px}
-.welcome-start{border:0;border-radius:32px;background:#b749d5;color:#fff;padding:16px 28px;font-weight:750!important;box-shadow:0 10px 40px #b749d530;transition:transform .2s,background .2s}
-.welcome-start:hover{transform:translateY(-3px);background:#c95ae7}
+.welcome-start{border:0;border-radius:32px;background:#9c36ba;color:#fff;padding:16px 28px;font-weight:750!important;box-shadow:0 10px 40px #b749d530;transition:transform .2s,background .2s}
+.welcome-start:hover{transform:translateY(-3px);background:#a33dc0}
 .welcome-start span{margin-left:20px}.welcome-copy>small{display:block;font-size:12px;color:#c4b5d0;margin-top:17px}
 .welcome-showcase{text-align:center;min-width:0}.welcome-deck{height:440px;position:relative;max-width:410px;margin:auto;perspective:1200px}
 .welcome-poster{position:absolute;width:280px;height:410px;border-radius:22px;overflow:hidden;background:linear-gradient(145deg,#674979,#211932);box-shadow:0 24px 65px #08041080;border:1px solid #ffffff20;left:20px;top:0}
@@ -26,3 +26,5 @@ body.auth-required:has(.welcome-page:not([hidden])) .app,body.auth-required:has(
 @media(max-width:760px){.welcome-header{padding:22px}.welcome-brand{font-size:22px}.welcome-hero{grid-template-columns:1fr;gap:45px;padding:35px 24px 55px;min-height:auto}.welcome-copy h1{font-size:60px;letter-spacing:-3px}.welcome-copy>p{font-size:16px}.welcome-deck{height:340px;max-width:310px}.welcome-poster{width:215px;height:320px;left:5px;border-radius:18px}.welcome-poster-back{transform:translate(65px,22px) rotate(12deg)}.welcome-poster-middle{transform:translate(35px,12px) rotate(6deg)}.welcome-poster h2{font-size:24px}.welcome-features{grid-template-columns:1fr}.welcome-features>div{padding:26px;border-right:0;border-bottom:1px solid #ffffff14}.welcome-features h2{font-size:35px}.welcome-features p{margin:0}}
 @media(prefers-reduced-motion:reduce){.welcome-poster-front{animation:none}.welcome-start{transition:none}.welcome-motion{display:none}}
 body.auth-required:has(.welcome-page:not([hidden])) #account-modal .modal-header .x{display:flex!important}
+
+@media(max-width:380px){.welcome-poster{width:185px;height:280px}.welcome-deck{height:300px}.welcome-poster-back{transform:translate(45px,22px) rotate(12deg)}.welcome-poster-middle{transform:translate(25px,12px) rotate(6deg)}}
