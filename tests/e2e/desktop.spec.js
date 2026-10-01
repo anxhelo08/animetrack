@@ -9,7 +9,7 @@ test('desktop regression',async({browser},testInfo)=>{
   anime:Array.from({length:8},(_,i)=>({
    id:'demo'+i,title:i===7?'Mystery Series 7':'Series '+i,genre:i===7?'Mystery':'Action',status:'watching',
    total:12,watched:[1,2],cover:'',updatedAt:new Date().toISOString(),
-   seasons:[{id:'season'+i,title:'Season 1',total:12,watched:[1,2],episodes:[{number:4,title:'Future demo episode',airedAt:new Date(Date.now()+90*60000).toISOString()}],releaseStatus:'FINISHED'}]
+   seasons:[{id:'season'+i,title:'Season 1',total:12,watched:[1,2],episodes:[{number:3,title:'Released demo episode',airedAt:new Date(Date.now()-60*60000).toISOString()},{number:4,title:'Future demo episode',airedAt:new Date(Date.now()+90*60000).toISOString()}],releaseStatus:'FINISHED'}]
   })),history:[{eventId:'desktop-diary-1',id:'demo0',seasonId:'season0',episode:1,action:'watched',date:new Date(Date.now()-2*60*60*1000).toISOString(),diaryNote:'',diaryRating:null}],preferences:{weeklyGoal:10,notificationRead:[]}
  };
  const stub='(()=>{const payload='+JSON.stringify(fixture)+';const chain=table=>{const q={};for(const name of ["select","eq","order","limit","in","not","or","insert","upsert","update","delete","range","neq","gte","lte","contains"])q[name]=()=>q;q.maybeSingle=async()=>({data:table==="anime_libraries"?{payload,updated_at:new Date().toISOString()}:null,error:null});q.single=q.maybeSingle;q.then=(yes,no)=>Promise.resolve({data:[],error:null}).then(yes,no);return q;};window.supabase={createClient:()=>({auth:{getSession:async()=>({data:{session:{user:{id:"desktop-demo",email:"demo@example.com"}}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain("rpc")})};})();';
@@ -71,6 +71,8 @@ test('desktop regression',async({browser},testInfo)=>{
  assert.equal(await page.locator('#at-home-lineup .at-h2-lineup-card').count(),1);
  assert.match(await page.locator('#at-home-lineup').innerText(),/Mystery Series 7/);
  assert.equal(await page.locator('#at-pc-watch-search').inputValue(),'Mystery');
+ // Publish the scheduled fourth episode before testing advance and undo.
+ await page.evaluate(()=>{const ep=window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].episodes.find(e=>e.number===4);ep.airedAt=new Date(Date.now()-60000).toISOString()});
  await page.locator('[data-home-action="advance-next"][data-id="demo7"]').click();
  assert.match(await page.locator('#at-home-lineup').innerText(),/S1 · EP 4/);
  await page.locator('[data-home-action="undo-watch"]').click();
