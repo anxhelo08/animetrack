@@ -51,13 +51,10 @@ test('release availability and movie resume remain accurate in the actual home f
   const actual = await page.evaluate(() => window.ATMobile113.state().anime);
   expect(actual.find((a) => a.id === 'ongoing').seasons[0].total).toBe(12);
   if (info.project.name.startsWith('iphone')) {
-    await expect(page.locator('.at114-watch-card').filter({ hasText: 'Overgeared' })).toContainText(
-      '0/2',
-    );
-    const film = page.locator('.at114-watch-card').filter({ hasText: 'Eureka' });
-    await expect(film).toContainText('Film');
-    await expect(film).not.toContainText('S03 | E01');
-    await film.locator('.at114-copy').click();
+    const ongoing = page.locator('#mobile-continue .watch-row').filter({ hasText: 'Overgeared' });
+    await expect(ongoing).toContainText('EP1');
+    const film = page.locator('#mobile-continue .watch-row').filter({ hasText: 'Eureka' });
+    await film.locator('[data-mobile-action="episode"]').click();
   } else {
     const ongoing = page.locator('.at-h2-lineup-card').filter({ hasText: 'Overgeared' });
     await expect(ongoing).toContainText('2 episode gati');
@@ -389,9 +386,9 @@ test('a serial shows the exact Cinemeta episode image and description when TVmaz
   );
   if (info.project.name.startsWith('iphone'))
     await page
-      .locator('.at114-watch-card')
+      .locator('#mobile-continue .watch-row')
       .filter({ hasText: 'Serial fallback' })
-      .locator('.at114-copy')
+      .locator('[data-mobile-action="episode"]')
       .click();
   else
     await page

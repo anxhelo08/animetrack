@@ -74,7 +74,7 @@
 .at108-episode-tabs button.active{background:#544078;color:#fff}
 .at108-episode-tabs button span{margin-left:5px;padding:2px 5px;border-radius:99px;background:#ffffff20;font-size:10px}
 #ep-detail-body[data-at108-tab="episode"]>.v98-discussion{display:none!important}
-#ep-detail-body[data-at108-tab="discussion"]>:not(.at108-episode-head):not(.at108-episode-tabs):not(.v98-discussion){display:none!important}
+#ep-detail-body[data-at108-tab="discussion"]>:not(.at108-episode-head):not(.at108-episode-tabs):not(.v98-discussion):not(.episode-card-more){display:none!important}
 #ep-detail-body[data-at108-tab="discussion"]>.v98-discussion{display:block!important}
 #episode-detail-modal .v98-navline{display:none!important}
 #episode-detail-modal .ep-detail-visual{max-height:370px;overflow:hidden;border-radius:15px}

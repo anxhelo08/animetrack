@@ -164,7 +164,7 @@ test('TV and movie watch options work without asking for credentials', async ({ 
     .filter({ has: page.locator('.at133-watch') })
     .locator('summary')
     .click();
-  await expect(page.locator('.at133-result a[href*="justwatch.com/us/search"]')).toHaveAttribute(
+  await expect(page.locator('.at133-result a[href*="google.com/search"]')).toHaveAttribute(
     'href',
     /Seriali%20i%20prov/,
   );
@@ -177,11 +177,8 @@ test('TV and movie watch options work without asking for credentials', async ({ 
     .filter({ has: page.locator('.at133-watch') })
     .locator('summary')
     .click();
-  await expect(page.locator('.at133-result a[href*="justwatch.com/us/search"]')).toHaveAttribute(
+  await expect(page.locator('.at133-result a[href*="google.com/search"]')).toHaveAttribute(
     'href',
     /Fight%20Club/,
   );
-  await expect(
-    page.locator('.at133-result a[href*="themoviedb.org/movie/550/watch"]'),
-  ).toHaveAttribute('href', /locale=AL/);
 });

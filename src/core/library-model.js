@@ -147,6 +147,9 @@ export function createLibraryModel(dependencies = {}) {
           title: String(e.title || '').slice(0, 220),
           aired: String(e.aired || '').slice(0, 40),
           airedAt: String(e.airedAt || '').slice(0, 60),
+          ...(Number.isFinite(Number(e.runtime)) && Number(e.runtime) > 0
+            ? { runtime: Math.min(600, Math.floor(Number(e.runtime))) }
+            : {}),
           summary: String(e.summary || '').slice(0, 2500),
           image: validPoster(e.image || ''),
           imageSource: String(e.imageSource || '').slice(0, 100),

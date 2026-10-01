@@ -107,6 +107,7 @@ test('desktop regression',async({browser},testInfo)=>{
  assert.equal(await page.locator('#detail-body .ep-article.at1210-filler .ep-toggle-btn').getAttribute('aria-pressed'),'false');
  assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='demo7').seasons[0].watched.length),2,'metadata cannot change watched progress');
  await page.locator('#detail-body .ep-info-btn[data-episode-number="3"]').click();
+ await page.locator('.episode-card-more summary').click();
  assert(await page.locator('#episode-detail-modal .at1210-chip.filler').isVisible(),'episode details show filler');
  await page.locator('#episode-detail-modal [data-filler-manual]').selectOption('normal');
  assert.equal(await page.locator('#episode-detail-modal .at1210-chip.filler').count(),0,'manual override clears filler inside active detail');
@@ -121,6 +122,7 @@ test('desktop regression',async({browser},testInfo)=>{
  await page.locator('#detail-body .ep-article.at1210-filler').waitFor({state:'visible'});
  await page.locator('#detail-body .ep-info-btn').first().click();
  assert(await page.locator('#episode-detail-modal').isVisible(),'Episode Hub should open');
+ await page.locator('.episode-card-more summary').click();
  assert(await page.locator('#ep-detail-body .at108-episode-head').isVisible());
  await page.locator('#ep-detail-body [data-journey-action="tab"][data-tab="discussion"]').click();
  assert.equal(await page.locator('#ep-detail-body').getAttribute('data-at108-tab'),'discussion');
@@ -255,13 +257,12 @@ test('desktop regression',async({browser},testInfo)=>{
  assert(await page.locator('#detail-body [data-season-ep="s3"][data-ep="50"]').isVisible(),'next episode 50 should be on current page');
  assert(await page.locator('#detail-body [data-at123-resume="demo0"]').isVisible(),'resume shortcut is available');
  await page.locator('#detail-body .ep-info-btn').first().click();
- assert(await page.locator('#ep-detail-body .at123-episode-layout').isVisible(),'desktop episode layout is present');
- const desktopLayout=await page.locator('#ep-detail-body .at123-episode-layout').evaluate(el=>({display:getComputedStyle(el).display,columns:getComputedStyle(el).gridTemplateColumns}));
- assert.equal(desktopLayout.display,'grid','desktop episode uses a dedicated two-column layout');
- assert.equal(desktopLayout.columns.split(' ').length,2,'desktop has two episode columns');
+ assert(await page.locator('#ep-detail-body .episode-card').isVisible(),'centered episode card is present');
+ const cardLayout=await page.locator('#episode-detail-modal .ep-detail-dialog').boundingBox();
+ assert(cardLayout.width<=520,'episode card has a compact reading width');
  await page.locator('#episode-detail-modal [data-close="episode-detail-modal"]').click();
  if(await page.locator('#detail-modal').isVisible())await page.locator('#detail-modal [data-close="detail-modal"]').click();
- console.log('RESUME_DESKTOP_PASS',JSON.stringify({title:'One Piece',season:'s3',episode:50,page:3,layout:desktopLayout.display}));
+ console.log('RESUME_DESKTOP_PASS',JSON.stringify({title:'One Piece',season:'s3',episode:50,page:3,layout:'centered card'}));
 
 
  // 12.6: queued offline episode survives a new session even if cloud has moved on.

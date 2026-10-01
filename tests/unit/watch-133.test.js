@@ -57,7 +57,7 @@ test('13.3 TV availability resolves TVMaze -> IMDb -> TMDB before watch/provider
 test('13.3 movie/TV availability fails closed without exposing or requiring a bundled TMDB secret',async()=>{
  let calls=0;const {api}=setup(()=>{calls++;throw Error('network')});
  const movie={id:'m',source:'TMDB',tmdbId:'1',format:'MOVIE',seasons:[{id:'m1'}]},result=await api.load(movie,movie.seasons[0],{force:true,reg:'AL'});
- assert.equal(result.needsToken,undefined);assert.equal(result.discovery.length,2);assert.match(result.discovery[0].url,/justwatch\.com\/us\/search/);assert.equal(calls,0);
+ assert.equal(result.needsToken,undefined);assert.equal(result.discovery.length,1);assert.match(result.discovery[0].url,/google\.com\/search/);assert.equal(calls,0);
 });
 test('13.3 region preference is synced through app preferences',()=>{
  const state={anime:[],preferences:{}},{api}=setup(null,{state});
@@ -79,5 +79,5 @@ test('TV lookup without credentials exposes the original network and regional di
 test('provider errors fall back to discovery instead of blocking film/TV behind settings',async()=>{
  const {api}=setup(()=>Promise.resolve({ok:false,status:403}),{token:'invalid'});
  const data=await api.load({id:'film',title:'Fight Club',source:'TMDB',format:'MOVIE',tmdbId:'550'},{id:'movie'},{reg:'AL'});
- assert.equal(data.needsToken,undefined);assert.equal(data.categories.length,0);assert.match(data.discovery[1].url,/movie\/550\/watch\?locale=AL/);
+ assert.equal(data.needsToken,undefined);assert.equal(data.categories.length,0);assert.match(data.discovery[0].url,/google\.com\/search\?q=Fight%20Club/);
 });

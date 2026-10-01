@@ -1,0 +1,246 @@
+body.at-ios-enabled #episode-detail-modal.episode-card-modal,
+#episode-detail-modal.episode-card-modal {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20px !important;
+  background: rgb(8 8 16 / 0.64) !important;
+  backdrop-filter: blur(12px);
+}
+body.at-ios-enabled #episode-detail-modal.episode-card-modal .ep-detail-dialog,
+#episode-detail-modal.episode-card-modal .ep-detail-dialog {
+  width: min(520px, 100%);
+  height: auto;
+  max-height: calc(100dvh - 40px);
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: var(--surface);
+  box-shadow: var(--shadow-dialog);
+  overflow: auto;
+  display: block;
+}
+body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-header,
+#episode-detail-modal.episode-card-modal .modal-header {
+  min-height: 0;
+  padding: 18px 20px 6px;
+  background: transparent;
+  border: 0;
+  position: relative;
+}
+#episode-detail-modal.episode-card-modal .modal-header .eyebrow {
+  display: none;
+}
+#episode-detail-modal.episode-card-modal .modal-header h2 {
+  font-size: 18px;
+  white-space: normal;
+  margin: 0;
+}
+body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-body,
+#episode-detail-modal.episode-card-modal .modal-body {
+  padding: 0 20px 20px;
+  overflow: visible;
+  background: transparent;
+}
+.episode-card-subtitle {
+  font-size: 13px;
+  color: var(--purple);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.episode-card-art {
+  position: relative;
+  margin-bottom: 18px;
+}
+#episode-detail-modal .episode-card-art .ep-detail-visual {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  min-height: 0;
+  max-height: none;
+  margin: 0;
+  border-radius: 22px;
+  background: var(--surface-alt);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+#episode-detail-modal .episode-card-art .ep-detail-visual img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+  display: block;
+}
+.episode-card-art .visual-caption {
+  display: none;
+}
+.episode-card-badge {
+  position: absolute;
+  bottom: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.episode-card-scores {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 13px;
+  margin: 8px;
+}
+.episode-card-scores b {
+  background: #f4c430;
+  color: #171717;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+.episode-card-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.episode-card-navigation strong {
+  flex: 1;
+  text-align: center;
+  font-size: 14px;
+}
+.episode-card-navigation button {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 28px;
+  min-width: 44px;
+  min-height: 44px;
+}
+.episode-card-navigation button:disabled {
+  opacity: 0.3;
+}
+.episode-card-meta {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+.episode-card-watch {
+  display: flex;
+  justify-content: center;
+}
+#episode-detail-modal .episode-card-mark {
+  min-height: 46px;
+  width: min(280px, 100%);
+  border: 2px solid var(--purple);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--purple) 12%, var(--surface)) !important;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 750;
+  transition:
+    transform 160ms,
+    background 160ms;
+}
+.episode-card-mark:active {
+  transform: scale(0.97);
+}
+.episode-card-rating {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.episode-card-rating > span {
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 8px 12px;
+}
+.episode-card-rating > div {
+  display: flex;
+}
+.episode-card-rating button {
+  min-height: 44px;
+  min-width: 38px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 27px;
+  transition:
+    color 160ms,
+    transform 160ms;
+}
+.episode-card-rating button.selected {
+  color: #f4bf51;
+}
+.episode-card-rating button:hover {
+  transform: scale(1.12);
+}
+.episode-card-more {
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+  padding-top: 14px;
+}
+.episode-card-more > summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+  min-height: 30px;
+}
+.episode-card-more[open] > summary {
+  margin-bottom: 14px;
+}
+#episode-detail-modal.episode-card-modal .at123-episode-layout {
+  display: block;
+}
+@media (max-width: 760px) {
+  #episode-detail-modal.episode-card-modal {
+    padding: 12px !important;
+  }
+  body.at-ios-enabled #episode-detail-modal.episode-card-modal .ep-detail-dialog {
+    max-height: calc(100dvh - 24px);
+  }
+  body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-header {
+    padding: 15px 16px 6px;
+  }
+  body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-body {
+    padding: 0 16px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .episode-card-mark,
+  .episode-card-rating button {
+    transition: none;
+  }
+  .episode-card-rating button:hover,
+  .episode-card-mark:active {
+    transform: none;
+  }
+}
+
+.episode-card-art .ep-detail-visual:has(.v98-poster-fallback) .visual-caption {
+  display: block;
+}
+
+#ep-detail-body[data-at108-tab='discussion'] > .episode-card-more {
+  display: block !important;
+}
+#ep-detail-body[data-at108-tab='discussion']
+  .episode-card-more
+  > :not(summary):not(.at108-episode-head):not(.at108-episode-tabs):not(.v98-discussion) {
+  display: none !important;
+}
+#ep-detail-body[data-at108-tab='discussion'] .episode-card-more > .v98-discussion {
+  display: block !important;
+}
+#ep-detail-body[data-at108-tab='episode'] .episode-card-more > .v98-discussion {
+  display: none !important;
+}
