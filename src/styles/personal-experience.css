@@ -141,11 +141,9 @@
 }
 @keyframes personal-enter {
   from {
-    opacity: 0.5;
     transform: translateY(8px);
   }
   to {
-    opacity: 1;
     transform: translateY(0);
   }
 }

@@ -72,7 +72,7 @@ test('a late profile load cannot overwrite a newer saved customization', async (
   f.pending.shift()({ data: { user_id: 'a', display_name: 'Old default' }, error: null });
   await loading;
   expect(p.get().display_name).toBe('My saved name');
-  expect(JSON.parse(f.storage.get('animetrack:profile:a')).bio).toBe('My bio');
+  expect(JSON.parse(f.storage.get('animetrack_user_a_profile')).bio).toBe('My bio');
 });
 
 test('profile personalization survives a new app instance and failed cloud refresh', async () => {

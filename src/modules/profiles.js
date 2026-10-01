@@ -14,7 +14,7 @@ window.ATProfiles=function ATProfiles(ctx){
   return {anime,stats:{titles:anime.length,episodes:anime.reduce((n,a)=>n+a.watched,0),completed:state().anime.filter(a=>a.status==='completed').length,favorites:state().anime.filter(a=>a.favorite).length},activity,updatedAt:new Date().toISOString()};
  }
  const fields='user_id,handle,display_name,bio,avatar_emoji,avatar_url,is_public,snapshot,created_at';
- const cacheKey=id=>'animetrack:profile:'+id;
+ const cacheKey=id=>'animetrack_user_'+id+'_profile';
  function cacheRead(id){try{const p=JSON.parse(window.localStorage?.getItem(cacheKey(id))||'null');return p?.user_id===id?p:null}catch{return null}}
  function cacheWrite(p){if(!p?.user_id)return;try{const {snapshot,...personal}=p;window.localStorage?.setItem(cacheKey(p.user_id),JSON.stringify(personal))}catch{}}
  function captureDraft(){

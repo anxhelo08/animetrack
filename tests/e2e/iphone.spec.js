@@ -95,7 +95,7 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
  await mental.locator('[data-ios-action="mark-recent"][data-id="mental127"]').click();
  await page.waitForTimeout(130);
  assert.equal(await page.locator('#at-iphone-feed .at127-new-episode').count(),0,'NEW EP badge disappears after marking it watched');
- assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='mental127').status),'completed','completed status remains');
+ assert.equal(await page.evaluate(()=>window.ATMobile113.state().anime.find(a=>a.id==='mental127').status),'watching','an ongoing season stays watching after catching up');
  await page.locator('#at-iphone-feed .at127-stale-list [data-ios-action="advance"][data-id="stale127"]').click();
  await page.waitForTimeout(130);
  assert.equal(await page.locator('#at-iphone-feed .at127-stale-list [data-id="stale127"]').count(),0,'watching returns title from inactive section');
