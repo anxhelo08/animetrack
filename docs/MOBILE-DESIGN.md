@@ -6,9 +6,11 @@ The light/system theme preference remains available.
 
 ## Composition
 
-- Home prioritizes Continue Watching, followed by new releases, recommendations,
-  trending, this week's schedule, older unfinished titles and shared friend activity.
-  Empty sections describe the actual state; no demo activity or release dates are invented.
+- Home follows the supplied episode-list reference: Për të parë / Së shpejti tabs,
+  horizontal poster rows, episode titles, circular mark-watched buttons, list/grid
+  views, unfinished older titles, and upcoming episodes grouped by confirmed date.
+  Upcoming rows cannot be marked before airing; episode links open their specific
+  season and number. Empty states reflect the library without fabricated dates.
 - Discover shows nine browse categories before typing and filters instant catalog
   results by media type. People uses the existing friend search. Studios uses a
   read-only AniList catalog request with an error/retry state.
@@ -19,9 +21,14 @@ The light/system theme preference remains available.
   Overview, Timeline, Episodes, Cast & Staff and Reviews sections. Episode marking,
   bulk confirmation, pagination, ratings and metadata controls retain their existing
   handlers. Films, OVA and specials never consume a TV season number.
-- Profile presents identity, Profile/Diary/Stats/Friends navigation, favorites,
+- Profile presents identity, Profili/Ditari/Statistikat/Cilësimet/Miqtë navigation, favorites,
   history, achievements, ratings and notes. Calendar, friends and notification
   screens share the same surfaces and spacing.
+
+The guest welcome contains nine distinct anime titles. Three original covers are
+served locally at 840px; six additional covers use remote sources and AniList
+extraLarge metadata without blocking authentication. Broken artwork is hidden.
+External poster downloads remain blocked by the cloud network proxy.
 
 ## Implementation
 

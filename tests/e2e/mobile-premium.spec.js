@@ -68,6 +68,7 @@ const payload = {
               aired: '2021-10-17',
               image: 'http://127.0.0.1:8765/welcome/demon-slayer.jpg',
             },
+            { number: 3, title: 'Premiera e ardhshme', airedAt: '2099-10-10T10:00:00Z' },
           ],
         },
       ],
@@ -90,20 +91,26 @@ for (const width of [375, 390, 430]) {
     await expect(page.locator('[data-mobile-nav="home"]')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('#mobile-continue')).toContainText('S2 EP2');
     await expect(page.locator('#mobile-continue')).toBeVisible();
+    await expect(page.locator('#at-iphone-feed')).not.toBeVisible();
     expect(
       await page
         .locator('.at-mobile-nav')
         .evaluate((node) => getComputedStyle(node).gridTemplateColumns.split(' ').length),
     ).toBe(5);
-    expect(await page.locator('#mobile-home > .mobile-section h2').allTextContents()).toEqual([
-      'Vazhdo shikimin',
-      'Sapo Dolën',
-      'Për Ty',
-      'Trending',
-      'Këtë Javë',
-      'Nuk Ke Parë Prej Kohësh',
-      'Aktiviteti i Miqve',
-    ]);
+    await expect(page.locator('[data-mobile-home-tab="watch"]')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(page.locator('#mobile-continue .watch-row')).toHaveCount(1);
+    await page.locator('[data-mobile-home-layout="grid"]').click();
+    await expect(page.locator('.watch-home-content')).toHaveAttribute('data-layout', 'grid');
+    await page.locator('[data-mobile-home-layout="list"]').click();
+    await page.locator('[data-mobile-home-tab="upcoming"]').click();
+    await expect(page.locator('#mobile-upcoming')).toBeVisible();
+    await expect(page.locator('#mobile-upcoming')).toContainText('2099');
+    await expect(page.locator('#mobile-upcoming .watch-row-mark')).toBeDisabled();
+    expect(await state(page)).toBe(initial);
+    await page.locator('[data-mobile-home-tab="watch"]').click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
@@ -187,8 +194,12 @@ for (const width of [375, 390, 430]) {
     await expect(page.locator('.release-feedback')).toContainText('Shënimi u zhbë');
     expect(await page.evaluate(() => window.ATMobile113.state().anime[0].status)).toBe('watching');
     await page.locator('[data-mobile-nav="profile"]').click();
-    await expect(page.locator('.at-profile-tabs')).toContainText('Diary');
-    await expect(page.locator('.at-profile-tabs')).toContainText('Friends');
+    await expect(page.locator('.at-profile-tabs')).toContainText('Ditari');
+    await expect(page.locator('.at-profile-tabs')).toContainText('Miqtë');
+    await expect(page.locator('.mobile-profile-settings')).toBeVisible();
+    await page.locator('.mobile-profile-settings').click();
+    await expect(page.locator('.at-profile-settings')).toBeVisible();
+    await page.locator('.at-profile-tabs [data-id="overview"]').click();
     await page.screenshot({ path: info.outputPath(`profile-${width}.png`) });
     for (const destination of ['calendar', 'notifications', 'friends']) {
       await page.locator('[data-mobile-nav="home"]').click();

@@ -78,3 +78,16 @@ body.auth-required #account-guest-user>.account-note{display:none!important}
 @keyframes welcome-wall-enter{from{transform:translateY(18px)}to{transform:translateY(0)}}
 @media(max-width:380px){.welcome-mosaic img{height:158px}.welcome-copy h1{font-size:37px}}
 @media(prefers-reduced-motion:reduce){.welcome-mosaic{animation:none}}
+/* Nine distinct titles; only the three foreground cards occupy the deck. */
+.welcome-poster:not([data-slot="0"]):not([data-slot="1"]):not([data-slot="2"]){visibility:hidden;opacity:0;pointer-events:none}
+.welcome-dots{gap:0;flex-wrap:wrap}.welcome-dots button{width:22px}
+@media(max-width:760px){
+ .welcome-showcase{height:min(680px,calc(100svh - 80px))}
+ .welcome-showcase:after{background:linear-gradient(180deg,#100d1700 18%,#100d1770 36%,#100d17ee 68%,#100d17 100%)}
+ .welcome-mosaic{gap:7px;transform:rotate(-6deg) scale(1.12);animation:none;padding:8px}
+ .welcome-mosaic img{height:auto;aspect-ratio:2/3;object-fit:cover;border-radius:9px}
+ .welcome-mosaic img:nth-child(3n+2){transform:translateY(18px)}
+ .welcome-hero{padding-top:clamp(235px,calc(100svh - 440px),375px)}
+}
+@media(max-height:700px) and (max-width:760px){.welcome-hero{padding-top:180px}}
+.welcome-artwork-unavailable{visibility:hidden}.welcome-mosaic{background:linear-gradient(135deg,#332544,#171021)}

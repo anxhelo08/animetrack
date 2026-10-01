@@ -1,4 +1,5 @@
 import { MediaCard } from './modules/media-card.js';
+import { mountWelcomeArtwork } from './modules/welcome-artwork.js';
 import {mountWelcomeCarousel} from './modules/welcome-carousel.js';
 import {mountSocialAuth} from './modules/social-auth.js';
 import {mountReleaseExperience} from './modules/release-experience.js';
@@ -1531,6 +1532,7 @@ async function accountDelete(){
 async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=recovery\b/.test(location.hash)||/\btype=recovery\b/.test(location.search);try{const c=accountGetConfig();if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user);authReturn=accountAuthReturnNotice()}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting','welcome-preview');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};if(authReturn||recoveryReturn){render();renderHome();accountToggle(true)}else $('welcome-page').hidden=false;}accountUI();releaseExperience?.ready();if(recoveryReturn&&accountMode==='cloud'){$('at1162-recovery-panel').hidden=false;accountToggle(true);accountStatus('Vendos një fjalëkalim të ri për llogarinë tënde.','ok')}else if(authReturn){if(accountMode==='cloud')notify(authReturn.kind==='error'?'Llogaria është aktive. Mund të vazhdosh; linku i vjetër nuk është më i nevojshëm.':authReturn.message);else accountStatus(authReturn.message,authReturn.kind)}}}
 $('at1162-save-password').addEventListener('click',accountSaveRecoveredPassword);
 mountWelcomeCarousel($('welcome-page'));
+mountWelcomeArtwork($('welcome-page'));
 socialAuth=mountSocialAuth({root:$('account-social'),config:accountGetConfig(),client:accountInitClient,redirect:accountRedirectURL,feedback:accountStatus});
 $('welcome-page').addEventListener('click',e=>{const button=e.target.closest('button');if(!button?.dataset.welcomeAuth)return;accountToggle(true);$(button.dataset.welcomeAuth==='signup'?'at116-tab-signup':'at116-tab-login')?.click()});
 $('account-top-btn').addEventListener('click',()=>accountToggle(true));$('account-sidebar-btn').addEventListener('click',()=>accountToggle(true));

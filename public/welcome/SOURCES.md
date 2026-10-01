@@ -9,3 +9,5 @@ Original JPEG artwork, downloaded 2026-10-01. Exact animation records matched by
 Discovery: https://api.tvmaze.com/search/shows. Artwork belongs to its respective rights holders.
 
 The display variants are AVIF encodings at 560 and 840 pixels wide for 2× and 3× poster cards. The full original JPEGs remain available as fallbacks. No artwork or composition was generated or changed.
+
+The welcome page also displays Frieren (AniList 154587), Jujutsu Kaisen (113415), Chainsaw Man (127230), Spy × Family (140960), Death Note (1535), and Naruto (20). These additional covers use MyAnimeList CDN URLs initially and are upgraded from AniList's `coverImage.extraLarge` public metadata. The three locally stored originals retain their 840px variants. Failed external images are hidden; signing up does not depend on artwork requests. External artwork could not be downloaded or verified in the cloud sandbox because its network proxy returned 403.

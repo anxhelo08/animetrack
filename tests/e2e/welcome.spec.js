@@ -40,3 +40,55 @@ test('signed in users bypass welcome', async ({ page }) => {
   await openFixture(page);
   await expect(page.locator('#welcome-page')).toBeHidden();
 });
+
+test('welcome includes nine titles and upgrades additional covers from the public catalog', async ({
+  page,
+}) => {
+  await openFixture(page, { signedIn: false });
+  await page.route('https://graphql.anilist.co', async (route) => {
+    const ids = route.request().postDataJSON().variables?.ids;
+    if (!ids) return route.fallback();
+    await route.fulfill({
+      json: {
+        data: {
+          Page: {
+            media: ids.map((id) => ({
+              id,
+              coverImage: {
+                extraLarge: `https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/test-${id}.jpg`,
+              },
+            })),
+          },
+        },
+      },
+    });
+  });
+  await page.route('https://s4.anilist.co/**', (route) =>
+    route.fulfill({ path: 'public/welcome/demon-slayer.jpg', contentType: 'image/jpeg' }),
+  );
+  await page.reload();
+  await expect(page.locator('#welcome-page')).toBeVisible();
+  await expect(page.locator('.welcome-mosaic img')).toHaveCount(9);
+  expect(
+    new Set(
+      await page
+        .locator('.welcome-mosaic img')
+        .evaluateAll((images) => images.map((img) => img.dataset.welcomeAnime)),
+    ).size,
+  ).toBe(9);
+  await expect(page.locator('.welcome-mosaic [data-welcome-anime="154587"]')).toHaveAttribute(
+    'src',
+    /test-154587/,
+  );
+  await expect
+    .poll(() =>
+      page
+        .locator('.welcome-mosaic [data-welcome-anime="154587"]')
+        .evaluate((img) => img.naturalWidth),
+    )
+    .toBeGreaterThan(800);
+  if (page.viewportSize().width > 760) {
+    await page.locator('[data-welcome-slide="8"]').click();
+    await expect(page.locator('#welcome-selected-title')).toHaveText('Naruto');
+  }
+});
