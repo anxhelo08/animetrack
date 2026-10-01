@@ -1902,9 +1902,13 @@ const proApp=createFeatures(proContext);
 libraryStore.subscribe((_state,event)=>{if(event.reason==='saved')proApp.onStateChange()});
 await new Promise(resolve=>setTimeout(resolve,0));
 await proApp.init();
+await new Promise(resolve=>setTimeout(resolve,0));
 mountThemeSettings(theme,document.getElementById('product-advanced'),{toast:notify});
+await new Promise(resolve=>setTimeout(resolve,0));
 mountStorageSettings({key:()=>KEY,toast:notify},libraryRepository);
+await new Promise(resolve=>setTimeout(resolve,0));
 releaseExperience=mountReleaseExperience({owner:()=>accountUser?.id||'guest',history:()=>state.history.at(-1),undo:(id,sid,n)=>updateSeasonEpisode(id,sid,n,false),navigate:page=>setView(page)});
+await new Promise(resolve=>setTimeout(resolve,0));
 const at124Command=window.ATCommand124({
  esc:escapeHTML,state:()=>state,released:releasedCount,
  resume:a=>window.ATResume123.resolve(a,state.history,releasedCount),
@@ -1913,6 +1917,7 @@ const at124Command=window.ATCommand124({
  online:q=>{setView('explore');syncSearch(q,'catalog');$('global-search').focus({preventScroll:true})}
 });
 at124Command.mount();
+await new Promise(resolve=>setTimeout(resolve,0));
 const proPriorHome=renderHome;renderHome=function(){proPriorHome();proApp.renderHome()};
 const at113PreviousLibraryRender=render;render=function(...args){const result=at113PreviousLibraryRender(...args);window.ATMobile113.libraryUpdate();return result};
 window.addEventListener('at119-library-filter',()=>render());
