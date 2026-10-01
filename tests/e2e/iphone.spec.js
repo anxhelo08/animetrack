@@ -111,6 +111,8 @@ test('iPhone regression',async({browser,browserName},testInfo)=>{
  assert.equal(await page.locator('[data-ios-action="horizon"][data-id="30"]').getAttribute('aria-pressed'),'true');
  assert.equal(await page.locator('.at117-upcoming-action').count(),1,'Future episode is not a green watched check');
  await page.locator('[data-ios-action="tab"][data-id="watch"]').click();
+ // The advance/undo flow starts after the previously future fourth episode has aired.
+ await page.evaluate(()=>{const ep=window.ATMobile113.state().anime.find(a=>a.id==='demo1').seasons[0].episodes.find(e=>e.number===4);ep.airedAt=new Date(Date.now()-60000).toISOString()});
  await page.locator('#at-iphone-feed .at127-active-list [data-ios-action="advance"][data-id="demo1"]').click();
  await page.waitForTimeout(150);
  assert.match(await page.locator('#at-iphone-feed').innerText(),/E04/,'+1 should update episode');
