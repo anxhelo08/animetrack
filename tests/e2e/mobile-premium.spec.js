@@ -93,6 +93,11 @@ for (const width of [320, 375, 390, 430]) {
     expect(
       await page.locator('.at-mobile-nav').evaluate((node) => node.getBoundingClientRect().height),
     ).toBeLessThanOrEqual(64);
+    expect(
+      await page
+        .locator('.at-mobile-nav')
+        .evaluate((node) => Math.round(node.getBoundingClientRect().bottom)),
+    ).toBe(844);
     await page.evaluate(() => {
       window.mobileRowBeforeTap = document.querySelector('#mobile-continue .watch-row');
     });
@@ -151,6 +156,25 @@ for (const width of [320, 375, 390, 430]) {
 
     await page.locator('[data-mobile-nav="explore"]').click();
     await expect(page.locator('#mobile-browse .mobile-browse-grid button')).toHaveCount(9);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1),
+    ).toBe(true);
+    expect(
+      await page
+        .locator('#discover .big-search')
+        .evaluate((node) => node.getBoundingClientRect().top),
+    ).toBeLessThan(135);
+    expect(
+      await page.locator('#mobile-browse').evaluate((node) => node.getBoundingClientRect().top),
+    ).toBeLessThan(220);
+    expect(
+      await page.locator('#product-tools').evaluate((node) =>
+        [...node.querySelectorAll('button:not([hidden])')].every((button) => {
+          const r = button.getBoundingClientRect();
+          return r.left >= 0 && r.right <= innerWidth;
+        }),
+      ),
+    ).toBe(true);
     await page.locator('#global-search').fill('Demon');
     await expect(page.locator('#mobile-search-filters')).toBeVisible();
     await page.locator('[data-mobile-filter="people"]').click();
@@ -160,6 +184,16 @@ for (const width of [320, 375, 390, 430]) {
     await page.screenshot({ path: info.outputPath(`discover-${width}.png`), fullPage: true });
 
     await page.locator('[data-mobile-nav="library"]').click();
+    expect(
+      await page.locator('#library-status-strip').evaluate((node) =>
+        [...node.querySelectorAll('button')]
+          .filter((b) => getComputedStyle(b).display !== 'none')
+          .every((b) => {
+            const r = b.getBoundingClientRect();
+            return r.left >= 0 && r.right <= innerWidth;
+          }),
+      ),
+    ).toBe(true);
     await expect(page.locator('#mobile-library-controls')).not.toHaveAttribute('open', '');
     await page.locator('#mobile-library-controls summary').click();
     await expect(page.locator('#sort')).toBeVisible();
@@ -353,4 +387,71 @@ test('older titles move out of watching and return after an episode is marked', 
   await page.locator('#mobile-stale .watch-row-mark').click();
   await expect(page.locator('#mobile-continue')).toContainText(old.title);
   await expect(page.locator('#mobile-stale .watch-row')).toHaveCount(0);
+});
+
+test('a completed airing series surfaces episode seven at its confirmed release time', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'iphone-chromium', 'Mobile airing transition.');
+  await page.clock.install({ time: new Date('2026-09-30T12:00:00Z') });
+  const release = '2026-09-30T12:00:10Z';
+  await openFixture(page, {
+    payload: {
+      anime: [
+        {
+          id: 'airing-2026',
+          title: 'Historia e vitit 2026',
+          status: 'completed',
+          source: 'AniList',
+          sourceId: '777',
+          hydrated: true,
+          franchiseVersion: '13.1.0',
+          seasons: [
+            {
+              id: 'airing-season',
+              title: 'Sezoni 1',
+              format: 'TV',
+              total: 12,
+              releaseStatus: 'RELEASING',
+              releaseStart: '2026-08-01',
+              airedCount: 6,
+              releaseEvidence: true,
+              nextAiringEpisode: 7,
+              nextAiringAt: Date.parse(release) / 1000,
+              watched: [1, 2, 3, 4, 5, 6],
+              episodes: [{ number: 7, title: 'Historia vazhdon', airedAt: release }],
+            },
+          ],
+        },
+      ],
+      history: [
+        {
+          id: 'airing-2026',
+          seasonId: 'airing-season',
+          episode: 6,
+          action: 'watched',
+          date: '2026-09-20T10:00:00Z',
+        },
+      ],
+      preferences: {},
+    },
+  });
+  await expect(page.locator('#mobile-continue .watch-row')).toHaveCount(0);
+  await page.locator('[data-mobile-home-tab="upcoming"]').click();
+  await expect(page.locator('#mobile-upcoming')).toContainText('S1 EP7');
+  await page.locator('[data-mobile-home-tab="watch"]').click();
+  await page.clock.setSystemTime(new Date('2026-09-30T12:00:00Z'));
+  await page.clock.runFor(11000);
+  await expect(page.locator('#mobile-continue')).toContainText('S1 EP7');
+  await expect(page.locator('#mobile-continue .watch-row-new')).toHaveText('Episod i ri');
+  await expect(page.locator('#mobile-stale .watch-row')).toHaveCount(0);
+  expect(await page.evaluate(() => window.ATMobile113.state().anime[0].seasons[0].watched)).toEqual(
+    [1, 2, 3, 4, 5, 6],
+  );
+  await page.locator('#mobile-continue .watch-row-mark').click();
+  await expect(page.locator('#mobile-history')).toContainText('S1 EP7');
+  await expect(page.locator('#mobile-continue .watch-row-new')).toHaveCount(0);
+  expect(await page.evaluate(() => window.ATMobile113.state().anime[0].seasons[0].watched)).toEqual(
+    [1, 2, 3, 4, 5, 6, 7],
+  );
 });

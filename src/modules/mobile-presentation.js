@@ -24,7 +24,8 @@ export function createMobilePresentation(ctx) {
   function episode(item, next) {
     return mobileEpisodeLabel(next.season, ctx.seasonNumber(item, next.season), next.n);
   }
-  let lastHomeMarkup = '';
+  let lastHomeMarkup = '',
+    releaseTimer;
   let homeTab = 'watch',
     homeLayout = 'list';
   function home() {
@@ -40,15 +41,51 @@ export function createMobilePresentation(ctx) {
         );
     const touched = (a) =>
       touchedAt.get(a.id) || Date.parse(a.createdAt || a.updatedAt) || Date.now();
-    const continuing = items
-      .filter((a) => ['watching', 'waiting', 'completed'].includes(a.status) && ctx.nextEpisode(a))
-      .sort((a, b) => touched(b) - touched(a));
-    const active = continuing.filter((a) => Date.now() - touched(a) <= 7 * 86400000);
-    const stale = continuing.filter((a) => Date.now() - touched(a) > 7 * 86400000);
+    const entries = ctx.upcoming?.() || [];
+    const releaseTimes = new Map(
+      entries.map((e) => [
+        e.animeId +
+          ':' +
+          (e.seasonId || e.localSeason?.id) +
+          ':' +
+          (e.seasonEpisode || e.localEpisode || e.episode),
+        Number(e.when),
+      ]),
+    );
+    const candidates = items
+      .filter((a) => ['watching', 'waiting', 'completed'].includes(a.status))
+      .map((a) => {
+        const next = ctx.nextEpisode(a);
+        if (!next) return null;
+        const meta = next.season.episodes?.find((e) => e.number === next.n);
+        const releasedAt =
+          Date.parse(meta?.airedAt || meta?.aired || '') ||
+          releaseTimes.get(a.id + ':' + next.season.id + ':' + next.n) ||
+          (Number(next.season.nextAiringEpisode) === next.n
+            ? Number(next.season.nextAiringAt) * 1000
+            : 0);
+        const fresh =
+          releasedAt > touched(a) &&
+          releasedAt <= Date.now() &&
+          Date.now() - releasedAt <= 7 * 86400000;
+        return { a, next, releasedAt, fresh };
+      })
+      .filter(Boolean)
+      .sort(
+        (a, b) =>
+          Number(b.fresh) - Number(a.fresh) ||
+          (b.fresh ? b.releasedAt - a.releasedAt : touched(b.a) - touched(a.a)),
+      );
+    const active = candidates.filter(
+      ({ a, fresh }) => fresh || Date.now() - touched(a) <= 7 * 86400000,
+    );
+    const stale = candidates.filter(
+      ({ a, fresh }) => !fresh && Date.now() - touched(a) > 7 * 86400000,
+    );
     const row = (a, next, options = {}) => {
       const meta = next.season.episodes?.find((e) => e.number === next.n);
       const poster = ctx.poster(a.cover || '');
-      return `<article class="watch-row"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button><button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || 'Episodi i radhës')}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div>${options.upcoming ? '<span class="watch-row-pending" aria-label="Ende pa transmetuar">◷</span>' : options.seen ? '<span class="watch-row-seen" aria-label="Episod i parë">✓</span>' : `<button type="button" class="media-card-mark watch-row-mark" data-ios-action="advance" data-id="${esc(a.id)}" aria-label="Shëno episodin e radhës të ${esc(a.title)} si të parë">${navIcon('watch')}</button>`}</article>`;
+      return `<article class="watch-row${options.fresh ? ' watch-row--fresh' : ''}"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button>${options.fresh ? '<span class="watch-row-new">Episod i ri</span>' : ''}<button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || 'Episodi i radhës')}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div>${options.upcoming ? '<span class="watch-row-pending" aria-label="Ende pa transmetuar">◷</span>' : options.seen ? '<span class="watch-row-seen" aria-label="Episod i parë">✓</span>' : `<button type="button" class="media-card-mark watch-row-mark" data-ios-action="advance" data-id="${esc(a.id)}" aria-label="Shëno episodin e radhës të ${esc(a.title)} si të parë">${navIcon('watch')}</button>`}</article>`;
     };
     const recent = new Map();
     const byId = new Map(items.map((a) => [a.id, a]));
@@ -73,7 +110,7 @@ export function createMobilePresentation(ctx) {
         .find((s) => s.watched?.length);
       if (season) recent.set(a.id, { a, season, n: Math.max(...season.watched) });
     }
-    const upcoming = (ctx.upcoming?.() || [])
+    const upcoming = entries
       .filter((e) => e.when > Date.now())
       .sort((a, b) => a.when - b.when)
       .slice(0, 40);
@@ -107,13 +144,30 @@ export function createMobilePresentation(ctx) {
                   .map(({ a, season, n }) => row(a, { season, n }, { seen: true }))
                   .join('')
               : empty('Episodet e para do të shfaqen këtu pasi t’i shënosh.')
-          }</section><section id="mobile-continue" aria-label="Për të parë">${label('Duke parë')}${active.length ? active.map((a) => row(a, ctx.nextEpisode(a))).join('') : empty('Episodi yt i radhës shfaqet këtu. Shto një anime nga Zbulo.')}</section>${label('Zgjidh historinë tjetër')}<button type="button" class="watch-fill-list" data-mobile-action="navigate" data-mobile-target="explore">${navIcon('library')}<span><strong>Zgjero listën tënde</strong><small>Zbulo anime dhe shtoji në bibliotekë.</small></span><span aria-hidden="true">›</span></button><section id="mobile-stale">${label('Shumë kohë pa parë')}${stale.length ? stale.map((a) => row(a, ctx.nextEpisode(a))).join('') : empty('Nuk ke tituj të lënë pa parë më shumë se një javë.')}</section>`
+          }</section><section id="mobile-continue" aria-label="Për të parë">${label('Duke parë')}${active.length ? active.map(({ a, next, fresh }) => row(a, next, { fresh })).join('') : empty('Episodi yt i radhës shfaqet këtu. Shto një anime nga Zbulo.')}</section>${label('Zgjidh historinë tjetër')}<button type="button" class="watch-fill-list" data-mobile-action="navigate" data-mobile-target="explore">${navIcon('library')}<span><strong>Zgjero listën tënde</strong><small>Zbulo anime dhe shtoji në bibliotekë.</small></span><span aria-hidden="true">›</span></button><section id="mobile-stale">${label('Shumë kohë pa parë')}${stale.length ? stale.map(({ a, next }) => row(a, next)).join('') : empty('Nuk ke tituj të lënë pa parë më shumë se një javë.')}</section>`
         : `<section id="mobile-upcoming" aria-label="Episodet e ardhshme">${groups.size ? [...groups].map(([date, rows]) => label(esc(date)) + rows.join('')).join('') : empty('Nuk ka episode të ardhshme me datë të konfirmuar në bibliotekën tënde.')}</section>`
     }</div><div class="watch-home-links"><button type="button" data-mobile-action="navigate" data-mobile-target="calendar">Kalendari</button><button type="button" data-mobile-action="navigate" data-mobile-target="notifications">Njoftimet</button><button type="button" data-mobile-action="navigate" data-mobile-target="friends">Miqtë</button></div>`;
     if (markup !== lastHomeMarkup) {
       window.ATHTML.renderHTML($('mobile-home'), markup);
       lastHomeMarkup = markup;
     }
+    clearTimeout(releaseTimer);
+    if (document.visibilityState === 'hidden' || page !== 'home') return;
+    let nextRelease = Infinity;
+    const consider = (at) => {
+      if (Number.isFinite(at) && at > Date.now()) nextRelease = Math.min(nextRelease, at);
+    };
+    for (const entry of entries) consider(Number(entry.when));
+    for (const item of items)
+      for (const season of item.seasons) {
+        consider(Number(season.nextAiringAt) * 1000);
+        for (const ep of season.episodes || []) consider(Date.parse(ep.airedAt || ep.aired || ''));
+      }
+    if (Number.isFinite(nextRelease))
+      releaseTimer = setTimeout(
+        () => home(),
+        Math.min(86400000, Math.max(1, nextRelease - Date.now() + 100)),
+      );
   }
   function searchState() {
     if (!$('mobile-browse')) return;
@@ -585,6 +639,7 @@ export function createMobilePresentation(ctx) {
   function navigation(next) {
     if (phone.matches && next !== page) window.scrollTo({ top: 0, behavior: 'instant' });
     page = next;
+    if (page !== 'home') clearTimeout(releaseTimer);
     document.body.dataset.mobilePage = page;
     refresh();
   }
@@ -654,6 +709,10 @@ export function createMobilePresentation(ctx) {
         if (legacy) $('home-view').append(legacy);
       }
       refresh();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') clearTimeout(releaseTimer);
+      else if (phone.matches && page === 'home') home();
     });
     navigation(page);
   }

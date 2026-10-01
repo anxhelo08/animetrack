@@ -69,10 +69,22 @@ currently watching (mark-next actions without checks), and titles untouched for
 more than seven days. Confirmed future releases use neutral clock indicators.
 Marking an available episode updates these groups immediately through the existing
 tracking controller. Imported progress without event history shows its last known
-watched episode. The bottom navigation is 62px high plus an external safe-area gap.
+watched episode. The bottom navigation is docked to the screen edge at 58px plus safe-area padding. The main layout reserves its space once; duplicate app/body padding is removed.
 Diary controls and heatmap columns may shrink within the viewport; controls use
 `touch-action: manipulation` and form fields use 16px type to avoid accidental
 browser zoom. Pinch zoom remains available. Repeated active navigation is ignored,
 unchanged home markup is retained, and hidden legacy home rendering is skipped on
 phones. Chromium tests cover repeated taps, viewport scale, activity overflow,
 section movement after tracking, and mark/undo; actual iOS hardware remains untested.
+
+
+Newly released episodes with a confirmed timestamp appear at the top of Watching
+with an “Episod i ri” badge, even if the series was completed or last watched over
+a week ago. A local timer updates the view at the next known release boundary;
+no network request or library mutation is needed to unlock a known airing date.
+The timer pauses when hidden and rechecks when returning. Marking the episode
+removes the badge. Unknown planned episode totals never create new-release badges.
+Discover and library tools wrap within the safe area; filter chips are all visible.
+Navigation feedback uses a 120ms entrance and 100ms press transition, disabled by
+reduced-motion preferences. Tests exercise the six-watched → seventh-released
+scenario using the browser clock, including marking and preservation of progress.
