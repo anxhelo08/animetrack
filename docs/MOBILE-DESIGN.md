@@ -38,7 +38,7 @@ validated by the existing poster helper.
 
 `src/modules/mobile-presentation.js` composes existing data and controls without
 writing account or library state. `src/styles/mobile-premium.css` scopes the new
-layout to phones up to 760px; tests exercise the intended 375–430px range.
+layout to phones up to 760px; tests exercise the intended 320–430px range.
 Supabase, account credentials, tracking transactions and sync transport are unchanged.
 
 ## Validation
@@ -52,7 +52,7 @@ npm run build
 npx playwright test tests/e2e/mobile-premium.spec.js --project=iphone-chromium
 ```
 
-The mobile browser tests cover 375, 390 and 430px, keyboard/accessibility checks,
+The mobile browser tests cover 320, 375, 390 and 430px, keyboard/accessibility checks,
 read-only navigation, media filtering, studio retries, episode marking and undo,
 and secondary screens. Product, routing, release-feedback and theme regression
 tests also cover Chromium desktop and mobile.
@@ -62,3 +62,17 @@ In the prepared cloud environment, use the external
 system Chromium. This avoids the repository's single-process browser flags.
 WebKit downloads remain blocked by network policy; real-device Safari and live
 authenticated provider behavior were not validated by these fixture tests.
+
+
+The mobile home now separates last-watched history (green check indicators),
+currently watching (mark-next actions without checks), and titles untouched for
+more than seven days. Confirmed future releases use neutral clock indicators.
+Marking an available episode updates these groups immediately through the existing
+tracking controller. Imported progress without event history shows its last known
+watched episode. The bottom navigation is 62px high plus an external safe-area gap.
+Diary controls and heatmap columns may shrink within the viewport; controls use
+`touch-action: manipulation` and form fields use 16px type to avoid accidental
+browser zoom. Pinch zoom remains available. Repeated active navigation is ignored,
+unchanged home markup is retained, and hidden legacy home rendering is skipped on
+phones. Chromium tests cover repeated taps, viewport scale, activity overflow,
+section movement after tracking, and mark/undo; actual iOS hardware remains untested.

@@ -60,6 +60,7 @@ export function createFeatures(ctx){
   finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation','sync'].includes(active))render();renderHome()}
  }
  function renderHome(){
+  if(product&&window.matchMedia('(max-width: 760px)').matches){product.refresh();return}
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)window.ATHTML.renderHTML(feed,'<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>')}
   if(window.matchMedia?.('(max-width: 760px)').matches){renderMobileDiscover();product?.refresh();return;}
@@ -213,7 +214,7 @@ export function createFeatures(ctx){
  function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';window.ATHTML.renderHTML(element,modules.rewatch.render(id));root.append(element)}
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
-  if(b.dataset.mobileNav){const page=b.dataset.mobileNav;setMobileActive(page);ctx.navigate(page);return}
+  if(b.dataset.mobileNav){const page=b.dataset.mobileNav;if(document.body.dataset.mobilePage===page)return;setMobileActive(page);ctx.navigate(page);return}
   if(b.hasAttribute('data-at128-open-seasons')){ctx.navigate('seasons');return}
   if(b.dataset.tvSearchPreview){window.dispatchEvent(new CustomEvent('at120-unified-tv-open',{detail:b.dataset.tvSearchPreview}));return}
   if(b.dataset.tvAction){const id=String(b.dataset.id||'');if(id.startsWith('tvmaze-')){ctx.openAnime(id);return}return modules.tv.action(b.dataset.tvAction,id,b.dataset.ep||'')}

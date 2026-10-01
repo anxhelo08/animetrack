@@ -24,6 +24,7 @@ export function createMobilePresentation(ctx) {
   function episode(item, next) {
     return mobileEpisodeLabel(next.season, ctx.seasonNumber(item, next.season), next.n);
   }
+  let lastHomeMarkup = '';
   let homeTab = 'watch',
     homeLayout = 'list';
   function home() {
@@ -47,8 +48,31 @@ export function createMobilePresentation(ctx) {
     const row = (a, next, options = {}) => {
       const meta = next.season.episodes?.find((e) => e.number === next.n);
       const poster = ctx.poster(a.cover || '');
-      return `<article class="watch-row"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button><button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || 'Episodi i radhës')}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div><button type="button" class="media-card-mark watch-row-mark" ${options.upcoming ? 'disabled' : `data-ios-action="advance" data-id="${esc(a.id)}"`} aria-label="${options.upcoming ? 'Episodi ende nuk është transmetuar' : 'Shëno episodin e radhës të ' + esc(a.title) + ' si të parë'}">✓</button></article>`;
+      return `<article class="watch-row"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button><button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || 'Episodi i radhës')}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div>${options.upcoming ? '<span class="watch-row-pending" aria-label="Ende pa transmetuar">◷</span>' : options.seen ? '<span class="watch-row-seen" aria-label="Episod i parë">✓</span>' : `<button type="button" class="media-card-mark watch-row-mark" data-ios-action="advance" data-id="${esc(a.id)}" aria-label="Shëno episodin e radhës të ${esc(a.title)} si të parë">${navIcon('watch')}</button>`}</article>`;
     };
+    const recent = new Map();
+    const byId = new Map(items.map((a) => [a.id, a]));
+    for (const event of history
+      .slice()
+      .sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0))) {
+      if (!['watched', 'season-watched'].includes(event.action) || recent.has(event.id)) continue;
+      const a = byId.get(event.id),
+        season = a?.seasons.find((s) => s.id === event.seasonId);
+      const n =
+        event.action === 'season-watched'
+          ? Math.max(...(event.episodes || season?.watched || []))
+          : Number(event.episode);
+      if (season?.watched.includes(n)) recent.set(a.id, { a, season, n });
+    }
+    // Imported progress may have no event log: show its last known watched episode.
+    for (const a of items) {
+      if (recent.has(a.id)) continue;
+      const season = a.seasons
+        .slice()
+        .reverse()
+        .find((s) => s.watched?.length);
+      if (season) recent.set(a.id, { a, season, n: Math.max(...season.watched) });
+    }
     const upcoming = (ctx.upcoming?.() || [])
       .filter((e) => e.when > Date.now())
       .sort((a, b) => a.when - b.when)
@@ -74,10 +98,22 @@ export function createMobilePresentation(ctx) {
         );
     }
     const label = (text) => `<h2 class="watch-group-label"><span>${text}</span></h2>`;
-    window.ATHTML.renderHTML(
-      $('mobile-home'),
-      `<div class="watch-home-tabs" role="group" aria-label="Lista e episodeve"><button type="button" data-mobile-home-tab="watch" aria-pressed="${homeTab === 'watch'}">Për të parë</button><button type="button" data-mobile-home-tab="upcoming" aria-pressed="${homeTab === 'upcoming'}">Së shpejti</button></div><div class="watch-home-toolbar"><button type="button" data-mobile-action="navigate" data-mobile-target="diary">Historiku</button><div><button type="button" data-mobile-home-layout="list" aria-pressed="${homeLayout === 'list'}" aria-label="Shfaq listën">☷</button><button type="button" data-mobile-home-layout="grid" aria-pressed="${homeLayout === 'grid'}" aria-label="Shfaq rrjetën">⊞</button></div></div><div class="watch-home-content" data-layout="${homeLayout}">${homeTab === 'watch' ? `<section id="mobile-continue" aria-label="Për të parë">${active.length ? active.map((a) => row(a, ctx.nextEpisode(a))).join('') : empty('Episodi yt i radhës shfaqet këtu. Shto një anime nga Zbulo.')}</section>${label('Zgjidh historinë tjetër')}<button type="button" class="watch-fill-list" data-mobile-action="navigate" data-mobile-target="explore">${navIcon('library')}<span><strong>Zgjero listën tënde</strong><small>Zbulo anime dhe shtoji në bibliotekë.</small></span><span aria-hidden="true">›</span></button>${stale.length ? `<section id="mobile-stale">${label('Nuk ke parë prej kohësh')}${stale.map((a) => row(a, ctx.nextEpisode(a))).join('')}</section>` : ''}` : `<section id="mobile-upcoming" aria-label="Episodet e ardhshme">${groups.size ? [...groups].map(([date, rows]) => label(esc(date)) + rows.join('')).join('') : empty('Nuk ka episode të ardhshme me datë të konfirmuar në bibliotekën tënde.')}</section>`}</div><div class="watch-home-links"><button type="button" data-mobile-action="navigate" data-mobile-target="calendar">Kalendari</button><button type="button" data-mobile-action="navigate" data-mobile-target="notifications">Njoftimet</button><button type="button" data-mobile-action="navigate" data-mobile-target="friends">Miqtë</button></div>`,
-    );
+    const markup = `<div class="watch-home-tabs" role="group" aria-label="Lista e episodeve"><button type="button" data-mobile-home-tab="watch" aria-pressed="${homeTab === 'watch'}">Për të parë</button><button type="button" data-mobile-home-tab="upcoming" aria-pressed="${homeTab === 'upcoming'}">Së shpejti</button></div><div class="watch-home-toolbar"><button type="button" data-mobile-action="navigate" data-mobile-target="diary">Historiku</button><div><button type="button" data-mobile-home-layout="list" aria-pressed="${homeLayout === 'list'}" aria-label="Shfaq listën">☷</button><button type="button" data-mobile-home-layout="grid" aria-pressed="${homeLayout === 'grid'}" aria-label="Shfaq rrjetën">⊞</button></div></div><div class="watch-home-content" data-layout="${homeLayout}">${
+      homeTab === 'watch'
+        ? `<section id="mobile-history" aria-label="Historiku i fundit">${label('Historiku · Episodet e fundit')}${
+            recent.size
+              ? [...recent.values()]
+                  .slice(0, 6)
+                  .map(({ a, season, n }) => row(a, { season, n }, { seen: true }))
+                  .join('')
+              : empty('Episodet e para do të shfaqen këtu pasi t’i shënosh.')
+          }</section><section id="mobile-continue" aria-label="Për të parë">${label('Duke parë')}${active.length ? active.map((a) => row(a, ctx.nextEpisode(a))).join('') : empty('Episodi yt i radhës shfaqet këtu. Shto një anime nga Zbulo.')}</section>${label('Zgjidh historinë tjetër')}<button type="button" class="watch-fill-list" data-mobile-action="navigate" data-mobile-target="explore">${navIcon('library')}<span><strong>Zgjero listën tënde</strong><small>Zbulo anime dhe shtoji në bibliotekë.</small></span><span aria-hidden="true">›</span></button><section id="mobile-stale">${label('Shumë kohë pa parë')}${stale.length ? stale.map((a) => row(a, ctx.nextEpisode(a))).join('') : empty('Nuk ke tituj të lënë pa parë më shumë se një javë.')}</section>`
+        : `<section id="mobile-upcoming" aria-label="Episodet e ardhshme">${groups.size ? [...groups].map(([date, rows]) => label(esc(date)) + rows.join('')).join('') : empty('Nuk ka episode të ardhshme me datë të konfirmuar në bibliotekën tënde.')}</section>`
+    }</div><div class="watch-home-links"><button type="button" data-mobile-action="navigate" data-mobile-target="calendar">Kalendari</button><button type="button" data-mobile-action="navigate" data-mobile-target="notifications">Njoftimet</button><button type="button" data-mobile-action="navigate" data-mobile-target="friends">Miqtë</button></div>`;
+    if (markup !== lastHomeMarkup) {
+      window.ATHTML.renderHTML($('mobile-home'), markup);
+      lastHomeMarkup = markup;
+    }
   }
   function searchState() {
     if (!$('mobile-browse')) return;
@@ -542,8 +578,8 @@ export function createMobilePresentation(ctx) {
     }
     if (!phone.matches) return;
     library();
-    home();
-    profile();
+    if (page === 'home') home();
+    if (page === 'profile') profile();
     searchState();
   }
   function navigation(next) {

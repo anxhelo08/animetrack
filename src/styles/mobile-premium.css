@@ -2102,3 +2102,112 @@
     display: none;
   }
 }
+
+/* Keep controls inside the visual viewport and avoid double-tap browser zoom. */
+@media (max-width: 760px) {
+  body.at-ios-enabled {
+    overflow-wrap: anywhere;
+  }
+  body.at-ios-enabled :is(button, a, label) {
+    touch-action: manipulation;
+  }
+  body.at-ios-enabled :is(input, select, textarea) {
+    font-size: 16px;
+    max-width: 100%;
+    min-width: 0;
+  }
+  body.at-ios-enabled
+    :is(
+      .app,
+      main,
+      #pro-view,
+      #pro-content,
+      .at132-diary,
+      .at132-day,
+      .at132-timeline,
+      .at132-entry,
+      .at132-controls,
+      .at132-activity
+    ) {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  body.at-ios-enabled #pro-content > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+  body.at-ios-enabled .at132-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.at-ios-enabled .at132-controls > *,
+  body.at-ios-enabled .at132-controls label > * {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  body.at-ios-enabled .at132-heat {
+    grid-template-columns: repeat(30, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+  }
+  body.at-ios-enabled .at132-entry > * {
+    min-width: 0;
+  }
+  body.at-ios-enabled .at132-title {
+    overflow-wrap: anywhere;
+  }
+  body.at-ios-enabled .at-mobile-nav {
+    min-height: 0 !important;
+    height: 62px;
+    box-sizing: border-box;
+    padding: 4px !important;
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    left: max(12px, env(safe-area-inset-left));
+    right: max(12px, env(safe-area-inset-right));
+    width: auto !important;
+    max-width: calc(100% - 24px) !important;
+  }
+  body.at-ios-enabled .at-mobile-nav button {
+    min-height: 0 !important;
+    height: 52px;
+    min-width: 0;
+    padding: 4px 0 !important;
+    gap: 3px;
+  }
+  body.at-ios-enabled .at-mobile-nav button > span {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  body.at-ios-enabled .at-mobile-nav svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  body.at-ios-enabled .at-mobile-nav small {
+    font-size: 9px !important;
+    line-height: 12px;
+  }
+  #mobile-home .watch-row-mark svg {
+    width: 18px;
+    height: 18px;
+    display: block;
+    margin: auto;
+  }
+  .watch-row-seen,
+  .watch-row-pending {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 23px;
+  }
+  .watch-row-seen {
+    color: #e3ffeb;
+    background: #216d3c;
+  }
+  .watch-row-pending {
+    color: var(--muted);
+    background: var(--surface2);
+  }
+}

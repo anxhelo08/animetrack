@@ -79,7 +79,7 @@ const payload = {
 };
 const state = (page) => page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime));
 
-for (const width of [375, 390, 430]) {
+for (const width of [320, 375, 390, 430]) {
   test(`mobile navigation, discovery, detail and tracking remain usable at ${width}px`, async ({
     page,
   }, info) => {
@@ -87,6 +87,29 @@ for (const width of [375, 390, 430]) {
     await page.setViewportSize({ width, height: 844 });
     await openFixture(page, { payload, owner: 'mobile-premium-' + width });
     const initial = await state(page);
+    await expect(page.locator('#mobile-history .watch-row-seen')).toHaveCount(1);
+    await expect(page.locator('#mobile-history')).toContainText('S2 EP1');
+    await expect(page.locator('#mobile-continue .watch-row-seen')).toHaveCount(0);
+    expect(
+      await page.locator('.at-mobile-nav').evaluate((node) => node.getBoundingClientRect().height),
+    ).toBeLessThanOrEqual(64);
+    await page.evaluate(() => {
+      window.mobileRowBeforeTap = document.querySelector('#mobile-continue .watch-row');
+    });
+    await page.locator('[data-mobile-nav="home"]').tap();
+    await page.locator('[data-mobile-nav="home"]').tap();
+    expect(await page.evaluate(() => visualViewport.scale)).toBe(1);
+    expect(
+      await page.evaluate(
+        () => window.mobileRowBeforeTap === document.querySelector('#mobile-continue .watch-row'),
+      ),
+    ).toBe(true);
+    await page.locator('[data-mobile-nav="diary"]').tap();
+    await expect(page.locator('.at132-diary')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.locator('[data-mobile-nav="home"]').tap();
     await expect(page.locator('.at-mobile-nav > button')).toHaveCount(5);
     await expect(page.locator('[data-mobile-nav="home"]')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('#mobile-continue')).toContainText('S2 EP2');
@@ -108,7 +131,8 @@ for (const width of [375, 390, 430]) {
     await page.locator('[data-mobile-home-tab="upcoming"]').click();
     await expect(page.locator('#mobile-upcoming')).toBeVisible();
     await expect(page.locator('#mobile-upcoming')).toContainText('2099');
-    await expect(page.locator('#mobile-upcoming .watch-row-mark')).toBeDisabled();
+    await expect(page.locator('#mobile-upcoming .watch-row-mark')).toHaveCount(0);
+    await expect(page.locator('#mobile-upcoming .watch-row-pending')).toBeVisible();
     expect(await state(page)).toBe(initial);
     await page.locator('[data-mobile-home-tab="watch"]').click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
@@ -289,4 +313,44 @@ test('mobile discovery filters real results and studio failure can be retried', 
   await expect(page.locator('#detail-modal.show')).toBeVisible();
   await expect(page.locator('#detail-modal .mobile-detail-hero')).toContainText('Attack on Titan');
   expect(await state(page)).toBe(before);
+});
+
+test('older titles move out of watching and return after an episode is marked', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name !== 'iphone-chromium', 'Mobile watch groups.');
+  const old = structuredClone(payload.anime[0]);
+  old.id = 'older-story';
+  old.title = 'Një histori e lënë prej kohësh';
+  old.sourceId = '999';
+  old.seasons.find((s) => s.id === 'season-two').episodes.find((e) => e.number === 3).airedAt =
+    '2021-10-24T10:00:00Z';
+  await openFixture(page, {
+    payload: {
+      ...payload,
+      anime: [payload.anime[0], old],
+      history: [
+        {
+          id: old.id,
+          seasonId: 'season-two',
+          episode: 1,
+          action: 'watched',
+          date: '2026-09-01T10:00:00Z',
+        },
+        {
+          id: 'mobile-story',
+          seasonId: 'season-two',
+          episode: 1,
+          action: 'watched',
+          date: '2026-09-30T10:00:00Z',
+        },
+      ],
+    },
+  });
+  await expect(page.locator('#mobile-continue .watch-row')).toHaveCount(1);
+  await expect(page.locator('#mobile-stale')).toContainText(old.title);
+  await expect(page.locator('#mobile-history .watch-row-seen')).toHaveCount(2);
+  await page.locator('#mobile-stale .watch-row-mark').click();
+  await expect(page.locator('#mobile-continue')).toContainText(old.title);
+  await expect(page.locator('#mobile-stale .watch-row')).toHaveCount(0);
 });
