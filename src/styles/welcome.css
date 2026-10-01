@@ -28,3 +28,4 @@ body.auth-required:has(.welcome-page:not([hidden])) .app,body.auth-required:has(
 body.auth-required:has(.welcome-page:not([hidden])) #account-modal .modal-header .x{display:flex!important}
 
 @media(max-width:380px){.welcome-poster{width:185px;height:280px}.welcome-deck{height:300px}.welcome-poster-back{transform:translate(45px,22px) rotate(12deg)}.welcome-poster-middle{transform:translate(25px,12px) rotate(6deg)}}
+body.auth-required .at-mobile-nav{display:none!important}
