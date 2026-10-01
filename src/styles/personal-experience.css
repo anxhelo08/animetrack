@@ -1,0 +1,198 @@
+/* Personal views share the same visual rhythm and respect reduced motion. */
+.at-cal-hero,
+.at132-hero {
+  position: relative;
+  padding: clamp(24px, 4vw, 48px);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background:
+    radial-gradient(
+      ellipse at top right,
+      color-mix(in srgb, var(--purple) 14%, transparent),
+      transparent 65%
+    ),
+    var(--surface);
+  box-shadow: var(--shadow-soft);
+}
+.at-cal-hero h2,
+.at132-hero h2 {
+  letter-spacing: -0.04em;
+  font-size: clamp(28px, 4vw, 42px);
+}
+.at-cal-controls,
+.at132-controls {
+  position: relative;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  gap: 12px;
+}
+.at-cal-event {
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+.at-cal-event:hover {
+  border-color: var(--purple);
+  transform: translateY(-2px);
+}
+.at-cal-event-meta {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.025em;
+}
+.at-cal-day.today {
+  border-color: var(--purple);
+  box-shadow: inset 0 3px var(--purple);
+}
+.at132-entry {
+  border-radius: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+.at132-entry:hover {
+  border-color: var(--purple);
+  transform: translateY(-2px);
+}
+.at132-day > header {
+  border-left: 3px solid var(--purple);
+  padding-left: 14px;
+}
+.at132-controls select {
+  min-height: 44px;
+}
+.at129-badge-icon {
+  position: relative;
+  border-radius: 22px;
+  background: color-mix(in srgb, var(--purple) 14%, transparent);
+  display: grid;
+  place-items: center;
+}
+.at129-badge-icon svg {
+  width: 44px;
+  height: 44px;
+  color: var(--purple);
+}
+.at129-badge-icon .achievement-symbol {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  font-size: 18px;
+  line-height: 1;
+}
+.at129-badge.earned {
+  border-color: var(--purple);
+}
+.at-profile-avatar,
+.at1161-avatar {
+  transition: transform 200ms ease;
+}
+.at-profile-avatar:hover,
+.at1161-avatar:hover {
+  transform: rotate(-4deg) scale(1.04);
+}
+.at-h2-hero {
+  border: 1px solid var(--border);
+  background:
+    radial-gradient(
+      ellipse at top right,
+      color-mix(in srgb, var(--purple) 14%, transparent),
+      transparent 65%
+    ),
+    var(--surface);
+}
+.at-h3-feature,
+.at-h2-lineup-card {
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+.at-h2-lineup-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--purple);
+}
+@media (min-width: 1000px) {
+  .at-cal-agenda {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 20px;
+  }
+  .at132-controls {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .at-cal-hero,
+  .at132-hero,
+  .at-h3-feature,
+  .at-cal-event,
+  .at132-entry,
+  .at129-badge {
+    animation: personal-enter 280ms ease both;
+  }
+}
+@keyframes personal-enter {
+  from {
+    opacity: 0.5;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .at-cal-event,
+  .at132-entry,
+  .at-h3-feature,
+  .at-h2-lineup-card,
+  .at-profile-avatar,
+  .at1161-avatar {
+    animation: none;
+    transition: none;
+  }
+}
+
+.personal-reminders {
+  margin-top: 24px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+.personal-reminders > summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+  font-weight: 700;
+}
+.personal-reminders[open] > summary {
+  margin-bottom: 16px;
+}
+
+.at113-cal-days button.today,
+.at113-cal-days button.active {
+  background: var(--surface2);
+  border-color: var(--purple);
+  color: var(--text);
+}
+.at113-cal-days button.today small,
+.at113-cal-days button.active small,
+.at113-cal-days button.today i,
+.at113-cal-days button.active i {
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  body.at-ios-enabled .at-mobile-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

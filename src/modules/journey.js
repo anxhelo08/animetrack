@@ -16,12 +16,13 @@ window.ATJourney=function ATJourney(ctx){
  }
  function renderEpisode({a,s,n,ep}){
   const box=ctx.el('ep-detail-body');if(!box||!a||!s)return;
+  if(s.format==='MOVIE')return;
   box.querySelector('.at108-episode-head')?.remove();
   box.querySelector('.at108-episode-tabs')?.remove();
-  const prev=adjacent(a,s,n,-1),next=adjacent(a,s,n,1),seasonNumber=a.seasons.indexOf(s)+1,seen=s.watched.includes(n);
+  const prev=adjacent(a,s,n,-1),next=adjacent(a,s,n,1),seasonNumber=typeof ctx.seasonNumber==='function'?ctx.seasonNumber(a,s):a.seasons.slice(0,a.seasons.indexOf(s)+1).filter(s=>s.format!=='MOVIE'&&s.format!=='SPECIAL').length,seen=s.watched.includes(n);
   const count=box.querySelector('.v98-comment-count')?.textContent||'0';
   const total=ctx.released(s),status=seen?'✓ I parë':'○ I paparë';
-  const nav=(target,dir)=>target?`<button type="button" data-journey-action="${dir}" aria-label="${dir==='prev'?'Episodi i mëparshëm':'Episodi i radhës'}"> ${dir==='prev'?'←':'▶'} S${a.seasons.indexOf(target.season)+1} · EP ${target.n}${dir==='prev'?'':' →'}</button>`:`<span class="at108-no-episode">${dir==='prev'?'Fillimi i serisë':'Nuk ka episod tjetër të transmetuar'}</span>`;
+  const nav=(target,dir)=>target?`<button type="button" data-journey-action="${dir}" aria-label="${dir==='prev'?'Episodi i mëparshëm':'Episodi i radhës'}"> ${dir==='prev'?'←':'▶'} ${target.season.format==='MOVIE'?'Film':`S${typeof ctx.seasonNumber==='function'?ctx.seasonNumber(a,target.season):a.seasons.slice(0,a.seasons.indexOf(target.season)+1).filter(s=>s.format!=='MOVIE'&&s.format!=='SPECIAL').length} · EP ${target.n}`}${dir==='prev'?'':' →'}</button>`:`<span class="at108-no-episode">${dir==='prev'?'Fillimi i serisë':'Nuk ka episod tjetër të transmetuar'}</span>`;
   window.ATHTML.insertHTML(box,'afterbegin',`<div class="at108-episode-head"><div class="at108-episode-summary"><span class="at108-kicker">EPISODE HUB · ${esc(seasonLabel(s,seasonNumber-1))}</span><div><strong>S${seasonNumber} · EP ${n}</strong><span class="${seen?'seen':''}">${status}</span></div><small>${n}/${total} episode të transmetuara · ${esc(a.title)}</small></div><div class="at108-episode-switch">${nav(prev,'prev')}${nav(next,'next')}</div></div>
    <div class="at108-episode-tabs" role="group" aria-label="Pamja e episodit"><button type="button" data-journey-action="tab" data-tab="episode" aria-pressed="${tab==='episode'}" class="${tab==='episode'?'active':''}">✦ Episodi</button><button type="button" data-journey-action="tab" data-tab="discussion" aria-pressed="${tab==='discussion'}" class="${tab==='discussion'?'active':''}">💬 Diskutimi <span>${esc(count)}</span></button></div>`);
   box.dataset.at108Tab=tab;

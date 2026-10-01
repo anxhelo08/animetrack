@@ -1,3 +1,14 @@
+# 14.6.0
+
+- Planned anime episode totals no longer establish release availability for recent online seasons. Provider corrections replace old assumed counts while preserving watched progress. Ongoing series remain watching even when caught up.
+- Continue Watching and its detail dialog label movie parts as films, without fictional season/episode labels. Single-film feedback also labels the film.
+- Personal profiles use an account-scoped, version-independent recovery cache and reject stale requests. Settings drafts survive view refreshes.
+- “E kam parë të gjithën” marks released parts across the verified franchise, preserving unreleased seasons. Bulk marking is distinguished from spaced episode activity in Wrapped.
+- Episode thumbnails can come from exact-media AniList streaming entries. Ambiguous episode numbers, insecure URLs and poster substitutions are rejected. Missing episode details retry sooner, and account changes cannot receive an old account's response.
+- Calendar reads confirmed upcoming schedules as well as recent episodes, defaults to Watching, and preserves each source label. Diary adds note/rating filters and date ordering.
+- Personal views receive shared cards, vector achievement art, additional achievements, and short animations with reduced-motion support.
+- Timestamp spacing is a heuristic, never proof of real viewing. Upstream providers can omit or revise dates, descriptions and images; the UI preserves unavailable states rather than inventing data.
+
 # 14.5.0
 
 - PWA: ikonë maskable e veçantë, screenshots të ndërfaqes dhe shortcuts Biblioteka/Kërko/Aktiviteti që hapen pas identifikimit. Screenshots nuk rëndojnë precache-in e aplikacionit.

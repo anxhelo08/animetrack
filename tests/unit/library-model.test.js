@@ -98,3 +98,50 @@ test('preferences retain valid lists and reminders while excluding invalid impor
   expect(prefs.customLists).toHaveLength(1);
   expect(prefs.customLists[0].animeIds).toEqual(['a']);
 });
+
+test('an online current-year season with two dated episodes never exposes its planned twelve', () => {
+  const at = Date.parse('2026-10-01T12:00:00Z');
+  const season = {
+    source: 'AniList',
+    year: 2026,
+    total: 12,
+    watched: [],
+    episodes: [
+      { number: 1, aired: '2026-09-18' },
+      { number: 2, aired: '2026-09-25' },
+      { number: 3, aired: '2026-10-02' },
+    ],
+  };
+  expect(model.releasedCount(season, at)).toBe(2);
+  expect(model.releasedCount({ ...season, episodes: [] }, at)).toBe(0);
+  expect(model.releasedCount({ ...season, watched: [1, 2, 3] }, at)).toBe(3);
+});
+
+test('a corrected releasing status removes an old assumed full-season count without removing progress', () => {
+  const season = {
+    total: 12,
+    airedCount: 12,
+    watched: [1],
+    episodes: [
+      { number: 1, aired: '2020-01-01' },
+      { number: 2, aired: '2020-01-08' },
+    ],
+  };
+  model.releaseFromMedia(season, { status: 'RELEASING', episodes: 12 });
+  expect(model.releasedCount(season)).toBe(2);
+  expect(season.watched).toEqual([1]);
+});
+
+test('past airing evidence is used when a releasing provider has no next broadcast scheduled', () => {
+  const season = { total: 12, airedCount: 12, watched: [], episodes: [] };
+  model.releaseFromMedia(season, {
+    status: 'RELEASING',
+    airingSchedule: {
+      nodes: [
+        { episode: 2, airingAt: 1 },
+        { episode: 3, airingAt: 9999999999 },
+      ],
+    },
+  });
+  expect(model.releasedCount(season)).toBe(2);
+});

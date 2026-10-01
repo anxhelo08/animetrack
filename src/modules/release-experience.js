@@ -24,7 +24,8 @@ export function mountReleaseExperience(ctx) {
     hide();
     if (!entry.seen) return;
     latest = { ...entry, owner: ctx.owner(), eventId: ctx.history()?.eventId };
-    message.textContent = `Episodi ${entry.n} u shënua ✓`;
+    message.textContent =
+      entry.format === 'MOVIE' ? 'Filmi u shënua ✓' : `Episodi ${entry.n} u shënua ✓`;
     undo.hidden = false;
     box.hidden = false;
     timer = setTimeout(hide, 12000);

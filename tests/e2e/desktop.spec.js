@@ -143,6 +143,7 @@ test('desktop regression',async({browser},testInfo)=>{
  await page.locator('#pro-nav-diary').click();
  await page.locator('#pro-nav-calendar').click();
  assert(await page.locator('#pro-view').isVisible(),'Calendar should open');
+ await page.locator('#personal-reminders > summary').click();
  assert(await page.locator('#pro-content .at109-smart-week').isVisible(),'Desktop personal weekly calendar should render');
  assert.match(await page.locator('#pro-content .at109-smart-week').innerText(),/Kjo javë për ty/);
  await page.locator('#at109-default-lead').selectOption('10');
@@ -181,14 +182,14 @@ test('desktop regression',async({browser},testInfo)=>{
  await page.locator('#pro-nav-wrapped').click();
  assert(await page.locator('#pro-content .at129-wrapped').isVisible(),'Wrapped 12.9 renders on desktop');
  assert.match(await page.locator('#pro-content .at129-hero').innerText(),/Historia jote/);
- assert.equal(await page.locator('#pro-content .at129-badge').count(),24,'24 achievement icons render');
+ assert.equal(await page.locator('#pro-content .at129-badge').count(),29,'Expanded achievement collection renders');
  await page.locator('[data-pro-action="wrapped-all"]').click();
  assert.equal(await page.locator('[data-pro-action="wrapped-all"]').getAttribute('aria-pressed'),'true');
  await page.locator('[data-pro-action="wrapped-scope"][data-id="tv"]').click();
  assert.equal(await page.locator('[data-pro-action="wrapped-scope"][data-id="tv"]').getAttribute('aria-pressed'),'true');
  await page.locator('[data-pro-action="wrapped-badges"][data-id="unlocked"]').click();
  assert.equal(await page.locator('.at129-badge.locked').count(),0,'Unlocked view excludes locked trophies');
- console.log('WRAPPED_DESKTOP_PASS',JSON.stringify({badgeCount:24,period:'all',scope:'tv'}));
+ console.log('WRAPPED_DESKTOP_PASS',JSON.stringify({badgeCount:29,period:'all',scope:'tv'}));
  await page.locator('#library-nav').click();
  assert.equal(await page.locator('#at113-library-head h2').innerText(),'Biblioteka ime');
  await page.locator('#explore-nav').click();

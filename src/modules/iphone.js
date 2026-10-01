@@ -10,13 +10,14 @@ window.ATiPhone=function ATiPhone(ctx){
  const standalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
  const poster=url=>ctx.poster(url||'');
  const pad=n=>String(Math.max(0,Number(n)||0)).padStart(2,'0');
- const seasonIndex=(anime,season)=>Math.max(0,anime?.seasons?.indexOf(season))+1;
- const episodeCode=(seasonNo,ep)=>`S${pad(seasonNo)} | E${pad(ep)}`;
+ const seasonIndex=(anime,season)=>typeof ctx.seasonNumber==='function'?ctx.seasonNumber(anime,season):(anime?.seasons||[]).slice(0,(anime?.seasons?.indexOf(season)??-1)+1).filter(s=>!['MOVIE','SPECIAL','OVA'].includes(s.format)).length;
+ const episodeCode=(seasonNo,ep,season)=>String(season?.format||'').toUpperCase()==='MOVIE'?'Film':`S${pad(seasonNo)} | E${pad(ep)}`;
  const toTime=value=>{const n=Date.parse(String(value||''));return Number.isFinite(n)?n:0};
  const releaseDate=value=>{const d=new Date(Number(value)||0);return Number.isFinite(d.getTime())?d:''};
  const relativeDay=value=>{const d=releaseDate(value);if(!d)return'';return d.toLocaleDateString('sq-AL',{day:'2-digit',month:'short'})};
  const relativeTime=value=>{const d=releaseDate(value);if(!d)return'';return d.toLocaleTimeString('sq-AL',{hour:'2-digit',minute:'2-digit',hour12:false,hourCycle:'h23'})};
  function episodeTitle(season,n,fallback='Episodi i radhës'){
+  if(String(season?.format||'').toUpperCase()==='MOVIE')return season.subtitle||season.title||'Filmi';
   const episodes=Array.isArray(season?.episodes)?season.episodes:[];
   const found=episodes.find(ep=>Number(ep?.number||ep?.episode||ep?.seasonEpisode)===Number(n));
   return String(found?.title||found?.name||fallback);
@@ -75,7 +76,7 @@ window.ATiPhone=function ATiPhone(ctx){
   return all.slice(0,40);
  }
  function recentCard(item,{priority=false}={}){
-  const {anime,season,n,when,watched,title}=item,url=poster(anime.cover||''),code=episodeCode(seasonIndex(anime,season),n);
+  const {anime,season,n,when,watched,title}=item,url=poster(anime.cover||''),code=episodeCode(seasonIndex(anime,season),n,season);
   return `<article class="at114-card at114-watch-card at124-release-card ${priority?'at127-new-card':''} ${viewMode==='grid'?'is-grid':''}">
    <button type="button" class="at114-cover" data-ios-action="open-recent" data-id="${esc(anime.id)}" data-season="${esc(season.id)}" data-ep="${n}" aria-label="Hap episodin ${n} të ${esc(anime.title)}">${url?`<img src="${esc(url)}" loading="lazy" referrerpolicy="no-referrer" alt="Posteri i ${esc(anime.title)}">`:'<span>✦</span>'}<span class="at124-release-date">${esc(relativeDay(when))}</span></button>
    <div class="at114-body"><span class="at124-release-status">${watched?'✓ I PARË':'● SAPO DOLI'} · ${esc(relativeTime(when))}</span>
@@ -103,7 +104,7 @@ window.ATiPhone=function ATiPhone(ctx){
    <div class="at114-body">
     <button type="button" class="at114-title-pill" data-ios-action="details" data-id="${esc(anime.id)}">${esc(anime.title)} <span>›</span></button>
     <button type="button" class="at114-copy" data-ios-action="${release?'open-recent':'episode'}" data-id="${esc(anime.id)}" ${release?`data-season="${esc(nx.season.id)}" data-ep="${nx.n}"`:''} aria-label="Vazhdo ${esc(anime.title)} me episodin ${nx.n}">
-     <strong class="at114-code">${episodeCode(seasonNo,nx.n)}${release?'<span class="at127-new-ep">NEW EP</span>':backlog>1?` <small>+${backlog-1}</small>`:''}</strong>
+     <strong class="at114-code">${episodeCode(seasonNo,nx.n,nx.season)}${release?'<span class="at127-new-ep">NEW EP</span>':backlog>1?` <small>+${backlog-1}</small>`:''}</strong>
      <span class="at114-episode-title">${esc(title)}</span>
      <small class="at114-meta">${release?`Episodi i ri doli më ${esc(relativeDay(release.when))}`:stale?`Nuk e ke prekur prej ${Math.max(7,Math.floor((Date.now()-touched)/86400000))} ditësh`:`${watched}/${released} episode · ${ctx.percent(anime)}%`}</small>
     </button>
@@ -118,7 +119,7 @@ window.ATiPhone=function ATiPhone(ctx){
    <div class="at114-body">
     <button type="button" class="at114-title-pill" data-ios-action="details" data-id="${esc(anime.id)}">${esc(anime.title)} <span>›</span></button>
     <button type="button" class="at114-copy" data-ios-action="episode-specific" data-id="${esc(anime.id)}" data-season="${esc(item.season.id)}" data-ep="${item.n}" aria-label="Rihap ${esc(anime.title)} episodin ${item.n}">
-     <strong class="at114-code">${episodeCode(seasonNo,item.n)}</strong>
+     <strong class="at114-code">${episodeCode(seasonNo,item.n,item.season)}</strong>
      <span class="at114-episode-title">${esc(item.title)}</span>
      <small class="at114-meta">${item.date?`E pe më ${esc(new Date(item.date).toLocaleDateString('sq-AL',{day:'2-digit',month:'short'}))}`:'E parë së fundmi'}</small>
     </button>
@@ -133,7 +134,7 @@ window.ATiPhone=function ATiPhone(ctx){
    <div class="at114-body">
     <button type="button" class="at114-title-pill" data-ios-action="details" data-id="${esc(anime.id)}">${esc(anime.title)} <span>›</span></button>
     <button type="button" class="at114-copy" data-ios-action="details" data-id="${esc(anime.id)}" aria-label="Hap detajet e ${esc(anime.title)}">
-     <strong class="at114-code">${episodeCode(seasonNo,item.n)}</strong>
+     <strong class="at114-code">${episodeCode(seasonNo,item.n,item.season)}</strong>
      <span class="at114-episode-title">${esc(item.title)}</span>
      <small class="at114-meta">${esc(new Date(item.when).toLocaleDateString('sq-AL',{weekday:'long',day:'numeric',month:'long'}))} · ${esc(relativeTime(item.when))}</small>
     </button>

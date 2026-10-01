@@ -149,6 +149,7 @@ export function createLibraryModel(dependencies = {}) {
           airedAt: String(e.airedAt || '').slice(0, 60),
           summary: String(e.summary || '').slice(0, 2500),
           image: validPoster(e.image || ''),
+          imageSource: String(e.imageSource || '').slice(0, 100),
           url: validPoster(e.url || ''),
           tvmazeEpisodeId: String(e.tvmazeEpisodeId || '').slice(0, 30),
           filler: !!e.filler,
@@ -234,6 +235,20 @@ export function createLibraryModel(dependencies = {}) {
     if (m.status) s.releaseStatus = String(m.status).toUpperCase().replace(/\s+/g, '_');
     if (m.startDate?.year) s.releaseStart = mediaStartIso(m.startDate);
     const next = m.nextAiringEpisode;
+    if (m.status && ['RELEASING', 'CURRENTLY_AIRING'].includes(s.releaseStatus)) {
+      // A provider correction must replace a previously assumed full-season count.
+      const dated = (s.episodes || []).filter(
+        (e) => Date.parse(e.airedAt || e.aired || '') <= Date.now(),
+      );
+      const scheduled = (m.airingSchedule?.nodes || []).filter(
+        (e) => Number(e.airingAt) * 1000 <= Date.now(),
+      );
+      s.airedCount = Math.max(
+        0,
+        ...dated.map((e) => Number(e.number) || 0),
+        ...scheduled.map((e) => Number(e.episode) || 0),
+      );
+    }
     if (next?.episode && next?.airingAt) {
       s.nextAiringEpisode = Math.max(0, Number(next.episode) || 0);
       s.nextAiringAt = Math.max(0, Number(next.airingAt) || 0);
@@ -260,13 +275,16 @@ export function createLibraryModel(dependencies = {}) {
     const maxWatched = Math.max(0, ...(s?.watched || []));
     if (!s) return 0;
     const total = Math.max(0, Number(s.total) || 0),
-      status = String(s.releaseStatus || '').toUpperCase();
+      status = String(s.releaseStatus || '')
+        .toUpperCase()
+        .replace(/\s+/g, '_');
     const tvmazeGuard = dependencies.releasedTV?.(s, at);
     if (tvmazeGuard != null) return tvmazeGuard;
     if (s.releaseStart && Date.parse(s.releaseStart + 'T00:00:00Z') > at && maxWatched === 0)
       return 0;
     if (['NOT_YET_RELEASED', 'NOT_YET_AIRED'].includes(status)) return maxWatched;
-    if (['FINISHED', 'FINISHED_AIRING'].includes(status)) return Math.max(maxWatched, total);
+    if (['FINISHED', 'FINISHED_AIRING'].includes(status) && !s.nextAiringEpisode)
+      return Math.max(maxWatched, total);
     let confirmed = Math.max(0, Number(s.airedCount) || 0);
     if (s.nextAiringEpisode && s.nextAiringAt) {
       confirmed = Math.max(
@@ -284,6 +302,9 @@ export function createLibraryModel(dependencies = {}) {
     if (s.airedCount != null || s.nextAiringAt)
       return Math.max(maxWatched, Math.min(total || 10000, confirmed));
     if (Number(s.year) > new Date(at).getUTCFullYear() && maxWatched === 0) return 0;
+    // An online catalogue's planned total is not evidence that episodes aired.
+    const online = /^(anilist|myanimelist|jikan)$/i.test(String(s.source || ''));
+    if (confirmed > 0 || online) return Math.max(maxWatched, Math.min(total || 10000, confirmed));
     // Legacy / manually entered anime remain usable until online metadata arrives.
     return Math.max(maxWatched, total);
   }
@@ -320,12 +341,12 @@ export function createLibraryModel(dependencies = {}) {
       future = visibleSeasons(a).some(
         (s) =>
           (Number(s.total) || 0) > releasedCount(s) ||
-          (['RELEASING', 'CURRENTLY_AIRING', 'NOT_YET_RELEASED', 'NOT_YET_AIRED'].includes(
+          ['RELEASING', 'CURRENTLY_AIRING', 'NOT_YET_RELEASED', 'NOT_YET_AIRED'].includes(
             s.releaseStatus,
-          ) &&
-            !!s.nextAiringAt),
+          ),
       );
-    if (available > 0 && count(a) >= available) a.status = future ? 'watching' : 'completed';
+    if (available === 0 && future) a.status = 'watching';
+    else if (available > 0 && count(a) >= available) a.status = future ? 'watching' : 'completed';
     else if (['completed', 'waiting'].includes(a.status) && count(a) < available)
       a.status = 'watching';
     else if (seen && a.status === 'planning') a.status = 'watching';
@@ -367,6 +388,12 @@ export function createLibraryModel(dependencies = {}) {
       sourceId: a.sourceId || '',
       malId: a.malId || '',
       format: a.format || 'TV',
+      year: a.year,
+      releaseStatus: a.releaseStatus || '',
+      releaseStart: a.releaseStart || '',
+      nextAiringEpisode: a.nextAiringEpisode || 0,
+      nextAiringAt: a.nextAiringAt || 0,
+      airedCount: a.airedCount ?? null,
       episodes: [],
       myRating: null,
       communityScore: null,

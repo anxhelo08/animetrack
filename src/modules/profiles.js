@@ -1,6 +1,6 @@
 /* AnimeTrack 10.1 - personal showcase, insights and privacy-preserving profile. */
 window.ATProfiles=function ATProfiles(ctx){
- let profile=null,timer=0,tab='overview';
+ let profile=null,timer=0,tab='overview',owner='',revision=0,loadSequence=0,renderedOwner='',draft=null;
  const esc=ctx.esc,client=()=>ctx.client(),user=()=>ctx.user(),state=()=>ctx.state(),poster=ctx.poster;
  const dateLabel=value=>{const t=Date.parse(value||'');return Number.isFinite(t)?new Date(t).toLocaleDateString('sq-AL',{month:'long',year:'numeric'}):''};
  function snapshot(visibility=profile?.is_public){
@@ -13,21 +13,34 @@ window.ATProfiles=function ATProfiles(ctx){
   }).filter(Boolean):[];
   return {anime,stats:{titles:anime.length,episodes:anime.reduce((n,a)=>n+a.watched,0),completed:state().anime.filter(a=>a.status==='completed').length,favorites:state().anime.filter(a=>a.favorite).length},activity,updatedAt:new Date().toISOString()};
  }
+ const fields='user_id,handle,display_name,bio,avatar_emoji,avatar_url,is_public,snapshot,created_at';
+ const cacheKey=id=>'animetrack:profile:'+id;
+ function cacheRead(id){try{const p=JSON.parse(window.localStorage?.getItem(cacheKey(id))||'null');return p?.user_id===id?p:null}catch{return null}}
+ function cacheWrite(p){if(!p?.user_id)return;try{const {snapshot,...personal}=p;window.localStorage?.setItem(cacheKey(p.user_id),JSON.stringify(personal))}catch{}}
+ function captureDraft(){
+  if(tab!=='settings'||renderedOwner!==owner||owner!==String(user()?.id||'')||!ctx.el('pro-name'))return;
+  draft={handle:ctx.el('pro-handle')?.value||'',display_name:ctx.el('pro-name')?.value||'',bio:ctx.el('pro-bio')?.value||'',avatar_emoji:ctx.el('pro-avatar')?.value||'',avatar_url:ctx.el('pro-avatar-url')?.value||'',is_public:!!ctx.el('pro-public')?.checked};
+ }
  async function load(){
-  if(!user()){profile=null;tab='overview';ctx.rerender?.();return}
-  const r=await client().from('anime_profiles').select('user_id,handle,display_name,bio,avatar_emoji,avatar_url,is_public,snapshot,created_at').eq('user_id',user().id).maybeSingle();
-  if(r.error)throw r.error;profile=r.data||null;
-  if(!profile){
-   // A new account needs a private, discoverable username without requiring a second setup flow.
-   const id=user().id,handle='fan_'+String(id).replace(/[^a-f0-9]/gi,'').slice(0,12).toLowerCase();
-   const row={user_id:id,handle,display_name:String(user().user_metadata?.display_name||user().email?.split('@')[0]||'Anime fan').trim().slice(0,40)||'Anime fan',avatar_emoji:'🎌',avatar_url:'',bio:'',is_public:false,snapshot:snapshot()};
-   const inserted=await client().from('anime_profiles').insert(row).select('user_id,handle,display_name,bio,avatar_emoji,avatar_url,is_public,snapshot,created_at').single();
-   if(!inserted.error)profile=inserted.data;
-   else if(inserted.error.code==='23505'){
-    const again=await client().from('anime_profiles').select('user_id,handle,display_name,bio,avatar_emoji,avatar_url,is_public,snapshot,created_at').eq('user_id',id).maybeSingle();
-    profile=again.data||null;
-   }else console.warn('Profile onboarding unavailable',inserted.error.code||inserted.error.message);
-  }
+  const account=user(),id=String(account?.id||''),sequence=++loadSequence;
+  if(owner!==id){revision++;clearTimeout(timer);owner=id;renderedOwner='';profile=id?cacheRead(id):null;draft=null;tab='overview'}
+  if(!id){profile=null;ctx.rerender?.();return}
+  const ticket=revision;
+  const current=()=>sequence===loadSequence&&ticket===revision&&String(user()?.id||'')===id;
+  const r=await client().from('anime_profiles').select(fields).eq('user_id',id).maybeSingle();
+  if(!current())return;
+  if(r.error)throw r.error;
+  if(r.data){profile=r.data;cacheWrite(profile);return}
+  // A cached personal profile is also used when the row needs to be restored.
+  const handle='fan_'+id.replace(/[^a-f0-9]/gi,'').slice(0,12).toLowerCase();
+  const row={user_id:id,handle,display_name:String(account.user_metadata?.display_name||account.email?.split('@')[0]||'Anime fan').trim().slice(0,40)||'Anime fan',avatar_emoji:'🎌',avatar_url:'',bio:'',...(profile||{}),is_public:false,snapshot:snapshot(false)};
+  const inserted=await client().from('anime_profiles').insert(row).select(fields).single();
+  if(!current())return;
+  if(!inserted.error){profile=inserted.data||row;cacheWrite(profile)}
+  else if(inserted.error.code==='23505'){
+   const again=await client().from('anime_profiles').select(fields).eq('user_id',id).maybeSingle();
+   if(current()&&again.data){profile=again.data;cacheWrite(profile)}
+  }else throw inserted.error;
  }
  function analytics(){
   const anime=state().anime||[],logs=ctx.activity()||[],counts=new Map(),days=new Map(),today=new Date(),now=Date.now();
@@ -77,7 +90,8 @@ window.ATProfiles=function ATProfiles(ctx){
   state().preferences=state().preferences||{};state().preferences.weeklyGoal=val;ctx.save();ctx.toast('Objektivi javor u ruajt ✓');ctx.rerender();
  }
  function render(){
-  const p=profile||{},a=analytics(),s=snapshot(),avatar=window.ATAvatar.safeURL(p.avatar_url),handle=p.handle?'@'+p.handle:'Përcakto username',name=p.display_name||ctx.accountName();
+  captureDraft();renderedOwner=owner;
+  const p=tab==='settings'?{...(profile||{}),...(draft||{})}:profile||{},a=analytics(),s=snapshot(),avatar=window.ATAvatar.safeURL(p.avatar_url),handle=p.handle?'@'+p.handle:'Përcakto username',name=p.display_name||ctx.accountName();
   const joined=dateLabel(p.created_at),status=p.is_public?'🌐 Profil publik':'🔒 Privat',social=ctx.socialCounts?.()||{accepted:0,pending:0,outgoing:0};
   const nav=`<div class="at-profile-tabs" role="group" aria-label="Seksionet e profilit"><button type="button" data-pro-action="profile-tab" data-id="overview" class="${tab==='overview'?'active':''}" aria-pressed="${tab==='overview'}">✦ Përmbledhje</button><button type="button" data-pro-action="profile-tab" data-id="stats" class="${tab==='stats'?'active':''}" aria-pressed="${tab==='stats'}">▥ Statistikat e mia</button><button type="button" data-pro-action="profile-tab" data-id="settings" class="${tab==='settings'?'active':''}" aria-pressed="${tab==='settings'}">⚙ Ndrysho profilin</button><button type="button" class="at11-friend-tab" data-pro-page="friends">♧ Miqtë</button></div>`;
   const header=`<header class="at-profile-header"><div class="at-profile-banner"><span class="pro-eyebrow">Profili im · AnimeTrack</span><span class="at-profile-privacy">${status}</span></div><div class="at-profile-identity"><div class="at-profile-avatar">${avatar?`<img src="${esc(avatar)}" alt="Foto profili" referrerpolicy="no-referrer">`:esc(p.avatar_emoji||'🎌')}</div><div class="at-profile-person"><h2>${esc(name)}</h2><span>${esc(handle)}</span><p>${esc(p.bio||'Çdo anime që shikon është pjesë e historisë tënde.')}</p><div class="at-profile-bits"><span>${joined?'✦ Anëtar që nga '+esc(joined):'✦ Historia jote anime'} </span><span>• ${s.stats.titles} anime në bibliotekë</span></div></div><div class="at-profile-top-actions">${profile?'<button class="pro-btn" data-pro-action="profile-share">↗ Kopjo linkun</button>':''}<button class="pro-btn primary" data-pro-action="profile-tab" data-id="${tab==='overview'?'settings':'overview'}">${tab==='overview'?'Ndrysho profilin':'Shiko profilin'}</button></div></div></header>`;
@@ -96,7 +110,7 @@ window.ATProfiles=function ATProfiles(ctx){
   const settings=`<section class="pro-panel at-profile-settings"><div><span class="pro-eyebrow">PROFILI IM</span><h3>Personalizo profilin</h3><p class="pro-muted">Ndryshimet ruhen në llogarinë tënde. Biblioteka dhe historiku nuk preken.</p></div>${!user()?'<p class="pro-empty">Hyr në llogari për të ruajtur një profil publik ose privat.</p>':''}<div class="at-settings-grid"><label class="pro-field">Emri i përdoruesit<input class="pro-input" id="pro-handle" maxlength="24" autocomplete="off" placeholder="animefan01" value="${esc(p.handle||'')}"></label><label class="pro-field">Emri publik<input class="pro-input" id="pro-name" maxlength="40" value="${esc(p.display_name||ctx.accountName())}"></label><label class="pro-field">Avatar emoji<input class="pro-input" id="pro-avatar" maxlength="12" value="${esc(p.avatar_emoji||'🎌')}"></label><label class="pro-field">Foto profili · hapësira e AnimeTrack<input class="pro-input" id="pro-avatar-url" type="url" maxlength="500" placeholder="URL nga Supabase Storage i AnimeTrack" value="${esc(p.avatar_url||'')}"></label><label class="pro-field at-full">Bio<textarea class="pro-textarea" id="pro-bio" maxlength="280">${esc(p.bio||'')}</textarea></label></div><label class="at-privacy-setting"><input type="checkbox" id="pro-public" ${p.is_public?'checked':''}><span><strong>Bëje profilin publik</strong><small>Vetëm kur e aktivizon ti. Miqtë e pranuar mund të shohin përmbledhjen edhe në profil privat.</small></span></label><label class="at-privacy-setting"><input type="checkbox" id="at116-share-activity" ${state().preferences?.shareFriendActivity&&!p.is_public?'checked':''} ${p.is_public?'disabled':''}><span><strong>Ndaj aktivitetin e fundit me miqtë</strong><small>Joaktiv si parazgjedhje. Vetëm për profile private dhe miqtë e pranuar; çaktivizohet kur profili bëhet publik.</small></span></label><p class="pro-muted">Nuk publikohen emaili, shënimet private apo fjalëkalimet.</p><div class="pro-actions"><button class="pro-btn" data-pro-action="account-open">Llogaria dhe të dhënat</button><button class="pro-btn primary" data-pro-action="profile-save" ${!user()?'disabled':''}>✓ Ruaj ndryshimet</button><button class="pro-btn" data-pro-action="profile-tab" data-id="overview">Kthehu te përmbledhja</button></div></section>`;
   return (tab==='overview'?mobileShowcase:'')+header+socialStrip+nav+(tab==='settings'?settings:tab==='stats'?statsPage():overview);
  }
- function setTab(next){if(!['overview','settings','stats'].includes(next))return;tab=next;ctx.rerender()}
+ function setTab(next){if(!['overview','settings','stats'].includes(next))return;captureDraft();tab=next;ctx.rerender()}
  async function save(){
   if(!user()){ctx.toast('Hyr në llogari për të ruajtur profilin.');return}
   const handle=String(ctx.el('pro-handle')?.value||'').trim().toLowerCase(),name=String(ctx.el('pro-name')?.value||'').trim(),bio=String(ctx.el('pro-bio')?.value||'').trim(),avatar=String(ctx.el('pro-avatar')?.value||'🎌').trim()||'🎌',avatar_url=String(ctx.el('pro-avatar-url')?.value||'').trim(),is_public=!!ctx.el('pro-public')?.checked;
@@ -105,16 +119,18 @@ window.ATProfiles=function ATProfiles(ctx){
   if(avatar_url&&!window.ATAvatar.safeURL(avatar_url)){ctx.toast('Përdor një foto nga hapësira e AnimeTrack ose zgjidh një emoji.');return}
   const priorShare=state().preferences?.shareFriendActivity===true,newShare=!is_public&&!!ctx.el('at116-share-activity')?.checked;
   state().preferences=state().preferences||{};state().preferences.shareFriendActivity=newShare;
-  const row={user_id:user().id,handle,display_name:name,bio:bio.slice(0,280),avatar_emoji:avatar.slice(0,12),avatar_url:avatar_url.slice(0,500),is_public,snapshot:snapshot(is_public),updated_at:new Date().toISOString()};
+  const id=user().id,ticket=++revision;
+  const row={user_id:id,handle,display_name:name,bio:bio.slice(0,280),avatar_emoji:avatar.slice(0,12),avatar_url:avatar_url.slice(0,500),is_public,snapshot:snapshot(is_public),updated_at:new Date().toISOString()};
   const r=await client().from('anime_profiles').upsert(row,{onConflict:'user_id'}).select('user_id,handle,display_name,bio,avatar_emoji,avatar_url,is_public,snapshot,created_at').single();
+  if(String(user()?.id||'')!==id||ticket!==revision)return;
   if(r.error){state().preferences.shareFriendActivity=priorShare;throw r.error}
-  profile=r.data;
+  revision++;profile={...(profile||{}),...row,...(r.data||{})};cacheWrite(profile);draft=null;
   if(newShare!==priorShare&&!ctx.save()){state().preferences.shareFriendActivity=priorShare;ctx.toast('Preferenca e privatësisë nuk u ruajt lokalisht.');return}
   tab='overview';ctx.toast('Profili u ruajt në cloud ✓');ctx.rerender();
  }
  function scheduleSnapshot(){
-  if(!profile||!user())return;clearTimeout(timer);
-  timer=setTimeout(async()=>{const id=user()?.id;if(!id)return;try{await client().from('anime_profiles').update({snapshot:snapshot(),updated_at:new Date().toISOString()}).eq('user_id',id)}catch(e){console.warn('Snapshot sync',e)}},2200);
+  if(!profile||!user())return;clearTimeout(timer);const id=user().id;
+  timer=setTimeout(async()=>{if(user()?.id!==id||profile?.user_id!==id)return;try{await client().from('anime_profiles').update({snapshot:snapshot(),updated_at:new Date().toISOString()}).eq('user_id',id)}catch(e){console.warn('Snapshot sync',e)}},2200);
  }
  async function share(){if(!profile)return;try{await navigator.clipboard.writeText(location.origin+'/?profile='+encodeURIComponent(profile.handle));ctx.toast('Linku i profilit u kopjua ✓')}catch{ctx.toast('Kopjimi dështoi.')}}
  return {load,render,save,share,scheduleSnapshot,snapshot,get:()=>profile,setTab,goalSave};

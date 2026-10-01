@@ -28,9 +28,14 @@ window.ATWrapped129=(()=>{
   ['genres3','◇','Shije të ndryshme','Shiko 3 zhanre të ndryshme',3,'genres'],
   ['genres5','✺','Pa kufij','Shiko 5 zhanre të ndryshme',5,'genres'],
   ['genres10','🌌','Multivers','Shiko 10 zhanre të ndryshme',10,'genres'],
-  ['day5','🔥','Ditë intensive','Shëno 5 episode në një ditë',5,'peak'],
-  ['day10','⚡','Binge 10','Shëno 10 episode në një ditë',10,'peak'],
-  ['day20','🚀','Supermaratonë','Shëno 20 episode në një ditë',20,'peak'],
+  ['day5','🔥','Ditë intensive','5 episode me ritëm të mundshëm në një ditë',5,'peak'],
+  ['day10','⚡','Binge 10','10 episode me ritëm të mundshëm në një ditë',10,'peak'],
+  ['day20','🚀','Supermaratonë','20 episode me ritëm të mundshëm në një ditë',20,'peak'],
+  ['animeDay5','🐉','Fuqia e një historie','5 episode të një animeje në një ditë, me ritëm të mundshëm',5,'animePeak'],
+  ['film3','🎞','Nata e kinemasë','3 filma të shënuar në bibliotekë',3,'films'],
+  ['favorite5','💖','Zgjedhjet e zemrës','5 anime të preferuara',5,'favorites'],
+  ['finish50','🦊','Rrugëtimi i heroit','Përfundo 50 tituj',50,'completed'],
+  ['fiveThousand','🌠','Arkivi legjendar','5 000 episode në bibliotekë',5000,'marked'],
   ['streak3','◷','Ritëm i mirë','3 ditë rresht me episode',3,'streak'],
   ['streak7','🗓','Java e plotë','7 ditë rresht me episode',7,'streak'],
   ['streak30','💎','Konsekuencë','30 ditë rresht me episode',30,'streak'],
@@ -46,7 +51,17 @@ window.ATWrapped129=(()=>{
   const completed=anime.filter(a=>a.status==='completed').length;
   const titleEvents=new Map(),genreEvents=new Map(),daily=new Map(),recentDaily=new Map(),monthly=new Map(),weekday=Array(7).fill(0),typeCounts={anime:0,tv:0},days=new Map(),allGenres=new Set(),allTitles=new Set(),weeks=new Map(),months=new Map();
   const addGenre=(ev,map,set)=>{const entry=byId.get(ev.id);let list=[];try{list=genres(entry)||[]}catch{}for(const g of list){const text=String(g||'').trim();if(!text)continue;map.set(text,(map.get(text)||0)+1);if(set)set.add(text.toLocaleLowerCase())}};
-  for(const e of all){
+  // Bulk history is backfill. Timestamp spacing is a plausibility filter, not proof of viewing.
+  const timed=[],identities=new Set();let previous=-Infinity;
+  for(const e of all.slice().sort((a,b)=>a.at-b.at)){
+   const a=byId.get(e.id),identity=e.key||[e.id,e.n||'',e.at].join('|');
+   if(e.bulk||identities.has(identity))continue;identities.add(identity);
+   const minimum=isMovie(a)?30*60000:a.format==='TV_SHORT'?2*60000:10*60000;
+   if(e.at-previous<minimum)continue;timed.push(e);previous=e.at;
+  }
+  const perAnimeDay=new Map();
+  for(const e of timed){
+   const combo=e.id+'|'+keyDay(e.at);perAnimeDay.set(combo,(perAnimeDay.get(combo)||0)+1);
    const day=keyDay(e.at),month=keyMonth(e.at),d=new Date(e.at),dow=(d.getDay()+6)%7,weekDay=new Date(d.getFullYear(),d.getMonth(),d.getDate()-(d.getDay()+6)%7).getTime(),week=keyDay(weekDay);
    days.set(day,(days.get(day)||0)+1);weeks.set(week,(weeks.get(week)||0)+1);months.set(month,(months.get(month)||0)+1);allTitles.add(e.id);addGenre(e,new Map(),allGenres);
   }
@@ -63,7 +78,7 @@ window.ATWrapped129=(()=>{
   }
   const lifetimeStreak=streak(days),visibleStreak=streak(daily);
   const peak=top(days,1)[0]||['',0],maxWeek=top(weeks,1)[0]?.[1]||0,maxMonth=top(months,1)[0]?.[1]||0;
-  const metric={marked:totalMarked,completed,titles:allTitles.size,genres:allGenres.size,peak:peak[1],streak:lifetimeStreak.longest,week:maxWeek,month:maxMonth};
+  const metric={marked:totalMarked,completed,titles:allTitles.size,genres:allGenres.size,peak:peak[1],animePeak:Math.max(0,...perAnimeDay.values()),films:anime.filter(a=>isMovie(a)&&a.status==='completed').length,favorites:anime.filter(a=>a.favorite).length,streak:lifetimeStreak.longest,week:maxWeek,month:maxMonth};
   const badges=defs.map(([id,icon,name,description,target,measure])=>({id,icon,name,description,target,measure,value:Math.max(0,metric[measure]||0),unlocked:(metric[measure]||0)>=target}));
   const unlocked=badges.filter(b=>b.unlocked);
   const minutes=current.reduce((v,e)=>{const a=byId.get(e.id);return v+(isMovie(a)?100:kind(a)==='tv'?45:24)},0);
@@ -75,7 +90,11 @@ window.ATWrapped129=(()=>{
    top:top(titleEvents,5).map(([id,count])=>({id,title:byId.get(id)?.title||'Titull',count,kind:kind(byId.get(id))})),
    genres:top(genreEvents,6).map(([label,count])=>({label,count})),daily14:previous14,monthly:top(monthly,12),
    longestStreak:visibleStreak.longest,activeStreak:visibleStreak.active,lifetimeLongestStreak:lifetimeStreak.longest,allTitles:allTitles.size,badges,unlocked,media:typeCounts,
-   hasHistory:all.length>0,earliest:all.reduce((n,e)=>Math.min(n,e.at),Infinity),recordNote:'Vetëm historiku i datuar; importet pa datë nuk numërohen si ditë shikimi.'};
+   plausibleEvents:timed.length,backfillEvents:all.filter(e=>e.bulk).length,hasHistory:all.length>0,earliest:all.reduce((n,e)=>Math.min(n,e.at),Infinity),recordNote:'Regjistrimet nuk provojnë shikimin real. Arritjet ditore përjashtojnë shënimin në grup dhe përdorin hapësirën mes orareve; importet pa datë nuk numërohen si ditë shikimi.'};
+ }
+ function achievementArt(b){
+  const art=b.measure==='completed'?'M7 22h18M10 22v-4h12v4M8 5h16v6a8 8 0 0 1-16 0ZM8 7H4v4a5 5 0 0 0 5 5M24 7h4v4a5 5 0 0 1-5 5':b.measure==='peak'||b.measure==='animePeak'?'M16 3c1 7 9 9 9 16a9 9 0 0 1-18 0c0-4 2-8 6-12 0 5 1 7 3 8 2-4 2-7 0-12ZM16 18c-3 3-4 5-4 7a4 4 0 0 0 8 0c0-2-2-4-4-7':b.measure==='streak'?'M7 5h18v23H7ZM11 2v6M21 2v6M7 11h18M11 17l3 3 7-7':'M16 3l4 8 9 1-7 6 2 10-8-5-8 5 2-10-7-6 9-1Z';
+  return '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+art+'"/></svg><span class="achievement-symbol">'+esc(b.icon)+'</span>';
  }
  function render(report,{badgeFilter='all'}={}){
   const r=report,num=fmt(r.events),unlocked=r.unlocked.length,maximum=Math.max(1,...r.daily14.map(x=>x.count)),maxGenre=Math.max(1,...r.genres.map(x=>x.count)),
@@ -97,7 +116,7 @@ window.ATWrapped129=(()=>{
     '</div>'+
     '<section class="at129-achievements" id="at129-achievements"><header><div><span class="at129-eyebrow">YOUR TROPHY ROOM</span><h2>Arritjet e tua <span aria-hidden="true">✦</span></h2><p>Arritje të përhershme nga gjithë biblioteka jote — nuk ndryshojnë kur filtron muajin apo llojin e titullit.</p></div><div class="at129-achievement-count"><strong>'+unlocked+'<small> / '+r.badges.length+'</small></strong><span>të zhbllokuara</span></div></header>'+
     '<div class="at129-badge-toolbar" role="group" aria-label="Filtro arritjet">'+[['all','Të gjitha'],['unlocked','Të fituara'],['locked','Për t’u fituar']].map(([id,label])=>'<button type="button" data-pro-action="wrapped-badges" data-id="'+id+'" aria-pressed="'+(badgeFilter===id)+'" class="'+(badgeFilter===id?'active':'')+'">'+label+'</button>').join('')+'</div>'+
-    '<div class="at129-badge-grid">'+visible.map(b=>'<article class="at129-badge '+(b.unlocked?'earned':'locked')+'" aria-label="'+esc(b.name+(b.unlocked?', e fituar':', ende jo'))+'"><div class="at129-badge-icon" aria-hidden="true">'+b.icon+'</div><div class="at129-badge-body"><strong>'+esc(b.name)+'</strong><small>'+esc(b.description)+'</small><div class="at129-progress"><i class="'+window.ATHTML.percentClass(Math.min(100,Math.round(b.value/b.target*100)),'w')+'"></i></div><span>'+(b.unlocked?'✓ E FITUAR':fmt(Math.min(b.value,b.target))+' / '+fmt(b.target))+'</span></div></article>').join('')+'</div>'+
+    '<div class="at129-badge-grid">'+visible.map(b=>'<article class="at129-badge '+(b.unlocked?'earned':'locked')+'" aria-label="'+esc(b.name+(b.unlocked?', e fituar':', ende jo'))+'"><div class="at129-badge-icon" aria-hidden="true">'+achievementArt(b)+'</div><div class="at129-badge-body"><strong>'+esc(b.name)+'</strong><small>'+esc(b.description)+'</small><div class="at129-progress"><i class="'+window.ATHTML.percentClass(Math.min(100,Math.round(b.value/b.target*100)),'w')+'"></i></div><span>'+(b.unlocked?'✓ E FITUAR':fmt(Math.min(b.value,b.target))+' / '+fmt(b.target))+'</span></div></article>').join('')+'</div>'+
     '<p class="at129-disclaimer">Episode në bibliotekë dhe tituj të përfunduar maten nga gjendja aktuale. Rekordet ditore, javore dhe streak-u përdorin vetëm shënime me datë; importet pa datë nuk krijojnë arritje kohore. Kohëzgjatja është vlerësim, jo kohë e matur.</p></section>'+
     '<div class="at129-share"><div><strong>Kjo është historia jote.</strong><small>Shkarko kartën ose kopjo përmbledhjen. Asgjë nuk publikohet automatikisht.</small></div><div><button type="button" class="pro-btn primary" data-pro-action="wrapped-image">↓ Ruaj kartën PNG</button><button type="button" class="pro-btn" data-pro-action="wrapped-copy">Kopjo statistikat</button></div></div></section>';
  }

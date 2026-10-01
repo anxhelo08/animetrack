@@ -44,7 +44,8 @@ window.ATSmartAiring=function ATSmartAiring(ctx){
   return `<section class="at109-settings" aria-label="Cilësimet e kujtesave"><div><span class="at109-eyebrow">REMINDER SETTINGS</span><h3>🔔 Kujtesat e tua</h3><p>Zgjidh sa herët dëshiron të të kujtohet një episod. Mund ta ndryshosh veçmas për secilin episod.</p></div><label class="at109-default">Koha e parazgjedhur <select id="at109-default-lead" data-smart-default aria-label="Koha e parazgjedhur e kujtesës">${LEADS.map(n=>`<option value="${n}" ${lead===n?'selected':''}>${label(n)}</option>`).join('')}</select></label><div id="at109-push-settings">${push||'<p>Njoftimet jashtë aplikacionit kërkojnë aktivizim në server.</p>'}</div><small>Kujtesat brenda aplikacionit janë aktive edhe pa Web Push; për njoftime kur aplikacioni është i mbyllur duhet instalimi i PWA dhe shërbimi server-side.</small></section>`;
  }
  function full(base,push){
-  return panel(false)+settings(push)+base;
+  const open=ctx.el?.('personal-reminders')?.open===true;
+  return base+`<details class="personal-reminders" id="personal-reminders" ${open?'open':''}><summary>🔔 Kujtesat dhe njoftimet</summary>${panel(false)}${settings(push)}</details>`;
  }
  function setReminder(key,value){
   const e=(ctx.upcoming()||[]).find(x=>eventKey(x)===key);if(!e||Number(e.when)<=Date.now())return false;

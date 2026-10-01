@@ -618,7 +618,7 @@ test('11.6 social activity is opt-in and only accepted friends enter the activit
 test('11.6 profile onboarding creates private handle for newly confirmed accounts',()=>{
  const src=fs.readFileSync(path.join(root,'src/modules/profiles.js'),'utf8');
  assert.match(src,/handle='fan_'/);assert.match(src,/is_public:false/);assert.match(src,/\.from\('anime_profiles'\)\.insert\(row\)/);
- assert.match(src,/r\.data\|\|null/);
+
 });
 
 

@@ -13,7 +13,7 @@ function fixture(){
  const anime=[{id:'a1',title:'Anime Alpha',status:'completed',format:'TV',genre:'Drama,Fantasy',seasons:[{id:'s1',watched:Array.from({length:12},(_,i)=>i+1)}]},
   {id:'tv1',title:'Detective & <Mystery>',status:'watching',source:'TVMaze',format:'TV_SERIES',genre:'Crime,Drama',seasons:[{id:'s1',watched:[1,2,3]}]},
   {id:'a2',title:'Quiet Anime',status:'completed',format:'TV',genre:'Slice of Life',seasons:[{id:'s1',watched:[1]}]}];
- const events=[...Array.from({length:10},(_,i)=>({id:'a1',at:stamp(20,10+i%8),key:'a1|s1|'+(i+1)})),
+ const events=[...Array.from({length:10},(_,i)=>({id:'a1',at:stamp(20,10)+i*24*60000,key:'a1|s1|'+(i+1)})),
   {id:'a1',at:stamp(21),key:'a1|s1|11'},{id:'a1',at:stamp(22),key:'a1|s1|12'},
   {id:'tv1',at:stamp(23),key:'tv1|s1|1'},{id:'tv1',at:stamp(24),key:'tv1|s1|2'},{id:'tv1',at:stamp(25),key:'tv1|s1|3'},
   {id:'a2',at:stamp(26),key:'a2|s1|1'}];
@@ -95,4 +95,17 @@ test('12.9.1 monthly scope does not leak prior-month activity into the last-14-d
  assert.equal(current.events,1);assert.equal(current.daily14.reduce((n,x)=>n+x.count,0),1);
  assert.equal(current.days,1);assert.equal(current.longestStreak,1);
  assert.equal(m.analyze({...f,events,period:'month',scope:'anime',now}).events,0);
+});
+
+
+test('simultaneous marks and bulk completion cannot unlock a daily viewing achievement',()=>{
+ const m=module(),f=fixture();
+ const burst=Array.from({length:5},(_,i)=>({id:'a1',n:i+1,at:stamp(20),key:'a1|s1|'+i}));
+ const report=m.analyze({...f,events:burst,period:'all'});
+ assert.equal(report.badges.find(b=>b.id==='day5').unlocked,false);
+ assert.equal(report.badges.find(b=>b.id==='animeDay5').unlocked,false);
+ const bulk=m.analyze({...f,events:burst.map(e=>({...e,bulk:true})),period:'all'});
+ assert.equal(bulk.plausibleEvents,0);assert.equal(bulk.backfillEvents,5);
+ const spaced=m.analyze({...f,events:burst.map((e,i)=>({...e,at:e.at+i*24*60000})),period:'all'});
+ assert.equal(spaced.badges.find(b=>b.id==='animeDay5').unlocked,true);
 });

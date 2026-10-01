@@ -61,3 +61,12 @@ test('13.2 release wires Diary into Pro navigation, mobile navigation and watch 
  assert.match(app,/eventId:uuid\(\)/);assert.match(app,/diaryNote/);assert.match(app,/diaryRating/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 });
+
+
+test('Diary filters notes and ratings and can display the oldest entry first',()=>{
+ const d=diary(fixture());
+ assert.ok(d.filterEntries(undefined,{detailFilter:'notes'}).every(e=>e.note.trim()));
+ assert.ok(d.filterEntries(undefined,{detailFilter:'unrated'}).every(e=>e.rating==null));
+ const rows=d.filterEntries(undefined,{order:'oldest'});
+ assert.ok(rows.every((e,i)=>i===0||e.at>=rows[i-1].at));
+});
