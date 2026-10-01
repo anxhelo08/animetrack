@@ -1,3 +1,10 @@
+# 14.7.1
+
+- Posterë origjinalë mbi 1400 px, të shërbyer nga faqja.
+- Shfletim automatik i kartave, shigjeta, zgjedhje direkte, pauzë dhe respektim i reduced motion.
+- Ekran hyrjeje me posterë në sfond dhe integrim OAuth Google/Apple që kontrollon aktivizimin e provider-ëve; aktivizimi real kërkon kredencialet në Supabase.
+- Udhëzues konfigurimi në docs/social-auth.md dhe prova për ridrejtim të sigurt e provider-ë të çaktivizuar.
+
 # 14.7.0
 
 - Faqe publike mirëseardhjeje për vizitorët pa sesion, me karta anime të animuara, pamje mobile dhe hyrje/regjistrim të drejtpërdrejtë.
