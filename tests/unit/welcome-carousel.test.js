@@ -4,7 +4,7 @@ import { mountWelcomeCarousel } from '../../src/modules/welcome-carousel.js';
 
 function fixture(run, reduced = false) {
   const dom = new JSDOM(
-    '<div id="welcome"><article class="welcome-poster" data-slot="0"><h2>Demon Slayer</h2></article><article class="welcome-poster" data-slot="1"><h2>Titan</h2></article><article class="welcome-poster" data-slot="2"><h2>One Piece</h2></article><strong id="welcome-selected-title"></strong><span id="welcome-announcement"></span><button class="welcome-motion"></button></div>',
+    '<div id="welcome"><article class="welcome-poster" data-slot="0"><h2>Demon Slayer</h2></article><article class="welcome-poster" data-slot="1"><h2>Titan</h2></article><article class="welcome-poster" data-slot="2"><h2>One Piece</h2></article><strong id="welcome-selected-title"></strong><span id="welcome-announcement"></span></div>',
     { pretendToBeVisual: true },
   );
   vi.stubGlobal('window', dom.window);
@@ -21,17 +21,15 @@ function fixture(run, reduced = false) {
   }
 }
 
-test('the next real poster moves to the foreground and pause stops automatic browsing', () =>
+test('a brief automatic transition ends and manual browsing still works', () =>
   fixture((page) => {
     const root = page.getElementById('welcome');
-    mountWelcomeCarousel(root);
-    vi.advanceTimersByTime(5000);
+    const deck = mountWelcomeCarousel(root);
+    vi.advanceTimersByTime(3200);
     expect(root.querySelector('[data-slot="0"] h2').textContent).toBe('Titan');
-    root.querySelector('.welcome-motion').click();
     vi.advanceTimersByTime(15000);
     expect(root.querySelector('[data-slot="0"] h2').textContent).toBe('Titan');
-    root.querySelector('.welcome-motion').click();
-    vi.advanceTimersByTime(5000);
+    deck.select(2, true);
     expect(root.querySelector('[data-slot="0"] h2').textContent).toBe('One Piece');
   }));
 

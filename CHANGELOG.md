@@ -1,3 +1,9 @@
+# 14.7.2
+
+- Mirëseardhje mobile me kolazh posterësh, gradient dhe buton Fillo në gjerësi të plotë.
+- Hiqet butoni i ndalimit; animacionet hyrëse janë të shkurtra dhe respektojnë reduced motion.
+- Google/Apple përdorin integrimin ekzistues; aktivizimi real kërkon kredencialet e provider-ëve.
+
 # 14.7.1
 
 - Mirëseardhja shfaqet para inicializimit të plotë për vizitorët e rinj; sesionet ekzistuese dhe kthimet OAuth presin verifikimin.
