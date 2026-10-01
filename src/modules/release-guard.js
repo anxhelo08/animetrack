@@ -23,6 +23,13 @@ window.ATReleaseGuard1352=(()=>{
     .filter(ep=>Number.isInteger(Number(ep?.number))&&Number(ep.number)>0);
   const uniqueNumbers=new Set(episodes.map(ep=>Number(ep.number)));
   const catalogComplete=total>0&&uniqueNumbers.size>=total;
+  const future=episodes.filter(ep=>dateOf(ep)>at).map(ep=>Number(ep.number));
+  if(future.length){
+    const limit=Math.min(...future)-1;
+    const dated=Math.max(0,...episodes.filter(ep=>dateOf(ep)<=at).map(ep=>Number(ep.number)));
+    return Math.min(total||10000,limit,Math.max(watchedMax,dated));
+  }
+  if(s.releaseEvidence===true)return Math.min(total||10000,Math.max(0,Number(s.airedCount)||0));
 
   if(catalogComplete){
     let dated=0,validDates=0;

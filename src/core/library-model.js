@@ -150,6 +150,7 @@ export function createLibraryModel(dependencies = {}) {
           summary: String(e.summary || '').slice(0, 2500),
           image: validPoster(e.image || ''),
           imageSource: String(e.imageSource || '').slice(0, 100),
+          summarySource: String(e.summarySource || '').slice(0, 100),
           url: validPoster(e.url || ''),
           tvmazeEpisodeId: String(e.tvmazeEpisodeId || '').slice(0, 30),
           filler: !!e.filler,
@@ -200,6 +201,9 @@ export function createLibraryModel(dependencies = {}) {
       nextAiringEpisode: Math.max(0, Number(raw?.nextAiringEpisode) || 0),
       airedCount: raw?.airedCount == null ? null : Math.max(0, Number(raw.airedCount) || 0),
       airedCheckedAt: String(raw?.airedCheckedAt || '').slice(0, 40),
+      releaseEvidence: raw?.releaseEvidence === true,
+      tvmazeShowId: /^\d+$/.test(String(raw?.tvmazeShowId || '')) ? String(raw.tvmazeShowId) : '',
+      tvmazeSeasonNumber: Math.max(0, Number(raw?.tvmazeSeasonNumber) || 0),
       imdbId: /^tt\d{5,12}$/.test(String(raw?.imdbId || '')) ? String(raw.imdbId) : '',
       imdbSeasonNumber: Math.max(1, Math.min(200, Number(raw?.imdbSeasonNumber) || idx + 1)),
       imdbEpisodeAverage:
@@ -268,6 +272,7 @@ export function createLibraryModel(dependencies = {}) {
       s.nextAiringEpisode = 0;
       s.nextAiringAt = 0;
     }
+    s.releaseEvidence = true;
     s.airedCheckedAt = now();
   }
 
@@ -283,9 +288,23 @@ export function createLibraryModel(dependencies = {}) {
     if (s.releaseStart && Date.parse(s.releaseStart + 'T00:00:00Z') > at && maxWatched === 0)
       return 0;
     if (['NOT_YET_RELEASED', 'NOT_YET_AIRED'].includes(status)) return maxWatched;
-    if (['FINISHED', 'FINISHED_AIRING'].includes(status) && !s.nextAiringEpisode)
+    const futureNumbers = (s.episodes || [])
+      .filter((e) => Date.parse(e.airedAt || e.aired || '') > at)
+      .map((e) => Number(e.number))
+      .filter((n) => n > 0);
+    const futureLimit = futureNumbers.length ? Math.min(...futureNumbers) - 1 : null;
+    if (
+      ['FINISHED', 'FINISHED_AIRING'].includes(status) &&
+      !s.nextAiringEpisode &&
+      futureLimit == null
+    )
       return Math.max(maxWatched, total);
-    let confirmed = Math.max(0, Number(s.airedCount) || 0);
+    const suspiciousFull =
+      /^(anilist|myanimelist|jikan)$/i.test(String(s.source || '')) &&
+      ['RELEASING', 'CURRENTLY_AIRING'].includes(status) &&
+      Number(s.airedCount) >= total &&
+      !s.releaseEvidence;
+    let confirmed = suspiciousFull ? 0 : Math.max(0, Number(s.airedCount) || 0);
     if (s.nextAiringEpisode && s.nextAiringAt) {
       confirmed = Math.max(
         0,
@@ -297,6 +316,10 @@ export function createLibraryModel(dependencies = {}) {
       const ts = Date.parse(ep.airedAt || ep.aired || '');
       if (Number.isFinite(ts) && ts <= at) confirmed = Math.max(confirmed, Number(ep.number) || 0);
     }
+    if (futureLimit != null)
+      return Math.min(total || 10000, futureLimit, Math.max(maxWatched, confirmed));
+    if (s.nextAiringEpisode && s.nextAiringAt > at / 1000)
+      return Math.min(total || 10000, confirmed);
     if (['RELEASING', 'CURRENTLY_AIRING', 'HIATUS', 'CANCELLED'].includes(status))
       return Math.max(maxWatched, Math.min(total || 10000, confirmed));
     if (s.airedCount != null || s.nextAiringAt)

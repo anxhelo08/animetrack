@@ -1,3 +1,10 @@
+# 14.6.1
+
+- Refresh release metadata on first login after upgrading, bypassing the previous daily cache. Daily AniList queries include the last confirmed airing, with independent TVmaze and Jikan fallbacks.
+- Reject old full-season estimates for ongoing anime. A dated future episode limits availability even when a TVmaze list is incomplete; watched history is retained without turning future episodes into released episodes.
+- Verified anime TVmaze matches require a unique exact title/alias and premiere year, and are limited to a single TV track. Episode photos and summaries retain source labels.
+- Add exact-episode MyAnimeList/Jikan video thumbnails and IMDb-linked Cinemeta series episode metadata. Failures of one fallback do not prevent other providers from responding. Missing fields retry; covers and trailers never substitute for episode images.
+
 # 14.6.0
 
 - Planned anime episode totals no longer establish release availability for recent online seasons. Provider corrections replace old assumed counts while preserving watched progress. Ongoing series remain watching even when caught up.

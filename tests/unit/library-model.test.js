@@ -114,7 +114,7 @@ test('an online current-year season with two dated episodes never exposes its pl
   };
   expect(model.releasedCount(season, at)).toBe(2);
   expect(model.releasedCount({ ...season, episodes: [] }, at)).toBe(0);
-  expect(model.releasedCount({ ...season, watched: [1, 2, 3] }, at)).toBe(3);
+  expect(model.releasedCount({ ...season, watched: [1, 2, 3] }, at)).toBe(2);
 });
 
 test('a corrected releasing status removes an old assumed full-season count without removing progress', () => {
@@ -144,4 +144,38 @@ test('past airing evidence is used when a releasing provider has no next broadca
     },
   });
   expect(model.releasedCount(season)).toBe(2);
+});
+
+test('saved full-season estimates are discarded for ongoing online anime before refresh', () => {
+  const season = {
+    source: 'AniList',
+    total: 12,
+    watched: [1, 2],
+    releaseStatus: 'RELEASING',
+    airedCount: 12,
+    episodes: [],
+  };
+  expect(model.releasedCount(season)).toBe(2);
+  model.releaseFromMedia(season, {
+    status: 'RELEASING',
+    episodes: 12,
+    airingSchedule: { nodes: [{ episode: 2, airingAt: Math.floor(Date.now() / 1000) - 3600 }] },
+  });
+  expect(season.airedCount).toBe(2);
+  expect(model.releasedCount(model.normSeason(season))).toBe(2);
+  expect(season.watched).toEqual([1, 2]);
+});
+
+test('a saved incorrect watched total cannot unlock a confirmed future episode', () => {
+  const season = {
+    source: 'AniList',
+    total: 12,
+    watched: Array.from({ length: 12 }, (_, i) => i + 1),
+    releaseStatus: 'RELEASING',
+    nextAiringEpisode: 3,
+    nextAiringAt: Date.now() / 1000 + 86400,
+    episodes: [],
+  };
+  expect(model.releasedCount(season)).toBe(2);
+  expect(season.watched).toHaveLength(12);
 });

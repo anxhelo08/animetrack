@@ -77,3 +77,12 @@ test('13.6.0 release identity is consistent',()=>{
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);
 
 });
+
+test('14.6.1 incomplete TVmaze schedule with real future dates cannot expose all twelve planned episodes',()=>{
+ const api=guard();
+ const season={source:'TVMaze',total:12,watched:[1,2],episodes:eps(4,2),airedCount:12};
+ assert.equal(api.tvmazeReleasedCount(season),2);
+ season.watched=Array.from({length:12},(_,i)=>i+1);
+ assert.equal(api.tvmazeReleasedCount(season),2);
+ assert.equal(season.watched.length,12);
+});

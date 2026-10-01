@@ -239,3 +239,173 @@ test('personal views expose confirmed upcoming episodes, Diary filters and acces
     true,
   );
 });
+
+test('upgrade refreshes a saved twelve-episode estimate despite a fresh old daily cache', async ({
+  page,
+}) => {
+  const owner = 'release-upgrade';
+  await page.addInitScript(() => {
+    localStorage.setItem(
+      'animetrack_v6_meta',
+      JSON.stringify({ catalogSyncAt: 1790769600000, upcomingCheckedAt: 1790769600000 }),
+    );
+    localStorage.setItem('animetrack_release_sync_v93_release-upgrade', '1790769600000');
+  });
+  const data = {
+    anime: [
+      {
+        id: 'old-overgeared',
+        title: 'Overgeared',
+        source: 'AniList',
+        sourceId: '299001',
+        status: 'watching',
+        format: 'TV',
+        year: 2026,
+        hydrated: true,
+        seasons: [
+          {
+            id: 'al-299001',
+            source: 'AniList',
+            sourceId: '299001',
+            subtitle: 'Overgeared',
+            year: 2026,
+            total: 12,
+            watched: [1, 2],
+            releaseStatus: 'RELEASING',
+            airedCount: 12,
+          },
+        ],
+      },
+    ],
+    history: [],
+    preferences: {},
+  };
+  await openFixture(page, { payload: data, owner });
+  let requestedPast = false;
+  await page.route('https://graphql.anilist.co', async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.query.includes('averageScore') && body.query.includes('id_in')) {
+      requestedPast = body.query.includes('airingSchedule(notYetAired:false');
+      return route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: {
+            a: {
+              media: [
+                {
+                  id: 299001,
+                  episodes: 12,
+                  status: 'RELEASING',
+                  format: 'TV',
+                  airingSchedule: { nodes: [{ episode: 2, airingAt: 1790670000 }] },
+                  relations: { edges: [] },
+                },
+              ],
+            },
+            b: { media: [] },
+          },
+        }),
+      });
+    }
+    return route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { Page: { media: [] } } }),
+    });
+  });
+  await page.reload();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          window.ATMobile113?.state().anime.find((a) => a.id === 'old-overgeared')?.seasons[0]
+            .airedCount,
+      ),
+    )
+    .toBe(2);
+  expect(requestedPast).toBe(true);
+  const saved = await page.evaluate(() =>
+    window.ATMobile113.state().anime.find((a) => a.id === 'old-overgeared'),
+  );
+  expect(saved.seasons[0].total).toBe(12);
+  expect(saved.seasons[0].watched).toEqual([1, 2]);
+  expect(saved.status).toBe('watching');
+});
+
+test('a serial shows the exact Cinemeta episode image and description when TVmaze is unavailable', async ({
+  page,
+}, info) => {
+  const data = {
+    anime: [
+      {
+        id: 'serial',
+        title: 'Serial fallback',
+        source: 'TVMaze',
+        sourceId: '99991',
+        tvmazeId: '99991',
+        imdbId: 'tt1196946',
+        status: 'watching',
+        format: 'TV_SERIES',
+        hydrated: true,
+        seasons: [
+          {
+            id: 'tv-99991-2',
+            source: 'TVMaze',
+            sourceId: '99991',
+            format: 'TV_SERIES',
+            total: 2,
+            watched: [1],
+            episodes: [],
+          },
+        ],
+      },
+    ],
+    history: [],
+    preferences: {},
+  };
+  await openFixture(page, { payload: data });
+  await page.route('https://api.tvmaze.com/**', (route) =>
+    route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }),
+  );
+  await page.route('https://v3-cinemeta.strem.io/**', (route) =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        meta: {
+          id: 'tt1196946',
+          type: 'series',
+          videos: [
+            { season: 1, episode: 2, title: 'Wrong season', overview: 'Wrong text' },
+            {
+              season: 2,
+              episode: 2,
+              title: 'Verified serial episode',
+              overview: 'Description for this exact second-season episode.',
+              thumbnail: 'https://images.example.test/serial-2.jpg',
+            },
+          ],
+        },
+      }),
+    }),
+  );
+  if (info.project.name.startsWith('iphone'))
+    await page
+      .locator('.at114-watch-card')
+      .filter({ hasText: 'Serial fallback' })
+      .locator('.at114-copy')
+      .click();
+  else
+    await page
+      .locator('.at-h2-lineup-card')
+      .filter({ hasText: 'Serial fallback' })
+      .locator('.at-h4-details')
+      .click();
+  await expect(page.locator('#ep-detail-body')).toContainText(
+    'Description for this exact second-season episode.',
+  );
+  await expect(page.locator('#ep-detail-body')).toContainText('Cinemeta');
+  await expect(page.locator('.ep-detail-visual img')).toHaveAttribute(
+    'src',
+    'https://images.example.test/serial-2.jpg',
+  );
+  await expect(page.locator('#ep-detail-body')).not.toContainText('Wrong text');
+});
