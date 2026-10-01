@@ -20,7 +20,7 @@ export function presentEpisode(ctx) {
         Number(event.episode) === n &&
         event.action === 'watched',
     );
-  const rating = ep?.personalRating ?? history?.diaryRating ?? null;
+  const rating = history?.diaryRating ?? ep?.personalRating ?? null;
   const date = ep?.airedAt || ep?.aired;
   const aired =
     date && Number.isFinite(Date.parse(date))
@@ -54,8 +54,27 @@ export function presentEpisode(ctx) {
     mark.classList.add('episode-card-mark');
     mark.textContent = seen ? '✓ I parë' : '✓ E pashë';
     mark.setAttribute('aria-label', seen ? 'Hiq shënimin e episodit' : 'Shëno episodin si të parë');
+    if (seen && history) {
+      mark.removeAttribute('data-episode-mark');
+      mark.dataset.episodeEdit = 'true';
+      mark.setAttribute('aria-label', 'Ndrysho datën e shikimit');
+    }
     card.querySelector('.episode-card-watch').append(mark);
   }
+  const live =
+    ['TVMaze', 'TMDB', 'OMDb', 'Cinemeta', 'Wikidata'].includes(a.source) ||
+    a.format === 'TV_SERIES';
+  const provider = live
+    ? { name: 'CineHD', url: 'https://cinehd.vc/home', icon: '/icons/cinehd.svg' }
+    : { name: 'Anisuge', url: 'https://anisuge.org/', icon: '/icons/anisuge.svg' };
+  const destinations = document.createElement('section');
+  destinations.className = 'episode-card-providers';
+  window.ATHTML.renderHTML(
+    destinations,
+    `<strong>Ku mund ta shoh?</strong><a href="${provider.url}" target="_blank" rel="noopener noreferrer"><img src="${provider.icon}" alt=""><span>${provider.name}<small>${ctx.esc(a.title)} · ${ctx.esc(label)}</small></span><b aria-hidden="true">↗</b></a><small>Hap faqen dhe kërko titullin. Lidhja e episodit ende nuk është verifikuar.</small>`,
+  );
+  destinations.querySelector('a').target = '_blank';
+  card.append(destinations);
   const more = document.createElement('details');
   more.className = 'episode-card-more';
   const summary = document.createElement('summary');

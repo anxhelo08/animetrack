@@ -244,3 +244,48 @@ body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-body,
 #ep-detail-body[data-at108-tab='episode'] .episode-card-more > .v98-discussion {
   display: none !important;
 }
+
+.episode-card-providers {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+.episode-card-providers > strong {
+  font-size: 13px;
+}
+.episode-card-providers a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--surface2);
+}
+.episode-card-providers img {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+.episode-card-providers span {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+}
+.episode-card-providers small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+.episode-card-providers span small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.episode-card-journal > .episode-card-rating {
+  display: none;
+}

@@ -6,7 +6,7 @@ const payload = {
       id: 'episode-show',
       title: 'Dexter: Resurrection',
       status: 'watching',
-      format: 'TV',
+      format: 'TV_SERIES',
       seasons: [
         {
           id: 'season1',
@@ -89,9 +89,57 @@ test('a watched episode opens a centered card with artwork and saves stars witho
   await page.locator('.episode-card-more summary').click();
   await page.locator('[data-episode-stars="3"]').click();
   await expect(page.locator('.episode-card-more')).toHaveAttribute('open', '');
+  await page.locator('[data-episode-edit]').click();
+  await expect(page.locator('.episode-card .release-journal')).toBeVisible();
+  expect((await page.evaluate(() => window.ATMobile113.state())).history).toHaveLength(1);
   await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
   await expect(page.locator('.episode-card-subtitle')).toContainText('Episodi 2');
+  await expect(page.locator('.release-feedback')).toBeHidden();
   await expect(page.locator('.episode-card-badge')).toContainText('PËR T’U PARË');
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://cinehd.vc/home',
+  );
+  await expect(page.locator('.episode-card-providers img')).toBeVisible();
+  await page.locator('.episode-card [data-episode-mark]').click();
+  const journal = page.locator('.episode-card .release-journal');
+  await expect(journal).toBeVisible();
+  await journal.getByRole('button', { name: 'Kur doli', exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => window.ATMobile113.state().history.at(-1).date))
+    .toBe('2026-09-21T18:00:00.000Z');
+  expect(
+    (await page.evaluate(() => window.ATMobile113.state())).anime[0].seasons[0].watched,
+  ).toEqual([1, 2]);
   await page.locator('[data-close="episode-detail-modal"]').click();
   await expect(dialog).toBeHidden();
+});
+
+test('anime episode links open Anisuge directly and unknown release dates stay disabled', async ({
+  page,
+}, info) => {
+  const anime = structuredClone(payload);
+  anime.anime[0].format = 'TV';
+  anime.anime[0].title = 'One Piece';
+  delete anime.anime[0].seasons[0].episodes[1].airedAt;
+  await openFixture(page, { payload: anime });
+  if (info.project.name.startsWith('iphone'))
+    await page.locator('#mobile-history [data-mobile-action="episode"]').first().click();
+  else {
+    await page.locator('#library-nav').click();
+    await page.locator('#anime-grid [data-detail="episode-show"]').first().click();
+    await page.locator('#detail-body .ep-info-btn[data-episode-number="1"]').click();
+  }
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://anisuge.org/',
+  );
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('target', '_blank');
+  await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
+  await page.locator('.episode-card [data-episode-mark]').click();
+  await expect(
+    page
+      .locator('.episode-card .release-journal')
+      .getByRole('button', { name: 'Kur doli', exact: true }),
+  ).toBeDisabled();
 });

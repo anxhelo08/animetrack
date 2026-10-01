@@ -57,7 +57,10 @@ export function mountReleaseExperience(ctx) {
     button('Hiq notën', () => updateJournal({ rating: null })),
   );
   dates.append(now, aired, custom);
-  const done = button('Mbyll', hide);
+  const done = button('Mbyll', () => {
+    hide();
+    ctx.close?.();
+  });
   done.className = 'release-journal-close';
   journal.append(title, stars, dates, dateLabel, status, done);
   box.append(journal);
@@ -93,7 +96,10 @@ export function mountReleaseExperience(ctx) {
     status.textContent = result
       ? 'U ruajt në Diary ✓'
       : 'Nuk u ruajt. Kontrollo datën dhe provo përsëri.';
-    if (result) paintJournal(result);
+    if (result) {
+      paintJournal(result);
+      ctx.refresh?.();
+    }
     clearTimeout(timer);
   }
   box.addEventListener('focusin', () => clearTimeout(timer));
@@ -101,10 +107,13 @@ export function mountReleaseExperience(ctx) {
   function episodeSaved(entry) {
     hide();
     if (!entry.seen) return;
-    latest = { ...entry, owner: ctx.owner(), eventId: ctx.history()?.eventId };
-    message.textContent =
-      entry.format === 'MOVIE' ? 'Filmi u shënua ✓' : `Episodi ${entry.n} u shënua ✓`;
-    undo.hidden = false;
+    latest = { ...entry, owner: ctx.owner(), eventId: entry.eventId || ctx.history()?.eventId };
+    message.textContent = entry.edit
+      ? 'Ndrysho shikimin e ruajtur'
+      : entry.format === 'MOVIE'
+        ? 'Filmi u shënua ✓'
+        : `Episodi ${entry.n} u shënua ✓`;
+    undo.hidden = !!entry.edit && latest.eventId !== ctx.history()?.eventId;
     box.hidden = false;
     const metadata = ctx.journal?.(latest);
     if (metadata) {
@@ -113,7 +122,8 @@ export function mountReleaseExperience(ctx) {
       status.textContent = 'Vlerësimi është opsional · Shikimi u ruajt';
       paintJournal(metadata);
     }
-    timer = setTimeout(hide, metadata ? 40000 : 12000);
+    if (metadata && ctx.openEpisode) ctx.openEpisode(entry);
+    else timer = setTimeout(hide, metadata ? 40000 : 12000);
   }
   undo.addEventListener('click', () => {
     const entry = latest;
@@ -123,9 +133,11 @@ export function mountReleaseExperience(ctx) {
       entry.eventId &&
       entry.eventId === ctx.history()?.eventId;
     hide();
+    ctx.close?.();
     const saved = valid && ctx.undo(entry.id, entry.seasonId, entry.n);
     message.textContent = saved ? 'Shënimi u zhbë ✓' : 'Progresi ka ndryshuar. Nuk u zhbë.';
     undo.hidden = true;
+    document.body.append(box);
     box.hidden = false;
     timer = setTimeout(hide, 5000);
   });
@@ -184,5 +196,22 @@ export function mountReleaseExperience(ctx) {
       ctx.navigate(shortcut);
     }
   }
-  return { episodeSaved, ready };
+  function attach(card, parts) {
+    const matches =
+      latest &&
+      latest.owner === ctx.owner() &&
+      latest.id === parts.a?.id &&
+      latest.seasonId === parts.s?.id &&
+      latest.n === parts.n &&
+      !journal.hidden;
+    if (matches && card) {
+      card.classList.add('episode-card-journal');
+      card.querySelector('.episode-card-watch').after(box);
+      box.hidden = false;
+    } else {
+      box.hidden = true;
+      document.body.append(box);
+    }
+  }
+  return { episodeSaved, ready, attach, dismiss: hide };
 }

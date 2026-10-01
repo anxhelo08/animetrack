@@ -103,3 +103,33 @@ test('a rejected rating save retains the existing rating and reports failure', (
     expect(document.querySelector('[data-rating="5"]').getAttribute('aria-pressed')).toBe('false');
     expect(document.querySelector('.release-journal').textContent).toContain('Nuk u ruajt');
   }));
+
+test('successful marking opens the episode and keeps date controls bound across card renders', () =>
+  fixture(() => {
+    const openEpisode = vi.fn();
+    const experience = mountReleaseExperience({
+      owner: () => 'account-a',
+      history: () => ({ eventId: 'watched-event' }),
+      journal: () => ({
+        title: 'Episode',
+        date: '2026-09-29T12:00:00Z',
+        rating: null,
+        releaseDate: null,
+      }),
+      openEpisode,
+    });
+    const entry = { id: 'anime', seasonId: 'season', n: 2, seen: true };
+    experience.episodeSaved(entry);
+    expect(openEpisode).toHaveBeenCalledExactlyOnceWith(entry);
+    const card = document.createElement('section');
+    card.className = 'episode-card';
+    card.innerHTML = '<div class="episode-card-watch"></div>';
+    document.body.append(card);
+    experience.attach(card, { a: { id: 'anime' }, s: { id: 'season' }, n: 2 });
+    expect(card.querySelector('.release-journal')).not.toBeNull();
+    experience.attach(card, { a: { id: 'anime' }, s: { id: 'season' }, n: 3 });
+    expect(card.querySelector('.release-journal')).toBeNull();
+    expect(document.querySelector('.release-feedback').hidden).toBe(true);
+    experience.episodeSaved({ ...entry, seen: false });
+    expect(openEpisode).toHaveBeenCalledTimes(1);
+  }));

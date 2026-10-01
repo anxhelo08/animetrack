@@ -73,6 +73,12 @@ test('episode feedback records stars, release date and custom date on the existi
     .click();
   const journal = page.locator('.release-journal');
   await expect(journal).toBeVisible();
+  await expect(page.locator('.episode-card .release-journal')).toBeVisible();
+  await expect(page.locator('#episode-detail-modal')).toHaveClass(/show/);
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://cinehd.vc/home',
+  );
   await journal.getByRole('button', { name: '4 yje', exact: true }).click();
   await expect.poll(async () => (await snapshot(page)).history.at(-1).diaryRating).toBe(8);
   await journal.getByRole('button', { name: 'Kur doli', exact: true }).click();
@@ -164,9 +170,9 @@ test('TV and movie watch options work without asking for credentials', async ({ 
     .filter({ has: page.locator('.at133-watch') })
     .locator('summary')
     .click();
-  await expect(page.locator('.at133-result a[href*="google.com/search"]')).toHaveAttribute(
+  await expect(page.locator('.at133-result a[href="https://cinehd.vc/home"]')).toHaveAttribute(
     'href',
-    /Seriali%20i%20prov/,
+    'https://cinehd.vc/home',
   );
   await expect(page.locator('.at133-result')).not.toContainText('Lidh TMDB');
   await page.locator('#detail-modal [data-close="detail-modal"]').first().click();
@@ -177,8 +183,8 @@ test('TV and movie watch options work without asking for credentials', async ({ 
     .filter({ has: page.locator('.at133-watch') })
     .locator('summary')
     .click();
-  await expect(page.locator('.at133-result a[href*="google.com/search"]')).toHaveAttribute(
+  await expect(page.locator('.at133-result a[href="https://cinehd.vc/home"]')).toHaveAttribute(
     'href',
-    /Fight%20Club/,
+    'https://cinehd.vc/home',
   );
 });

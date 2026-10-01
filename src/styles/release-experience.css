@@ -16,7 +16,7 @@
   box-shadow: var(--shadow-dialog);
 }
 .release-feedback[hidden] {
-  display: none;
+  display: none !important;
 }
 .release-feedback:has(.release-journal:not([hidden])) {
   display: grid;
@@ -133,4 +133,69 @@
   .release-feedback .release-stars button:hover {
     transform: none;
   }
+}
+
+.episode-card .release-feedback,
+.episode-card .release-feedback:has(.release-journal:not([hidden])) {
+  position: static;
+  width: 100%;
+  max-height: none;
+  padding: 14px;
+  margin-top: 14px;
+  box-shadow: none;
+  overflow: visible;
+}
+.episode-card .release-journal > strong {
+  display: none;
+}
+.episode-card .release-stars {
+  flex-wrap: wrap;
+}
+
+.episode-card-journal > .episode-card-watch {
+  display: none;
+}
+.episode-card .release-feedback:has(.release-journal:not([hidden])) {
+  padding: 10px 12px;
+  gap: 8px;
+}
+.episode-card .release-feedback > span {
+  font-size: 12px;
+}
+.episode-card .release-feedback > button {
+  min-height: 34px;
+  font-size: 12px;
+}
+.episode-card .release-journal {
+  gap: 8px;
+  padding-top: 8px;
+}
+.episode-card .release-stars {
+  gap: 4px;
+}
+.episode-card .release-stars button[data-rating] {
+  min-width: 28px;
+  min-height: 34px;
+  font-size: 23px;
+}
+.episode-card .release-stars > span {
+  font-size: 11px;
+}
+.episode-card .release-stars button:last-child {
+  min-width: 0;
+  min-height: 32px;
+  padding: 4px;
+  font-size: 10px;
+}
+.episode-card .release-dates button {
+  min-height: 38px;
+  padding: 6px 4px;
+  font-size: 11px;
+}
+.episode-card .release-journal small {
+  font-size: 11px;
+}
+.episode-card .release-journal-close {
+  min-height: 30px;
+  font-size: 12px;
 }
