@@ -87,3 +87,16 @@ test('saved watch links survive cloud compaction and removal overrides cached li
   assert.equal(result.anime[0].seasons[0].episodes.find(ep=>ep.number===1).watchUrl,'');
  }
 });
+
+test('shared series links and episode numbering survive compact cloud recovery and explicit removal',()=>{
+ const api=load(),rich=sample();
+ rich.anime[0].watchUrl='https://cinehd.vc/tv/5920';
+ rich.anime[0].seasons[0].watchUrl='https://anisuge.org/watch/fixture/ep-1170';
+ rich.anime[0].seasons[0].watchEpisodeOffset=1167;
+ const remote=api.compact(rich),restored=api.hydrate(remote,rich);
+ assert.equal(restored.anime[0].watchUrl,rich.anime[0].watchUrl);
+ assert.equal(restored.anime[0].seasons[0].watchEpisodeOffset,1167);
+ const removed=JSON.parse(JSON.stringify(remote));removed.anime[0].watchUrl='';removed.anime[0].seasons[0].watchUrl='';removed.anime[0].seasons[0].watchEpisodeOffset=0;
+ const cleared=api.hydrate(removed,rich);
+ assert.equal(cleared.anime[0].watchUrl,'');assert.equal(cleared.anime[0].seasons[0].watchEpisodeOffset,0);
+});

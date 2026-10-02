@@ -32,7 +32,7 @@ export function watchEpisodeTarget(anime, season, number, episode) {
   const direct = episodeWatchURL(episode?.watchUrl, provider);
   if (direct) return direct;
   if (provider.name === 'CineHD' && season?.format !== 'MOVIE')
-    return cinehdSeriesLink(season?.watchUrl);
+    return cinehdSeriesLink(season?.watchUrl) || cinehdSeriesLink(anime?.watchUrl);
   if (
     provider.name !== 'Anisuge' ||
     season?.format === 'MOVIE' ||
@@ -43,11 +43,37 @@ export function watchEpisodeTarget(anime, season, number, episode) {
   const base = animeSeasonLink(season?.watchUrl);
   if (!base) return '';
   const url = new URL(base);
-  url.pathname = url.pathname.replace(/\/ep-\d+\/?$/, '/ep-' + number);
+  const offset = Number.isSafeInteger(season?.watchEpisodeOffset) ? season.watchEpisodeOffset : 0;
+  const remoteNumber = number + offset;
+  if (!Number.isSafeInteger(remoteNumber) || remoteNumber < 1 || remoteNumber > 100000) return '';
+  url.pathname = url.pathname.replace(/\/ep-\d+\/?$/, '/ep-' + remoteNumber);
   return url.href;
 }
 
 export function cinehdSeriesLink(value) {
   const safe = episodeWatchURL(value, watchProvider({ format: 'TV_SERIES' }));
   return safe && /^\/tv\/[1-9]\d*\/?$/.test(new URL(safe).pathname) ? safe : '';
+}
+
+/** A pasted link belongs to the currently open episode; retain its numbering for later episodes. */
+export function watchLinkPlan(anime, season, number, value) {
+  const raw = String(value || '').trim(),
+    provider = watchProvider(anime),
+    url = episodeWatchURL(raw, provider);
+  if (raw && !url) return { error: 'Vendos një lidhje HTTPS nga ' + provider.name + '.' };
+  if (!url) return { scope: 'clear', url: '' };
+  if (season?.format !== 'MOVIE' && provider.name === 'Anisuge' && animeSeasonLink(url)) {
+    const remote = Number(new URL(url).pathname.match(/ep-(\d+)\/?$/)[1]);
+    if (
+      !Number.isSafeInteger(number) ||
+      number < 1 ||
+      !Number.isSafeInteger(remote) ||
+      remote > 100000
+    )
+      return { error: 'Kontrollo numrin e episodit në lidhje.' };
+    return { scope: 'season', url, offset: remote - number };
+  }
+  if (season?.format !== 'MOVIE' && provider.name === 'CineHD' && cinehdSeriesLink(url))
+    return { scope: 'series', url };
+  return { scope: 'episode', url };
 }

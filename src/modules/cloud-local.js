@@ -4,7 +4,7 @@
 window.ATCloudLocal12123=(()=>{
  const clone=value=>JSON.parse(JSON.stringify(value));
  const ANIME_FIELDS=['id','title','status','rating','year','genre','cover','notes','favorite','communityScore','communitySource','source','sourceId','malId','aliases','mergedIds','providerIds','format','sourceUrl','synopsis','hydrated','franchiseVersion','tvmazeId','rewatches','activeRewatchId','imdbId','imdbRating','imdbVotes','tmdbId','runtime','director','cast','backdrop','releaseDate','movieWatchCount','lastWatchedAt','collectionId','collectionName','createdAt','updatedAt'];
- const SEASON_FIELDS=['id','title','subtitle','aliases','total','watched','year','source','sourceId','malId','format','globalStart','epPage','myRating','arcRatings','releaseStatus','releaseStart','nextAiringAt','nextAiringEpisode','airedCount','imdbId','imdbSeasonNumber','hidden'];
+ const SEASON_FIELDS=['id','title','subtitle','aliases','total','watched','year','source','sourceId','malId','format','globalStart','epPage','myRating','arcRatings','releaseStatus','releaseStart','nextAiringAt','nextAiringEpisode','airedCount','imdbId','imdbSeasonNumber','hidden','watchEpisodeOffset'];
  const pick=(value,fields)=>{
   const out={};
   for(const key of fields){
@@ -37,6 +37,7 @@ window.ATCloudLocal12123=(()=>{
  }
  function compactAnime(anime){
   const out=pick(anime,ANIME_FIELDS);
+  out.watchUrl=String(anime?.watchUrl||'').slice(0,2000);
   out.seasons=(Array.isArray(anime?.seasons)?anime.seasons:[]).map(compactSeason);
   return out;
  }
@@ -118,13 +119,13 @@ window.ATCloudLocal12123=(()=>{
    remoteEpisodes.delete(n);
   }
   for(const ep of remoteEpisodes.values())episodes.push(ep);
-  return {...rich,...remote,watchUrl:remote.watchUrl||'',episodes:episodes.sort((a,b)=>Number(a.number)-Number(b.number))};
+  return {...rich,...remote,watchUrl:remote.watchUrl||'',watchEpisodeOffset:remote.watchEpisodeOffset||0,episodes:episodes.sort((a,b)=>Number(a.number)-Number(b.number))};
  }
  function hydrateAnime(remote,rich){
   if(!rich)return clone(remote);
   const richSeasons=new Map((rich.seasons||[]).map(s=>[seasonKey(s),s]));
   const seasons=(remote.seasons||[]).map(rs=>hydrateSeason(rs,richSeasons.get(seasonKey(rs))));
-  return {...rich,...remote,seasons};
+  return {...rich,...remote,watchUrl:remote.watchUrl||'',seasons};
  }
  function hydrate(remote,richLocal){
   const incoming=clone(remote||{anime:[],history:[],preferences:{}}),rich=richLocal&&typeof richLocal==='object'?richLocal:{};

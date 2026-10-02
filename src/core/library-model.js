@@ -228,6 +228,10 @@ export function createLibraryModel(dependencies = {}) {
         .replace(/\s+/g, ' ')
         .trim()
         .slice(0, 1800),
+      ...(Number.isSafeInteger(raw?.watchEpisodeOffset) &&
+      Math.abs(raw.watchEpisodeOffset) <= 100000
+        ? { watchEpisodeOffset: raw.watchEpisodeOffset }
+        : {}),
       sourceUrl: validPoster(raw?.sourceUrl || ''),
       ...(raw?.watchUrl === '' || episodeWatchURL(raw?.watchUrl)
         ? { watchUrl: episodeWatchURL(raw.watchUrl) }
@@ -507,6 +511,9 @@ export function createLibraryModel(dependencies = {}) {
       imdbVotes: Math.max(0, Number(a.imdbVotes) || 0),
       imdbCheckedAt: String(a.imdbCheckedAt || '').slice(0, 40),
       tmdbId: String(a.tmdbId || '').slice(0, 30),
+      ...(a.watchUrl === '' || episodeWatchURL(a.watchUrl)
+        ? { watchUrl: episodeWatchURL(a.watchUrl) }
+        : {}),
       runtime: Math.max(0, Math.min(1000, Number(a.runtime) || 0)),
       director: String(a.director || '').slice(0, 220),
       cast: String(a.cast || '').slice(0, 1200),

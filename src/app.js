@@ -1,4 +1,4 @@
-import { watchProvider, episodeWatchURL, animeSeasonLink, cinehdSeriesLink } from './core/watch-links.js';
+import { mountEpisodeControls } from './modules/episode-controls.js';
 import { presentEpisode } from './modules/episode-presentation.js';
 import { MediaCard } from './modules/media-card.js';
 import { mountWelcomeArtwork } from './modules/welcome-artwork.js';
@@ -2115,9 +2115,7 @@ const productPriorCatalog=searchCatalog;searchCatalog=async function(q,page=1){
 };
 
 const cardPriorEpisode=v81RenderEpisode;v81RenderEpisode=function(...args){const root=$('ep-detail-body'),parts=v81EpisodeParts(),key=[parts.a?.id,parts.s?.id,parts.n].join(':'),expanded=root?.dataset.episodeCardKey===key&&root.querySelector('.episode-card-more')?.open;cardPriorEpisode(...args);presentEpisode({el:$,esc:escapeHTML,parts:v81EpisodeParts,poster:validPoster,expanded,history:()=>state.history,seasonNumber:seasonNumberFor,released:releasedCount});releaseExperience?.attach($('ep-detail-body')?.querySelector('.episode-card'),v81EpisodeParts())};
-document.addEventListener('click',e=>{if(!e.target.closest('[data-episode-watch-save]'))return;const {a,s,n}=v81EpisodeParts(),input=$('ep-detail-body').querySelector('[data-episode-watch-url]'),status=$('ep-detail-body').querySelector('[data-episode-watch-status]');if(!a||!s||!input)return;const raw=input.value.trim(),url=episodeWatchURL(raw,watchProvider(a));if(raw&&!url){status.textContent='Vendos një lidhje HTTPS nga '+watchProvider(a).name+'.';return}const before=JSON.parse(JSON.stringify(state)),ep=episodePersonalRow(s,n);if(s.format!=='MOVIE'&&((watchProvider(a).name==='Anisuge'&&animeSeasonLink(url))||(watchProvider(a).name==='CineHD'&&cinehdSeriesLink(url)))){s.watchUrl=url;ep.watchUrl=''}else if(url)ep.watchUrl=url;else{ep.watchUrl='';s.watchUrl=''}a.updatedAt=now();if(!save()){state=before;status.textContent='Lidhja nuk u ruajt. Provo përsëri.';return}v81RenderEpisode();notify(url?'Lidhja e episodit u ruajt ✓':'Lidhja e episodit u hoq')});
-document.addEventListener('click',e=>{if(!e.target.closest('[data-episode-edit]'))return;const {a,s,n}=v81EpisodeParts();if(!a||!s)return;const event=[...state.history].reverse().find(h=>h.id===a.id&&h.seasonId===s.id&&Number(h.episode)===n&&h.action==='watched');if(event)releaseExperience?.episodeSaved({id:a.id,seasonId:s.id,n,seen:true,format:s.format,eventId:event.eventId,edit:true})});
-document.addEventListener('click',e=>{const button=e.target.closest('[data-episode-stars]');if(!button)return;const {a,s,n}=v81EpisodeParts();if(!a||!s)return;const before=JSON.parse(JSON.stringify(state)),rating=Number(button.dataset.episodeStars)*2,ep=episodePersonalRow(s,n);ep.personalRating=ep.personalRating===rating?null:rating;const event=[...state.history].reverse().find(h=>h.id===a.id&&h.seasonId===s.id&&Number(h.episode)===n&&h.action==='watched');if(s.watched.includes(n)&&event)event.diaryRating=ep.personalRating;a.updatedAt=now();if(!save()){state=before;return}v81RenderEpisode();if(detailId===a.id)renderDetail(a.id)});
+mountEpisodeControls({root:$('ep-detail-body'),parts:v81EpisodeParts,state:()=>state,restore:value=>{state=value},episodeRow:episodePersonalRow,save,render:()=>v81RenderEpisode(),renderDetail:id=>{if(detailId===id)renderDetail(id)},journal:entry=>releaseExperience?.episodeSaved(entry),toast:notify,stamp:now});
 
 at150ProviderBadge();
 

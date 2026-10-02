@@ -134,6 +134,19 @@ test('anime episode links open Anisuge directly and unknown release dates stay d
     'https://anisuge.org/',
   );
   await expect(page.locator('.episode-card-providers a')).toHaveAttribute('target', '_blank');
+  await page.evaluate(() =>
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: {
+        writeText: async (value) => {
+          window.__copiedTitle = value;
+        },
+      },
+    }),
+  );
+  await page.locator('[data-episode-copy-title]').click();
+  await expect.poll(() => page.evaluate(() => window.__copiedTitle)).toBe('One Piece');
+  await expect(page.locator('[data-episode-watch-status]')).toContainText('u kopjua');
   const animeLink = 'https://anisuge.org/watch/fixture-season/ep-1';
   await page.locator('.episode-provider-link summary').click();
   await page.locator('[data-episode-watch-url]').fill(animeLink);
@@ -145,6 +158,21 @@ test('anime episode links open Anisuge directly and unknown release dates stay d
     'href',
     animeLink.replace('/ep-1', '/ep-2'),
   );
+  await page.locator('.episode-provider-link summary').click();
+  await page
+    .locator('[data-episode-watch-url]')
+    .fill('https://anisuge.org/watch/fixture-season/ep-1170');
+  await page.locator('[data-episode-watch-save]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://anisuge.org/watch/fixture-season/ep-1170',
+  );
+  await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://anisuge.org/watch/fixture-season/ep-1171',
+  );
+  await page.locator('.episode-card-navigation [data-v98-move="-1"]').click();
   await page.locator('.episode-card [data-episode-mark]').click();
   await expect(
     page
@@ -209,4 +237,15 @@ test('a saved episode link survives reload and does not leak into the next episo
     'https://cinehd.vc/tv/5920',
   );
   await expect(page.locator('.episode-card-providers')).toContainText('zgjidh episodin në CineHD');
+  expect(await page.evaluate(() => window.ATMobile113.state().anime[0].watchUrl)).toBe(
+    'https://cinehd.vc/tv/5920',
+  );
+  await page.reload();
+  await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
+  await openEpisode();
+  await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
+  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+    'href',
+    'https://cinehd.vc/tv/5920',
+  );
 });

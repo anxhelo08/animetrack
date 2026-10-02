@@ -1,5 +1,10 @@
 import { expect, test } from 'vitest';
-import { watchProvider, episodeWatchURL, watchEpisodeTarget } from '../../src/core/watch-links.js';
+import {
+  watchProvider,
+  episodeWatchURL,
+  watchEpisodeTarget,
+  watchLinkPlan,
+} from '../../src/core/watch-links.js';
 import { createLibraryModel } from '../../src/core/library-model.js';
 
 test('episode links preserve the supplied path, query and fragment for the matching provider', () => {
@@ -82,4 +87,53 @@ test('CineHD opens a supplied series page without inventing an episode query', (
       {},
     ),
   ).toBe('');
+});
+
+test('Anisuge preserves numbering differences between the library and the supplied current episode', () => {
+  const anime = { source: 'AniList' },
+    season = { format: 'TV' };
+  const plan = watchLinkPlan(
+    anime,
+    season,
+    3,
+    'https://anisuge.org/watch/one-piece-example/ep-1170',
+  );
+  expect(plan).toMatchObject({ scope: 'season', offset: 1167 });
+  const configured = { ...season, watchUrl: plan.url, watchEpisodeOffset: plan.offset };
+  expect(watchEpisodeTarget(anime, configured, 3, {})).toBe(plan.url);
+  expect(watchEpisodeTarget(anime, configured, 4, {})).toBe(
+    'https://anisuge.org/watch/one-piece-example/ep-1171',
+  );
+  const model = createLibraryModel();
+  const restored = model.normalized({
+    id: 'anime',
+    title: 'One Piece',
+    source: 'AniList',
+    seasons: [{ id: 's', total: 10, ...configured }],
+  });
+  expect(watchEpisodeTarget(restored, restored.seasons[0], 4, {})).toBe(
+    'https://anisuge.org/watch/one-piece-example/ep-1171',
+  );
+});
+test('CineHD can reuse one supplied series URL across seasons while an episode link takes precedence', () => {
+  const anime = { format: 'TV_SERIES', watchUrl: 'https://cinehd.vc/tv/5920' };
+  const plan = watchLinkPlan(anime, { format: 'TV' }, 1, anime.watchUrl);
+  expect(plan.scope).toBe('series');
+  expect(watchEpisodeTarget(anime, { format: 'TV' }, 7, {})).toBe(anime.watchUrl);
+  expect(
+    watchEpisodeTarget(anime, { format: 'TV' }, 7, {
+      watchUrl: 'https://cinehd.vc/watch/fixture?episode=7',
+    }),
+  ).toBe('https://cinehd.vc/watch/fixture?episode=7');
+  const model = createLibraryModel(),
+    restored = model.normalized({
+      id: 'tv',
+      title: 'The Mentalist',
+      ...anime,
+      seasons: [{ id: 's', format: 'TV', total: 7 }],
+    });
+  expect(restored.watchUrl).toBe(anime.watchUrl);
+  expect(
+    watchLinkPlan(anime, { format: 'TV' }, 1, 'https://anisuge.org/watch/fixture/ep-1').error,
+  ).toContain('CineHD');
 });

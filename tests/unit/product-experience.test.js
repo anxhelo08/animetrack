@@ -98,3 +98,12 @@ test('skipping still works when local storage is unavailable', () => {
     false,
   );
 });
+
+test('a failed connection remains visible while local changes are waiting to sync', () => {
+  const failed = { mode: 'cloud', connected: false, dirty: true, saving: false };
+  expect(syncPresentation(failed)).toMatchObject({ kind: 'error', label: 'Lidhja nuk u krye' });
+  expect(syncPresentation(failed).text).toContain('ruajtur në pajisje');
+  expect(syncPresentation(failed, false).kind).toBe('offline');
+  expect(syncPresentation({ ...failed, saving: true }).kind).toBe('saving');
+  expect(syncPresentation({ ...failed, connected: true }).kind).toBe('pending');
+});

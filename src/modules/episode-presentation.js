@@ -1,4 +1,4 @@
-import { watchProvider, watchEpisodeTarget, cinehdSeriesLink } from '../core/watch-links.js';
+import { episodeWatchPanel } from './episode-watch.js';
 import '../styles/episode-presentation.css';
 
 /** Compact episode card. Existing detail controls and spoiler protection remain available. */
@@ -62,16 +62,7 @@ export function presentEpisode(ctx) {
     }
     card.querySelector('.episode-card-watch').append(mark);
   }
-  const provider = watchProvider(a);
-  const direct = watchEpisodeTarget(a, s, n, ep);
-  const destinations = document.createElement('section');
-  destinations.className = 'episode-card-providers';
-  window.ATHTML.renderHTML(
-    destinations,
-    `<strong>Ku mund ta shoh?</strong><a href="${ctx.esc(direct || provider.url)}" target="_blank" rel="noopener noreferrer"><img src="${provider.icon}" alt=""><span>${provider.name}<small>${ctx.esc(a.title)} · ${ctx.esc(label)}</small></span><b aria-hidden="true">↗</b></a><small>${direct ? (cinehdSeriesLink(direct) ? 'Hap serialin dhe zgjidh episodin në CineHD.' : 'Hap lidhjen që ke ruajtur për këtë episod.') : 'Hap faqen dhe kërko titullin.'}</small><details class="episode-provider-link"><summary>${direct ? 'Ndrysho' : 'Vendos'} lidhjen e ${movie ? 'filmit' : provider.name === 'Anisuge' ? 'sezonit' : 'serialit ose episodit'}</summary><label>Lidhja nga ${provider.name}<input type="url" data-episode-watch-url value="${ctx.esc(direct)}" placeholder="${provider.url}" maxlength="2000" autocomplete="off"></label>${provider.name === 'Anisuge' && !movie ? '<small>Ruaj një lidhje të këtij sezoni. Numri i episodit përshtatet automatikisht.</small>' : ''}<button type="button" data-episode-watch-save>Ruaj lidhjen</button><small role="status" data-episode-watch-status></small></details>`,
-  );
-  destinations.querySelector('a').target = '_blank';
-  card.append(destinations);
+  card.append(episodeWatchPanel(ctx, { a, s, n, ep }, label));
   const more = document.createElement('details');
   more.className = 'episode-card-more';
   const summary = document.createElement('summary');
