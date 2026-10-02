@@ -54,6 +54,23 @@ export function normalizeReadingLibrary(raw) {
         publicationStatus: text(row.publicationStatus, 30),
         totalChapters,
         totalVolumes: number(row.totalVolumes, 1000),
+        checkedAt: text(row.checkedAt, 40),
+        volumeRanges: (Array.isArray(row.volumeRanges) ? row.volumeRanges : [])
+          .slice(0, 1000)
+          .filter(
+            (v) =>
+              v &&
+              Number.isInteger(v.volume) &&
+              v.volume > 0 &&
+              v.volume <= 1000 &&
+              Number.isInteger(v.start) &&
+              Number.isInteger(v.end) &&
+              v.start > 0 &&
+              v.end >= v.start &&
+              v.end <= (totalChapters || 10000),
+          )
+          .map(({ volume, start, end }) => ({ volume, start, end })),
+        source: row.source === 'jikan' ? 'jikan' : 'anilist',
         volumesRead: number(row.volumesRead, 1000),
         chaptersRead: [
           ...new Set(

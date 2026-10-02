@@ -60,6 +60,27 @@ export function validateLibrary(value, { requireHistory = false } = {}) {
       integer(n, 10000, path + '.chaptersRead');
       if (Number(n) < 1) fail(path + '.chaptersRead');
     }
+    if (row.volumeRanges != null) {
+      if (!Array.isArray(row.volumeRanges) || row.volumeRanges.length > 1000)
+        fail(path + '.volumeRanges');
+      let end = 0;
+      const volumes = new Set();
+      for (const group of row.volumeRanges) {
+        if (!object(group)) fail(path + '.volumeRanges');
+        integer(group.volume, 1000, path + '.volumeRanges');
+        integer(group.start, 10000, path + '.volumeRanges');
+        integer(group.end, row.totalChapters || 10000, path + '.volumeRanges');
+        if (
+          !group.volume ||
+          group.start <= end ||
+          group.end < group.start ||
+          volumes.has(group.volume)
+        )
+          fail(path + '.volumeRanges');
+        volumes.add(group.volume);
+        end = group.end;
+      }
+    }
     if (!Array.isArray(row.journal) || row.journal.length > 5000) fail(path + '.journal');
     for (const event of row.journal) {
       if (!object(event) || !event.id || !['read', 'unread'].includes(event.action))

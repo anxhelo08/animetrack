@@ -7,6 +7,7 @@ const titles = normalizeReadingLibrary([
   {
     id: 'reading-al-30013',
     title: 'Berserk',
+    sourceId: '30013',
     kind: 'manga',
     cover: 'https://posters.animetrack.test/berserk.jpg',
     totalChapters: 10,
@@ -20,6 +21,7 @@ const titles = normalizeReadingLibrary([
   {
     id: 'reading-al-105398',
     title: 'Solo Leveling',
+    sourceId: '105398',
     kind: 'manhwa',
     cover: 'https://posters.animetrack.test/solo.jpg',
     totalChapters: 179,
@@ -72,6 +74,7 @@ test('chapters, notes and journals persist separately from watching data', async
   await expect(page.locator('#reading-detail-title')).toHaveText('Berserk');
   await page.locator('[data-reading-action="next"]').click();
   expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([1, 2, 3]);
+  page.once('dialog', (dialog) => dialog.dismiss());
   await page.locator('[data-reading-action="chapter"][data-chapter="5"]').click();
   expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([1, 2, 3, 5]);
   await page.locator('[data-reading-action="favorite"]').click();
@@ -79,7 +82,7 @@ test('chapters, notes and journals persist separately from watching data', async
   await page.locator('#reading-personal-form [name="rating"]').fill('9');
   await page.locator('#reading-personal-form [name="volumesRead"]').fill('2');
   await page.locator('#reading-personal-form button[type="submit"]').click();
-  await page.locator('[data-reading-action="tab"][data-id="activity"]').click();
+  await page.locator('#reading-view [data-reading-action="tab"][data-id="activity"]').click();
   await page.locator('[data-reading-action="journal"]').filter({ hasText: 'Kapitulli 5' }).click();
   await page.locator('#reading-journal-form [name="note"]').fill('Kapitulli im i preferuar');
   await page.locator('#reading-journal-form [name="rating"]').fill('8.5');
@@ -97,7 +100,7 @@ test('chapters, notes and journals persist separately from watching data', async
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
   expect((await state(page)).readingLibrary[0]).toEqual(before.readingLibrary[0]);
   await page.locator('#pro-nav-reading').click();
-  await page.locator('[data-reading-action="tab"][data-id="activity"]').click();
+  await page.locator('#reading-view [data-reading-action="tab"][data-id="activity"]').click();
   await expect(page.locator('.reading-journal')).toContainText('Kapitulli im i preferuar');
 });
 test('own catalog searches, kind filters and late replies cannot alter anime search', async ({
@@ -107,6 +110,13 @@ test('own catalog searches, kind filters and late replies cannot alter anime sea
   await setup(page);
   let fail = false,
     requests = [];
+  await page.route('https://api.jikan.moe/**', (route) =>
+    route.fulfill({
+      status: fail ? 503 : 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data: [], pagination: { has_next_page: false } }),
+    }),
+  );
   await page.route('https://graphql.anilist.co', async (route) => {
     const body = route.request().postDataJSON();
     if (!body.query.includes('ReadingCatalog')) return route.fallback();
@@ -139,11 +149,18 @@ test('own catalog searches, kind filters and late replies cannot alter anime sea
     });
   });
   await page.locator('#pro-nav-reading').click();
-  await page.locator('[data-reading-action="tab"][data-id="discover"]').click();
+  await page.locator('#reading-view [data-reading-action="tab"][data-id="discover"]').click();
   await expect(page.locator('.reading-card')).toContainText('New Manhwa');
+  await page.locator('#reading-query').evaluate((node) => {
+    window.readingSearchNode = node;
+  });
+  await page.locator('#reading-search-form button[type="submit"]').hover();
   await page.locator('#reading-query').fill('Old');
   await page.locator('#reading-search-form').press('Enter');
   await page.locator('#reading-query').fill('New');
+  expect(
+    await page.locator('#reading-query').evaluate((node) => node === window.readingSearchNode),
+  ).toBe(true);
   await page.locator('#reading-kind').selectOption('manhwa');
   await expect(page.locator('.reading-grid')).toContainText('New Manhwa');
   await expect(page.locator('.reading-grid')).not.toContainText('Old result');
@@ -248,4 +265,67 @@ test('desktop reading layouts remain accessible at 1024 and 1440 pixels', async 
       .first()
       .evaluate((node) => getComputedStyle(node).animationName),
   ).toBe('none');
+});
+
+test('chapter tools, volume ranges, bulk read and hover navigation work', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop only');
+  await setup(page);
+  await page.locator('#pro-nav-reading').hover();
+  await expect(page.locator('#reading-subnav')).toBeVisible();
+  await page.locator('#reading-subnav [data-id="library"]').click();
+  await page.locator('[data-reading-action="detail"][data-id="reading-al-105398"]').first().click();
+  await page.locator('#reading-chapter-sort').selectOption('desc');
+  await expect(page.locator('.reading-chapters button').first()).toHaveText('179');
+  await page.locator('#reading-chapter-query').fill('100');
+  await expect(page.locator('.reading-chapters button')).toHaveCount(1);
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('[data-chapter="100"]').click();
+  expect(
+    (await state(page)).readingLibrary.find((row) => row.title === 'Solo Leveling').chaptersRead,
+  ).toHaveLength(100);
+  await page.locator('[data-reading-action="edit"]').click();
+  await page.locator('[name="volumeRanges"]').fill('1:1-10, 2:11-20');
+  await page.locator('#reading-editor button[type="submit"]').click();
+  await page.locator('#reading-volume').selectOption('2');
+  await page.locator('#reading-chapter-query').fill('');
+  await expect(page.locator('.reading-chapters button')).toHaveCount(10);
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('[data-reading-action="read-all"]').click();
+  expect(
+    (await state(page)).readingLibrary.find((row) => row.title === 'Solo Leveling').chaptersRead,
+  ).toHaveLength(179);
+  await expect(page.locator('#reading-view')).toBeVisible();
+  await expect(page.locator('#reading-detail-title')).toHaveText('Solo Leveling');
+  await page.waitForTimeout(1000);
+  await expect(page.locator('#reading-view')).toBeVisible();
+  await page.screenshot({ path: info.outputPath('reading-detail.png'), fullPage: true });
+});
+
+test('new chapter checks update metadata while retaining personal reading data', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop only');
+  await setup(page);
+  await page.route('https://graphql.anilist.co', (route) => {
+    const body = route.request().postDataJSON();
+    if (!body.query.includes('ReadingUpdates')) return route.fallback();
+    return route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ data: { Media: { chapters: 12, volumes: 4, status: 'RELEASING' } } }),
+    });
+  });
+  await page.locator('#pro-nav-reading').click();
+  await page.locator('[data-reading-action="detail"][data-id="reading-al-30013"]').first().click();
+  await page.locator('[data-reading-action="refresh"]').click();
+  await expect(page.locator('.reading-facts')).toContainText('12 kapituj');
+  expect((await state(page)).readingLibrary[0]).toMatchObject({
+    totalChapters: 12,
+    totalVolumes: 4,
+    chaptersRead: [1, 3],
+    status: 'reading',
+  });
+  await page.locator('#reading-view [data-reading-action="tab"][data-id="releases"]').click();
+  await expect(page.locator('#reading-content')).toContainText('Berserk');
 });

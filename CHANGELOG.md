@@ -1,3 +1,11 @@
+# 14.9.0 — Përmirësime të leximit
+
+- Kërkim i qëndrueshëm pa rinisje të animacionit dhe MyAnimeList si katalog rezervë.
+- Renditje kapitujsh në të dy drejtimet, kërkim sipas numrit dhe shënim i gjithë kapitujve të njohur.
+- Pyetje për kapitujt e mëparshëm, ndarje vëllimesh me intervale të përcaktuara dhe kontroll i kapitujve të rinj nga katalogu.
+- Rifreskimi i cloud ruan faqen e leximit të hapur pas ruajtjes.
+- Nëndarje të leximit poshtë navigimit me mouse ose tastierë dhe pamje më e përqendruar e detajeve.
+
 # 14.8.0 — Manga & Manhwa për PC
 
 - Seksion i gjashtë vetëm në desktop, me Leximet e mia, Zbulo dhe Ditari i leximit.

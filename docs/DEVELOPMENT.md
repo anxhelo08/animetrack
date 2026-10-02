@@ -98,3 +98,9 @@ Episode details use a centered compact card with the verified episode artwork, w
 Desktop navigation adds a sixth reading destination with its own library, AniList MANGA search (JP/KR origins), and chapter diary. `readingLibrary` is a separate array in the existing per-account JSON payload; it never enters anime counts or watch history. The controller, import validation, compact cloud recovery, hydration, and conflict merge preserve it on all screen sizes. Phone navigation retains five destinations. Reading deletion uses a timestamped tombstone so conflict recovery cannot resurrect a removed title. Chapter journals merge by event ID; the latest read/unread events resolve progress.
 
 Home spotlight keeps its 20-second deadline across hidden routes and catches up on return without running an offscreen timer. CSS camera animation positions are restored from a continuous clock after display:none. Dialogs, keyboard interactions, hidden browser tabs and reduced motion still pause automatic transitions.
+
+### Reading controls (14.9.0)
+
+Search keeps its toolbar and hero DOM nodes mounted while updating results. AniList is the primary catalog; MyAnimeList/Jikan is a fallback for missing matches or service failures. Provider identity is persisted for later count checks. No catalog guarantees every published title or a current count for ongoing publications.
+
+Chapter controls support numeric filtering, ascending/descending order, bulk marking and optional preceding chapters. `volumeRanges` stores explicit `{volume,start,end}` intervals; boundaries are entered manually because these metadata providers do not publish chapter-to-volume maps. Unknown totals remain unknown. New chapter checks fetch public metadata and preserve personal notes and reading history.

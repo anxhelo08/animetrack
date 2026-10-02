@@ -1312,7 +1312,7 @@ function accountApplyRemoteRecord(record){
   accountUI();return true;
  }catch(err){console.warn('Realtime payload apply failed',err);return false}
 }
-function accountRefreshViews(){filter='all';search='';$('search').value='';$('global-search').value='';if(typeof clearCatalog==='function')clearCatalog();render();renderUpcoming();setView('home');accountUI();releaseExperience?.ready()}
+function accountRefreshViews(preserveReading=false){if(preserveReading&&view==='reading'){render();renderUpcoming();proApp?.renderBackground?.();accountUI();releaseExperience?.ready();return}filter='all';search='';$('search').value='';$('global-search').value='';if(typeof clearCatalog==='function')clearCatalog();render();renderUpcoming();setView('home');accountUI();releaseExperience?.ready()}
 
 async function accountOpenCloud(user){
  if(!user?.id)throw Error('Nuk u verifikua llogaria.');
@@ -1463,7 +1463,7 @@ async function accountPull(manual=false){
    cloudDirty=false;cloudConnected=true;cloudBaseKnown=true;cloudRevision=data.updated_at;cloudConflict=false;
    cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');cloudLastPullAt=Date.now();
    if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}
-   persistLibraryRepair();accountRefreshViews();if(detailId)renderDetail(detailId);if(manual)accountStatus(mirror.ok?'Biblioteka u rifreskua nga cloud ✓':'Biblioteka u lexua nga cloud; recovery copy lokale nuk u ruajt. Provo përsëri ose eksporto backup. ',mirror.ok?'ok':'error');
+   persistLibraryRepair();accountRefreshViews(view==='reading');if(detailId)renderDetail(detailId);if(manual)accountStatus(mirror.ok?'Biblioteka u rifreskua nga cloud ✓':'Biblioteka u lexua nga cloud; recovery copy lokale nuk u ruajt. Provo përsëri ose eksporto backup. ',mirror.ok?'ok':'error');
   }else if(manual)accountStatus('Ende nuk ka bibliotekë të ruajtur në cloud.','ok');
  }catch(e){cloudConnected=false;accountUI();if(manual)accountStatus('Rifreskimi dështoi: '+e.message,'error')}
 }

@@ -66,3 +66,25 @@ it('background renders preserve an unfinished note while an explicit save commit
   expect(state.anime).toEqual([]);
   expect(state.history).toEqual([]);
 });
+
+it('library typing keeps the actual search node and hero mounted', () => {
+  const { reading } = fixture();
+  const input = document.querySelector('#reading-query');
+  const hero = document.querySelector('.reading-hero');
+  input.focus();
+  input.value = 'My';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  reading.render(false);
+  expect(document.querySelector('#reading-query')).toBe(input);
+  expect(document.querySelector('.reading-hero')).toBe(hero);
+  expect(document.activeElement).toBe(input);
+});
+it('bulk completion remains reading for an ongoing title and preserves the journal', () => {
+  const { state } = fixture();
+  state.readingLibrary[0].publicationStatus = 'RELEASING';
+  document.querySelector('[data-reading-action="detail"]').click();
+  document.querySelector('[data-reading-action="read-all"]').click();
+  expect(state.readingLibrary[0].chaptersRead).toEqual([1, 2, 3, 4, 5]);
+  expect(state.readingLibrary[0].status).toBe('reading');
+  expect(state.readingLibrary[0].journal).toHaveLength(4);
+});
