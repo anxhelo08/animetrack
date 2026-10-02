@@ -92,6 +92,30 @@ describe('publisher photo parsing', () => {
       ),
     ).toBe('https://www.animenewsnetwork.com/images/original/anime.jpg');
   });
+  it('finds ordinary full original img sources beyond a preceding unrelated article widget', () => {
+    const thumbnail =
+      'https://www.animenewsnetwork.com/thumbnails/crop600x315gHD/cms/news.7/anime.jpg';
+    for (const attribute of ['src', 'data-src']) {
+      expect(
+        parseNewsPhoto(
+          `<meta property="og:image" content="${thumbnail}"><article class="widget"><img src="/images/unrelated.jpg"></article><div class="meat"><img ${attribute}="${image}" width="2000"></div>`,
+          article,
+        ),
+      ).toBe(image);
+    }
+    expect(
+      parseNewsPhoto(
+        `<meta property="og:image" content="${thumbnail}"><article>Widget</article><div class="meat"><a href="${image}"><img src="${thumbnail}" srcset="/thumbnails/w1600/anime.jpg 1600w"></a></div>`,
+        article,
+      ),
+    ).toBe(image);
+    expect(
+      parseNewsPhoto(
+        `<meta property="og:image" content="${thumbnail}"><img src="/images/unrelated.jpg"><img src="${thumbnail}">`,
+        article,
+      ),
+    ).toBe(thumbnail);
+  });
   it('ignores scripts, comments, logos, unsafe destinations, and unrelated outside-body pictures', () => {
     expect(
       parseNewsPhoto(

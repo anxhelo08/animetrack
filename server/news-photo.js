@@ -166,22 +166,29 @@ export function parseNewsPhoto(html, article) {
   const cover = candidates.sort(byQuality)[0]?.url;
   const body = articleBody(clean);
   // A publisher often links its cropped social image to the full original inside the article.
-  // Prefer that exact referenced original when its filename matches the article cover.
+  // Match the exact cover filename across the page: a preceding widget may use the first <article>.
+  // Prefer a supplied full original, then a larger supplied srcset; never synthesize a source URL.
   if (cover) {
-    for (const match of (body || clean).matchAll(
+    const sameCover = (url) => url && filename(url) === filename(cover);
+    const original = (url) => sameCover(url) && !/\/thumbnails\//i.test(new URL(url).pathname);
+    for (const match of clean.matchAll(
       /<a\b((?:[^>"']|"[^"]*"|'[^']*')*)>([\s\S]{0,10000}?)<\/a>/gi,
     )) {
       if (!/<img\b/i.test(match[2])) continue;
       const href = imageURL(attributes(match[1]).href, article);
-      if (href && filename(href) === filename(cover)) candidates.push({ url: href, rank: 0 });
+      if (original(href)) candidates.push({ url: href, rank: -2 });
     }
-    for (const tag of tags(body || clean, 'img')) {
+    for (const tag of tags(clean, 'img')) {
       const attr = attributes(tag);
+      for (const supplied of [attr['data-src'], attr.src]) {
+        const url = imageURL(supplied, article);
+        if (original(url)) candidates.push({ url, rank: -2, width: Number(attr.width) || 0 });
+      }
       for (const part of String(attr.srcset || attr['data-srcset'] || '').split(',')) {
         const match = /^\s*(\S+)\s+(\d+)w\s*$/.exec(part);
         const url = match && imageURL(match[1], article);
-        if (url && Number(match[2]) >= 800 && filename(url) === filename(cover))
-          candidates.push({ url, rank: -Number(match[2]) });
+        if (sameCover(url) && Number(match[2]) >= 800)
+          candidates.push({ url, rank: -1, width: Number(match[2]) });
       }
     }
   }
