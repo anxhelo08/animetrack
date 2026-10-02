@@ -17,6 +17,8 @@ import { STATUS, createLibraryModel } from './core/library-model.js';
 import { createStore } from './core/store.js';
 import { bindLibraryUI } from './core/library-ui.js';
 import { createFeatures } from './modules/features.js';
+import { groupCatalogResults, linkedAnimeMedia } from './modules/catalog-results.js';
+import { protectCatalogSearchInputs } from './modules/catalog-search-input.js';
 
 export async function startApp(){'use strict';
 const localStorage=libraryStorage;
@@ -27,6 +29,7 @@ const {validPoster,uuid,now,genresOf,mediaFormat,isMovieAnime,isLiveMovie,mediaK
 let KEY='animetrack_v1';
 
 const $=id=>document.getElementById(id);
+let recheckSearchAutofill=()=>{};
 let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false,cloudRealtimeChannel=null,cloudRealtimeUID='',cloudRealtimePending=false,cloudRealtimeTimer=null,cloudRealtimeRecord=null;
 let state=load(),filter='all',search='',sort='updated',detailId=null,episodePage=0,activeSeasonId=null,toastTimeout,selectedGenre='all';
 const libraryStore=createStore(()=>state,()=>accountUser?.id||'guest',error=>console.warn('State subscriber failed',error));
@@ -180,7 +183,7 @@ function importExternal(rows){
 
 // Search across a live anime catalog. AniList is primary, Jikan (MAL) is fallback.
 
-let catalogItems=[],catalogQuery='',catalogPage=0,catalogProvider='',catalogHasNext=false,catalogBusy=false,catalogTimer=null,catalogRequest=0,catalogController=null;
+let catalogItems=[],catalogQuery='',catalogPage=0,catalogProvider='',catalogHasNext=false,catalogBusy=false,catalogTimer=null,catalogRequest=0,catalogController=null,catalogMovieProvider='',catalogTVReady=false;
 
 // AniList PREQUEL/SEQUEL links build a series; Jikan provides episode titles.
 
@@ -315,16 +318,8 @@ function linkedToSeries(anime,remote,reference){
  if(window.ATProviderBridge12124?.isTVMaze?.(anime))return false;
  return remote.some(s=>sameSeriesSeason(anime,s)||(anime.seasons||[]).some(old=>sameSeriesSeason(old,s)));
 }
-function catalogGrouped(items){
- const groups=new Map();
- for(const item of items){
-  const root=seriesRootTitle(item.title);
-  const key=item.kind==='tv'?'tv:'+item.key:isSeriesFormat(item.format)&&root.length>=12?'series:'+root:'item:'+item.key;
-  const old=groups.get(key);
-  if(!old||(!seriesHasSeasonSuffix(item.title)&&seriesHasSeasonSuffix(old.title))||(seriesHasSeasonSuffix(item.title)===seriesHasSeasonSuffix(old.title)&&(item.year||9999)<(old.year||9999)))groups.set(key,item);
- }
- return [...groups.values()];
-}
+function catalogGrouped(items){return groupCatalogResults(items)}
+
 function mergeSeasonMetadata(old,updated){
  window.ATLibraryIdentity137?.mergePart(old,updated);
  old.total=Math.max(Number(old.total)||0,Number(updated.total)||0,...(old.watched||[]),...(updated.watched||[]));
@@ -450,35 +445,67 @@ function repairLocalAnimeDuplicates(){
 }
 
 function inLibrary(item){if(item.kind==='tv'){const bound=state.anime.find(a=>(a.providerIds||[]).includes('tvmaze:'+String(item.sourceId)));if(bound)return bound;const exact=state.anime.find(a=>a.source==='TVMaze'&&(a.sourceId===String(item.sourceId)||a.seasons.some(s=>s.sourceId===String(item.sourceId))));if(exact)return exact;const bridge=window.ATProviderBridge12124;return bridge?.searchEquivalent?state.anime.find(a=>!bridge.isTVMaze(a)&&bridge.searchEquivalent(a,item)):null}if(item.kind==='movie')return state.anime.find(a=>isLiveMovie(a)&&((item.tmdbId&&a.tmdbId===String(item.tmdbId))||(item.imdbId&&a.imdbId===String(item.imdbId))||(a.source===item.source&&a.sourceId===String(item.sourceId))));return state.anime.find(a=>a.seasons.some(s=>(s.source===item.source&&s.sourceId===String(item.sourceId))||(item.malId&&s.malId===String(item.malId)))||(a.source===item.source&&a.sourceId===String(item.sourceId))||(item.malId&&a.malId===String(item.malId)))}
-function mapAniList(a){const aliases=[a.title?.romaji,a.title?.english,a.title?.native,...(a.synonyms||[])].filter(Boolean);return {malId:String(a.idMal||''),key:'al-'+a.id,source:'AniList',sourceId:String(a.id),title:a.title?.romaji||a.title?.english||a.title?.native||'Pa titull',english:a.title?.english||'',aliases:[...new Set(aliases)].slice(0,20),total:a.episodes||0,year:a.seasonYear||a.startDate?.year||null,releaseStart:mediaStartIso(a.startDate),releaseStatus:a.status||'',nextAiringEpisode:a.nextAiringEpisode?.episode||0,nextAiringAt:a.nextAiringEpisode?.airingAt||0,genre:(a.genres||[]).join(', '),genres:Array.isArray(a.genres)?a.genres.slice(0,20):[],cover:a.coverImage?.extraLarge||a.coverImage?.large||'',synopsis:textOnly(a.description),score:a.averageScore,format:mediaFormat(a.format||'ANIME'),sourceUrl:a.siteUrl||''}}
+function mapAniList(a){const aliases=[a.title?.romaji,a.title?.english,a.title?.native,...(a.synonyms||[])].filter(Boolean);return {malId:String(a.idMal||''),key:'al-'+a.id,source:'AniList',sourceId:String(a.id),title:a.title?.romaji||a.title?.english||a.title?.native||'Pa titull',english:a.title?.english||'',aliases:[...new Set(aliases)].slice(0,20),total:a.episodes||0,year:a.seasonYear||a.startDate?.year||null,releaseStart:mediaStartIso(a.startDate),releaseStatus:a.status||'',nextAiringEpisode:a.nextAiringEpisode?.episode||0,nextAiringAt:a.nextAiringEpisode?.airingAt||0,genre:(a.genres||[]).join(', '),genres:Array.isArray(a.genres)?a.genres.slice(0,20):[],cover:a.coverImage?.extraLarge||a.coverImage?.large||'',synopsis:textOnly(a.description),score:a.averageScore,format:mediaFormat(a.format||'ANIME'),sourceUrl:a.siteUrl||'',catalogRelations:(a.relations?.edges||[]).filter(edge=>!edge.node?.isAdult).map(edge=>({relationType:edge.relationType,id:edge.node?.id,idMal:edge.node?.idMal,type:edge.node?.type,format:edge.node?.format}))}}
 function mapJikan(a){const aliases=[a.title,a.title_english,a.title_japanese,...(a.title_synonyms||[]),...(a.titles||[]).map(x=>x?.title)].filter(Boolean),genres=(a.genres||[]).map(g=>g.name).filter(Boolean);return {malId:String(a.mal_id||''),key:'mal-'+a.mal_id,source:'MyAnimeList',sourceId:String(a.mal_id),title:a.title||a.title_english||'Pa titull',english:a.title_english||'',aliases:[...new Set(aliases)].slice(0,20),total:a.episodes||0,year:a.year||a.aired?.prop?.from?.year||null,releaseStart:String(a.aired?.from||'').slice(0,10),releaseStatus:String(a.status||'').toUpperCase().replace(/\s+/g,'_'),genre:genres.join(', '),genres,cover:a.images?.jpg?.large_image_url||a.images?.jpg?.image_url||'',synopsis:textOnly(a.synopsis),score:a.score?Math.round(a.score*10):null,format:mediaFormat(a.type||'ANIME'),sourceUrl:a.url||''}}
-async function fetchAniList(q,page,signal){const json=await catalogJSON('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query:API_QUERY,variables:{search:q,page}}),signal});if(json.errors?.length)throw Error(json.errors[0].message||'AniList error');const data=json.data?.Page;if(!data)throw Error('Përgjigje e paplotë');return {items:(data.media||[]).map(mapAniList),hasNext:!!data.pageInfo?.hasNextPage,provider:'AniList'}}
+async function fetchAniList(q,page,signal){const json=await catalogJSON('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query:API_QUERY,variables:{search:q,page}}),signal});if(json.errors?.length)throw Error(json.errors[0].message||'AniList error');const data=json.data?.Page;if(!data)throw Error('Përgjigje e paplotë');return {items:linkedAnimeMedia(data.media||[]).map(mapAniList),hasNext:!!data.pageInfo?.hasNextPage,provider:'AniList'}}
 async function fetchJikan(q,page,signal){const url='https://api.jikan.moe/v4/anime?'+new URLSearchParams({q,page:String(page),limit:'12',sfw:'true'});const json=await catalogJSON(url,{signal});return {items:(json.data||[]).map(mapJikan),hasNext:!!json.pagination?.has_next_page,provider:'MyAnimeList'}}
-function clearCatalog(){catalogRequest++;clearTimeout(catalogTimer);catalogController?.abort();catalogController=null;catalogItems=[];catalogQuery='';catalogPage=0;catalogProvider='';catalogHasNext=false;catalogBusy=false;window.ATHTML.renderHTML($('catalog-grid'),'');$('catalog-more').classList.add('hidden');$('catalog-state').textContent='Shkruaj të paktën 2 shkronja për të kërkuar në katalog.';renderTopResults()}
-function catalogTile(item){if(item.kind==='tv'){const existing=inLibrary(item),url=validPoster(item.cover),id=escapeHTML(item.sourceId);return `<article class="catalog-card at120-tv-result" data-media-kind="tv"><button class="catalog-open" type="button" data-tv-search-preview="${id}" aria-label="Hap ${escapeHTML(item.title)}"><div class="catalog-art">${url?`<img src="${escapeHTML(url)}" alt="Posteri i ${escapeHTML(item.title)}" loading="lazy" referrerpolicy="no-referrer">`:''}<span class="catalog-type">SERIAL TV</span></div></button><div class="catalog-info"><h4><button type="button" class="catalog-title-open" data-tv-search-preview="${id}">${escapeHTML(item.title)} ›</button></h4><div class="catalog-english">${escapeHTML(item.genre||'Serial TV')}</div><div class="catalog-meta">${item.year||'Viti ?'} · ${escapeHTML(item.source)}</div><p class="catalog-synopsis">${escapeHTML(item.synopsis||'Hap serialin për të parë sezonet dhe episodet.')}</p><div class="catalog-action"><button type="button" class="primary" data-tv-search-preview="${id}">${existing?'✓ Në bibliotekë · Hape':'Shiko sezonet & episodet ›'}</button></div></div></article>`}const existing=inLibrary(item),url=validPoster(item.cover),sourceUrl=validPoster(item.sourceUrl),id=escapeHTML(item.key),synopsis=item.synopsis||'Përshkrimi nuk është i disponueshëm për këtë anime.';return `<article class="catalog-card" data-media-kind="${item.kind==='movie'?'movie':'anime'}"><button class="catalog-open" data-preview="${id}" aria-label="Hap ${escapeHTML(item.title)}"><div class="catalog-art">${url?`<img src="${escapeHTML(url)}" alt="Posteri i ${escapeHTML(item.title)}" loading="lazy" referrerpolicy="no-referrer"/>`:''}<span class="catalog-type">${escapeHTML(item.format)}</span>${item.score!=null?`<span class="catalog-score">★ ${(Number(item.score)/10).toFixed(1)}</span>`:''}</div></button><div class="catalog-info"><h4><button class="catalog-title-open" data-preview="${id}">${escapeHTML(item.title)}</button></h4><div class="catalog-english" title="${escapeHTML(item.english)}">${escapeHTML(item.english&&item.english!==item.title?item.english:' ')}</div><div class="catalog-meta">${item.year||'Viti ?'} • ${item.total||'?'} ep. • ${escapeHTML(item.source)}</div><p class="catalog-synopsis">${escapeHTML(synopsis)}</p><div class="catalog-action">${existing?`<button class="ghost in-library" data-detail="${escapeHTML(existing.id)}">✓ Në bibliotekë · Hape</button>`:`<button class="primary" data-catalog-add="${id}" data-catalog-status="watching">+ Po shikoj</button><button class="ghost" data-catalog-add="${id}" data-catalog-status="planning">+ Në listë</button>`}</div>${sourceUrl?`<a class="catalog-link" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">Detaje te ${escapeHTML(item.source)} ↗</a>`:''}</div></article>`}
-function renderCatalog(){const grid=$('catalog-grid');window.ATHTML.renderHTML(grid,catalogItems.length?catalogGrouped(catalogItems).map(catalogTile).join(''):(catalogQuery&&!catalogBusy?'<div class="catalog-empty">Nuk u gjet asnjë rezultat. Provo titullin anglisht ose japonisht.</div>':''));$('catalog-more').classList.toggle('hidden',!catalogHasNext||catalogBusy);renderTopResults()}
+function clearCatalog(){catalogRequest++;clearTimeout(catalogTimer);catalogController?.abort();catalogController=null;catalogItems=[];catalogQuery='';catalogPage=0;catalogProvider='';catalogHasNext=false;catalogBusy=false;$('catalog-grid').inert=false;$('catalog-grid').setAttribute('aria-busy','false');catalogNodes.clear();window.ATHTML.renderHTML($('catalog-grid'),'');$('catalog-more').classList.add('hidden');$('catalog-state').textContent='Shkruaj të paktën 2 shkronja për të kërkuar në katalog.';renderTopResults()}
+function catalogLibraryEntry(item){
+ const direct=inLibrary(item);if(direct)return direct;
+ const family=item.catalogParts?item:catalogGrouped(catalogItems).find(group=>group.catalogParts?.some(part=>part.key===item.key));
+ return (family?.catalogParts||[]).map(part=>inLibrary(part)).find(Boolean)||null;
+}
+function catalogFamilySummary(item){
+ const parts=item.catalogParts||[];if(parts.length<2)return '';
+ const seasons=parts.filter(part=>isSeriesFormat(part.format)).length,films=parts.filter(part=>part.format==='MOVIE').length;
+ const labels=[seasons?seasons+' sezone':'',films?films+' '+(films===1?'film':'filma'):'',parts.length-seasons-films?(parts.length-seasons-films)+' pjesë të tjera':''].filter(Boolean);
+ return `<div class="catalog-family-summary"><strong>${escapeHTML(labels.join(' · '))}</strong><button type="button" class="ghost" data-preview="${escapeHTML(item.key)}">Shiko të gjitha pjesët ›</button></div>`;
+}
+function catalogFamilyPreview(item){
+ const family=catalogGrouped(catalogItems).find(group=>group.catalogParts?.some(part=>part.key===item.key));
+ const parts=family?.catalogParts||[];if(parts.length<2)return '';
+ const labelled=window.ATFranchise1212.labels(parts.map(part=>({...part,subtitle:part.title})));
+ return `<section class="details-section catalog-family-preview"><h4>Sezonet dhe pjesët · ${parts.length}</h4><p>Të renditura sipas publikimit dhe lidhjeve zyrtare. Zgjidh një pjesë për detajet e saj.</p><div class="catalog-family-parts">${labelled.map(({part,title})=>{const image=validPoster(part.cover);return `<button type="button" class="catalog-family-part${part.key===item.key?' is-selected':''}" data-preview="${escapeHTML(part.key)}" aria-pressed="${part.key===item.key}">${image?`<img src="${escapeHTML(image)}" alt="" loading="lazy" decoding="async">`:''}<span><strong>${escapeHTML(title)}</strong><span>${escapeHTML(part.english||part.title)}</span><small>${part.year||'Viti ?'} · ${part.total||'?'} episode</small></span><span aria-hidden="true">›</span></button>`}).join('')}</div></section>`;
+}
+function catalogTile(item){if(item.kind==='tv'){const existing=inLibrary(item),url=validPoster(item.cover),id=escapeHTML(item.sourceId);return `<article class="catalog-card at120-tv-result" data-media-kind="tv"><button class="catalog-open" type="button" data-tv-search-preview="${id}" aria-label="Hap ${escapeHTML(item.title)}"><div class="catalog-art">${url?`<img src="${escapeHTML(url)}" alt="Posteri i ${escapeHTML(item.title)}" loading="lazy" referrerpolicy="no-referrer">`:''}<span class="catalog-type">SERIAL TV</span></div></button><div class="catalog-info"><h4><button type="button" class="catalog-title-open" data-tv-search-preview="${id}">${escapeHTML(item.title)} ›</button></h4><div class="catalog-english">${escapeHTML(item.genre||'Serial TV')}</div><div class="catalog-meta">${item.year||'Viti ?'} · ${escapeHTML(item.source)}</div><p class="catalog-synopsis">${escapeHTML(item.synopsis||'Hap serialin për të parë sezonet dhe episodet.')}</p><div class="catalog-action"><button type="button" class="primary" data-tv-search-preview="${id}">${existing?'✓ Në bibliotekë · Hape':'Shiko sezonet & episodet ›'}</button></div></div></article>`}const existing=catalogLibraryEntry(item),url=validPoster(item.cover),sourceUrl=validPoster(item.sourceUrl),id=escapeHTML(item.key),synopsis=item.synopsis||'Përshkrimi nuk është i disponueshëm për këtë anime.';return `<article class="catalog-card" data-media-kind="${item.kind==='movie'?'movie':'anime'}"><button class="catalog-open" data-preview="${id}" aria-label="Hap ${escapeHTML(item.title)}"><div class="catalog-art">${url?`<img src="${escapeHTML(url)}" alt="Posteri i ${escapeHTML(item.title)}" loading="lazy" referrerpolicy="no-referrer"/>`:''}<span class="catalog-type">${escapeHTML(item.format)}</span>${item.score!=null?`<span class="catalog-score">★ ${(Number(item.score)/10).toFixed(1)}</span>`:''}</div></button><div class="catalog-info"><h4><button class="catalog-title-open" data-preview="${id}">${escapeHTML(item.title)}</button></h4><div class="catalog-english" title="${escapeHTML(item.english)}">${escapeHTML(item.english&&item.english!==item.title?item.english:' ')}</div><div class="catalog-meta">${item.year||'Viti ?'} • ${item.total||'?'} ep. • ${escapeHTML(item.source)}</div><p class="catalog-synopsis">${escapeHTML(synopsis)}</p>${catalogFamilySummary(item)}<div class="catalog-action">${existing?`<button class="ghost in-library" data-detail="${escapeHTML(existing.id)}">✓ Në bibliotekë · Hape</button>`:`<button class="primary" data-catalog-add="${id}" data-catalog-status="watching">+ Po shikoj</button><button class="ghost" data-catalog-add="${id}" data-catalog-status="planning">+ Në listë</button>`}</div>${sourceUrl?`<a class="catalog-link" href="${escapeHTML(sourceUrl)}" target="_blank" rel="noopener noreferrer">Detaje te ${escapeHTML(item.source)} ↗</a>`:''}</div></article>`}
+const catalogNodes=new Map();
+function renderCatalog(){
+ const grid=$('catalog-grid'),groups=catalogGrouped(catalogItems),wanted=new Set();
+ if(!groups.length&&catalogBusy){grid.setAttribute('aria-busy','true');$('catalog-more').classList.add('hidden');renderTopResults();return}
+ for(const item of groups){
+  const markup=catalogTile(item);wanted.add(item.key);
+  let record=catalogNodes.get(item.key);
+  if(!record||record.markup!==markup){const holder=document.createElement('div');window.ATHTML.renderHTML(holder,markup);record={markup,node:holder.firstElementChild};catalogNodes.set(item.key,record)}
+ }
+ for(const child of [...grid.children])if(!groups.some(item=>catalogNodes.get(item.key)?.node===child))child.remove();
+ let position=grid.firstElementChild;
+ for(const item of groups){const node=catalogNodes.get(item.key).node;if(node!==position)grid.insertBefore(node,position);position=node.nextElementSibling}
+ for(const key of catalogNodes.keys())if(!wanted.has(key))catalogNodes.delete(key);
+ if(!groups.length&&catalogQuery&&!catalogBusy)window.ATHTML.renderHTML(grid,'<div class="catalog-empty">Nuk u gjet asnjë rezultat. Provo titullin anglisht ose japonisht.</div>');
+ grid.inert=false;grid.setAttribute('aria-busy',String(catalogBusy));
+ $('catalog-more').classList.toggle('hidden',!catalogHasNext||catalogBusy);renderTopResults();
+}
 async function fetchTVmazeCatalog(q,signal){const rows=await catalogJSON('https://api.tvmaze.com/search/shows?q='+encodeURIComponent(q),{signal});return (Array.isArray(rows)?rows:[]).slice(0,16).map(x=>x.show).filter(x=>x&&Number.isInteger(x.id)).map(x=>({kind:'tv',key:'tv-'+x.id,source:'TVMaze',sourceId:x.id,title:String(x.name||'Serial TV'),cover:x.image?.original||x.image?.medium||'',year:Number(String(x.premiered||'').slice(0,4))||null,releaseStart:String(x.premiered||'').slice(0,10),genre:(x.genres||[]).join(', '),genres:Array.isArray(x.genres)?x.genres.slice(0,20):[],synopsis:String(x.summary||'').replace(/<[^>]*>/g,' ').slice(0,350),format:'TV_SERIES'}))}
 async function searchCatalog(q,page=1){
  if(catalogBusy&&page>1)return;
  const token=++catalogRequest;catalogController?.abort();const controller=new AbortController();catalogController=controller;
  catalogBusy=true;catalogQuery=q;catalogPage=page;
- if(page===1){catalogItems=[];catalogProvider='';window.ATHTML.renderHTML($('catalog-grid'),'')}
- $('catalog-state').textContent=page===1?'Po kërkohen anime dhe seriale TV…':'Po ngarkohen rezultate të tjera…';
- $('catalog-more').classList.add('hidden');
- const animeWork=(async()=>{if(catalogProvider==='MyAnimeList'&&page>1)return fetchJikan(q,page,controller.signal);try{return await fetchAniList(q,page,controller.signal)}catch(err){if(controller.signal.aborted)throw err;return fetchJikan(q,page,controller.signal)}})();
- const tvWork=page===1?fetchTVmazeCatalog(q,controller.signal):Promise.resolve([]);
- const [animeResult,tvResult]=await Promise.allSettled([animeWork,tvWork]);
- if(token!==catalogRequest||controller.signal.aborted)return;
- const animeOK=animeResult.status==='fulfilled',tvOK=tvResult.status==='fulfilled';
- if(animeOK){catalogProvider=animeResult.value.provider;catalogHasNext=animeResult.value.hasNext}else catalogHasNext=false;
- const incoming=[...(animeOK?animeResult.value.items:[]),...(tvOK?tvResult.value:[])];
- const combined=[...catalogItems,...incoming],dedupe=window.ATProviderBridge12124?.dedupeSearchResults;
- const providerSafe=dedupe?dedupe(combined):combined,prior=new Set();catalogItems=[];
- for(const item of providerSafe)if(!prior.has(item.key)){catalogItems.push(item);prior.add(item.key)}
- catalogBusy=false;
- if(!animeOK&&!tvOK){$('catalog-state').textContent='Kërkimi online nuk u lidh. Provo përsëri.';renderCatalog();return}
- const sources=[animeOK?catalogProvider:null,tvOK?'TVMaze':null].filter(Boolean).join(' + ');
- $('catalog-state').textContent=catalogItems.length+' rezultate për “'+q+'” · Anime & Seriale TV · '+sources+(catalogHasNext?' · Shfaq më shumë':'');
+ if(page===1){catalogItems=[];catalogProvider='';catalogMovieProvider='';catalogTVReady=false}
+ const live=()=>token===catalogRequest&&!controller.signal.aborted;
+ $('catalog-state').textContent='Po kërkohen anime, seriale dhe filma…';$('catalog-more').classList.add('hidden');
+ let animeOK=false,tvOK=false;
+ const publish=(incoming)=>{
+  if(!live())return;
+  const dedupe=window.ATProviderBridge12124?.dedupeSearchResults,combined=[...catalogItems,...incoming];
+  const seen=new Set();catalogItems=(dedupe?dedupe(combined):combined).filter(item=>!seen.has(item.key)&&seen.add(item.key));
+  $('catalog-state').textContent=catalogGrouped(catalogItems).length+' rezultate për “'+q+'” · '+[catalogProvider,tvOK?'TVMaze':'',catalogMovieProvider].filter(Boolean).join(' + ')+(catalogBusy?' · Po kërkohen burimet e tjera…':'');
+  renderCatalog();
+ };
+ const animeWork=(async()=>{if(catalogProvider==='MyAnimeList'&&page>1)return fetchJikan(q,page,controller.signal);try{return await fetchAniList(q,page,controller.signal)}catch(err){if(controller.signal.aborted)throw err;return fetchJikan(q,page,controller.signal)}})().then(result=>{if(!live())return;animeOK=true;catalogProvider=result.provider;catalogHasNext=result.hasNext;publish(result.items)}).catch(()=>{if(live())catalogHasNext=false});
+ const tvWork=page===1?fetchTVmazeCatalog(q,controller.signal).then(items=>{if(!live())return;tvOK=true;catalogTVReady=true;publish(items)}).catch(()=>{}):Promise.resolve();
+ await Promise.allSettled([animeWork,tvWork]);if(!live())return;catalogBusy=false;
+ if(!animeOK&&!tvOK&&!catalogItems.length)$('catalog-state').textContent='Kërkimi online nuk u lidh. Provo përsëri.';
+ else $('catalog-state').textContent=catalogGrouped(catalogItems).length+' rezultate për “'+q+'” · '+[catalogProvider,tvOK?'TVMaze':'',catalogMovieProvider].filter(Boolean).join(' + ');
  renderCatalog();
 }
 let pendingTVPreview=null,openingTVPreview=false;
@@ -523,7 +550,17 @@ function addUnifiedTV(status){
 }
 window.addEventListener('at120-unified-tv-open',e=>{void openUnifiedTV(e.detail)});
 document.addEventListener('click',e=>{const button=e.target.closest('[data-tv-unified-add]');if(button){e.preventDefault();addUnifiedTV(button.dataset.tvUnifiedAdd)}});
-function syncSearch(q,from){const value=String(q||'').slice(0,180);$('search').value=value;$('global-search').value=value;search=value.trim().toLocaleLowerCase();render();clearTimeout(catalogTimer);catalogController?.abort();if(!value.trim()||value.trim().length<2){clearCatalog();if(value.trim())$('catalog-state').textContent='Shkruaj të paktën 2 shkronja.';return}const query=value.trim();catalogRequest++;catalogQuery=query;catalogPage=0;catalogBusy=false;catalogItems=[];catalogHasNext=false;window.ATHTML.renderHTML($('catalog-grid'),'');$('catalog-more').classList.add('hidden');$('catalog-state').textContent='Kërkimi po përgatitet...';renderTopResults();catalogTimer=setTimeout(()=>searchCatalog(query,1),650);if(from==='top'){setView('explore');$('top-results').classList.remove('hidden')}else $('top-results').classList.add('hidden')}
+function syncSearch(q,from){
+ const value=String(q||'').slice(0,180),query=value.trim();
+ $('search').value=value;$('global-search').value=value;
+ clearTimeout(catalogTimer);catalogController?.abort();catalogRequest++;
+ catalogQuery=query;catalogPage=0;catalogBusy=false;catalogItems=[];catalogHasNext=false;
+ if(query.length<2){clearCatalog();if(query)$('catalog-state').textContent='Shkruaj të paktën 2 shkronja.';return}
+ $('catalog-grid').inert=true;$('catalog-grid').setAttribute('aria-busy','true');
+ $('catalog-more').classList.add('hidden');$('catalog-state').textContent='Po përgatiten rezultatet…';
+ if(from==='top')$('top-results').classList.remove('hidden');else $('top-results').classList.add('hidden');
+ renderTopResults();catalogTimer=setTimeout(()=>searchCatalog(query,1),280);
+}
 const addingCatalogKeys=new Set();
 function markCatalogComplete(a){
  for(const season of visibleSeasons(a)){
@@ -641,19 +678,19 @@ function jumpToEpisode(id){const a=state.anime.find(x=>x.id===id),input=$('episo
 function renderTopResults(){
  const box=$('top-results');if(!box)return;
  const q=$('search').value.trim();if(q.length<2){box.classList.add('hidden');window.ATHTML.renderHTML(box,'');$('search').setAttribute('aria-expanded','false');return}
- const items=catalogGrouped(catalogItems).slice(0,6), local=state.anime.filter(a=>canonicalTitle(a.title).includes(canonicalTitle(q))).slice(0,4);
+ const items=catalogGrouped(catalogItems).slice(0,6), local=state.anime.filter(a=>canonicalTitle([a.title,...(a.aliases||[]),...(a.seasons||[]).flatMap(part=>[part.subtitle,...(part.aliases||[])])].join(' ')).includes(canonicalTitle(q))).slice(0,4);
  const foundIds=new Set(local.map(a=>a.id));
  const tiles=local.map(a=>`<button class="top-result" data-detail="${escapeHTML(a.id)}">${validPoster(a.cover)?`<img src="${escapeHTML(a.cover)}" alt=""/>`:'<span class="thumb-placeholder"></span>'}<span><strong>${escapeHTML(a.title)}</strong><small>✓ Në bibliotekën tënde</small></span></button>`);
- for(const x of items){const match=inLibrary(x);if(match&&foundIds.has(match.id))continue;tiles.push(`<button class="top-result" ${x.kind==='tv'?`data-tv-search-preview="${escapeHTML(x.sourceId)}"`:`data-preview="${escapeHTML(x.key)}"`}>${validPoster(x.cover)?`<img src="${escapeHTML(x.cover)}" alt=""/>`:'<span class="thumb-placeholder"></span>'}<span><strong>${escapeHTML(x.title)}</strong><small>${escapeHTML(x.year||'')} · ${escapeHTML(x.source)}</small></span></button>`)}
+ for(const x of items){const match=catalogLibraryEntry(x);if(match&&foundIds.has(match.id))continue;tiles.push(`<button class="top-result" ${x.kind==='tv'?`data-tv-search-preview="${escapeHTML(x.sourceId)}"`:`data-preview="${escapeHTML(x.key)}"`}>${validPoster(x.cover)?`<img src="${escapeHTML(x.cover)}" alt=""/>`:'<span class="thumb-placeholder"></span>'}<span><strong>${escapeHTML(x.title)}</strong><small>${escapeHTML(x.year||'')} · ${escapeHTML(x.source)}</small></span></button>`)}
  window.ATHTML.renderHTML(box,(tiles.join('')||'<p class="top-results-info">Po kërkoj online…</p>')+'<button class="top-see-all" id="see-all-search">Shiko të gjitha rezultatet ↓</button>');
  $('search').setAttribute('aria-expanded',String(!box.classList.contains('hidden')));
 }
 function openCatalogPreview(key){
  const item=catalogItems.find(x=>x.key===key);if(!item)return;if(item.kind==='tv'){window.dispatchEvent(new CustomEvent('at120-tv-open',{detail:item.sourceId}));return}
- const already=inLibrary(item);if(already){openDetail(already.id);return}
+ const already=catalogLibraryEntry(item);if(already){openDetail(already.id);return}
  previewKey=key;detailId=null;$('top-results').classList.add('hidden');$('detail-heading').textContent='Anime · '+item.title;
  const poster=validPoster(item.cover)?`<img src="${escapeHTML(item.cover)}" alt="Posteri i ${escapeHTML(item.title)}"/>`:'';
- window.ATHTML.renderHTML($('detail-body'),`<div class="detail-top preview-top"><div class="detail-poster preview-poster">${poster}</div><div class="detail-content preview-info"><span class="eyebrow">${escapeHTML(item.source)} · ${escapeHTML(item.format)}</span><h3>${escapeHTML(item.title)}</h3><p class="preview-meta">${escapeHTML(item.english||'')} · ${item.year||'Viti nuk dihet'} · ${item.total||'?'} episode</p>${item.genre?`<p class="preview-meta">${escapeHTML(item.genre)}</p>`:''}${item.score!=null?`<span class="pill">★ ${(item.score/10).toFixed(1)} / 10 · ${escapeHTML(item.source)}</span>`:''}<div class="preview-add-row"><button class="primary" data-preview-add="${escapeHTML(key)}" data-preview-status="watching">+ Po shikoj</button><button class="ghost" data-preview-add="${escapeHTML(key)}" data-preview-status="planning">+ Në listë</button><button class="ghost" data-preview-add="${escapeHTML(key)}" data-preview-status="completed">✓ E kam parë të gjithën</button></div><p class="season-note">Pasi ta shtosh, hapen sezonet dhe mund të shënosh episodet një nga një.</p></div></div><section class="details-section"><h4>Historia</h4><p class="preview-synopsis">${escapeHTML(item.synopsis||'Përshkrimi nuk është i disponueshëm.')}</p>${validPoster(item.sourceUrl)?`<a class="catalog-link" href="${escapeHTML(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">Burimi: ${escapeHTML(item.source)} ↗</a>`:''}</section>`);
+ window.ATHTML.renderHTML($('detail-body'),`<div class="detail-top preview-top"><div class="detail-poster preview-poster">${poster}</div><div class="detail-content preview-info"><span class="eyebrow">${escapeHTML(item.source)} · ${escapeHTML(item.format)}</span><h3>${escapeHTML(item.title)}</h3><p class="preview-meta">${escapeHTML(item.english||'')} · ${item.year||'Viti nuk dihet'} · ${item.total||'?'} episode</p>${item.genre?`<p class="preview-meta">${escapeHTML(item.genre)}</p>`:''}${item.score!=null?`<span class="pill">★ ${(item.score/10).toFixed(1)} / 10 · ${escapeHTML(item.source)}</span>`:''}<div class="preview-add-row"><button class="primary" data-preview-add="${escapeHTML(key)}" data-preview-status="watching">+ Po shikoj</button><button class="ghost" data-preview-add="${escapeHTML(key)}" data-preview-status="planning">+ Në listë</button><button class="ghost" data-preview-add="${escapeHTML(key)}" data-preview-status="completed">✓ E kam parë të gjithën</button></div><p class="season-note">Pasi ta shtosh, hapen sezonet dhe mund të shënosh episodet një nga një.</p></div></div>${catalogFamilyPreview(item)}<section class="details-section"><h4>Historia</h4><p class="preview-synopsis">${escapeHTML(item.synopsis||'Përshkrimi nuk është i disponueshëm.')}</p>${validPoster(item.sourceUrl)?`<a class="catalog-link" href="${escapeHTML(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">Burimi: ${escapeHTML(item.source)} ↗</a>`:''}</section>`);
  showModal('detail-modal');
 }
 function setView(which){
@@ -888,9 +925,10 @@ $('confirm-all').addEventListener('click',()=>confirmEpisode(true));
 $('confirm-only').addEventListener('click',()=>confirmEpisode(false));
 $('confirm-cancel').addEventListener('click',()=>closeModal('confirm-modal'));
 $('search').addEventListener('focus',()=>{if($('search').value.trim().length>=2){$('top-results').classList.remove('hidden');renderTopResults()}});
-$('search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const first=$('top-results').querySelector('[data-preview],[data-detail]');if(first)first.click();else $('discover').scrollIntoView({behavior:'smooth'})}if(e.key==='Escape')$('top-results').classList.add('hidden')});
+$('search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const first=$('top-results').querySelector('[data-preview],[data-detail]');if(first)first.click();else {setView('explore');$('discover').scrollIntoView({behavior:'smooth'})}}if(e.key==='Escape')$('top-results').classList.add('hidden')});
 $('top-results').addEventListener('click',e=>{if(e.target.closest('#see-all-search')){$('top-results').classList.add('hidden');setView('explore');$('discover').scrollIntoView({behavior:'smooth'})}});
 document.addEventListener('click',e=>{if(!e.target.closest('.top-search-wrap'))$('top-results').classList.add('hidden')});
+recheckSearchAutofill=protectCatalogSearchInputs([$('search'),$('global-search'),$('season-genre-search')],()=>accountUser?.email);
 // Filter buttons always navigate back to library (even after visiting premieres).
 
 $('global-search').addEventListener('input',e=>syncSearch(e.target.value,'catalog'));
@@ -971,7 +1009,7 @@ function v8GenreChips(){
 function v8FindItem(key){return v8Items.find(x=>x.key===key)}
 function v8PrepareCatalog(item){if(item&&!catalogItems.some(x=>x.key===item.key))catalogItems.unshift(item)}
 function v8Tile(item){const existing=inLibrary(item),image=validPoster(item.cover),genres=window.ATSeasonal128.tags(item,3);return `<article class="seasonal-tile" data-source="${escapeHTML(item.source)}"><button type="button" class="seasonal-cover" data-season-open="${escapeHTML(item.key)}" aria-label="Hap ${escapeHTML(item.title)}">${image?`<img loading="lazy" src="${escapeHTML(image)}" alt="${escapeHTML(item.title)}">`:''}<span class="catalog-type">${escapeHTML(item.format||'ANIME')}</span>${item.score!=null?`<span class="catalog-score">★ ${(Number(item.score)/10).toFixed(1)} · ${escapeHTML(item.source)}</span>`:''}</button><div class="seasonal-info"><button class="seasonal-name" type="button" data-season-open="${escapeHTML(item.key)}">${escapeHTML(item.title)}</button><span class="seasonal-meta">${escapeHTML(String(item.year||v8Year))} · ${item.total||'?'} ep. · ${escapeHTML(item.source)}</span><div class="at128-tile-genres">${(genres.length?genres:['Anime']).map(genre=>`<span class="at128-tile-genre">${escapeHTML(genre)}</span>`).join('')}</div><div class="seasonal-actions">${existing?`<button class="primary" data-detail="${escapeHTML(existing.id)}">✓ Në bibliotekë</button>`:`<button class="primary" data-season-add="${escapeHTML(item.key)}" data-season-status="watching">+ Watching</button><button class="ghost" data-season-add="${escapeHTML(item.key)}" data-season-status="planning">+ Plan to Watch</button>`}</div></div></article>`}
-function v8RenderSeasonal(){const filtered=v8Filters();window.ATHTML.renderHTML($('season-catalog-grid'),filtered.length?filtered.map(v8Tile).join(''):`<div class="home-empty at-grid-span">${v8Loading?'Po ngarkohen animet…':v8Items.length?'Nuk ka përputhje në titujt e ngarkuar. Ndrysho filtrin ose shfaq më shumë rezultate.':'Nuk ka ende rezultate. Provo të rifreskosh katalogun.'}</div>`);$('season-heading').textContent=V8_LABELS[v8Quarter]+' '+v8Year;$('season-more').classList.toggle('hidden',!v8More||v8Loading);$('season-refresh').disabled=v8Loading;$('season-more').disabled=v8Loading;v8GenreChips();v8RenderHomeTeaser()}
+function v8RenderSeasonal(){const filtered=v8Filters();window.ATHTML.renderHTML($('season-catalog-grid'),filtered.length?filtered.map(v8Tile).join(''):`<div class="home-empty at-grid-span">${v8Loading?'Po ngarkohen animet…':v8Items.length?'Nuk ka përputhje në titujt e ngarkuar. Ndrysho filtrin ose shfaq më shumë rezultate.':'Nuk ka ende rezultate. Provo të rifreskosh katalogun.'}</div>`);$('season-heading').textContent=V8_LABELS[v8Quarter]+' '+v8Year;$('season-more').classList.toggle('hidden',!v8More||v8Loading);$('season-refresh').disabled=v8Loading;$('season-more').disabled=v8Loading;v8GenreChips();if(view==='home')v8RenderHomeTeaser()}
 function v8RenderHomeTeaser(){const box=$('home-season-teaser');if(!box)return;let selected=(v8Items.length?v8Items:(v8SeasonCache[v8CacheKey(1)]?.items||[]));window.ATHTML.renderHTML(box,selected.length?selected.slice(0,4).map(x=>`<button type="button" class="teaser-card" data-teaser-open="${escapeHTML(x.key)}">${validPoster(x.cover)?`<img src="${escapeHTML(x.cover)}" alt="">`:''}<span><strong>${escapeHTML(x.title)}</strong><small>★ ${x.score!=null?(x.score/10).toFixed(1)+'/10':'—'} · ${escapeHTML(x.source)}</small></span></button>`).join(''):'<div class="home-empty at-grid-span">Hap “Sezonet anime” për të zbuluar titujt e rinj.</div>');$('home-seasonal-heading').querySelector('h2').textContent=V8_LABELS[v8Quarter]+' '+v8Year+' · anime të reja'}
 const V8_QUERY=`query($page:Int,$season:MediaSeason,$year:Int,$sort:[MediaSort]){Page(page:$page,perPage:24){pageInfo{hasNextPage}media(type:ANIME,season:$season,seasonYear:$year,isAdult:false,sort:$sort){id idMal title{romaji english native} episodes averageScore format genres description coverImage{extraLarge large} siteUrl seasonYear startDate{year month day} tags{name rank isMediaSpoiler isGeneralSpoiler}}}}`;
 async function v8AniList(page){const response=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query:V8_QUERY,variables:{page,season:v8Quarter,year:v8Year,sort:[$('season-sort').value]}})});if(!response.ok)throw Error('AniList HTTP '+response.status);const j=await response.json();if(j.errors?.length)throw Error(j.errors[0].message);if(!j.data?.Page)throw Error('Përgjigje e paplotë AniList');return{items:(j.data.Page.media||[]).map(a=>({...mapAniList(a),seasonTags:window.ATSeasonal128.safeTags(a)})),more:!!j.data.Page.pageInfo?.hasNextPage,provider:'AniList'}}
@@ -1002,7 +1040,8 @@ $('season-next').addEventListener('click',()=>v8ShiftSeason(1));
 $('season-sort').addEventListener('change',()=>{v8Serial++;v8Loading=false;v8LoadSeason(1)});
 $('season-format').addEventListener('change',v8RenderSeasonal);
 $('season-unadded').addEventListener('change',v8RenderSeasonal);
- $('season-genre-search').addEventListener('input',e=>{v8Text=String(e.target.value||'').slice(0,80);v8RenderSeasonal()});
+ let seasonalSearchTimer;
+ $('season-genre-search').addEventListener('input',e=>{v8Text=String(e.target.value||'').slice(0,80);clearTimeout(seasonalSearchTimer);seasonalSearchTimer=setTimeout(v8RenderSeasonal,100)});
  $('season-filter-reset').addEventListener('click',()=>{v8Genre='all';v8Text='';$('season-genre-search').value='';$('season-format').value='ALL';$('season-unadded').checked=false;v8RenderSeasonal()});
  $('season-genres').addEventListener('click',e=>{const button=e.target.closest('button[data-at128-genre]');if(!button)return;v8Genre=button.dataset.at128Genre||'all';v8RenderSeasonal()});
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.seasonOpen){const item=v8FindItem(b.dataset.seasonOpen);if(item){v8PrepareCatalog(item);openCatalogPreview(item.key)}}if(b.dataset.seasonAdd){const item=v8FindItem(b.dataset.seasonAdd);if(item){v8PrepareCatalog(item);addCatalogItem(item.key,b.dataset.seasonStatus||'planning').then(id=>{if(id){v8RenderSeasonal();openDetail(id)}})}}if(b.dataset.teaserOpen){const item=v8FindItem(b.dataset.teaserOpen)||v8SeasonCache[v8CacheKey(1)]?.items?.find(x=>x.key===b.dataset.teaserOpen);if(item){v8PrepareCatalog(item);openCatalogPreview(item.key)}else setView('seasons')}});
@@ -1157,6 +1196,7 @@ document.addEventListener('click',event=>{
 function accountStatus(message,kind=''){const el=$('account-status');el.textContent=message;el.dataset.error=kind==='error'?'1':'0';el.dataset.ok=kind==='ok'?'1':'0'}
 function accountName(){return accountUser?.user_metadata?.display_name?.trim()?.slice(0,40)||accountUser?.email?.split('@')[0]||'Pa llogari'}
 function accountUI(){
+ recheckSearchAutofill();
  $('account-stat-anime').textContent=state.anime.length;
  $('account-stat-episodes').textContent=state.anime.reduce((v,a)=>v+(isLiveMovie(a)?0:count(a)),0);
  const name=accountMode==='cloud'?accountName():'Hyr / Regjistrohu';
@@ -1996,7 +2036,17 @@ function at150SetTMDB(){const input=$('tmdb-token-input'),token=input?.value.tri
 at150ProviderBadge();notify('TMDB u lidh në këtë pajisje ✓')}catch{notify('TMDB token nuk u ruajt në këtë pajisje.')}}
 function at150MovieTile(item){const existing=inLibrary(item),url=validPoster(item.cover),id=escapeHTML(item.key),provider=escapeHTML(item.source==='Cinemeta'?'IMDb/Cinemeta':item.source);return '<article class="catalog-card at150-movie-result"><button class="catalog-open" type="button" data-movie-preview="'+id+'" aria-label="Hap '+escapeHTML(item.title)+'"><div class="catalog-art">'+(url?'<img src="'+escapeHTML(url)+'" alt="Posteri i '+escapeHTML(item.title)+'" loading="lazy" referrerpolicy="no-referrer">':'')+'<span class="catalog-type">FILM</span>'+(item.score!=null?'<span class="catalog-score">★ '+(Number(item.score)/10).toFixed(1)+'</span>':'')+'</div></button><div class="catalog-info"><h4><button type="button" class="catalog-title-open" data-movie-preview="'+id+'">'+escapeHTML(item.title)+' ›</button></h4><div class="catalog-english">'+escapeHTML(item.english&&item.english!==item.title?item.english:'Film')+'</div><div class="catalog-meta">'+(item.year||'Viti ?')+' · '+provider+'</div><p class="catalog-synopsis">'+escapeHTML(item.synopsis||'Hap filmin për detaje, rating dhe për ta shtuar në listë.')+'</p><div class="catalog-action">'+(existing?'<button class="ghost in-library" data-detail="'+escapeHTML(existing.id)+'">✓ Në bibliotekë · Hape</button>':'<button class="primary" data-movie-preview="'+id+'">Shiko filmin ›</button>')+'</div></div></article>'}
 const at150PriorCatalogTile=catalogTile;catalogTile=function(item){return item?.kind==='movie'?at150MovieTile(item):at150PriorCatalogTile(item)};
-const at150PriorSearchCatalog=searchCatalog;searchCatalog=async function(q,page=1){const priorWork=at150PriorSearchCatalog(q,page);if(page!==1||!window.ATMovies12150){await priorWork;return}const request=catalogRequest,signal=catalogController?.signal;const movieWork=window.ATMovies12150.search(q,{tmdbToken:tmdbToken(),omdbKey:omdbKey(),signal}).catch(err=>{if(!signal?.aborted)console.warn('Movie search failed',err);return {items:[],provider:'Wikidata'}});await priorWork;if(request!==catalogRequest||catalogQuery!==q||signal?.aborted)return;const result=await movieWork;if(request!==catalogRequest||catalogQuery!==q||signal?.aborted)return;const prior=new Set(catalogItems.map(x=>x.key));for(const item of result.items||[])if(!prior.has(item.key)){catalogItems.push(item);prior.add(item.key)}renderCatalog();const stateEl=$('catalog-state');if(stateEl){const extra=result.provider?' · Filma: '+result.provider:'';stateEl.textContent=stateEl.textContent.replace('Anime & Seriale TV','Anime · Seriale TV · Filma')+extra}};
+const at150PriorSearchCatalog=searchCatalog;searchCatalog=async function(q,page=1){
+ const priorWork=at150PriorSearchCatalog(q,page);if(page!==1||!window.ATMovies12150){await priorWork;return}
+ const request=catalogRequest,signal=catalogController?.signal;
+ const movieWork=window.ATMovies12150.search(q,{tmdbToken:tmdbToken(),omdbKey:omdbKey(),signal}).then(result=>{
+  if(request!==catalogRequest||catalogQuery!==q||signal?.aborted)return;
+  catalogMovieProvider=result.provider||'';const prior=new Set(catalogItems.map(item=>item.key));
+  for(const item of result.items||[])if(!prior.has(item.key)){catalogItems.push(item);prior.add(item.key)}
+  renderCatalog();$('catalog-state').textContent=catalogGrouped(catalogItems).length+' rezultate për “'+q+'” · '+[catalogProvider,catalogTVReady?'TVMaze':'',catalogMovieProvider].filter(Boolean).join(' + ')+(catalogBusy?' · Po kërkohen burimet e tjera…':'');
+ }).catch(err=>{if(!signal?.aborted)console.warn('Movie search failed',err)});
+ await Promise.allSettled([priorWork,movieWork]);
+};
 let pendingMoviePreview=null,openingMoviePreview=false;
 async function at150OpenMovie(item){if(!item||openingMoviePreview)return;const existing=inLibrary(item);if(existing){openDetail(existing.id);return}openingMoviePreview=true;try{const detail=await window.ATMovies12150.details(item,{tmdbToken:tmdbToken(),omdbKey:omdbKey()});pendingMoviePreview=detail;previewKey=item.key;detailId=null;$('top-results').classList.add('hidden');$('detail-heading').textContent='Detajet e filmit';const poster=validPoster(detail.cover)?'<img src="'+escapeHTML(detail.cover)+'" alt="Posteri i '+escapeHTML(detail.title)+'" loading="lazy">':'';window.ATHTML.renderHTML($('detail-body'),'<div class="at150-movie-hero">'+(detail.backdrop?'<div class="at150-backdrop"><img src="'+escapeHTML(validPoster(detail.backdrop))+'" alt="" aria-hidden="true"></div>':'')+'<div class="detail-top at150-preview-top"><div class="detail-poster preview-poster">'+poster+'</div><div class="detail-content preview-info"><span class="eyebrow">'+escapeHTML(detail.source)+' · FILM</span><h3>'+escapeHTML(detail.title)+'</h3><div class="at150-meta">'+(detail.year?'<span class="pill">'+detail.year+'</span>':'')+(detail.runtime?'<span class="pill">'+detail.runtime+' min</span>':'')+(detail.genre?'<span class="pill">'+escapeHTML(detail.genre)+'</span>':'')+(detail.communityScore!=null?'<span class="pill">★ '+(detail.communityScore/10).toFixed(1)+' '+escapeHTML(detail.communitySource)+'</span>':'')+'</div><p class="preview-synopsis">'+escapeHTML(detail.synopsis||'Përshkrimi nuk është i disponueshëm.')+'</p><div class="preview-add-row"><button type="button" class="primary" data-movie-add="completed">✓ E kam parë</button><button type="button" class="ghost" data-movie-add="planning">+ Plan to Watch</button></div></div></div></div><section class="details-section at150-movie-facts"><h4>Detaje</h4><div>'+(detail.director?'<span><b>Regjia</b>'+escapeHTML(detail.director)+'</span>':'')+(detail.cast?'<span><b>Cast</b>'+escapeHTML(detail.cast)+'</span>':'')+(detail.imdbRating!=null?'<span><b>IMDb</b>★ '+detail.imdbRating.toFixed(1)+'/10</span>':'')+(detail.collectionName?'<span><b>Franchise</b>'+escapeHTML(detail.collectionName)+'</span>':'')+'</div></section>');showModal('detail-modal')}catch(err){console.warn('Movie preview failed',err);notify('Filmi nuk u ngarkua: '+String(err.message||'provo përsëri').slice(0,100))}finally{openingMoviePreview=false}}
 async function at150OpenMovieByKey(key){const item=catalogItems.find(x=>x.kind==='movie'&&x.key===key);if(item)await at150OpenMovie(item)}
@@ -2111,7 +2161,7 @@ const productPriorCatalog=searchCatalog;searchCatalog=async function(q,page=1){
  const work=productPriorCatalog(q,page),request=catalogRequest,grid=$('catalog-grid');
  grid.setAttribute('aria-busy','true');
  if(page===1)window.ATHTML.renderHTML(grid,Array.from({length:6},()=>'<div class="product-skeleton-card" aria-hidden="true"><span></span><i></i><i></i></div>').join(''));
- try{return await work}finally{if(request===catalogRequest){grid.removeAttribute('aria-busy');if(String($('global-search').value).trim()===String(q).trim())proApp.product?.searchFinished(q,{count:catalogItems.length,failed:/nuk u lidh|nuk u ngarkua|dështoi/i.test($('catalog-state').textContent)})}}
+ try{return await work}finally{if(request===catalogRequest){grid.removeAttribute('aria-busy');if(String($('global-search').value).trim()===String(q).trim())proApp.product?.searchFinished(q,{count:catalogGrouped(catalogItems).length,failed:/nuk u lidh|nuk u ngarkua|dështoi/i.test($('catalog-state').textContent)})}}
 };
 
 const cardPriorEpisode=v81RenderEpisode;v81RenderEpisode=function(...args){const root=$('ep-detail-body'),parts=v81EpisodeParts(),key=[parts.a?.id,parts.s?.id,parts.n].join(':'),expanded=root?.dataset.episodeCardKey===key&&root.querySelector('.episode-card-more')?.open;cardPriorEpisode(...args);presentEpisode({el:$,esc:escapeHTML,parts:v81EpisodeParts,poster:validPoster,expanded,history:()=>state.history,seasonNumber:seasonNumberFor,released:releasedCount});releaseExperience?.attach($('ep-detail-body')?.querySelector('.episode-card'),v81EpisodeParts())};

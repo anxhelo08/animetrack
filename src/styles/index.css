@@ -32,6 +32,7 @@ franchise.css diary.css watch.css rich-details.css provider-sync.css performance
 @import "./mobile-premium.css";
 @import "./home-editorial.css";
 @import "./news.css";
+@import "./catalog-search.css";
 
 :root { --at-ui-ready: 1; }
 .app[hidden] { display: none !important; }
