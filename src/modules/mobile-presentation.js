@@ -31,7 +31,8 @@ export function createMobilePresentation(ctx) {
     releaseTimer,
     pendingMove,
     focusFrame,
-    focusHome = true;
+    focusHome = true,
+    focusHomeTop = true;
   let homeTab = 'watch',
     homeLayout = 'list';
   function home() {
@@ -231,9 +232,20 @@ export function createMobilePresentation(ctx) {
     }
     if (focusHome) {
       focusHome = false;
+      const overview = focusHomeTop;
+      focusHomeTop = false;
       cancelAnimationFrame(focusFrame);
       focusFrame = requestAnimationFrame(() => {
         if (page === 'home' && homeTab === 'watch' && !ctx.state().anime.length) return;
+        if (
+          overview &&
+          page === 'home' &&
+          !$('home-anime-pulse')?.hidden &&
+          $('home-anime-pulse')
+        ) {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+          return;
+        }
         if (page === 'home' && homeTab === 'watch')
           $('mobile-continue')?.scrollIntoView({ block: 'start', behavior: 'instant' });
       });
@@ -335,6 +347,7 @@ export function createMobilePresentation(ctx) {
       filter = 'all';
       homeTab = 'watch';
       focusHome = true;
+      focusHomeTop = true;
       pendingMove = null;
       homeLayout = 'list';
       searchState();
@@ -732,6 +745,7 @@ export function createMobilePresentation(ctx) {
     if (next === 'home' && next !== page) {
       homeTab = 'watch';
       focusHome = true;
+      focusHomeTop = true;
     }
     page = next;
     if (page !== 'home') {

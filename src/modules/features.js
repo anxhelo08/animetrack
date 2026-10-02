@@ -1,11 +1,13 @@
 import { createVisibleScheduler } from '../core/visible-scheduler.js';
 import {navIcon} from './nav-icons.js';
 import {createProductExperience} from './product-experience.js';
+import { createHomeSpotlight } from './home-spotlight.js';
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
 export function createFeatures(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,pwaUpdater=null,updateRequested=false;
  let achievementsOwner='',achievementsKnown=null;const homeMarkup=new WeakMap();
+ let spotlight=null;
  const product=createProductExperience(ctx);
  const proPages=['notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>window.ATHTML.html`<button type="button" class="pro-btn" data-pro-action="${action}" data-id="${id}">${label}</button>`;
@@ -32,6 +34,7 @@ export function createFeatures(ctx){
  };
  modules.friends=window.ATFriends(ctx,modules.profiles);
  ctx.mobileRecommendations=()=>modules.recommendations.getItems();
+ ctx.animeUpdates=()=>modules.recommendations.getUpdates();
  ctx.mobileFriends=()=>modules.friends.render();
  ctx.socialCounts=()=>modules.friends.counts();
  ctx.dayBrief=compact=>modules.day.render(!!compact);
@@ -60,6 +63,7 @@ export function createFeatures(ctx){
   finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation','sync'].includes(active))render();renderHome()}
  }
  function renderHome(){
+  spotlight?.refresh();
   if(product&&window.matchMedia('(max-width: 760px)').matches){product.refresh();return}
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)window.ATHTML.renderHTML(feed,'<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>')}
@@ -77,6 +81,7 @@ export function createFeatures(ctx){
  }
  ctx.rerender=(force=false)=>{render(!!force);renderHome()};
  ctx.rerenderRecommendations=()=>{
+  spotlight?.refresh();
   // Catalog network refreshes must never reset a form that the user is typing into
   // (e.g. personal collections, profile, login).
   if(active==='recommendations')render();
@@ -107,8 +112,8 @@ export function createFeatures(ctx){
   const dash=document.createElement('div');dash.className='at-home-dashboard';window.ATHTML.renderHTML(dash,'<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>');recommend.after(dash);
   await new Promise(resolve=>setTimeout(resolve,0));
   modules.home.mount(home,recommend,dash);
+  spotlight=createHomeSpotlight(ctx);spotlight.mount(home);
   await new Promise(resolve=>setTimeout(resolve,0));
-  const dayNode=document.createElement('section');dayNode.id='at115-desktop-day';dayNode.setAttribute('aria-label','Your Anime Day');$('at-home-top')?.after(dayNode);
   modules.iphone.mount();
   await new Promise(resolve=>setTimeout(resolve,0));
   window.ATHTML.insertHTML($('discover'),'beforebegin','<section id="at117-mobile-discover" class="at117-mobile-discover" aria-label="Rekomandimet dhe animet popullore"></section>');
@@ -164,6 +169,7 @@ export function createFeatures(ctx){
   await new Promise(resolve=>setTimeout(resolve,0));
   if(ctx.user())void modules.recommendations.refresh(false);
   product?.mount();
+  if($('mobile-home')&&$('home-anime-pulse'))$('mobile-home').before($('home-anime-pulse'));
  }
  let diaryLoading=null;
  function loadDiary(){

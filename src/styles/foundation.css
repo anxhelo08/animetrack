@@ -586,7 +586,7 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
 
 /* ===== home.css ===== */
 /* AnimeTrack 10.2 · watch-first Home and profile statistics */
-#home-view.at-home-rebuilt > :not(#at-home-main):not(#product-onboarding):not(#product-home-empty):not(#at-iphone-feed):not(#product-onboarding):not(#product-home-empty):not(#mobile-home){display:none!important}
+#home-view.at-home-rebuilt > :not(#at-home-main):not(#product-onboarding):not(#product-home-empty):not(#at-iphone-feed):not(#product-onboarding):not(#product-home-empty):not(#mobile-home):not(#home-anime-pulse){display:none!important}
 #home-view.at-home-rebuilt{display:block}
 #at-home-main{display:grid;gap:22px;padding:2px 0 32px;min-width:0}
 #at-home-main button{cursor:pointer}
@@ -980,7 +980,7 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
  html{background:#10111b;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
  body{background:#10111b;padding-bottom:calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
  body.at-ios-enabled .main{padding:0 13px!important;max-width:none}
- body.at-ios-enabled #home-view.at-home-rebuilt>:not(#at-iphone-feed):not(#product-onboarding):not(#product-home-empty):not(#mobile-home){display:none!important}
+ body.at-ios-enabled #home-view.at-home-rebuilt>:not(#at-iphone-feed):not(#product-onboarding):not(#product-home-empty):not(#mobile-home):not(#home-anime-pulse){display:none!important}
  /* Override the legacy desktop rule (#home-view.at-home-rebuilt > :not(#at-home-main):not(#product-onboarding):not(#product-home-empty)).
     The mobile feed is a direct child and must explicitly win that specificity. */
  body.at-ios-enabled #home-view.at-home-rebuilt > #at-iphone-feed{display:block!important;visibility:visible!important;opacity:1!important}

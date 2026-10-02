@@ -1,7 +1,7 @@
 /* AnimeTrack 12.4 — local-first command search. No account data is uploaded. */
 window.ATCommand124=function ATCommand124(ctx){
  const esc=ctx.esc,normalize=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase().trim();
- const pages=[['home','⌂','Kryefaqja','Vazhdo shikimin'],['library','▤','Biblioteka','Anime dhe seriale'],['explore','⌕','Katalogu online','Kërko anime dhe seriale'],['recommendations','✦','Rekomandime për ty','Zbulo histori të reja'],['calendar','◷','Kalendari','Premierat e javës'],['collections','▣','Listat e mia','Koleksionet'],['profile','◉','Profili im','Statistikat personale']];
+ const pages=[['home','⌂','Kryefaqja','Vazhdo shikimin'],['library','▤','Biblioteka','Anime dhe seriale'],['explore','⌕','Katalogu online','Kërko anime dhe seriale'],['recommendations','✦','Rekomandime për ty','Zbulo histori të reja'],['calendar','◷','Kalendari','Premierat e javës'],['collections','▣','Listat e mia','Koleksionet'],['profile','◉','Profili im','Statistikat personale'],['friends','♧','Miqtë','Kërko dhe shto miq'],['notifications','◈','Njoftimet','Aktiviteti i ri'],['wrapped','◇','Anime Wrapped','Statistikat e vitit'],['watch','▶','Ku ta shoh','Lidhjet e shikimit'],['sync','⇄','MAL / AniList Sync','Sinkronizo listat']];
  let root=null,input=null,list=null,items=[],selected=0,returnTo=null,open=false;
  const activeModals=()=>[...document.querySelectorAll('.modal-backdrop.show')].length;
  function index(value){const q=normalize(value),found=[];for(const [id,icon,label,desc] of pages){
@@ -34,22 +34,22 @@ window.ATCommand124=function ATCommand124(ctx){
   input.setAttribute('aria-activedescendant',current.length?'at124-result-'+selected:'');
   const count=root.querySelector('.at124-count');if(count)count.textContent=current.length+' rezultate';
  }
- function hide(){if(!open)return;open=false;root.hidden=true;root.classList.remove('show');document.body.classList.remove('at124-command-open');if(returnTo?.isConnected&&typeof returnTo.focus==='function')returnTo.focus({preventScroll:true});}
- function show(){if(!root||activeModals())return;returnTo=document.activeElement;open=true;root.hidden=false;root.classList.add('show');document.body.classList.add('at124-command-open');input.value='';selected=0;paint();input.focus({preventScroll:true});}
+ function hide(){if(!open)return;open=false;root.hidden=true;root.classList.remove('show');document.body.classList.remove('at124-command-open');window.dispatchEvent(new CustomEvent('at-command-visibility'));if(returnTo?.isConnected&&typeof returnTo.focus==='function')returnTo.focus({preventScroll:true});}
+ function show(){if(!root||activeModals())return;returnTo=document.activeElement;open=true;root.hidden=false;root.classList.add('show');document.body.classList.add('at124-command-open');window.dispatchEvent(new CustomEvent('at-command-visibility'));input.value='';selected=0;paint();input.focus({preventScroll:true});}
  function run(i){const x=items[i];if(!x)return;hide();if(x.kind==='page')ctx.navigate(x.id);else if(x.kind==='anime')ctx.openAnime(x.id);else if(x.kind==='episode')ctx.openEpisode(x.id,x.seasonId,x.n);else if(x.kind==='online')ctx.online(x.id);}
  function mount(){
   if(root)return;
   root=document.createElement('div');root.id='at124-command';root.className='at124-command';root.hidden=true;
   window.ATHTML.renderHTML(root,'<div class="at124-command-shade" data-at124-close="1"></div><section class="at124-command-panel" role="dialog" aria-modal="true" aria-label="Kërkim i shpejtë"><div class="at124-command-search"><span aria-hidden="true">⌕</span><input id="at124-command-input" type="search" maxlength="100" placeholder="Kërko anime, seriale, episode ose faqe…" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="at124-command-results"><button type="button" data-at124-close="1" aria-label="Mbyll kërkimin">×</button></div><div class="at124-command-results" id="at124-command-results" role="listbox" aria-label="Rezultatet e kërkimit"></div><footer class="at124-command-foot"><span class="at124-count"></span><span>↑ ↓ Zgjidh · Enter Hap · Esc Mbyll</span></footer></section>');
   document.body.append(root);input=root.querySelector('input');list=root.querySelector('#at124-command-results');
-  const btn=document.createElement('button');btn.type='button';btn.className='at124-search-trigger';btn.dataset.at124Open='1';btn.setAttribute('aria-label','Kërkim i shpejtë, Control K');window.ATHTML.renderHTML(btn,'<span aria-hidden="true">⌕</span><span>Kërko gjithçka</span><kbd>Ctrl K</kbd>');
-  document.querySelector('.top-actions')?.prepend(btn);
+  const shortcut=document.querySelector('.header-search-shortcut kbd');if(shortcut)shortcut.textContent=/Mac|iPhone|iPad/.test(navigator.platform)?'⌘ K':'Ctrl K';
   input.addEventListener('input',()=>{selected=0;paint()});
   root.addEventListener('click',e=>{if(e.target.closest('[data-at124-close]'))hide();const b=e.target.closest('[data-at124-index]');if(b)run(Number(b.dataset.at124Index))});
   // Capture escape before the application's existing modal key handler.
   document.addEventListener('keydown',e=>{
    const editable=e.target.closest?.('input,textarea,select,[contenteditable="true"]');
    if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();e.stopImmediatePropagation();open?hide():show();return}
+   if(!open&&e.key==='/'&&!editable&&!e.ctrlKey&&!e.metaKey&&!e.altKey){e.preventDefault();show();return}
    if(!open)return;
    if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();hide();return}
    if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();selected=Math.max(0,Math.min(items.length-1,selected+(e.key==='ArrowDown'?1:-1)));paint();list.querySelector('.active')?.scrollIntoView({block:'nearest'});return}
@@ -58,6 +58,8 @@ window.ATCommand124=function ATCommand124(ctx){
    if(e.key==='Tab'){const close=root.querySelector('[data-at124-close]:not(.at124-command-shade)');e.preventDefault();(document.activeElement===input&&!e.shiftKey?close:input).focus();return}
   },true);
   document.addEventListener('click',e=>{if(e.target.closest('[data-at124-open]'))show()});
+  window.addEventListener('at-open-command',show);
+  window.addEventListener('at-close-command',hide);
  }
  return {mount,show,hide,index};
 };

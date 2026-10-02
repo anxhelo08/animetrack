@@ -51,7 +51,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  }
  function itemFromRemote(m){
   const x=ctx.mapAniList(m);
-  return {...x,popularity:Number(m.popularity)||0,rawGenres:(m.genres||[]).map(g=>String(g).toLowerCase()),related:(m.relations?.edges||[]).filter(e=>['PREQUEL','SEQUEL','PARENT'].includes(e.relationType)).map(e=>({id:e.node?.id,malId:e.node?.idMal})),match:0,why:[]};
+  return {...x,cover:m.coverImage?.extraLarge||x.cover,backdrop:m.bannerImage||'',releaseStatus:m.status||x.releaseStatus,releaseStart:x.releaseStart,nextAiringAt:m.nextAiringEpisode?.airingAt||0,nextAiringEpisode:m.nextAiringEpisode?.episode||0,popularity:Number(m.popularity)||0,rawGenres:(m.genres||[]).map(g=>String(g).toLowerCase()),related:(m.relations?.edges||[]).filter(e=>['PREQUEL','SEQUEL','PARENT'].includes(e.relationType)).map(e=>({id:e.node?.id,malId:e.node?.idMal})),match:0,why:[]};
  }
  function tvCandidate(show){
   if(!show||!Number.isInteger(Number(show.id))||Number(show.id)<1)return null;
@@ -175,7 +175,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  }
  function savePrefs(){setStore(preferencesKey(),{hidden:[...hidden].slice(-250),mood,length,media})}
  async function request(page,genres,sort){
-  const query=`query($page:Int,$genres:[String],$sort:[MediaSort]){Page(page:$page,perPage:50){media(type:ANIME,isAdult:false,genre_in:$genres,format_in:[TV,TV_SHORT,ONA,MOVIE],sort:$sort){id idMal title{romaji english native} coverImage{large} genres episodes seasonYear format averageScore description(asHtml:false) siteUrl popularity relations{edges{relationType node{id idMal}}}}}}`;
+  const query=`query($page:Int,$genres:[String],$sort:[MediaSort]){Page(page:$page,perPage:50){media(type:ANIME,isAdult:false,genre_in:$genres,format_in:[TV,TV_SHORT,ONA,MOVIE],sort:$sort){id idMal title{romaji english native} coverImage{extraLarge large} bannerImage status startDate{year month day} nextAiringEpisode{airingAt episode} genres episodes seasonYear format averageScore description(asHtml:false) siteUrl popularity relations{edges{relationType node{id idMal}}}}}}`;
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
   try{
    const res=await fetch('https://graphql.anilist.co',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({query,variables:{page,genres:genres.length?genres:null,sort}}),signal:controller.signal});
@@ -229,5 +229,5 @@ window.ATRecommendations=function ATRecommendations(ctx){
  async function add(key){const x=items.find(x=>x.key===key);if(!x)return;await ctx.addItem(x);rerank()}
  function reset(){requestId++;owner='';candidates=[];items=[];loading=false;error='';redraw()}
  function onLibraryChange(){if(owner===String(ctx.user()?.id||'guest')&&candidates.length)rerank()}
- return {render,home,trending,refresh,add,preview,hide,restore,setMedia,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange,getItems:()=>items.slice()};
+ return {render,home,trending,refresh,add,preview,hide,restore,setMedia,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange,getItems:()=>items.slice(),getUpdates:()=>candidates.filter(x=>x.kind!=='tv').slice().sort((a,b)=>Number(b.popularity)-Number(a.popularity))};
 };

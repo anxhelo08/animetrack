@@ -36,7 +36,7 @@ test('13.6.0 Continue Watching ignores movie parts when numbering TV seasons',()
  const rendered=api.render();
  assert.match(rendered.lineup,/S3 · EP 8/);
  assert.doesNotMatch(rendered.lineup,/S4 · EP 8/);
- assert.match(rendered.hero,/S3 · Episodi 8/);
+ assert.match(rendered.feature,/S3 · Episodi 8/);
 });
 
 test('13.6.0 mobile sync re-subscribes and re-fetches when app wakes',()=>{

@@ -103,7 +103,7 @@ test('watch-first home replaces duplicate stats without removing legacy render n
  c.state=()=>data;c.nextEpisode=()=>({season:a.seasons[0],n:3});c.releasedTotal=()=>12;c.count=()=>2;c.percent=()=>17;c.poster=()=>'';c.rerender=()=>{};
  let opened=null,marked=null;c.openEpisode=(id,s,n)=>{opened=[id,s,n]};c.markNext=id=>{marked=id};c.save=()=>true;
  const home=w.ATHome(c),parts=home.render();
- assert.match(parts.hero,/Çfarë do të shikosh sot/);
+ assert.match(parts.hero,/data-home-action="lineup-scroll"/);
  assert.match(parts.feature,/Mystery Voyage/);assert.match(parts.feature,/10 për t’u parë/);assert.match(parts.feature,/Episodi 3/);
  assert.match(parts.lineup,/S1 · EP 3/);assert.match(parts.lineup,/\+1 episod/);
  assert.doesNotMatch(parts.hero,/Anime gjithsej/);
@@ -427,7 +427,7 @@ test('11.2 desktop command search matches personal library without changing it',
  assert.equal(items.length,1);assert.equal(items[0].id,'a1');assert.equal(items[0].type,'anime');
  assert.ok(pro.data('miqtë').some(x=>x.id==='friends'));
  assert.equal(data.anime.length,2);
- assert.match(fs.readFileSync(path.join(root,'src/modules/experience.js'),'utf8'),/aria-modal="true"/);
+ assert.match(fs.readFileSync(path.join(root,'src/modules/command.js'),'utf8'),/aria-modal="true"/);
 });
 
 test('11.2 phone filters and order are UI-only and are cached in the PWA shell',()=>{

@@ -128,7 +128,7 @@ test('continue watching labels a movie after TV seasons without inventing an epi
     released: () => 1,
   };
   const home = w.ATHome(ctx).render();
-  for (const key of ['hero', 'feature', 'lineup']) {
+  for (const key of ['feature', 'lineup']) {
     expect(home[key]).toContain('Film · Eureka — Movie 2');
     expect(home[key]).not.toMatch(/S3.*?(EP|Episodi) 1/);
   }
