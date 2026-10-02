@@ -91,7 +91,7 @@ export function createMobilePresentation(ctx) {
     const row = (a, next, options = {}) => {
       const meta = next.season.episodes?.find((e) => e.number === next.n);
       const poster = ctx.poster(a.cover || '');
-      return `<article class="watch-row${options.fresh ? ' watch-row--fresh' : ''}${options.seen ? ' watch-row--seen' : ''}" data-watch-key="${esc(a.id)}:${esc(next.season.id)}:${next.n}:${options.seen ? 'seen' : options.upcoming ? 'future' : 'next'}"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button>${options.fresh ? '<span class="watch-row-new">Episod i ri</span>' : ''}<button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || 'Episodi i radhës')}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div>${options.upcoming ? '<span class="watch-row-pending" aria-label="Ende pa transmetuar">◷</span>' : options.seen ? `<button type="button" class="watch-row-seen" data-mobile-action="unwatch" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}" aria-label="Hiq shënimin e episodit ${next.n} të ${esc(a.title)}" title="Hiq nga episodet e parë">✓</button>` : `<button type="button" class="media-card-mark watch-row-mark" data-ios-action="advance" data-id="${esc(a.id)}" aria-label="Shëno episodin e radhës të ${esc(a.title)} si të parë">${navIcon('watch')}</button>`}</article>`;
+      return `<article class="watch-row${options.fresh ? ' watch-row--fresh' : ''}${options.seen ? ' watch-row--seen' : ''}" data-watch-key="${esc(a.id)}:${esc(next.season.id)}:${next.n}:${options.seen ? 'seen' : options.upcoming ? 'future' : 'next'}"><button type="button" class="watch-row-poster" data-mobile-action="detail" data-id="${esc(a.id)}" aria-label="Hap ${esc(a.title)}">${poster ? `<img src="${esc(poster)}" alt="" loading="lazy" decoding="async">` : '<span aria-hidden="true">✦</span>'}</button><div class="watch-row-copy"><button type="button" class="watch-row-title" data-mobile-action="detail" data-id="${esc(a.id)}">${esc(a.title)} <span aria-hidden="true">›</span></button>${options.fresh ? '<span class="watch-row-new">Episod i ri</span>' : ''}<button type="button" class="watch-row-episode" data-mobile-action="episode" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}">${esc(episode(a, next))}</button><p>${esc(meta?.title || (options.seen ? 'Episod i parë' : options.upcoming ? 'Episod i ardhshëm' : 'Episodi i radhës'))}${a.runtime ? ' · ' + esc(a.runtime) + ' min' : ''}</p></div>${options.upcoming ? '<span class="watch-row-pending" aria-label="Ende pa transmetuar">◷</span>' : options.seen ? `<button type="button" class="watch-row-seen" data-mobile-action="unwatch" data-id="${esc(a.id)}" data-mobile-season="${esc(next.season.id)}" data-mobile-episode="${next.n}" aria-label="Hiq shënimin e episodit ${next.n} të ${esc(a.title)}" title="Hiq nga episodet e parë">✓</button>` : `<button type="button" class="media-card-mark watch-row-mark" data-ios-action="advance" data-id="${esc(a.id)}" aria-label="Shëno episodin e radhës të ${esc(a.title)} si të parë">${navIcon('watch')}</button>`}</article>`;
     };
     const recent = recentWatchedEpisodes(items, history);
     const upcoming = entries
@@ -273,7 +273,7 @@ export function createMobilePresentation(ctx) {
         if (visible) shown++;
       });
     const done =
-      !$('catalog-grid').hasAttribute('aria-busy') &&
+      $('catalog-grid').getAttribute('aria-busy') !== 'true' &&
       $('catalog-grid').querySelector('.catalog-card');
     $('mobile-filter-empty').classList.toggle(
       'mobile-search-hidden',
@@ -291,14 +291,14 @@ export function createMobilePresentation(ctx) {
       'beforeend',
       `<div id="mobile-browse" class="mobile-only"><span class="mobile-kicker">ZGJIDH HISTORINË E RADHËS</span><h2>Çfarë të pëlqen?</h2><div class="mobile-browse-grid">${[
         ['anime', 'Anime', '01'],
-        ['tv', 'Series', '02'],
-        ['movie', 'Movies', '03'],
-        ['trending', 'Trending', '↗'],
-        ['new', 'New Releases', '✦'],
-        ['top', 'Top Rated', '★'],
-        ['genres', 'Genres', '◈'],
-        ['studios', 'Studios', '◎'],
-        ['upcoming', 'Upcoming', '◷'],
+        ['tv', 'Seriale', '02'],
+        ['movie', 'Filma', '03'],
+        ['trending', 'Në trend', navIcon('trending')],
+        ['new', 'Publikime të reja', navIcon('new')],
+        ['top', 'Më të vlerësuarat', navIcon('top')],
+        ['genres', 'Zhanret', navIcon('genres')],
+        ['studios', 'Studiot', navIcon('studios')],
+        ['upcoming', 'Së shpejti', navIcon('calendar')],
       ]
         .map(
           ([key, label, mark]) =>
@@ -306,17 +306,17 @@ export function createMobilePresentation(ctx) {
         )
         .join(
           '',
-        )}</div><button type="button" class="mobile-news-link" data-pro-page="news">✦ Anime News <span aria-hidden="true">↗</span></button><section id="mobile-browse-content" aria-live="polite"></section></div>`,
+        )}</div><button type="button" class="mobile-news-link" data-pro-page="news">${navIcon('news')} Lajme anime <span aria-hidden="true">${navIcon('trending')}</span></button><section id="mobile-browse-content" aria-live="polite"></section></div>`,
     );
     window.ATHTML.insertHTML(
       $('global-search').closest('label'),
       'afterend',
       `<div id="mobile-search-filters" class="mobile-only mobile-search-hidden" role="group" aria-label="Lloji i rezultateve">${[
-        ['all', 'All'],
+        ['all', 'Të gjitha'],
         ['anime', 'Anime'],
-        ['tv', 'Series'],
-        ['movie', 'Movies'],
-        ['people', 'People'],
+        ['tv', 'Seriale'],
+        ['movie', 'Filma'],
+        ['people', 'Miq'],
       ]
         .map(
           ([key, label]) =>
@@ -324,7 +324,7 @@ export function createMobilePresentation(ctx) {
         )
         .join(
           '',
-        )}</div><p id="mobile-filter-empty" class="mobile-only mobile-search-hidden mobile-empty">Nuk ka rezultate në këtë kategori. Provo All ose një titull tjetër.</p><div id="mobile-people" class="mobile-only"><p>Kërko miq me emrin ose username-in e tyre.</p><button type="button" class="primary" data-mobile-action="people">Shiko rezultatet për miq</button></div>`,
+        )}</div><p id="mobile-filter-empty" class="mobile-only mobile-search-hidden mobile-empty">Nuk ka rezultate në këtë kategori. Provo “Të gjitha” ose një titull tjetër.</p><div id="mobile-people" class="mobile-only"><p>Kërko miq me emrin ose emrin e tyre të përdoruesit.</p><button type="button" class="primary" data-mobile-action="people">Shiko rezultatet për miq</button></div>`,
     );
     observer = new MutationObserver(searchState);
     observer.observe($('catalog-grid'), {
@@ -362,7 +362,7 @@ export function createMobilePresentation(ctx) {
         $('mobile-browse-content'),
         section(
           'category',
-          { anime: 'Anime', tv: 'Series', movie: 'Movies' }[kind],
+          { anime: 'Anime', tv: 'Seriale', movie: 'Filma' }[kind],
           items
             .map((a) => card(a, { recommendation: true, subtitle: a.genre || a.format }))
             .join('') || empty('Kërko një titull lart ose hap katalogun për më shumë zbulime.'),
@@ -394,7 +394,7 @@ export function createMobilePresentation(ctx) {
         $('mobile-browse-content'),
         section(
           'browse-trending',
-          'Trending',
+          'Në trend',
           items
             .map((a) =>
               card(a, {
@@ -639,7 +639,7 @@ export function createMobilePresentation(ctx) {
     tools.className = 'mobile-library-controls';
     window.ATHTML.renderHTML(
       tools,
-      '<summary>Filter + Sort <span aria-hidden="true">☷</span></summary><div class="mobile-library-controls-body"></div>',
+      `<summary>Filtro dhe rendit <span aria-hidden="true">${navIcon('filters')}</span></summary><div class="mobile-library-controls-body"></div>`,
     );
     const body = tools.querySelector('div');
     window.ATHTML.insertHTML(

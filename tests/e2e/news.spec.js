@@ -23,7 +23,7 @@ async function openNews(page, info) {
     await page.locator('#pro-nav-news').click();
   }
   await expect(page.locator('.anime-news')).toBeVisible();
-  await expect(page.locator('#page-title')).toHaveText('Anime News');
+  await expect(page.locator('#page-title')).toHaveText('Lajme anime');
 }
 async function images(page) {
   await page.route('https://news-images.animetrack.test/**', (route) =>

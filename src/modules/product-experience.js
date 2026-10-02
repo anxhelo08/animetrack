@@ -87,7 +87,7 @@ export function createProductExperience(ctx) {
       home: 'Kreu',
       library: 'Biblioteka ime',
       explore: 'Zbulo tituj',
-      news: 'Anime News',
+      news: 'Lajme anime',
       diary: 'Aktiviteti im',
       profile: 'Profili im',
       seasons: 'Sezonet anime',

@@ -1,3 +1,11 @@
+# 14.7.3
+
+- Filmat nga kërkimi i shpejtë hapin detajet e filmit, edhe me Enter.
+- Faqet e anime-ve ruajnë kërkimin e filmave në pritje; ndryshimi i titullit anulon burimet e kërkimit të vjetër.
+- “Shiko të gjitha pjesët” shfaq familjen e katalogut edhe kur një pjesë është në bibliotekë, me shënim për pjesët e ruajtura.
+- Historiku mobile dallon episodet e parë nga episodi i radhës dhe episodet e ardhshme.
+- Etiketa shqip, ikona SVG dhe filtra të bibliotekës në një rresht horizontal me kontrolle të paktën 44 px.
+
 # 14.7.2
 
 - Mirëseardhje mobile me kolazh posterësh, gradient dhe buton Fillo në gjerësi të plotë.

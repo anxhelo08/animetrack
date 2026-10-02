@@ -68,7 +68,7 @@ window.ATMovies12150=(()=>{
   if(String(tmdbToken).trim()){try{const items=await searchTMDB(query,tmdbToken,signal);if(items.length)return {items,provider:'TMDB',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('TMDB movie search failed',err)}}
   try{const items=await searchCinemeta(query,signal);if(items.length)return {items,provider:'IMDb/Cinemeta',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('Cinemeta movie search failed',err)}
   if(String(omdbKey).trim()){try{const items=await searchOMDb(query,omdbKey,signal);if(items.length)return {items,provider:'OMDb',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('OMDb movie search failed',err)}}
-  try{return {items:await searchWikidata(query,signal),provider:'Wikidata',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('Wikidata movie search failed',err);return {items:[],provider:'Wikidata',authNeeded:false}}
+  try{return {items:await searchWikidata(query,signal),provider:'Wikidata',authNeeded:false}}catch(err){if(signal?.aborted)throw err;console.warn('Wikidata movie search failed',err);return {items:[],provider:'Wikidata',authNeeded:false,failed:true}}
  }
  async function omdbDetails(imdbId,key,signal){
   if(!imdbId||!key)return null;const url='https://www.omdbapi.com/?'+new URLSearchParams({apikey:key,i:imdbId,plot:'full'});

@@ -26,6 +26,7 @@ export function bindLibraryUI(ctx) {
       });
     }
     if (b.dataset.preview) ctx.openCatalogPreview(b.dataset.preview);
+    if (b.dataset.catalogFamily) ctx.openCatalogPreview(b.dataset.catalogFamily, { family: true });
     if (b.dataset.catalogRetry) ctx.searchCatalog(ctx.catalogQuery(), 1);
     if (b.dataset.close) ctx.closeModal(b.dataset.close);
     if (b.dataset.detail) ctx.openDetail(b.dataset.detail);

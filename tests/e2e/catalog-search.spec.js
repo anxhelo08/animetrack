@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { openFixture } from '../fixtures/browser-app.js';
+import { demonFixture } from '../fixtures/franchise-137.js';
 
 const media = (id, title, year, format = 'TV') => ({
   id,
@@ -183,4 +184,149 @@ test('a late response to an old query cannot replace the current results', async
   await page.waitForTimeout(100);
   await expect(page.locator('#catalog-grid .catalog-card')).toHaveCount(1);
   await expect(page.locator('#catalog-grid')).not.toContainText('Attack');
+});
+
+for (const action of ['click', 'Enter']) {
+  test(`a film in header search opens its movie details with ${action}`, async ({ page }, info) => {
+    test.skip(info.project.name.startsWith('iphone'), 'Header search is desktop-only.');
+    await ready(page);
+    await page.route('**/api/cinemeta?**', (route) => {
+      const item = {
+        id: 'tt1375666',
+        type: 'movie',
+        name: 'Inception',
+        releaseInfo: '2010',
+        runtime: '148 min',
+        director: ['Christopher Nolan'],
+        description: 'A movie about dreams.',
+      };
+      return route.fulfill({
+        json:
+          new URL(route.request().url()).searchParams.get('mode') === 'meta'
+            ? { meta: item }
+            : { metas: [item] },
+      });
+    });
+    await page.locator('#search').fill('Inception');
+    const result = page.locator('#top-results .top-result').filter({ hasText: 'Inception' });
+    await expect(result).toBeVisible();
+    if (action === 'click') await result.click();
+    else await page.locator('#search').press('Enter');
+    await expect(page.locator('#detail-modal')).toBeVisible();
+    await expect(page.locator('#detail-heading')).toHaveText('Detajet e filmit');
+    await expect(page.locator('#detail-body')).toContainText('148 min');
+    await expect(page.locator('#detail-body')).toContainText('Christopher Nolan');
+    await expect(page.locator('[data-preview-add]')).toHaveCount(0);
+    await expect(page.locator('[data-movie-add="planning"]')).toBeVisible();
+  });
+}
+
+test('pagination preserves pending movies and a new query discards old movie responses', async ({
+  page,
+}, info) => {
+  await ready(page);
+  await page.route('https://graphql.anilist.co', (route) => {
+    const { page: number, search } = route.request().postDataJSON().variables || {};
+    return route.fulfill({
+      json: {
+        data: {
+          Page: {
+            media: search === 'Naruto' ? [naruto] : number === 2 ? [unrelated] : [first],
+            pageInfo: { hasNextPage: search !== 'Naruto' && number === 1 },
+          },
+        },
+      },
+    });
+  });
+  await page.evaluate(() => {
+    window.__movieQueries = [];
+    window.ATMovies12150.search = (query, { signal }) =>
+      new Promise((resolve) => {
+        window.__movieQueries.push({ query, signal, resolve });
+      });
+  });
+  await browse(page, info);
+  await page.locator('#global-search').fill('Attack');
+  await expect(page.locator('#catalog-more')).toBeVisible();
+  await page.locator('#catalog-more').click();
+  await expect(page.locator('#catalog-grid')).toContainText('unrelated title');
+  expect(await page.evaluate(() => window.__movieQueries[0].signal.aborted)).toBe(false);
+  await page.evaluate(() =>
+    window.__movieQueries[0].resolve({
+      provider: 'Cinemeta',
+      items: [
+        {
+          kind: 'movie',
+          key: 'movie-cinemeta-tt1375666',
+          source: 'Cinemeta',
+          sourceId: 'tt1375666',
+          title: 'Inception',
+          year: 2010,
+          format: 'MOVIE',
+        },
+      ],
+    }),
+  );
+  await expect(page.locator('#catalog-grid')).toContainText('Inception');
+  await expect(page.locator('#catalog-grid')).not.toHaveAttribute('aria-busy', 'true');
+  expect(await page.evaluate(() => window.__movieQueries.length)).toBe(1);
+  await page.locator('#global-search').fill('Old movie');
+  await expect.poll(() => page.evaluate(() => window.__movieQueries.length)).toBe(2);
+  await page.locator('#global-search').fill('Naruto');
+  await expect.poll(() => page.evaluate(() => window.__movieQueries.length)).toBe(3);
+  expect(await page.evaluate(() => window.__movieQueries[1].signal.aborted)).toBe(true);
+  await page.evaluate(() => {
+    window.__movieQueries[1].resolve({
+      provider: 'Cinemeta',
+      items: [
+        {
+          kind: 'movie',
+          key: 'stale-movie',
+          source: 'Cinemeta',
+          sourceId: 'tt1',
+          title: 'Stale film',
+        },
+      ],
+    });
+    window.__movieQueries[2].resolve({ provider: 'Cinemeta', items: [] });
+  });
+  await expect(page.locator('#catalog-grid')).toContainText('Naruto');
+  await expect(page.locator('#catalog-grid')).not.toContainText('Stale film');
+  await expect(page.locator('#catalog-grid')).not.toContainText('Inception');
+});
+
+test('catalogue families show missing parts when a season is already in the library', async ({
+  page,
+}, info) => {
+  const saved = demonFixture().anime;
+  const payload = { anime: [saved], history: [], preferences: {} };
+  Object.assign(saved, {
+    source: 'AniList',
+    sourceId: String(first.id),
+    malId: String(first.idMal),
+  });
+  Object.assign(saved.seasons[0], {
+    source: 'AniList',
+    sourceId: String(first.id),
+    malId: String(first.idMal),
+  });
+  await openFixture(page, { payload });
+  await page.waitForFunction(() => window.ATMobile113?.state().anime.length > 0);
+  const before = await page.evaluate(() => window.ATMobile113.state().anime);
+  await page.route('https://graphql.anilist.co', (route) =>
+    route.fulfill({
+      json: {
+        data: { Page: { media: [first, second, film], pageInfo: { hasNextPage: false } } },
+      },
+    }),
+  );
+  await browse(page, info);
+  await page.locator('#global-search').fill('Attack');
+  await page.locator('.catalog-family-summary button').click();
+  await expect(page.locator('.catalog-family-part')).toHaveCount(3);
+  await expect(page.locator('.catalog-family-part').first()).toContainText('Në bibliotekë');
+  await page.locator(`.catalog-family-part[data-preview="al-${film.id}"]`).click();
+  await expect(page.locator('#detail-body h3').first()).toHaveText('The Last Attack');
+  await expect(page.locator(`[data-preview-add="al-${film.id}"]`).first()).toBeVisible();
+  expect(await page.evaluate(() => window.ATMobile113.state().anime)).toEqual(before);
 });

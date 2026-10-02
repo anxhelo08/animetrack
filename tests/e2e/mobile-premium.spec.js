@@ -89,6 +89,7 @@ for (const width of [320, 375, 390, 430]) {
     const initial = await state(page);
     await expect(page.locator('#mobile-history .watch-row-seen')).toHaveCount(1);
     await expect(page.locator('#mobile-history')).toContainText('S2 EP1');
+    await expect(page.locator('#mobile-history .watch-row-copy p')).toHaveText('Episod i parë');
     await expect(page.locator('#mobile-continue .watch-row-seen')).toHaveCount(0);
     expect(
       await page.locator('.at-mobile-nav').evaluate((node) => node.getBoundingClientRect().height),
@@ -184,16 +185,38 @@ for (const width of [320, 375, 390, 430]) {
     await page.screenshot({ path: info.outputPath(`discover-${width}.png`), fullPage: true });
 
     await page.locator('[data-mobile-nav="library"]').click();
+    await expect
+      .poll(() =>
+        page.locator('#library-status-strip').evaluate((node) => {
+          const buttons = [...node.querySelectorAll('button')].filter(
+            (b) => getComputedStyle(b).display !== 'none',
+          );
+          const top = buttons[0].getBoundingClientRect().top;
+          return buttons
+            .filter((button) => {
+              const rect = button.getBoundingClientRect();
+              return Math.round(rect.height) < 44 || Math.abs(rect.top - top) > 1;
+            })
+            .map((button) => button.textContent.trim());
+        }),
+      )
+      .toEqual([]);
     expect(
-      await page.locator('#library-status-strip').evaluate((node) =>
-        [...node.querySelectorAll('button')]
-          .filter((b) => getComputedStyle(b).display !== 'none')
-          .every((b) => {
-            const r = b.getBoundingClientRect();
-            return r.left >= 0 && r.right <= innerWidth;
-          }),
-      ),
+      await page.locator('#library-status-strip').evaluate((node) => {
+        const bounds = node.getBoundingClientRect();
+        return (
+          bounds.height <= 60 && bounds.right <= innerWidth && node.scrollWidth > node.clientWidth
+        );
+      }),
     ).toBe(true);
+    const planned = page.locator('#library-status-strip [data-filter="planning"]');
+    await planned.focus();
+    await planned.press('Enter');
+    await expect(planned).toHaveClass(/active/);
+    expect(
+      await page.locator('#library-status-strip').evaluate((node) => node.scrollLeft),
+    ).toBeGreaterThan(0);
+    await page.locator('#library-status-strip [data-filter="all"]').click();
     await expect(page.locator('#mobile-library-controls')).not.toHaveAttribute('open', '');
     await page.locator('#mobile-library-controls summary').click();
     await expect(page.locator('#sort')).toBeVisible();

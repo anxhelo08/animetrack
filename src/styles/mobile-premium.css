@@ -660,6 +660,7 @@
     border-radius: 14px;
     background: var(--surface);
     overflow: hidden;
+    text-align: left;
   }
   .mobile-browse-grid > button > span {
     font-size: 19px;
@@ -2316,24 +2317,26 @@
   }
   body.at-ios-enabled #library-view #library-status-strip {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     position: static;
     gap: 6px;
     margin: 0 0 14px;
     padding: 0;
     width: 100%;
-    overflow: visible;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
     max-width: 100%;
     box-sizing: border-box;
   }
   body.at-ios-enabled #library-status-strip > button {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
-    min-height: 40px;
+    min-height: 44px;
     height: auto;
     padding: 8px 10px;
     font-size: 11px;
-    white-space: normal;
+    white-space: nowrap;
     border-radius: 12px;
   }
   body.at-ios-enabled .watch-row-new {

@@ -9,6 +9,14 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 function load(fetchImpl){const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},fetch:fetchImpl,URLSearchParams,console};vm.runInNewContext(read('src/modules/movies.js'),sandbox);return sandbox.window.ATMovies12150}
 const response=data=>({ok:true,status:200,json:async()=>data});
+test('movie provider outages are distinct from a successful empty search',async()=>{
+ const failed=await load(async()=>({ok:false,status:503})).search('Missing film');
+ assert.equal(failed.failed,true);
+ assert.equal(failed.items.length,0);
+ const empty=await load(async()=>response({metas:[],search:[]})).search('Missing film');
+ assert.notEqual(empty.failed,true);
+ assert.equal(empty.items.length,0);
+});
 test('12.15.3 TMDB search maps movies as first-class catalog items',async()=>{
  const api=load(async url=>{assert.match(String(url),/search\/movie/);return response({results:[{id:11,title:'Star Wars',original_title:'Star Wars',release_date:'1977-05-25',poster_path:'/p.jpg',backdrop_path:'/b.jpg',overview:'Space opera',vote_average:8.2}]})});
  const r=await api.search('Star Wars',{tmdbToken:'token-token-token-token'});assert.equal(r.provider,'TMDB');assert.equal(r.items[0].kind,'movie');assert.equal(r.items[0].tmdbId,'11');assert.equal(r.items[0].score,82);assert.match(r.items[0].cover,/image\.tmdb\.org/);
