@@ -72,7 +72,7 @@ export function homeStories(updates = [], library = [], now = Date.now()) {
   });
 }
 
-/** One stable, responsive spotlight; timers stop offscreen, in dialogs and for reduced motion. */
+/** One continuous timeline. Hidden routes need no timer; returning catches up to elapsed time. */
 export function createHomeSpotlight(ctx) {
   let root,
     stories = [],
@@ -80,7 +80,9 @@ export function createHomeSpotlight(ctx) {
     signature = '',
     timer,
     dayTimer,
-    shownDay;
+    shownDay,
+    nextAt,
+    animationEpoch = performance.now();
   let intersecting = false;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const phone = window.matchMedia('(max-width: 760px)');
@@ -128,15 +130,36 @@ export function createHomeSpotlight(ctx) {
   function schedule() {
     if (!root) return;
     root.dataset.motion = visible() && !motion.matches ? 'running' : 'paused';
+    // display:none recreates CSS animations. Restore their position on the same
+    // wall-clock timeline instead of restarting the camera drift on each visit.
+    if (visible() && !motion.matches) {
+      for (const animation of root.getAnimations({ subtree: true })) {
+        if (animation.animationName === 'pulse-cinema')
+          animation.currentTime = (performance.now() - animationEpoch) % 44000;
+      }
+    }
+    const interactionPaused =
+      motion.matches ||
+      document.hidden ||
+      document.querySelector('.modal-backdrop.show, .at124-command.show') ||
+      root.querySelector('.pulse-slide.is-active :focus-visible');
+    if (interactionPaused) nextAt = undefined;
     if (canMove() && timer) return;
     clearTimeout(timer);
     timer = undefined;
     if (canMove()) {
+      const now = performance.now();
+      nextAt ??= now + 20000;
+      if (now >= nextAt) {
+        const steps = Math.floor((now - nextAt) / 20000) + 1;
+        nextAt += steps * 20000;
+        select(current() + steps);
+        return;
+      }
       timer = setTimeout(() => {
         timer = undefined;
-        if (canMove()) select(current() + 1);
-        else schedule();
-      }, 20000);
+        schedule();
+      }, nextAt - now);
     }
   }
   function scheduleDay() {
@@ -205,6 +228,7 @@ export function createHomeSpotlight(ctx) {
       root.replaceChildren();
       signature = '';
       stories = [];
+      nextAt = undefined;
       clearTimeout(dayTimer);
       schedule();
       return;
@@ -232,8 +256,10 @@ export function createHomeSpotlight(ctx) {
     stories = nextStories;
     if (signature !== nextSignature) {
       signature = nextSignature;
-      if (shownDay !== day || !stories.some((item) => item.storyKey === activeKey))
+      if (shownDay !== day || !stories.some((item) => item.storyKey === activeKey)) {
         activeKey = stories[0]?.storyKey || '';
+        nextAt = undefined;
+      }
       paint();
     }
     shownDay = day;

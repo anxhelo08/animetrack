@@ -1,3 +1,11 @@
+# 14.8.0 — Manga & Manhwa për PC
+
+- Seksion i gjashtë vetëm në desktop, me Leximet e mia, Zbulo dhe Ditari i leximit.
+- Kërkim i veçuar nga anime/filmat; katalog AniList për manga japoneze dhe manhwa koreane, filtra dhe shtim manual.
+- Progres kapitujsh e vëllimesh, statuse, nota, të preferuara, shënime personale dhe ditar për çdo kapitull.
+- Bibliotekë leximi e veçuar në sinkronizim, kopje rezervë dhe rikuperim; të dhënat ruhen edhe në telefon pa shfaqur seksionin e PC-së.
+- Animacione të buta me respekt për reduced motion; Anime Pulse në Kreu vazhdon të njëjtën kohë dhe kap vijimin kur kthehesh.
+
 # 14.7.3
 
 - Filmat nga kërkimi i shpejtë hapin detajet e filmit, edhe me Enter.
@@ -112,7 +120,7 @@
 
 All notable changes to AnimeTrack are documented here.
 
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `14.2.0` / package version `14.2.0`.
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Current release: `14.8.0` / package version `14.8.0`.
 
 ## [Unreleased]
 

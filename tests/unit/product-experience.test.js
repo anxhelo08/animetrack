@@ -26,6 +26,7 @@ function fixture() {
       'explore-nav',
       'pro-nav-diary',
       'pro-nav-profile',
+      'pro-nav-reading',
       'pro-nav-calendar',
       'seasons-nav',
       'pro-nav-collections',
@@ -70,7 +71,7 @@ test('onboarding is isolated per account and navigation leaves the library uncha
   expect(localStorage.getItem('animetrack_onboarding_140_first')).toBe('done');
   product.navigation('calendar');
   expect(document.querySelector('#pro-nav-diary').getAttribute('aria-current')).toBe('page');
-  expect(document.querySelectorAll('#side-nav > button')).toHaveLength(5);
+  expect(document.querySelectorAll('#side-nav > button')).toHaveLength(6);
   setUser('second');
   product.refresh();
   expect(document.querySelector('#product-onboarding').classList.contains('product-hidden')).toBe(

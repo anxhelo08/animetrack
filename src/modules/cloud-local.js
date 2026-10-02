@@ -47,6 +47,7 @@ window.ATCloudLocal12123=(()=>{
    cloudSchema:'13.0',
    anime:(Array.isArray(input.anime)?input.anime:[]).map(compactAnime),
    tvShows:[],
+   ...(Array.isArray(input.readingLibrary)?{readingLibrary:clone(input.readingLibrary)}:{}),
    history:Array.isArray(input.history)?clone(input.history):[],
    preferences:input.preferences&&typeof input.preferences==='object'?clone(input.preferences):{}
   };
@@ -101,11 +102,26 @@ window.ATCloudLocal12123=(()=>{
   const merged={
    ...base,
    anime,
+   ...((Array.isArray(base.readingLibrary)||Array.isArray(pending.readingLibrary))?{readingLibrary:mergeReading(base.readingLibrary,pending.readingLibrary)}:{}),
    tvShows:[],
    history:[...historyMap.values()],
    preferences:{...(base.preferences||{}),...(pending.preferences||{}),customLists:[...lists.values()]}
   };
   return window.ATLibraryIdentity137?.repair(merged)?.payload||merged;
+ }
+ function mergeReading(remote=[],local=[]){
+  const rows=new Map(remote.map(row=>[row.id,clone(row)]));
+  for(const row of local){
+   const prior=rows.get(row.id);if(!prior){rows.set(row.id,clone(row));continue}
+   const localNewer=Date.parse(row.updatedAt)>=Date.parse(prior.updatedAt),newer=localNewer?row:prior,older=localNewer?prior:row;
+   const events=new Map();for(const event of [...(older.journal||[]),...(newer.journal||[])])events.set(event.id,event);
+   const journal=[...events.values()].sort((a,b)=>(a.recordedAt||a.date).localeCompare(b.recordedAt||b.date));
+   const read=new Set([...(prior.chaptersRead||[]),...(row.chaptersRead||[])]);
+   for(const event of journal){if(event.action==='read')read.add(event.chapter);else read.delete(event.chapter)}
+   const total=Math.max(newer.totalChapters||0,...read);
+   rows.set(row.id,{...older,...newer,totalChapters:newer.totalChapters?total:0,chaptersRead:[...read].sort((a,b)=>a-b),journal:journal.slice(-5000)});
+  }
+  return [...rows.values()];
  }
  function hydrateSeason(remote,rich){
   if(!rich)return clone(remote);

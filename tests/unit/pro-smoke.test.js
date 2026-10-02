@@ -13,7 +13,7 @@ const vm=require('node:vm');
 const root=path.resolve(__dirname,'../..');
 const names=['recommendations','wrapped','calendar-wrapped','diary','watch','rich-details','provider-sync','profiles','friends','moderation','notifications','rewatch','home','seasonal','episode-hub','filler','franchise','iphone','tv-episodes','tv','tv-unified','unified','daily','journey','smart-airing','push','collections','experience','features'];
 function load(extra={}){
- const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},navIcon,createProductExperience:()=>undefined,console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
+ const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},navIcon,createProductExperience:()=>undefined,createReading:()=>({render(){},hide(){},open(){return false},mount(){}}),console,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController,...extra};
  vm.createContext(sandbox);
  for(const name of names)vm.runInContext(fs.readFileSync(path.join(root,'src/modules',name+'.js'),'utf8').replace(/^import .*;\n/gm,'').replace('export function createFeatures(ctx)', 'window.AnimeTrackPro=function createFeatures(ctx)'),sandbox,{filename:name+'.js'});
  return sandbox.window;

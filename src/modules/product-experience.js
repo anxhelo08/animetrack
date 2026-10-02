@@ -4,6 +4,7 @@ import { createMobilePresentation } from './mobile-presentation.js';
 
 export { syncPresentation };
 export function primaryPage(page) {
+  if (page === 'reading') return 'reading';
   if (['explore', 'seasons', 'recommendations', 'news'].includes(page)) return 'explore';
   if (['library', 'collections'].includes(page)) return 'library';
   if (['diary', 'calendar', 'upcoming', 'statistics', 'wrapped', 'notifications'].includes(page))
@@ -31,6 +32,7 @@ export function createProductExperience(ctx) {
     ['explore', 'explore-nav', 'Zbulo'],
     ['diary', 'pro-nav-diary', 'Aktiviteti'],
     ['profile', 'pro-nav-profile', 'Profili'],
+    ['reading', 'pro-nav-reading', 'Manga & Manhwa'],
   ];
   const groups = {
     library: ['pro-nav-collections'],
@@ -85,6 +87,7 @@ export function createProductExperience(ctx) {
     hidden('product-tools', !visible.length);
     const titles = {
       home: 'Kreu',
+      reading: 'Manga & Manhwa',
       library: 'Biblioteka ime',
       explore: 'Zbulo tituj',
       news: 'Lajme anime',

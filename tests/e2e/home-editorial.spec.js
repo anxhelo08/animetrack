@@ -201,7 +201,7 @@ test('reduced motion keeps one static, accessible story', async ({ page }, info)
   await expect(page.locator('#detail-modal')).toBeVisible();
 });
 
-test('20-second crossfade runs under hover, preserves nodes and pauses for keyboard actions and hidden pages', async ({
+test('20-second crossfade preserves nodes and catches up when returning home', async ({
   page,
 }, info) => {
   test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
@@ -245,13 +245,15 @@ test('20-second crossfade runs under hover, preserves nodes and pauses for keybo
   await page.clock.runFor(25000);
   await expect(activeTitle(page)).toHaveText(daily[2].title);
   await page.keyboard.press('Escape');
+  await page.mouse.click(0, 0);
   await page.locator('#library-nav').click();
-  await page.clock.runFor(25000);
+  await page.clock.runFor(45000);
   await expect(activeTitle(page)).toHaveText(daily[2].title);
   await page.locator('#home-nav').click();
   await page.mouse.move(0, 0);
-  await page.clock.runFor(20200);
-  await expect(activeTitle(page)).toHaveText(daily[0].title);
+  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await page.clock.runFor(15200);
+  await expect(activeTitle(page)).toHaveText(daily[2].title);
 });
 
 test('slow artwork decoding does not hold the 20-second story changes', async ({ page }, info) => {

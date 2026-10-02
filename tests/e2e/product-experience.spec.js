@@ -51,12 +51,12 @@ test('first account completes three steps without adding demo data and can impor
   await chooser;
 });
 
-test('five primary destinations retain secondary tools and details put progress first', async ({
+test('primary destinations retain secondary tools and details put progress first', async ({
   page,
 }, info) => {
   await openFixture(page);
   await expect(page.locator('#product-onboarding')).not.toBeVisible();
-  await expect(page.locator('#side-nav > button')).toHaveCount(5);
+  await expect(page.locator('#side-nav > button')).toHaveCount(6);
   const mobile = info.project.name.startsWith('iphone');
   async function go(name, id) {
     await page.locator(mobile ? `[data-mobile-nav="${name}"]` : '#' + id).click();

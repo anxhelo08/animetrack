@@ -18,6 +18,11 @@ export function validateLibrary(value, { requireHistory = false } = {}) {
   if (value.preferences != null && !object(value.preferences)) fail('preferences');
   if (value.tvShows != null && (!Array.isArray(value.tvShows) || value.tvShows.length > 800))
     fail('tvShows');
+  if (
+    value.readingLibrary != null &&
+    (!Array.isArray(value.readingLibrary) || value.readingLibrary.length > 3000)
+  )
+    fail('readingLibrary');
   let nodes = 0;
   const scan = (item, depth = 0) => {
     if (++nodes > 2_000_000 || depth > 24) fail('madhësia/struktura');
@@ -31,6 +36,38 @@ export function validateLibrary(value, { requireHistory = false } = {}) {
     }
   };
   scan(value);
+  const readingIds = new Set();
+  for (const [i, row] of (value.readingLibrary || []).entries()) {
+    const path = 'readingLibrary[' + i + ']';
+    if (
+      !object(row) ||
+      typeof row.id !== 'string' ||
+      !/^reading-[a-zA-Z0-9_-]{1,100}$/.test(row.id) ||
+      readingIds.has(row.id) ||
+      typeof row.title !== 'string' ||
+      !row.title.trim() ||
+      row.title.length > 180 ||
+      !['manga', 'manhwa'].includes(row.kind)
+    )
+      fail(path);
+    readingIds.add(row.id);
+    integer(row.totalChapters, 10000, path + '.totalChapters');
+    integer(row.totalVolumes, 1000, path + '.totalVolumes');
+    integer(row.volumesRead, 1000, path + '.volumesRead');
+    if (!Array.isArray(row.chaptersRead) || row.chaptersRead.length > 10000)
+      fail(path + '.chaptersRead');
+    for (const n of row.chaptersRead) {
+      integer(n, 10000, path + '.chaptersRead');
+      if (Number(n) < 1) fail(path + '.chaptersRead');
+    }
+    if (!Array.isArray(row.journal) || row.journal.length > 5000) fail(path + '.journal');
+    for (const event of row.journal) {
+      if (!object(event) || !event.id || !['read', 'unread'].includes(event.action))
+        fail(path + '.journal');
+      integer(event.chapter, 10000, path + '.chapter');
+      if (!event.chapter || !Number.isFinite(Date.parse(event.date))) fail(path + '.journal');
+    }
+  }
   for (const [i, anime] of value.anime.entries()) {
     const path = 'anime[' + i + ']';
     if (

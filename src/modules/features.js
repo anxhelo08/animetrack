@@ -3,6 +3,7 @@ import {navIcon} from './nav-icons.js';
 import {createProductExperience} from './product-experience.js';
 import { createHomeSpotlight } from './home-spotlight.js';
 import { renderNewsSection } from './news.js';
+import { createReading } from './reading.js';
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
 export function createFeatures(ctx){
  const $=ctx.el,esc=ctx.esc;
@@ -10,6 +11,7 @@ export function createFeatures(ctx){
  let achievementsOwner='',achievementsKnown=null;const homeMarkup=new WeakMap();
  let spotlight=null,newsController=null,newsHost=null;
  const product=createProductExperience(ctx);
+ const reading=createReading(ctx);
  const proPages=['news','notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>window.ATHTML.html`<button type="button" class="pro-btn" data-pro-action="${action}" data-id="${id}">${label}</button>`;
  const modules={
@@ -48,6 +50,7 @@ export function createFeatures(ctx){
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
  function renderBackground(){if(!['collections','profile','friends','moderation','sync'].includes(active))render()}
  function render(force=false){if(!active)return;
+  if(active==='reading'){reading.render(false);return}
   if(active==='news'){const content=$('pro-content');if(!newsHost){newsHost=document.createElement('div');newsController=renderNewsSection(newsHost)}if(!content.contains(newsHost)){content.replaceChildren(newsHost);homeMarkup.delete(content)}newsController.setActive(true);return}
   newsController?.setActive(false);if(active==='diary'&&!modules.diary)return;
   // Background refreshes must never replace a typed, unsubmitted collection name.
@@ -106,10 +109,13 @@ export function createFeatures(ctx){
   window.ATUnified119?.mount();
   await new Promise(resolve=>setTimeout(resolve,0));
   const nav=$('side-nav');
+  window.ATHTML.insertHTML(nav,'beforeend','<button type="button" class="nav-btn" data-pro-page="reading" id="pro-nav-reading"><span>'+navIcon('reading')+' <span class="nav-label">Manga &amp; Manhwa</span></span></button>');
   window.ATHTML.insertHTML(nav,'beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['news','✦','Lajme anime'],['collections','▤','Listat e mia'],['diary','✎','Diary'],['watch','▶','Ku ta shoh'],['sync','⇄','MAL / AniList Sync'],['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${navIcon(key)} <span class="nav-label">${label}</span></span></button>`).join(''));
   window.ATHTML.insertHTML(document.querySelector('.top-actions'),'afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
   window.ATHTML.insertHTML(document.querySelector('main.main'),'beforeend','<section class="pro-view hidden" id="pro-view" aria-label="AnimeTrack Pro"><div id="pro-content"></div></section>');
   document.querySelector('main.main .footer')?.before($('pro-view'));
+  reading.mount(document.querySelector('main.main'));
+  document.querySelector('main.main .footer')?.before($('reading-view'));
   window.ATHTML.insertHTML(document.body,'beforeend',`<nav class="at-mobile-nav" aria-label="Navigimi i aplikacionit"><button type="button" data-mobile-nav="home" class="active"><span>${navIcon("home")}</span><small>Episodet</small></button><button type="button" data-mobile-nav="explore"><span>${navIcon("explore")}</span><small>Kërko</small></button><button type="button" data-mobile-nav="library"><span>${navIcon("library")}</span><small>Biblioteka</small></button><button type="button" data-mobile-nav="diary"><span>${navIcon("diary")}</span><small>Aktiviteti</small></button><button type="button" data-mobile-nav="profile"><span>${navIcon("profile")}</span><small>Unë</small></button></nav>`);
   const home=$('home-view'),recommend=document.createElement('section');recommend.id='pro-home-recs';recommend.className='pro-panel';const sync=home.querySelector('.sync-panel');if(sync)sync.before(recommend);else home.append(recommend);
   const dash=document.createElement('div');dash.className='at-home-dashboard';window.ATHTML.renderHTML(dash,'<section id="pro-home-week" class="pro-panel"></section><section id="pro-home-inbox" class="pro-panel"></section>');recommend.after(dash);
@@ -181,6 +187,8 @@ export function createFeatures(ctx){
   return diaryLoading;
  }
  function open(name){
+  if(name==='reading'&&reading.open(name)){newsController?.setActive(false);active=name;ctx.setLocalView(name);return true}
+  reading.hide();
   if(!proPages.includes(name))return false;
   active=name;ctx.setLocalView(name);
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
@@ -189,7 +197,7 @@ export function createFeatures(ctx){
   if(name==='diary'&&!modules.diary){window.ATHTML.renderHTML($('pro-content'),'<p role="status">Po ngarkohet ditari…</p>');void loadDiary().then(()=>{if(active==='diary')render()}).catch(()=>{if(active==='diary')window.ATHTML.renderHTML($('pro-content'),'<p role="alert">Ditari nuk u ngarkua.</p><button type="button" class="ghost" data-pro-page="diary">Provo përsëri</button>')})}
   if(name==='collections'||name==='tv')setMobileActive('library');if(name==='sync')setMobileActive('profile');if(name==='news')setMobileActive('explore');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();if(!window.matchMedia('(max-width:760px)').matches)window.scrollTo({top:0,behavior:'smooth'});return true;
  }
- function hide(){newsController?.setActive(false);active='';$('pro-view')?.classList.add('hidden')}
+ function hide(){reading.hide();newsController?.setActive(false);active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name);if(name==='explore'){renderMobileDiscover();void modules.recommendations.refresh(false)}}
  async function onAccount(){
   try{
