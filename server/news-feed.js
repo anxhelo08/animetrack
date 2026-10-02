@@ -123,3 +123,29 @@ export async function readNewsXML(response, maxBytes = 1500000) {
   }
   return Buffer.concat(chunks).toString('utf8');
 }
+
+export async function fetchNewsFeed(feed, fetchImpl, headers) {
+  const original = new URL(feed.url);
+  const publisher = original.hostname.replace(/^www\./, '');
+  const signal = AbortSignal.timeout(8000);
+  let target = original.href;
+  for (let hop = 0; hop <= 2; hop++) {
+    const response = await fetchImpl(target, { headers, redirect: 'manual', signal });
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const location = response.headers.get('location');
+    await response.body?.cancel().catch(() => {});
+    if (!location || hop === 2) throw Error('Unsafe feed redirect');
+    const next = new URL(location, target);
+    // RSS endpoints may move. Follow only HTTPS on the same publisher, within the original timeout.
+    if (
+      next.protocol !== 'https:' ||
+      next.username ||
+      next.password ||
+      next.port ||
+      next.hostname.replace(/^www\./, '') !== publisher
+    )
+      throw Error('Unsafe feed redirect');
+    target = next.href;
+  }
+  throw Error('Unsafe feed redirect');
+}

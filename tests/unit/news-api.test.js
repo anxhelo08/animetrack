@@ -96,7 +96,7 @@ describe('cached news proxy', () => {
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(fetchImpl.mock.calls[0][0]).toBe(NEWS_FEEDS[0].url);
     expect(fetchImpl.mock.calls[0][1]).toMatchObject({
-      redirect: 'error',
+      redirect: 'manual',
       signal: expect.any(AbortSignal),
     });
     for (const res of responses) {
@@ -161,4 +161,37 @@ describe('cached news proxy', () => {
     expect(method.code).toBe(405);
     expect(fetchImpl).not.toHaveBeenCalled();
   });
+});
+
+it('follows a publisher RSS redirect and blocks cross-host, insecure, or looping redirects', async () => {
+  const same = vi.fn(async (target) =>
+    target === NEWS_FEEDS[0].url
+      ? new Response('', { status: 302, headers: { location: '/news/rss.xml?edition=us' } })
+      : new Response(feed),
+  );
+  const ok = response();
+  await createHandler({ fetchImpl: same, feeds: [NEWS_FEEDS[0]], limit: () => true })(request, ok);
+  expect(ok.code).toBe(200);
+  expect(same.mock.calls[1][0]).toBe('https://www.animenewsnetwork.com/news/rss.xml?edition=us');
+  expect(same.mock.calls[0][1].signal).toBe(same.mock.calls[1][1].signal);
+  for (const location of [
+    'http://www.animenewsnetwork.com/news/rss.xml',
+    'https://evil.example/feed',
+    'https://www.animenewsnetwork.com:8443/feed',
+    'http://127.0.0.1/admin',
+  ]) {
+    const fetchImpl = vi.fn(async () => new Response('', { status: 302, headers: { location } }));
+    const denied = response();
+    await createHandler({ fetchImpl, feeds: [NEWS_FEEDS[0]], limit: () => true })(request, denied);
+    expect(denied.code).toBe(502);
+    expect(denied.headers['X-News-Upstream-Status']).toBe('feed1:REDIRECT');
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  }
+  const loop = vi.fn(
+    async () => new Response('', { status: 302, headers: { location: '/news/rss.xml' } }),
+  );
+  const res = response();
+  await createHandler({ fetchImpl: loop, feeds: [NEWS_FEEDS[0]], limit: () => true })(request, res);
+  expect(res.code).toBe(502);
+  expect(loop).toHaveBeenCalledTimes(3);
 });
