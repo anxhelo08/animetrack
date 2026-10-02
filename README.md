@@ -28,3 +28,12 @@ Instalo aplikacionin nga Chrome/Edge ose Safari → Share → Add to Home Screen
 Vercel krijon preview për branch/PR. Publikimi në `main` bëhet pas CI dhe verifikohet READY. CI kontrollon databazën, tre shfletues, buxhetin e JavaScript-it dhe medianën Lighthouse; raportet ruhen si artifacts.
 
 [Prova me 3–5 përdorues realë](docs/USER-TESTING.md) është përgatitur por ende nuk është kryer. Testet automatike përdorin të dhëna sintetike dhe nuk zëvendësojnë këto prova.
+
+
+### Anime News
+
+Open **Zbulo → Anime News** on desktop or mobile, or find Anime News in the command palette. The section loads only when opened. `/api/news` reads Anime News Network RSS and tries Crunchyroll News if the first publisher fails; concurrent requests share a fetch. Successful responses use `s-maxage=900, stale-while-revalidate=1800`. A recently cached feed can cover a temporary publisher outage for up to 45 minutes and is labelled as cached; older data is rejected.
+
+`renderNewsSection(containerElement)` in `src/modules/news.js` returns a controller with `refresh()`, `setActive(boolean)`, and `destroy()`. Call `setActive(false)` when hiding a retained container and `destroy()` when removing it permanently. Navigation preserves filters and card nodes. Category labels group publisher categories or headline keywords; missing artwork uses `public/news-placeholder.svg`. Reduced motion disables entrances, shimmer, hover movement and filter transitions.
+
+Vite development and preview serve the same news handler as Vercel. RSS access requires outbound HTTPS to `www.animenewsnetwork.com` and `www.crunchyroll.com`; publisher failures show a retry state rather than sample articles. Run `npx vitest run tests/unit/news-api.test.js tests/unit/news.test.js` and `npx playwright test tests/e2e/news.spec.js` to verify parsing, caching and browser interactions.

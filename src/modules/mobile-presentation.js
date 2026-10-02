@@ -304,7 +304,9 @@ export function createMobilePresentation(ctx) {
           ([key, label, mark]) =>
             `<button type="button" data-mobile-browse="${key}"><span aria-hidden="true">${mark}</span><strong>${label}</strong></button>`,
         )
-        .join('')}</div><section id="mobile-browse-content" aria-live="polite"></section></div>`,
+        .join(
+          '',
+        )}</div><button type="button" class="mobile-news-link" data-pro-page="news">✦ Anime News <span aria-hidden="true">↗</span></button><section id="mobile-browse-content" aria-live="polite"></section></div>`,
     );
     window.ATHTML.insertHTML(
       $('global-search').closest('label'),

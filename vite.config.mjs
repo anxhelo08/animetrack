@@ -1,3 +1,4 @@
+import { newsAPI } from './server/vite-news.js';
 import {designSystemCSS} from './src/design-system.mjs';
 import {defineConfig} from 'vite';
 import {VitePWA} from 'vite-plugin-pwa';
@@ -9,6 +10,7 @@ export default defineConfig({
   css:{postcss:{plugins:[designSystemCSS()]}},
   preview:{headers},
   plugins:[
+    newsAPI(),
     VitePWA({
       strategies:'injectManifest',
       srcDir:'src',

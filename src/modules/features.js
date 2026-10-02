@@ -2,14 +2,15 @@ import { createVisibleScheduler } from '../core/visible-scheduler.js';
 import {navIcon} from './nav-icons.js';
 import {createProductExperience} from './product-experience.js';
 import { createHomeSpotlight } from './home-spotlight.js';
+import { renderNewsSection } from './news.js';
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
 export function createFeatures(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,pwaUpdater=null,updateRequested=false;
  let achievementsOwner='',achievementsKnown=null;const homeMarkup=new WeakMap();
- let spotlight=null;
+ let spotlight=null,newsController=null,newsHost=null;
  const product=createProductExperience(ctx);
- const proPages=['notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
+ const proPages=['news','notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>window.ATHTML.html`<button type="button" class="pro-btn" data-pro-action="${action}" data-id="${id}">${label}</button>`;
  const modules={
   notifications:window.ATNotifications(ctx),
@@ -46,7 +47,9 @@ export function createFeatures(ctx){
  function renderMobileDiscover(){const node=$('at117-mobile-discover');if(!node)return;const recs=modules.recommendations;window.ATHTML.renderHTML(node,`<section class="at128-mobile-season-link"><div><span>✦ KATALOGU SEZONAL</span><strong>Zbulo anime sipas zhanrit</strong><small>Drama · Thriller · Isekai · Fantasy</small></div><button type="button" data-at128-open-seasons>Shiko sezonet ↗</button></section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>✦ PËR TY</span><h3>Rekomanduar për ty</h3></div><button type="button" data-pro-page="recommendations">Të gjitha ›</button></div>${recs.home()}</section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>◈ ANILIST · POPULLARITETI</span><h3>Popullore për ty</h3></div></div><p class="at117-discover-note">Tituj nga zbulimet e tua, renditur sipas ndjekësve në AniList; jo statistika të AnimeTrack.</p><div class="at117-trending-row">${recs.trending()||'<p class="at117-discover-note">Po ngarkohen titujt nga katalogu…</p>'}</div></section>`)}
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
  function renderBackground(){if(!['collections','profile','friends','moderation','sync'].includes(active))render()}
- function render(force=false){if(!active)return;if(active==='diary'&&!modules.diary)return;
+ function render(force=false){if(!active)return;
+  if(active==='news'){const content=$('pro-content');if(!newsHost){newsHost=document.createElement('div');newsController=renderNewsSection(newsHost)}if(!content.contains(newsHost)){content.replaceChildren(newsHost);homeMarkup.delete(content)}newsController.setActive(true);return}
+  newsController?.setActive(false);if(active==='diary'&&!modules.diary)return;
   // Background refreshes must never replace a typed, unsubmitted collection name.
   // Explicit collection mutations still use ctx.rerender() and force a fresh view.
   if(!force&&active==='collections'&&$('at110-new-list')?.value.trim())return;
@@ -103,7 +106,7 @@ export function createFeatures(ctx){
   window.ATUnified119?.mount();
   await new Promise(resolve=>setTimeout(resolve,0));
   const nav=$('side-nav');
-  window.ATHTML.insertHTML(nav,'beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['collections','▤','Listat e mia'],['diary','✎','Diary'],['watch','▶','Ku ta shoh'],['sync','⇄','MAL / AniList Sync'],['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${navIcon(key)} <span class="nav-label">${label}</span></span></button>`).join(''));
+  window.ATHTML.insertHTML(nav,'beforeend','<div class="aside-title">PRO EXPERIENCE</div>'+[['news','✦','Anime News'],['collections','▤','Listat e mia'],['diary','✎','Diary'],['watch','▶','Ku ta shoh'],['sync','⇄','MAL / AniList Sync'],['notifications','🔔','Njoftimet'],['recommendations','✨','Për ty'],['calendar','📅','Kalendari'],['wrapped','🏆','Anime Wrapped'],['profile','👤','Profili im'],['friends','👥','Miqtë & Compare'],['moderation','🛡️','Moderimi']].map(([key,icon,label])=>`<button type="button" class="nav-btn ${key==='moderation'?'hidden':''}" data-pro-page="${key}" id="pro-nav-${key}"><span>${navIcon(key)} <span class="nav-label">${label}</span></span></button>`).join(''));
   window.ATHTML.insertHTML(document.querySelector('.top-actions'),'afterbegin','<button type="button" class="pro-bell" id="pro-bell" data-pro-page="notifications" aria-label="Njoftimet">🔔 <span id="pro-badge" class="pro-bell-count"></span></button>');
   window.ATHTML.insertHTML(document.querySelector('main.main'),'beforeend','<section class="pro-view hidden" id="pro-view" aria-label="AnimeTrack Pro"><div id="pro-content"></div></section>');
   document.querySelector('main.main .footer')?.before($('pro-view'));
@@ -182,11 +185,11 @@ export function createFeatures(ctx){
   active=name;ctx.setLocalView(name);
   for(const id of ['home-view','library-view','upcoming-view','explore-view','seasons-view','statistics-view'])$(id)?.classList.add('hidden');
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
-  $('page-title').textContent=({notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',diary:'Ditari',watch:'Ku ta shoh ▶',sync:'MAL / AniList Sync ⇄',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤',tv:'Serialet e mia ▣'})[name];setMobileActive(name);
+  $('page-title').textContent=({news:'Anime News',notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',diary:'Ditari',watch:'Ku ta shoh ▶',sync:'MAL / AniList Sync ⇄',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤',tv:'Serialet e mia ▣'})[name];setMobileActive(name);
   if(name==='diary'&&!modules.diary){window.ATHTML.renderHTML($('pro-content'),'<p role="status">Po ngarkohet ditari…</p>');void loadDiary().then(()=>{if(active==='diary')render()}).catch(()=>{if(active==='diary')window.ATHTML.renderHTML($('pro-content'),'<p role="alert">Ditari nuk u ngarkua.</p><button type="button" class="ghost" data-pro-page="diary">Provo përsëri</button>')})}
-  if(name==='collections'||name==='tv')setMobileActive('library');if(name==='sync')setMobileActive('profile');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();if(!window.matchMedia('(max-width:760px)').matches)window.scrollTo({top:0,behavior:'smooth'});return true;
+  if(name==='collections'||name==='tv')setMobileActive('library');if(name==='sync')setMobileActive('profile');if(name==='news')setMobileActive('explore');render();if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();if(!window.matchMedia('(max-width:760px)').matches)window.scrollTo({top:0,behavior:'smooth'});return true;
  }
- function hide(){active='';$('pro-view')?.classList.add('hidden')}
+ function hide(){newsController?.setActive(false);active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name);if(name==='explore'){renderMobileDiscover();void modules.recommendations.refresh(false)}}
  async function onAccount(){
   try{

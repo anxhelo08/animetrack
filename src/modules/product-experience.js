@@ -4,7 +4,7 @@ import { createMobilePresentation } from './mobile-presentation.js';
 
 export { syncPresentation };
 export function primaryPage(page) {
-  if (['explore', 'seasons', 'recommendations'].includes(page)) return 'explore';
+  if (['explore', 'seasons', 'recommendations', 'news'].includes(page)) return 'explore';
   if (['library', 'collections'].includes(page)) return 'library';
   if (['diary', 'calendar', 'upcoming', 'statistics', 'wrapped', 'notifications'].includes(page))
     return 'diary';
@@ -34,7 +34,7 @@ export function createProductExperience(ctx) {
   ];
   const groups = {
     library: ['pro-nav-collections'],
-    explore: ['seasons-nav', 'pro-nav-recommendations'],
+    explore: ['seasons-nav', 'pro-nav-recommendations', 'pro-nav-news'],
     diary: [
       'pro-nav-calendar',
       'upcoming-nav',
@@ -87,6 +87,7 @@ export function createProductExperience(ctx) {
       home: 'Kreu',
       library: 'Biblioteka ime',
       explore: 'Zbulo tituj',
+      news: 'Anime News',
       diary: 'Aktiviteti im',
       profile: 'Profili im',
       seasons: 'Sezonet anime',
