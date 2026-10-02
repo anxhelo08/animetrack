@@ -80,19 +80,15 @@ export function createHomeSpotlight(ctx) {
     signature = '',
     timer,
     dayTimer,
-    decoding = false,
-    generation = 0,
     shownDay;
-  let hovered = false,
-    focused = false,
-    intersecting = false;
+  let intersecting = false;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const phone = window.matchMedia('(max-width: 760px)');
   const esc = ctx.esc;
-  const image = (item, kind) => {
+  const image = (item, kind, active = false) => {
     const url = ctx.poster(kind === 'backdrop' ? item.backdrop || item.cover : item.cover);
     return url
-      ? `<img class="pulse-${kind}" src="${esc(url)}" alt="" decoding="async" ${kind === 'backdrop' ? 'fetchpriority="high"' : 'loading="lazy"'} referrerpolicy="no-referrer">`
+      ? `<img class="pulse-${kind}" src="${esc(url)}" alt="" decoding="async" loading="${kind === 'backdrop' || active ? 'eager' : 'lazy'}" fetchpriority="${active && kind === 'backdrop' ? 'high' : 'low'}" referrerpolicy="no-referrer">`
       : '';
   };
   const current = () =>
@@ -112,39 +108,35 @@ export function createHomeSpotlight(ctx) {
     );
   }
   function canMove() {
-    return visible() && !hovered && !focused && !motion.matches && stories.length > 1;
+    // An ordinary hover or mouse click must not silently stop the slideshow.
+    // Keep the active story still while a keyboard user is operating its actions.
+    return (
+      visible() &&
+      !root.querySelector('.pulse-slide.is-active :focus-visible') &&
+      !motion.matches &&
+      stories.length > 1
+    );
+  }
+  function prepareNext() {
+    const panel = root?.querySelectorAll('.pulse-slide')[(current() + 1) % stories.length];
+    for (const img of panel?.querySelectorAll('img') || []) {
+      img.loading = 'eager';
+      // Prepare artwork during the current story, never delay the 20-second change.
+      if (typeof img.decode === 'function') void img.decode().catch(() => {});
+    }
   }
   function schedule() {
     if (!root) return;
-    // Pointer/focus holds the story, without freezing the gentle background motion.
     root.dataset.motion = visible() && !motion.matches ? 'running' : 'paused';
-    if (canMove() && (timer || decoding)) return;
+    if (canMove() && timer) return;
     clearTimeout(timer);
     timer = undefined;
-    decoding = false;
-    generation++;
     if (canMove()) {
-      const version = generation;
-      timer = setTimeout(async () => {
+      timer = setTimeout(() => {
         timer = undefined;
-        decoding = true;
-        const index = (current() + 1) % stories.length;
-        const panel = root.querySelectorAll('.pulse-slide')[index];
-        // Decode incoming artwork before crossfading. A slow download keeps the current story.
-        let deadline;
-        const images = [...(panel?.querySelectorAll('img') || [])];
-        const ready = await Promise.race([
-          Promise.all(images.map((img) => img.decode().catch(() => {}))).then(() => true),
-          new Promise((resolve) => {
-            deadline = setTimeout(() => resolve(false), 2000);
-          }),
-        ]);
-        clearTimeout(deadline);
-        if (version !== generation) return;
-        decoding = false;
-        if (ready && canMove()) select(index);
+        if (canMove()) select(current() + 1);
         else schedule();
-      }, 11000);
+      }, 20000);
     }
   }
   function scheduleDay() {
@@ -163,17 +155,15 @@ export function createHomeSpotlight(ctx) {
     const active = current() === index;
     return `
         <article class="pulse-slide${active ? ' is-active' : ''}" aria-label="${esc(title)}" aria-hidden="${!active}" ${active ? '' : 'inert'}>
-          <div class="pulse-art" aria-hidden="true">${image(item, 'backdrop')}</div>
+          <div class="pulse-art" aria-hidden="true">${image(item, 'backdrop', active)}</div>
           <div class="pulse-stage-top"><span class="pulse-badge"><span aria-hidden="true"></span>${esc(item?.badge || 'Zbulo anime')}</span><span class="pulse-source">${esc(item?.sourceLabel || 'ANIMETRACK')}</span></div>
-          <div class="pulse-stage-body"><div class="pulse-copy"><div class="pulse-meta">${esc(item?.genresLabel || 'Bota e animeve')}${item?.year ? ' <span>·</span> ' + esc(item.year) : ''}${rating ? ' <span>·</span> ★ ' + rating.toFixed(1) : ''}</div><h3>${esc(title)}</h3><p>${esc(description)}</p>${item?.dateLabel ? `<div class="pulse-date">${navIcon('calendar')} ${esc(item.dateLabel)}</div>` : ''}<div class="pulse-actions"><button type="button" class="pulse-primary" data-pulse-action="open" data-key="${esc(item?.storyKey || '')}">${navIcon('watch')} ${item?.remote ? 'Zbulo animen' : item ? 'Hap animen' : 'Zbulo anime'}</button><button type="button" class="pulse-secondary" data-pro-page="calendar">${navIcon('calendar')} Kalendari</button></div></div>${item ? `<div class="pulse-poster-wrap" aria-hidden="true">${image(item, 'poster')}<span class="pulse-poster-caption">${esc(item.format === 'MOVIE' ? 'FILM ANIME' : 'ANIME SERIES')}</span></div>` : ''}</div>
+          <div class="pulse-stage-body"><div class="pulse-copy"><div class="pulse-meta">${esc(item?.genresLabel || 'Bota e animeve')}${item?.year ? ' <span>·</span> ' + esc(item.year) : ''}${rating ? ' <span>·</span> ★ ' + rating.toFixed(1) : ''}</div><h3>${esc(title)}</h3><p>${esc(description)}</p>${item?.dateLabel ? `<div class="pulse-date">${navIcon('calendar')} ${esc(item.dateLabel)}</div>` : ''}<div class="pulse-actions"><button type="button" class="pulse-primary" data-pulse-action="open" data-key="${esc(item?.storyKey || '')}">${navIcon('watch')} ${item?.remote ? 'Zbulo animen' : item ? 'Hap animen' : 'Zbulo anime'}</button><button type="button" class="pulse-secondary" data-pro-page="calendar">${navIcon('calendar')} Kalendari</button></div></div>${item ? `<div class="pulse-poster-wrap" aria-hidden="true">${image(item, 'poster', active)}<span class="pulse-poster-caption">${esc(item.format === 'MOVIE' ? 'FILM ANIME' : 'ANIME SERIES')}</span></div>` : ''}</div>
         </article>`;
   }
   function paint() {
     if (!root) return;
-    generation++;
     clearTimeout(timer);
     timer = undefined;
-    decoding = false;
     window.ATHTML.renderHTML(
       root,
       `
@@ -185,7 +175,13 @@ export function createHomeSpotlight(ctx) {
     );
     for (const panel of root.querySelectorAll('.pulse-slide'))
       panel.inert = !panel.classList.contains('is-active');
+    updateRadar();
+    prepareNext();
     schedule();
+  }
+  function updateRadar() {
+    for (const button of root.querySelectorAll('.pulse-story'))
+      button.classList.toggle('is-current', button.dataset.key === activeKey);
   }
   function select(index) {
     if (!stories.length) return;
@@ -196,6 +192,8 @@ export function createHomeSpotlight(ctx) {
       panel.setAttribute('aria-hidden', String(!active));
       panel.inert = !active;
     }
+    updateRadar();
+    prepareNext();
     schedule();
   }
   function refresh() {
@@ -259,22 +257,8 @@ export function createHomeSpotlight(ctx) {
         else ctx.openAnime(item.id);
       }
     });
-    root.addEventListener('pointerenter', () => {
-      hovered = true;
-      schedule();
-    });
-    root.addEventListener('pointerleave', () => {
-      hovered = false;
-      schedule();
-    });
-    root.addEventListener('focusin', () => {
-      focused = true;
-      schedule();
-    });
-    root.addEventListener('focusout', (event) => {
-      focused = root.contains(event.relatedTarget);
-      schedule();
-    });
+    root.addEventListener('focusin', schedule);
+    root.addEventListener('focusout', () => queueMicrotask(schedule));
     root.addEventListener(
       'error',
       (event) => {

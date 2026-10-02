@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import { newsImageEndpoint } from './news-photo.js';
 
 export const NEWS_FEEDS = [
   { url: 'https://www.animenewsnetwork.com/news/rss.xml', source: 'Anime News Network' },
@@ -96,7 +97,7 @@ export function parseNewsFeed(xml, feed = NEWS_FEEDS[0]) {
       category: category(item, title),
       snippet,
       description: snippet,
-      thumbnail: image || NEWS_PLACEHOLDER,
+      thumbnail: image || newsImageEndpoint(link) || NEWS_PLACEHOLDER,
       source: feed.source,
     });
   }

@@ -82,15 +82,15 @@
   flex-direction: column;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+  transition: opacity 1s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 .pulse-slide.is-active {
   opacity: 1;
   pointer-events: auto;
   z-index: 1;
 }
-.pulse-slide:not(.is-active) .pulse-backdrop {
-  animation-play-state: paused;
+.pulse-slide.is-active .pulse-backdrop {
+  animation-play-state: running;
 }
 .pulse-art {
   position: absolute;
@@ -104,16 +104,17 @@
   height: 100%;
   object-fit: cover;
   object-position: 65% 35%;
-  opacity: 0.66;
-  animation: pulse-cinema 40s ease-in-out infinite alternate;
+  opacity: 0.8;
+  animation: pulse-cinema 22s cubic-bezier(0.2, 0.5, 0.4, 1) infinite alternate both;
+  animation-play-state: paused;
 }
 .pulse-art::after {
   position: absolute;
   content: '';
   inset: 0;
   background:
-    linear-gradient(90deg, #101522ee 3%, #13162cc9 38%, #10152238 90%),
-    linear-gradient(0deg, #0d1126d9, transparent 55%);
+    linear-gradient(90deg, #101522f2 3%, #13162cce 38%, #10152219 90%),
+    linear-gradient(0deg, #0d1126d9, transparent 60%);
 }
 .pulse-stage-top {
   display: flex;
@@ -157,6 +158,30 @@
 .pulse-copy {
   flex: 1;
   min-width: 0;
+}
+.pulse-copy > *,
+.pulse-stage-top {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.35s ease,
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pulse-slide.is-active .pulse-copy > *,
+.pulse-slide.is-active .pulse-stage-top {
+  opacity: 1;
+  transform: translateY(0);
+  transition-duration: 0.85s;
+}
+.pulse-slide.is-active .pulse-copy h3 {
+  transition-delay: 0.12s;
+}
+.pulse-slide.is-active .pulse-copy p,
+.pulse-slide.is-active .pulse-date {
+  transition-delay: 0.2s;
+}
+.pulse-slide.is-active .pulse-actions {
+  transition-delay: 0.28s;
 }
 .pulse-meta {
   color: #d4c5fc;
@@ -256,12 +281,21 @@
   position: relative;
   flex: 0 0 clamp(110px, 12vw, 170px);
   aspect-ratio: 2 / 3;
-  transform: rotate(5deg);
+  opacity: 0;
+  transform: translate(20px, 8px) rotate(9deg) scale(0.97);
   border: 1px solid #ffffff40;
   border-radius: 13px;
   background: linear-gradient(135deg, #989cc759, #272840);
   box-shadow: -18px 24px 52px #0507147d;
   overflow: hidden;
+  transition:
+    opacity 0.65s ease,
+    transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.pulse-slide.is-active .pulse-poster-wrap {
+  opacity: 1;
+  transform: translate(0, 0) rotate(4deg) scale(1);
+  transition-delay: 0.12s;
 }
 .pulse-poster {
   width: 100%;
@@ -353,7 +387,8 @@
   font-size: 10px;
   font-weight: 650;
 }
-.pulse-story:hover .pulse-story-number {
+.pulse-story:hover .pulse-story-number,
+.pulse-story.is-current .pulse-story-number {
   color: var(--purple);
 }
 .pulse-story-copy {
@@ -375,6 +410,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.pulse-story.is-current .pulse-story-copy > strong {
+  color: var(--purple);
 }
 .pulse-story-copy > span {
   font-size: 9px;
@@ -808,10 +846,10 @@
 }
 @keyframes pulse-cinema {
   from {
-    transform: scale(1.005);
+    transform: scale(1.025) translateX(0.3%);
   }
   to {
-    transform: scale(1.035) translateX(-0.4%);
+    transform: scale(1.07) translateX(-0.8%);
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -1,8 +1,11 @@
 import news from '../api/news.js';
+import newsImage from '../api/news-image.js';
 
 // Use the same handler locally as on Vercel, rather than returning the SPA HTML for /api/news.
 function middleware(req, res, next) {
-  if (req.url?.split('?')[0] !== '/api/news') return next();
+  const path = req.url?.split('?')[0];
+  const handler = path === '/api/news' ? news : path === '/api/news-image' ? newsImage : null;
+  if (!handler) return next();
   const response = {
     setHeader: (name, value) => res.setHeader(name, value),
     status(code) {
@@ -14,8 +17,12 @@ function middleware(req, res, next) {
       res.end(JSON.stringify(value));
       return response;
     },
+    end() {
+      res.end();
+      return response;
+    },
   };
-  void news(req, response).catch(() => {
+  void handler(req, response).catch(() => {
     if (!res.writableEnded) response.status(502).json({ error: 'News temporarily unavailable' });
   });
 }

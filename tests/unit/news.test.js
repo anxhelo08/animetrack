@@ -35,3 +35,16 @@ it('combines category filters and accent-insensitive word search without mutatin
   expect(filterNews(items, 'All', 'artist')).toEqual([items[0]]);
   expect(items).toEqual(before);
 });
+it('only accepts the local photo endpoint for the same trusted article', () => {
+  const link = feed[0].link;
+  const photo = '/api/news-image?article=' + encodeURIComponent(link);
+  expect(normalizeNews([{ ...feed[0], thumbnail: photo }])[0].thumbnail).toBe(photo);
+  for (const thumbnail of [
+    '/api/news-image?article=' + encodeURIComponent(feed[1].link),
+    photo + '&image=https://evil.test/photo.jpg',
+    photo + '#anything',
+    '/api/news-image?article=' + encodeURIComponent('https://evil.test/news/1'),
+    '/api/news-image?article=' + encodeURIComponent('https://www.animenewsnetwork.com/account'),
+  ])
+    expect(normalizeNews([{ ...feed[0], thumbnail }])[0].thumbnail).toBe('/news-placeholder.svg');
+});

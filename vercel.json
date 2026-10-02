@@ -35,6 +35,9 @@
   "functions": {
     "api/news.js": {
       "maxDuration": 20
+    },
+    "api/news-image.js": {
+      "maxDuration": 20
     }
   }
 }

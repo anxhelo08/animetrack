@@ -3,7 +3,8 @@ import { navIcon } from './nav-icons.js';
 
 const mounts = new WeakMap();
 const PAGE_SIZE = 8,
-  CACHE_MS = 900000;
+  CACHE_MS = 900000,
+  FEATURE_MS = 20000;
 let cached = null,
   mountedCount = 0;
 const labels = { All: 'Gjithçka', Industry: 'Industria', Releases: 'Premiera' };
@@ -18,8 +19,23 @@ const arrow =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7 M7 7h10v10"/></svg>';
 const down =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14 M6 13l6 6 6-6"/></svg>';
-function safeURL(value, article = false) {
+function safeURL(value, article = false, articleLink = '') {
   if (!article && value === placeholder) return value;
+  if (!article && typeof value === 'string' && value.startsWith('/api/news-image?')) {
+    try {
+      const image = new URL(value, 'https://animetrack.local');
+      const target = safeURL(image.searchParams.get('article'), true);
+      return image.pathname === '/api/news-image' &&
+        !image.hash &&
+        [...image.searchParams].length === 1 &&
+        target === articleLink &&
+        new URL(target).pathname.startsWith('/news/')
+        ? image.pathname + image.search
+        : '';
+    } catch {
+      return '';
+    }
+  }
   try {
     const url = new URL(value);
     return url.protocol === 'https:' &&
@@ -51,7 +67,7 @@ export function normalizeNews(items) {
         category: ['Industry', 'Releases'].includes(item.category) ? item.category : 'General',
         snippet: String(item.snippet || item.description || '').slice(0, 280),
         pubDate: Number.isFinite(date) ? new Date(date).toISOString() : '',
-        thumbnail: safeURL(item.thumbnail) || placeholder,
+        thumbnail: safeURL(item.thumbnail, false, link) || placeholder,
         source: new URL(link).hostname.includes('animenewsnetwork')
           ? 'Anime News Network'
           : 'Crunchyroll News',
@@ -84,7 +100,7 @@ export function renderNewsSection(containerElement) {
   window.ATHTML.renderHTML(
     root,
     `
-    <header class="news-hero"><div class="news-hero-copy"><span class="news-kicker">${navIcon('news')} ANIME NEWS</span><h2 id="${titleId}">Historitë që <span>lëvizin botën anime.</span></h2><p>Premiera, industria dhe lajmet e fundit — nga burimet origjinale.</p><span class="news-source-note">Anime News Network · Crunchyroll News</span></div><div class="news-hero-art" aria-hidden="true"><span class="news-orbit"></span><span class="news-orbit news-orbit-inner"></span><span class="news-spark">✦</span><span class="news-art-caption">BEYOND THE SCREEN</span></div></header>
+    <header class="news-hero"><h2 class="sr-only" id="${titleId}">Anime News</h2><div class="news-hero-fallback"><span class="news-kicker">${navIcon('news')} ANIME NEWS</span><h3>Historitë që <span>lëvizin botën anime.</span></h3><p>Premiera, industria dhe lajmet e fundit — nga burimet origjinale.</p><span class="news-source-note">Anime News Network · Crunchyroll News</span></div><div class="news-feature-stage" hidden></div><div class="news-feature-footer" aria-hidden="true" hidden><span>NË FOKUS</span><div class="news-feature-indicators"></div><span class="news-feature-count"></span></div></header>
     <div class="news-controls"><div class="news-tabs" role="group" aria-label="Kategoritë e lajmeve">${Object.entries(
       labels,
     )
@@ -105,6 +121,9 @@ export function renderNewsSection(containerElement) {
   const search = root.querySelector('input'),
     more = root.querySelector('[data-news-action="more"]');
   const count = root.querySelector('.news-count');
+  const hero = root.querySelector('.news-hero'),
+    stage = root.querySelector('.news-feature-stage'),
+    featureFooter = root.querySelector('.news-feature-footer');
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const events = new AbortController(),
     nodes = new Map();
@@ -118,7 +137,113 @@ export function renderNewsSection(containerElement) {
     generation = 0,
     searchTimer,
     layoutFrame,
-    stale = false;
+    stale = false,
+    featured = [],
+    featureIndex = 0,
+    featureTimer,
+    featureRemaining = FEATURE_MS,
+    featureStarted = 0,
+    heroVisible = !('IntersectionObserver' in window);
+  function canFeatureMove() {
+    return (
+      active &&
+      root.isConnected &&
+      phase === 'ready' &&
+      featured.length > 1 &&
+      heroVisible &&
+      !document.hidden &&
+      !motion.matches &&
+      !hero.querySelector(':focus-visible') &&
+      !document.querySelector('.modal-backdrop.show, .at124-command.show')
+    );
+  }
+  function scheduleFeature() {
+    const running = canFeatureMove();
+    hero.dataset.motion = running ? 'running' : 'paused';
+    if (!running) {
+      if (featureTimer !== undefined) {
+        clearTimeout(featureTimer);
+        featureTimer = undefined;
+        featureRemaining = Math.max(0, featureRemaining - (performance.now() - featureStarted));
+      }
+      return;
+    }
+    if (featureTimer !== undefined) return;
+    featureStarted = performance.now();
+    featureTimer = setTimeout(() => {
+      featureTimer = undefined;
+      featureRemaining = FEATURE_MS;
+      if (canFeatureMove()) selectFeature((featureIndex + 1) % featured.length);
+      scheduleFeature();
+    }, featureRemaining);
+  }
+  function selectFeature(index) {
+    featureIndex = index;
+    for (const [i, slide] of [...stage.children].entries()) {
+      const selected = i === index;
+      slide.classList.toggle('is-active', selected);
+      slide.setAttribute('aria-hidden', String(!selected));
+      slide.inert = !selected;
+    }
+    for (const [i, dot] of [...root.querySelector('.news-feature-indicators').children].entries())
+      dot.classList.toggle('is-active', i === index);
+    root.querySelector('.news-feature-count').textContent =
+      String(index + 1).padStart(2, '0') + ' / ' + String(featured.length).padStart(2, '0');
+    // Prepare the next full-resolution source during the reading interval, before the crossfade.
+    const nextImage = stage.children[(index + 1) % featured.length]?.querySelector('img');
+    if (nextImage) {
+      nextImage.loading = 'eager';
+      nextImage.decode?.().catch(() => {});
+    }
+  }
+  function paintFeature() {
+    clearTimeout(featureTimer);
+    featureTimer = undefined;
+    featureRemaining = FEATURE_MS;
+    featured = phase === 'ready' ? items.slice(0, 5) : [];
+    stage.hidden = featureFooter.hidden = !featured.length;
+    root.querySelector('.news-hero-fallback').hidden = !!featured.length;
+    hero.classList.toggle('news-has-features', !!featured.length);
+    if (!featured.length) {
+      stage.replaceChildren();
+      scheduleFeature();
+      return;
+    }
+    const previousLink = stage.children[featureIndex]?.dataset.featureLink;
+    featureIndex = Math.max(
+      0,
+      featured.findIndex((item) => item.link === previousLink),
+    );
+    window.ATHTML.renderHTML(
+      stage,
+      featured
+        .map((item, index) => {
+          const date = item.pubDate
+            ? new Date(item.pubDate).toLocaleDateString('sq-AL', { day: 'numeric', month: 'long' })
+            : '';
+          return `<article class="news-feature-slide" data-feature-link="${esc(item.link)}" aria-hidden="true" inert><div class="news-feature-art" aria-hidden="true"><img src="${esc(item.thumbnail)}" alt="" loading="${index < 2 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index === featureIndex ? 'high' : 'low'}" referrerpolicy="no-referrer"></div><div class="news-feature-copy"><span class="news-kicker">${navIcon('news')} ANIME NEWS <span class="news-feature-category">${esc(labels[item.category] || 'Lajmet e fundit')}</span></span><div class="news-feature-meta"><span>${esc(item.source)}</span>${date ? `<time datetime="${esc(item.pubDate)}">${esc(date)}</time>` : ''}</div><h3>${esc(item.title)}</h3><p>${esc(item.snippet || 'Zbulo historinë e plotë nga burimi origjinal.')}</p><a class="news-feature-read" href="${esc(item.link)}" rel="noopener noreferrer" aria-label="Lexo lajmin: ${esc(item.title)} (hapet në skedë të re)">Lexo historinë <span aria-hidden="true">${arrow}</span></a></div></article>`;
+        })
+        .join(''),
+    );
+    for (const link of stage.querySelectorAll('a')) link.target = '_blank';
+    window.ATHTML.renderHTML(
+      root.querySelector('.news-feature-indicators'),
+      featured.map(() => '<span></span>').join(''),
+    );
+    selectFeature(featureIndex);
+    scheduleFeature();
+  }
+  const heroObserver =
+    'IntersectionObserver' in window
+      ? new IntersectionObserver(
+          (entries) => {
+            heroVisible = entries[0]?.isIntersecting || false;
+            scheduleFeature();
+          },
+          { threshold: 0.15 },
+        )
+      : null;
+  heroObserver?.observe(hero);
   const observer =
     'IntersectionObserver' in window
       ? new IntersectionObserver(
@@ -252,6 +377,7 @@ export function renderNewsSection(containerElement) {
       items = cached.items;
       stale = cached.stale;
       phase = 'ready';
+      paintFeature();
       paint();
       return;
     }
@@ -259,6 +385,7 @@ export function renderNewsSection(containerElement) {
     phase = 'loading';
     observer?.disconnect();
     nodes.clear();
+    paintFeature();
     paint();
     try {
       const response = await fetch('/api/news', {
@@ -272,10 +399,12 @@ export function renderNewsSection(containerElement) {
       stale = response.headers.get('X-News-Stale') === '1';
       cached = { items, stale, at: Date.now() };
       phase = 'ready';
+      paintFeature();
       paint();
     } catch {
       if (version !== generation) return;
       phase = 'error';
+      paintFeature();
       paint();
     }
   }
@@ -345,7 +474,16 @@ export function renderNewsSection(containerElement) {
     },
     { capture: true, signal: events.signal },
   );
+  hero.addEventListener('focusin', scheduleFeature, { signal: events.signal });
+  hero.addEventListener('focusout', () => queueMicrotask(scheduleFeature), {
+    signal: events.signal,
+  });
+  window.addEventListener('at-command-visibility', scheduleFeature, { signal: events.signal });
+  const modalObserver = new MutationObserver(scheduleFeature);
+  for (const modal of document.querySelectorAll('.modal-backdrop,#at124-command'))
+    modalObserver.observe(modal, { attributes: true, attributeFilter: ['class', 'hidden'] });
   function reduceMotion() {
+    scheduleFeature();
     if (!motion.matches) return;
     observer?.disconnect();
     for (const node of nodes.values()) {
@@ -358,6 +496,7 @@ export function renderNewsSection(containerElement) {
     'visibilitychange',
     () => {
       root.dataset.visibility = document.visibilityState;
+      scheduleFeature();
     },
     { signal: events.signal },
   );
@@ -367,6 +506,7 @@ export function renderNewsSection(containerElement) {
       if (active === value) return;
       active = value;
       root.dataset.active = String(value);
+      scheduleFeature();
       if (!active) {
         clearTimeout(searchTimer);
         cancelAnimationFrame(layoutFrame);
@@ -381,12 +521,15 @@ export function renderNewsSection(containerElement) {
         void refresh();
       else {
         paint();
+        scheduleFeature();
         for (const node of nodes.values())
           if (node.classList.contains('news-pending') && node.isConnected) observer?.observe(node);
       }
     },
     destroy() {
       controller.setActive(false);
+      heroObserver?.disconnect();
+      modalObserver.disconnect();
       events.abort();
       root.remove();
       mounts.delete(containerElement);

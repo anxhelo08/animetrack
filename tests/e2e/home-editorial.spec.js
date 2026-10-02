@@ -90,7 +90,11 @@ async function editorial(page) {
     }),
   );
   await page.reload();
-  await page.waitForFunction(() => window.ATMobile113?.state().anime.length === 3);
+  await page.waitForFunction(
+    () =>
+      typeof window.ATMobile113?.state === 'function' &&
+      window.ATMobile113.state().anime.length === 3,
+  );
   const phone = await page.evaluate(() => innerWidth <= 760);
   if (phone) await expect(page.locator('#home-anime-pulse')).toBeHidden();
   else {
@@ -197,7 +201,7 @@ test('reduced motion keeps one static, accessible story', async ({ page }, info)
   await expect(page.locator('#detail-modal')).toBeVisible();
 });
 
-test('automatic crossfade preserves image nodes and layout, and pauses in search and other pages', async ({
+test('20-second crossfade runs under hover, preserves nodes and pauses for keyboard actions and hidden pages', async ({
   page,
 }, info) => {
   test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
@@ -212,7 +216,9 @@ test('automatic crossfade preserves image nodes and layout, and pauses in search
   await page.evaluate(() => {
     window.__pulseImages = [...document.querySelectorAll('.pulse-stage img')];
   });
-  await page.clock.runFor(11200);
+  await page.clock.runFor(19000);
+  await expect(activeTitle(page)).toHaveText(daily[0].title);
+  await page.clock.runFor(1200);
   await expect(activeTitle(page)).toHaveText(daily[1].title);
   expect(
     await page.evaluate(() =>
@@ -226,20 +232,39 @@ test('automatic crossfade preserves image nodes and layout, and pauses in search
   ).toBe(height);
   await page.locator('.pulse-stage').hover();
   await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'running');
-  await page.clock.runFor(15000);
-  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await page.clock.runFor(20200);
+  await expect(activeTitle(page)).toHaveText(daily[2].title);
+  await page.keyboard.press('Tab');
+  await page.locator('.pulse-slide.is-active .pulse-primary').focus();
+  await expect(page.locator('.pulse-slide.is-active .pulse-primary')).toBeFocused();
+  await page.clock.runFor(25000);
+  await expect(activeTitle(page)).toHaveText(daily[2].title);
   await page.mouse.move(0, 0);
   await page.keyboard.press('Control+k');
   await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'paused');
-  await page.clock.runFor(15000);
-  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await page.clock.runFor(25000);
+  await expect(activeTitle(page)).toHaveText(daily[2].title);
   await page.keyboard.press('Escape');
   await page.locator('#library-nav').click();
-  await page.clock.runFor(15000);
-  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await page.clock.runFor(25000);
+  await expect(activeTitle(page)).toHaveText(daily[2].title);
   await page.locator('#home-nav').click();
   await page.mouse.move(0, 0);
-  await page.clock.runFor(11200);
+  await page.clock.runFor(20200);
+  await expect(activeTitle(page)).toHaveText(daily[0].title);
+});
+
+test('slow artwork decoding does not hold the 20-second story changes', async ({ page }, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
+  await page.clock.install({ time: new Date(frozenNow) });
+  await page.addInitScript(() => {
+    HTMLImageElement.prototype.decode = () => new Promise(() => {});
+  });
+  await editorial(page);
+  await page.locator('.pulse-stage').hover();
+  await page.clock.runFor(20200);
+  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await page.clock.runFor(20000);
   await expect(activeTitle(page)).toHaveText(daily[2].title);
 });
 

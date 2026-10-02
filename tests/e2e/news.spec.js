@@ -171,3 +171,89 @@ test('news respects reduced motion and cancels pending requests when navigating 
   await held.fulfill({ json: stories }).catch(() => {});
   await audit(page);
 });
+
+test('featured headlines show article photos and rotate every 20 seconds without rebuilding cards', async ({
+  page,
+}, info) => {
+  await page.clock.install({ time: new Date('2026-09-30T12:00:00Z') });
+  await openFixture(page);
+  // Freeze before mounting the carousel so network/image assertions do not consume its interval.
+  await page.clock.pauseAt(new Date('2026-09-30T12:00:10Z'));
+  const illustrated = stories.map((item) => ({
+    ...item,
+    thumbnail: '/api/news-image?article=' + encodeURIComponent(item.link),
+  }));
+  await page.route('**/api/news', (route) => route.fulfill({ json: illustrated }));
+  await page.route('**/api/news-image?**', (route) =>
+    route.fulfill({ contentType: 'image/jpeg', path: 'public/welcome/demon-slayer.jpg' }),
+  );
+  await openNews(page, info);
+  const hero = page.locator('.news-hero');
+  const headline = page.locator('.news-feature-slide.is-active h3');
+  await expect(hero).toHaveAttribute('data-motion', 'running');
+  await expect(headline).toHaveText(stories[0].title);
+  await expect(page.locator('.news-feature-slide.is-active img')).toHaveAttribute(
+    'src',
+    illustrated[0].thumbnail,
+  );
+  await expect(page.locator('.news-feature-slide.is-active img')).toHaveJSProperty(
+    'complete',
+    true,
+  );
+  expect(
+    await page.locator('.news-feature-slide.is-active img').evaluate((image) => image.naturalWidth),
+  ).toBeGreaterThan(500);
+  await page.screenshot({
+    path: info.outputPath('news-featured.png'),
+    fullPage: false,
+    animations: 'disabled',
+  });
+  await expect(page.locator('.news-feature-slide.is-active a')).toHaveAttribute(
+    'href',
+    stories[0].link,
+  );
+  await expect(page.locator('.news-feature-slide.is-active a')).toHaveAttribute('target', '_blank');
+  await expect(hero.locator('button')).toHaveCount(0);
+  await page.evaluate(() => {
+    window.__featuredImages = [...document.querySelectorAll('.news-feature-stage img')];
+    window.__featuredCard = document.querySelector('.news-card');
+  });
+  const height = await hero.evaluate((node) => node.getBoundingClientRect().height);
+  if (!info.project.name.startsWith('iphone')) await hero.hover();
+  await page.clock.runFor(19000);
+  await expect(headline).toHaveText(stories[0].title);
+  await page.clock.runFor(1200);
+  await expect(headline).toHaveText(stories[1].title);
+  expect(await hero.evaluate((node) => node.getBoundingClientRect().height)).toBe(height);
+  expect(
+    await page.evaluate(
+      () =>
+        window.__featuredImages.every(
+          (image, index) => image === document.querySelectorAll('.news-feature-stage img')[index],
+        ) && window.__featuredCard === document.querySelector('.news-card'),
+    ),
+  ).toBe(true);
+  expect(
+    await page
+      .locator('.news-feature-slide:not(.is-active)')
+      .evaluateAll((slides) =>
+        slides.every((slide) => slide.inert && slide.getAttribute('aria-hidden') === 'true'),
+      ),
+  ).toBe(true);
+  await page
+    .locator(
+      info.project.name.startsWith('iphone') ? '[data-mobile-nav="library"]' : '#library-nav',
+    )
+    .click();
+  await page.clock.runFor(25000);
+  await openNews(page, info);
+  await expect(headline).toHaveText(stories[1].title);
+  await page.clock.runFor(20200);
+  await expect(headline).toHaveText(stories[2].title);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(hero).toHaveAttribute('data-motion', 'paused');
+  await page.clock.runFor(25000);
+  await expect(headline).toHaveText(stories[2].title);
+  await page.clock.resume();
+  await audit(page);
+});

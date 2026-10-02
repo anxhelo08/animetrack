@@ -46,7 +46,7 @@ describe('RSS news parsing', () => {
     });
     expect(item.id).toMatch(/^[a-f0-9]{20}$/);
   });
-  it('deduplicates links, rejects missing/hostile article URLs, and uses the local fallback artwork', () => {
+  it('deduplicates links, rejects missing/hostile article URLs, and lazily resolves missing feed photos', () => {
     const items = parseNewsFeed(
       xml(
         entry(1) +
@@ -56,7 +56,9 @@ describe('RSS news parsing', () => {
       ),
     );
     expect(items).toHaveLength(1);
-    expect(items[0].thumbnail).toBe(NEWS_PLACEHOLDER);
+    expect(items[0].thumbnail).toBe(
+      '/api/news-image?article=https%3A%2F%2Fwww.animenewsnetwork.com%2Fnews%2F1',
+    );
   });
   it('extracts an enclosure or HTML image and never returns scripts as descriptive text', () => {
     const [item] = parseNewsFeed(
