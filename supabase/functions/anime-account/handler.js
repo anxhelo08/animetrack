@@ -6,7 +6,7 @@ const statuses = {
   mal: ['watching', 'completed', 'on_hold', 'dropped', 'plan_to_watch'],
 };
 const listQuery =
-  'query($userId:Int!){MediaListCollection(type:ANIME,userId:$userId){lists{entries{id mediaId status score(format:POINT_10) progress repeat updatedAt media{id idMal title{romaji english} episodes format seasonYear coverImage{large} genres averageScore siteUrl}}}}}';
+  'query($userId:Int!){MediaListCollection(type:ANIME,userId:$userId){lists{entries{id mediaId status score(format:POINT_10) progress repeat updatedAt media{id idMal title{romaji english} episodes format seasonYear coverImage{extraLarge large} genres averageScore siteUrl}}}}}';
 const updateQuery =
   'mutation($mediaId:Int!,$status:MediaListStatus,$score:Float,$progress:Int){SaveMediaListEntry(mediaId:$mediaId,status:$status,score:$score,progress:$progress){id mediaId status score(format:POINT_10) progress updatedAt}}';
 const validInt = (n, min, max) => Number.isInteger(n) && n >= min && n <= max;

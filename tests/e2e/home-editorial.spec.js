@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { openFixture } from '../fixtures/browser-app.js';
+import { homeStories } from '../../src/modules/home-spotlight.js';
 
 const owner = 'editorial-home';
 const candidates = [
@@ -89,120 +90,168 @@ async function editorial(page) {
     }),
   );
   await page.reload();
-  await expect(page.locator('#home-anime-pulse')).toBeVisible();
-  await expect(page.locator('.pulse-copy h3')).toHaveText('ONE PIECE');
+  await page.waitForFunction(() => window.ATMobile113?.state().anime.length === 3);
+  const phone = await page.evaluate(() => innerWidth <= 760);
+  if (phone) await expect(page.locator('#home-anime-pulse')).toBeHidden();
+  else {
+    await expect(page.locator('#home-anime-pulse')).toBeVisible();
+    await expect(page.locator('.pulse-slide.is-active h3')).toHaveText(daily[0].title);
+  }
+}
+const frozenNow = Date.parse('2026-09-30T12:00:00Z');
+const daily = homeStories(candidates, [], frozenNow);
+const activeTitle = (page) => page.locator('.pulse-slide.is-active h3');
+
+async function audit(page) {
+  const result = await new AxeBuilder({ page })
+    .include('#home-anime-pulse')
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+    .analyze();
+  expect(result.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) }))).toEqual(
+    [],
+  );
 }
 
-test('one header search and anime spotlight work without changing library progress', async ({
+test('desktop stories open directly, with no playback controls or progress changes', async ({
   page,
 }, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight is removed on phones.');
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await editorial(page);
   await expect(page.locator('.at124-search-trigger,#at112-open-command')).toHaveCount(0);
-  const mobile = info.project.name.startsWith('iphone');
-  if (!mobile) {
-    await expect(page.locator('.top-actions #search')).toBeVisible();
-    await page.locator('.header-search-shortcut').click();
-    await expect(page.locator('#at124-command')).toBeVisible();
-    await page.keyboard.press('Escape');
-    await page.keyboard.press('Control+k');
-    await expect(page.locator('#at124-command')).toBeVisible();
-    await page.keyboard.press('Escape');
-  }
+  await expect(
+    page.locator(
+      '[data-pulse-action="next"],[data-pulse-action="previous"],[data-pulse-action="pause"],.pulse-dot',
+    ),
+  ).toHaveCount(0);
+  await expect(page.locator('.top-actions #search')).toBeVisible();
+  await page.locator('.header-search-shortcut').click();
+  await expect(page.locator('#at124-command')).toBeVisible();
+  await page.keyboard.press('Escape');
   const before = await page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime));
-  await page.locator('[data-pulse-action="next"]').click();
-  await expect(page.locator('.pulse-copy h3')).toHaveText('Attack on Titan');
-  await page.locator('[data-pulse-action="pause"]').click();
-  await expect(page.locator('[data-pulse-action="pause"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'paused');
-  await page.locator('[data-pulse-action="open"]').click();
+  await page.locator('.pulse-story').nth(1).click();
   await expect(page.locator('#detail-modal')).toBeVisible();
-  await expect(page.locator('#detail-body')).toContainText('Attack on Titan');
+  await expect(page.locator('#detail-body')).toContainText(daily[1].title);
   await page.keyboard.press('Escape');
   expect(await page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime))).toBe(before);
-  for (const width of mobile ? [390, 320] : [1440, 1024]) {
-    await page.setViewportSize({ width, height: mobile ? 844 : 1000 });
+  await expect(activeTitle(page)).toHaveText(daily[0].title);
+  for (const width of [1440, 1024]) {
+    await page.setViewportSize({ width, height: 1000 });
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    const result = await new AxeBuilder({ page })
-      .include('#home-anime-pulse')
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-      .analyze();
-    expect(
-      result.violations.map((violation) => ({
-        id: violation.id,
-        nodes: violation.nodes.map((node) => node.target),
-      })),
-    ).toEqual([]);
-    if (mobile) {
-      expect(
-        await page.locator('#home-anime-pulse button:visible').evaluateAll((buttons) =>
-          buttons
-            .filter((button) => {
-              const rect = button.getBoundingClientRect();
-              return rect.width < 44 || rect.height < 44;
-            })
-            .map((button) => button.getAttribute('aria-label') || button.textContent),
-        ),
-      ).toEqual([]);
-    }
+    await audit(page);
     await page.screenshot({ path: info.outputPath('home-' + width + '.png'), fullPage: false });
   }
   await page.evaluate(() => {
     document.documentElement.dataset.theme = 'light';
   });
-  const light = await new AxeBuilder({ page })
-    .include('#home-anime-pulse')
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
-    .analyze();
-  expect(
-    light.violations.map((violation) => ({
-      id: violation.id,
-      nodes: violation.nodes.map((node) => node.target),
-    })),
-  ).toEqual([]);
+  await audit(page);
   await page.screenshot({ path: info.outputPath('home-light.png'), fullPage: false });
   expect(errors).toEqual([]);
 });
 
-test('reduced motion disables automatic rotation and cinematic movement', async ({ page }) => {
+test('phone removes the spotlight and its images, retaining the watchlist', async ({
+  page,
+}, info) => {
+  test.skip(!info.project.name.startsWith('iphone'), 'Phone behavior.');
+  await editorial(page);
+  const before = await page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime));
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(page.locator('#home-anime-pulse')).toBeHidden();
+    await expect(page.locator('#home-anime-pulse > *')).toHaveCount(0);
+    await expect(page.locator('#mobile-continue')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({ path: info.outputPath('home-' + width + '.png'), fullPage: false });
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await expect(page.locator('#home-anime-pulse')).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('#home-anime-pulse > *')).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime))).toBe(before);
+});
+
+test('reduced motion keeps one static, accessible story', async ({ page }, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await editorial(page);
   await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'paused');
   expect(
-    await page.locator('.pulse-backdrop').evaluate((node) => getComputedStyle(node).animationName),
+    await page
+      .locator('.pulse-slide.is-active .pulse-backdrop')
+      .evaluate((node) => getComputedStyle(node).animationName),
   ).toBe('none');
-  await page.locator('[data-pulse-action="next"]').click();
-  await expect(page.locator('.pulse-copy h3')).toHaveText('Attack on Titan');
+  expect(
+    await page
+      .locator('.pulse-slide:not(.is-active)')
+      .evaluateAll((panels) =>
+        panels.every((p) => p.inert && p.getAttribute('aria-hidden') === 'true'),
+      ),
+  ).toBe(true);
+  await page.locator('.pulse-slide.is-active [data-pulse-action="open"]').click();
+  await expect(page.locator('#detail-modal')).toBeVisible();
 });
 
-test('automatic spotlight pauses for search, navigation and the pause button', async ({
+test('automatic crossfade preserves image nodes and layout, and pauses in search and other pages', async ({
   page,
 }, info) => {
-  await page.clock.install({ time: new Date('2026-09-30T12:00:00Z') });
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
+  await page.clock.install({ time: new Date(frozenNow) });
   await editorial(page);
   await page.mouse.move(0, 0);
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
   await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'running');
-  await page.clock.runFor(7100);
-  await expect(page.locator('.pulse-copy h3')).toHaveText('Attack on Titan');
+  const height = await page
+    .locator('.pulse-stage')
+    .evaluate((node) => node.getBoundingClientRect().height);
+  await page.evaluate(() => {
+    window.__pulseImages = [...document.querySelectorAll('.pulse-stage img')];
+  });
+  await page.clock.runFor(11200);
+  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  expect(
+    await page.evaluate(() =>
+      window.__pulseImages.every(
+        (node, index) => node === document.querySelectorAll('.pulse-stage img')[index],
+      ),
+    ),
+  ).toBe(true);
+  expect(
+    await page.locator('.pulse-stage').evaluate((node) => node.getBoundingClientRect().height),
+  ).toBe(height);
+  await page.locator('.pulse-stage').hover();
+  await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'running');
+  await page.clock.runFor(15000);
+  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await page.mouse.move(0, 0);
   await page.keyboard.press('Control+k');
   await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'paused');
   await page.clock.runFor(15000);
-  await expect(page.locator('.pulse-copy h3')).toHaveText('Attack on Titan');
+  await expect(activeTitle(page)).toHaveText(daily[1].title);
   await page.keyboard.press('Escape');
-  const mobile = info.project.name.startsWith('iphone');
-  await page.locator(mobile ? '[data-mobile-nav="library"]' : '#library-nav').click();
+  await page.locator('#library-nav').click();
   await page.clock.runFor(15000);
-  await expect(page.locator('.pulse-copy h3')).toHaveText('Attack on Titan');
-  await page.locator(mobile ? '[data-mobile-nav="home"]' : '#home-nav').click();
-  await page.locator('[data-pulse-action="pause"]').click();
+  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await page.locator('#home-nav').click();
   await page.mouse.move(0, 0);
-  await page.locator('[data-pulse-action="pause"]').blur();
-  await page.clock.runFor(15000);
-  await expect(page.locator('.pulse-copy h3')).toHaveText('Attack on Titan');
-  await expect(page.locator('#home-anime-pulse')).toHaveAttribute('data-motion', 'paused');
+  await page.clock.runFor(11200);
+  await expect(activeTitle(page)).toHaveText(daily[2].title);
+});
+
+test('daily stories change at midnight while the app remains open', async ({ page }, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
+  await page.clock.install({ time: new Date(frozenNow) });
+  await editorial(page);
+  const endOfDay = new Date('2026-09-30T23:59:50Z');
+  await page.clock.setSystemTime(endOfDay);
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
+  await page.clock.runFor(10500);
+  const tomorrow = homeStories(candidates, [], new Date('2026-10-01T00:00:01Z').getTime());
+  await expect(activeTitle(page)).toHaveText(tomorrow[0].title);
+  expect(tomorrow[0].title).not.toBe(daily[0].title);
 });

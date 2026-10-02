@@ -37,3 +37,33 @@ describe('anime spotlight facts', () => {
     expect(library).toEqual(before);
   });
 });
+
+describe('daily anime selections', () => {
+  const pool = Array.from({ length: 10 }, (_, i) => ({
+    key: 'al-' + i,
+    sourceId: String(i),
+    title: 'Anime ' + i,
+  }));
+  const morning = new Date(2026, 9, 2, 8).getTime();
+  it('keeps the same daily selection across reloads, input order and popularity changes', () => {
+    const before = structuredClone(pool);
+    const keys = (stories) => stories.map((x) => x.storyKey);
+    expect(keys(homeStories(pool, [], morning))).toEqual(
+      keys(
+        homeStories(
+          pool.toReversed().map((x) => ({ ...x, popularity: Math.random() * 10000 })),
+          [],
+          morning + 12 * 3600000,
+        ),
+      ),
+    );
+    expect(pool).toEqual(before);
+  });
+  it('changes the featured anime and daily set after local midnight', () => {
+    const today = homeStories(pool, [], morning);
+    const tomorrow = homeStories(pool, [], new Date(2026, 9, 3, 0).getTime());
+    expect(today).toHaveLength(4);
+    expect(tomorrow[0].storyKey).not.toBe(today[0].storyKey);
+    expect(tomorrow.map((x) => x.storyKey)).not.toEqual(today.map((x) => x.storyKey));
+  });
+});

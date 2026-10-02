@@ -5,7 +5,7 @@ window.ATMovies12150=(()=>{
  'use strict';
  const clean=s=>window.ATSecurity136?.text(s,5000)||String(s||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
  const year=v=>{const m=String(v||'').match(/(?:18|19|20|21)\d{2}/),n=m?Number(m[0]):null;return n>=1880&&n<=2200?n:null};
- const poster=p=>p?(/^https?:\/\//.test(String(p))?String(p):'https://image.tmdb.org/t/p/w500'+p):'';
+ const poster=p=>p?(/^https?:\/\//.test(String(p))?String(p):'https://image.tmdb.org/t/p/original'+p):'';
  const backdrop=p=>p?(/^https?:\/\//.test(String(p))?String(p):'https://image.tmdb.org/t/p/w1280'+p):'';
  const tmdbUrl=id=>'https://www.themoviedb.org/movie/'+encodeURIComponent(id);
  const auth=t=>({accept:'application/json',Authorization:'Bearer '+String(t||'').trim()});

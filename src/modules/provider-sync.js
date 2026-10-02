@@ -118,13 +118,13 @@ window.ATProviderSync135=function ATProviderSync135(ctx){
   if(!r.ok||j.errors?.length)throw Error(j.errors?.[0]?.message||'AniList HTTP '+r.status);return j.data||{};
  }
  function mapAniMedia(m){
-  return{source:'AniList',sourceId:String(m.id),malId:String(m.idMal||''),title:m.title?.english||m.title?.romaji||'Anime',total:num(m.episodes),format:String(m.format||'TV').replaceAll('_',' '),year:m.seasonYear||null,cover:m.coverImage?.large||'',genre:(m.genres||[]).join(', '),score:m.averageScore||null,sourceUrl:m.siteUrl||''};
+  return{source:'AniList',sourceId:String(m.id),malId:String(m.idMal||''),title:m.title?.english||m.title?.romaji||'Anime',total:num(m.episodes),format:String(m.format||'TV').replaceAll('_',' '),year:m.seasonYear||null,cover:m.coverImage?.extraLarge||m.coverImage?.large||'',genre:(m.genres||[]).join(', '),score:m.averageScore||null,sourceUrl:m.siteUrl||''};
  }
  async function fetchAniList(){
   const auth=token('anilist'),user=clean(username('anilist'));let profile=null,userId=null,userName=user;
   if(auth){profile=await serverCall({action:'provider',provider:'anilist',operation:'me'});if(!profile)throw Error('AniList token i pavlefshëm.');userId=profile.id;userName=profile.name;storeSet(KEYS.anilistUser,userName)}
   if(!userId&&!userName)throw Error('Vendos username ose access token AniList.');
-  const query='query($userId:Int,$userName:String){MediaListCollection(type:ANIME,userId:$userId,userName:$userName){lists{entries{id mediaId status score(format:POINT_10) progress repeat updatedAt media{id idMal title{romaji english} episodes format seasonYear coverImage{large} genres averageScore siteUrl}}}}}';
+  const query='query($userId:Int,$userName:String){MediaListCollection(type:ANIME,userId:$userId,userName:$userName){lists{entries{id mediaId status score(format:POINT_10) progress repeat updatedAt media{id idMal title{romaji english} episodes format seasonYear coverImage{extraLarge large} genres averageScore siteUrl}}}}}';
   const data=auth?await serverCall({action:'provider',provider:'anilist',operation:'list'}):await aniGql(query,{userId,userName:userId?null:userName}),all=[];
   for(const list of data.MediaListCollection?.lists||[])for(const e of list.entries||[]){const media=mapAniMedia(e.media||{});all.push({provider:'anilist',providerId:String(e.mediaId||e.media?.id||''),malId:media.malId,title:media.title,total:media.total,media,snapshot:{status:appStatus(e.status),progress:num(e.progress),score:rating(e.score)},updatedAt:Number(e.updatedAt||0)*1000,entryId:e.id})}
   const uniq=new Map();for(const x of all)if(x.providerId)uniq.set(x.providerId,x);

@@ -115,10 +115,10 @@ window.ATRich134=function ATRich134(ctx){
  }
 
  function animeWork(node,role=''){
-  return{kind:'anime',key:'al-'+node.id,source:'AniList',sourceId:String(node.id),malId:String(node.idMal||''),title:node.title?.english||node.title?.romaji||'Anime',english:node.title?.english||'',year:node.seasonYear||null,cover:node.coverImage?.large||'',score:node.averageScore||null,format:node.format||'TV',sourceUrl:node.siteUrl||'',credit:clean(role)};
+  return{kind:'anime',key:'al-'+node.id,source:'AniList',sourceId:String(node.id),malId:String(node.idMal||''),title:node.title?.english||node.title?.romaji||'Anime',english:node.title?.english||'',year:node.seasonYear||null,cover:node.coverImage?.extraLarge||node.coverImage?.large||'',score:node.averageScore||null,format:node.format||'TV',sourceUrl:node.siteUrl||'',credit:clean(role)};
  }
  async function aniPerson(id,role){
-  const query='query($id:Int!){Staff(id:$id){id name{full userPreferred native} image{large medium} description(asHtml:false) primaryOccupations homeTown yearsActive siteUrl staffMedia(page:1,perPage:25,sort:POPULARITY_DESC,type:ANIME){edges{staffRole node{id idMal title{romaji english} coverImage{large} seasonYear format averageScore siteUrl}}} characterMedia(page:1,perPage:25,sort:POPULARITY_DESC){edges{characterRole node{id idMal title{romaji english} coverImage{large} seasonYear format averageScore siteUrl}}}}}';
+  const query='query($id:Int!){Staff(id:$id){id name{full userPreferred native} image{large medium} description(asHtml:false) primaryOccupations homeTown yearsActive siteUrl staffMedia(page:1,perPage:25,sort:POPULARITY_DESC,type:ANIME){edges{staffRole node{id idMal title{romaji english} coverImage{extraLarge large} seasonYear format averageScore siteUrl}}} characterMedia(page:1,perPage:25,sort:POPULARITY_DESC){edges{characterRole node{id idMal title{romaji english} coverImage{extraLarge large} seasonYear format averageScore siteUrl}}}}}';
   const s=(await gql(query,{id:Number(id)})).Staff;if(!s)throw Error('Person not found');
   const seen=new Map();
   for(const edge of s.staffMedia?.edges||[]){const w=animeWork(edge.node,edge.staffRole||'Staff');seen.set(w.sourceId,w)}
@@ -130,7 +130,7 @@ window.ATRich134=function ATRich134(ctx){
   const [pr,cr,wr]=await Promise.all([request(base),request(base+'/castcredits?embed[]=show&embed[]=character'),request(base+'/crewcredits?embed=show')]);
   if(!pr.ok)throw Error('TVMaze person '+pr.status);
   const p=await pr.json(),casts=cr.ok?await cr.json():[],crew=wr.ok?await wr.json():[],seen=new Map();
-  const add=(show,credit)=>{if(!show?.id)return;const key=String(show.id),w={kind:'tv',key:'tvmaze-'+show.id,source:'TVMaze',sourceId:String(show.id),title:show.name||'Serial TV',year:year(show.premiered),cover:show.image?.medium||show.image?.original||'',format:'TV_SERIES',score:show.rating?.average?Math.round(show.rating.average*10):null,sourceUrl:show.url||'',credit:clean(credit)},old=seen.get(key);if(old)old.credit=[old.credit,w.credit].filter(Boolean).join(' · ');else seen.set(key,w)};
+  const add=(show,credit)=>{if(!show?.id)return;const key=String(show.id),w={kind:'tv',key:'tvmaze-'+show.id,source:'TVMaze',sourceId:String(show.id),title:show.name||'Serial TV',year:year(show.premiered),cover:show.image?.original||show.image?.medium||'',format:'TV_SERIES',score:show.rating?.average?Math.round(show.rating.average*10):null,sourceUrl:show.url||'',credit:clean(credit)},old=seen.get(key);if(old)old.credit=[old.credit,w.credit].filter(Boolean).join(' · ');else seen.set(key,w)};
   for(const row of casts||[])add(row._embedded?.show,'Cast'+(row._embedded?.character?.name?' · '+row._embedded.character.name:''));
   for(const row of crew||[])add(row._embedded?.show,row.type||'Crew');
   return{provider:'tvmaze',id:String(p.id),name:p.name||'Person',image:p.image?.original||p.image?.medium||'',role,description:'',facts:[p.birthday?'Lindur '+p.birthday:'',p.country?.name||'',p.gender||''].filter(Boolean),sourceUrl:p.url||'',works:[...seen.values()].slice(0,30)};

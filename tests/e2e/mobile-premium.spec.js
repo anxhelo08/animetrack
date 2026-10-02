@@ -77,7 +77,7 @@ const payload = {
   history: [],
   preferences: {},
 };
-const state = (page) => page.evaluate(() => JSON.stringify(window.ATMobile113.state().anime));
+const state = (page) => page.evaluate(() => window.ATMobile113.state().anime);
 
 for (const width of [320, 375, 390, 430]) {
   test(`mobile navigation, discovery, detail and tracking remain usable at ${width}px`, async ({
@@ -138,7 +138,7 @@ for (const width of [320, 375, 390, 430]) {
     await expect(page.locator('#mobile-upcoming')).toContainText('2099');
     await expect(page.locator('#mobile-upcoming .watch-row-mark')).toHaveCount(0);
     await expect(page.locator('#mobile-upcoming .watch-row-pending')).toBeVisible();
-    expect(await state(page)).toBe(initial);
+    expect(await state(page)).toEqual(initial);
     await page.locator('[data-mobile-home-tab="watch"]').click();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
@@ -227,7 +227,7 @@ for (const width of [320, 375, 390, 430]) {
     await expect(page.locator('[data-anime-rating]')).toBeVisible();
     await page.locator('[data-mobile-detail-tab="overview"]').click();
     await expect(page.locator('[data-edit]').first()).toBeVisible();
-    expect(await state(page)).toBe(initial);
+    expect(await state(page)).toEqual(initial);
     await page.locator('#detail-modal [data-close]').click();
 
     await page.locator('[data-mobile-nav="home"]').click();
@@ -240,7 +240,10 @@ for (const width of [320, 375, 390, 430]) {
         ),
       )
       .toEqual([1, 2]);
-    await page.locator('.release-feedback button').click();
+    await page
+      .locator('.release-feedback:visible')
+      .getByRole('button', { name: 'Zhbëj', exact: true })
+      .click();
     await expect
       .poll(() =>
         page.evaluate(
@@ -249,7 +252,7 @@ for (const width of [320, 375, 390, 430]) {
         ),
       )
       .toEqual([1]);
-    await expect(page.locator('.release-feedback')).toContainText('Shënimi u zhbë');
+    await expect(page.locator('.release-feedback:visible')).toContainText('Shënimi u zhbë');
     expect(await page.evaluate(() => window.ATMobile113.state().anime[0].status)).toBe('watching');
     await page.locator('[data-mobile-nav="profile"]').click();
     await expect(page.locator('.at-profile-tabs')).toContainText('Ditari');
@@ -346,7 +349,7 @@ test('mobile discovery filters real results and studio failure can be retried', 
   await page.locator('.mobile-studio .media-card-title').click();
   await expect(page.locator('#detail-modal.show')).toBeVisible();
   await expect(page.locator('#detail-modal .mobile-detail-hero')).toContainText('Attack on Titan');
-  expect(await state(page)).toBe(before);
+  expect(await state(page)).toEqual(before);
 });
 
 test('older titles move out of watching and return after an episode is marked', async ({
@@ -503,7 +506,7 @@ test('watching opens first, history can be unmarked and navigation does not sync
     );
   }
   expect(await calls()).toEqual(before);
-  expect(await state(page)).toBe(initial);
+  expect(await state(page)).toEqual(initial);
   await expect
     .poll(() =>
       watching.evaluate((n) => {
@@ -533,6 +536,10 @@ test('watching opens first, history can be unmarked and navigation does not sync
     );
   });
   await watching.locator('[data-ios-action="advance"][data-id="mobile-story"]').tap();
+  await page
+    .locator('.release-journal')
+    .getByRole('button', { name: 'E pashë tani', exact: true })
+    .click();
   const recent = page.locator('#mobile-history .watch-row').last();
   await expect(recent).toHaveAttribute('data-watch-key', 'mobile-story:season-two:2:seen');
   await expect(recent).toHaveClass(/watch-row--seen/);
@@ -568,6 +575,10 @@ test('watching opens first, history can be unmarked and navigation does not sync
   await expect(page.locator('body > .watch-row[aria-hidden="true"]')).toHaveCount(0);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await watching.locator('[data-ios-action="advance"][data-id="mobile-story"]').tap();
+  await page
+    .locator('.release-journal')
+    .getByRole('button', { name: 'E pashë tani', exact: true })
+    .click();
   await expect.poll(progress).toEqual([1, 2]);
   await expect(page.locator('body > .watch-row[aria-hidden="true"]')).toHaveCount(0);
   await expect(page.locator('#mobile-home .mobile-tap-feedback')).toHaveCount(0);
@@ -596,6 +607,10 @@ test('watched episodes enter at the bottom, older episodes rise and rapid naviga
   });
   for (let n = 2; n <= 8; n++) {
     await page.locator('#mobile-continue .watch-row-mark').tap();
+    await page
+      .locator('.release-journal')
+      .getByRole('button', { name: 'E pashë tani', exact: true })
+      .click();
     await expect(page.locator('#mobile-history .watch-row').last()).toHaveAttribute(
       'data-watch-key',
       `mobile-story:episode-order:${n}:seen`,
@@ -618,6 +633,10 @@ test('watched episodes enter at the bottom, older episodes rise and rapid naviga
     return document.querySelectorAll('body > .watch-row[aria-hidden="true"]').length;
   });
   expect(ghostsAfterNavigation).toBe(0);
+  await page
+    .locator('.release-journal')
+    .getByRole('button', { name: 'E pashë tani', exact: true })
+    .click();
   await expect(page.locator('#library-view')).toBeVisible();
   await page.locator('[data-mobile-nav="home"]').tap();
   await expect(page.locator('#mobile-history .watch-row').last()).toHaveAttribute(

@@ -63,8 +63,7 @@
 .pulse-stage {
   position: relative;
   isolation: isolate;
-  display: flex;
-  flex-direction: column;
+  display: grid;
   min-width: 0;
   min-height: 392px;
   overflow: hidden;
@@ -73,6 +72,25 @@
   background: linear-gradient(125deg, #151b32, #343050 62%, #506672);
   color: #fff;
   box-shadow: 0 18px 44px #0002;
+}
+.pulse-slide {
+  grid-area: 1 / 1;
+  position: relative;
+  isolation: isolate;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.85s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.pulse-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 1;
+}
+.pulse-slide:not(.is-active) .pulse-backdrop {
+  animation-play-state: paused;
 }
 .pulse-art {
   position: absolute;
@@ -87,7 +105,7 @@
   object-fit: cover;
   object-position: 65% 35%;
   opacity: 0.66;
-  animation: pulse-cinema 16s ease-out both;
+  animation: pulse-cinema 40s ease-in-out infinite alternate;
 }
 .pulse-art::after {
   position: absolute;
@@ -96,36 +114,6 @@
   background:
     linear-gradient(90deg, #101522ee 3%, #13162cc9 38%, #10152238 90%),
     linear-gradient(0deg, #0d1126d9, transparent 55%);
-}
-.pulse-orbit {
-  position: absolute;
-  right: -80px;
-  top: -165px;
-  width: 530px;
-  height: 530px;
-  border-radius: 50%;
-  border: 1px solid #d8c9ff24;
-  box-shadow:
-    0 0 0 64px #d8c9ff05,
-    0 0 0 128px #d8c9ff04;
-  animation: pulse-orbit-in 8s ease-out both;
-}
-.pulse-orbit.second {
-  right: 155px;
-  top: 220px;
-  width: 170px;
-  height: 170px;
-  box-shadow: none;
-  border-color: #b3ecff13;
-  animation-direction: reverse;
-}
-.pulse-grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.13;
-  background-image: radial-gradient(#fff 1px, transparent 1px);
-  background-size: 5px 5px;
-  mask-image: linear-gradient(90deg, transparent 35%, #000);
 }
 .pulse-stage-top {
   display: flex;
@@ -169,7 +157,6 @@
 .pulse-copy {
   flex: 1;
   min-width: 0;
-  animation: pulse-copy-in 0.48s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 .pulse-meta {
   color: #d4c5fc;
@@ -275,7 +262,6 @@
   background: linear-gradient(135deg, #989cc759, #272840);
   box-shadow: -18px 24px 52px #0507147d;
   overflow: hidden;
-  animation: pulse-poster-in 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both;
 }
 .pulse-poster {
   width: 100%;
@@ -297,82 +283,6 @@
 }
 .pulse-image-unavailable {
   visibility: hidden;
-}
-.pulse-stage-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 23px 14px;
-}
-.pulse-pagination {
-  display: flex;
-  gap: 0;
-}
-.pulse-dot {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  background: none;
-  padding: 0;
-  border: 0;
-}
-.pulse-dot > span {
-  width: 23px;
-  height: 3px;
-  border-radius: 9px;
-  background: #ffffff3b;
-  position: relative;
-  overflow: hidden;
-}
-.pulse-dot[aria-pressed='true'] > span {
-  width: 29px;
-  background: #ffffff65;
-}
-.pulse-dot[aria-pressed='true'] > span::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: #e2d3ff;
-  transform-origin: left;
-  animation: pulse-slide-progress 7s linear both;
-}
-.pulse-playback {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.pulse-playback button {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  padding: 0;
-  border: 1px solid #ffffff22;
-  border-radius: 50%;
-  color: #eee8ff;
-  background: #1015295c;
-  font-size: 23px;
-  transition: background 0.18s;
-}
-.pulse-playback button:hover {
-  background: #ffffff24;
-}
-.pulse-playback button[data-pulse-action='pause'] {
-  font-size: 15px;
-  margin-left: 4px;
-}
-.pulse-counter {
-  color: #eee8ff;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 1px;
-  padding-right: 11px;
-}
-.pulse-counter > span {
-  color: #b1b1c8;
-  font-weight: 450;
 }
 .pulse-desk {
   display: flex;
@@ -443,7 +353,7 @@
   font-size: 10px;
   font-weight: 650;
 }
-.pulse-story[aria-pressed='true'] .pulse-story-number {
+.pulse-story:hover .pulse-story-number {
   color: var(--purple);
 }
 .pulse-story-copy {
@@ -456,7 +366,7 @@
   color: var(--muted);
   font-size: 9px;
 }
-.pulse-story[aria-pressed='true'] .pulse-story-copy > small {
+.pulse-story:hover .pulse-story-copy > small {
   color: var(--purple);
 }
 .pulse-story-copy > strong {
@@ -513,11 +423,10 @@
   line-height: 1.7;
   padding: 20px 0;
 }
-#home-anime-pulse[data-motion='paused']
-  :is(.pulse-backdrop, .pulse-orbit, .pulse-dot > span::after) {
+#home-anime-pulse[data-motion='paused'] .pulse-backdrop {
   animation-play-state: paused;
 }
-#home-anime-pulse:not(.pulse-in-view) :is(.pulse-backdrop, .pulse-orbit) {
+#home-anime-pulse:not(.pulse-in-view) .pulse-backdrop {
   animation-play-state: paused;
 }
 
@@ -893,185 +802,16 @@
   .header-search-shortcut {
     display: none;
   }
-  body.at-ios-enabled #home-view.at-home-rebuilt > #home-anime-pulse {
-    margin: 0 0 22px;
-  }
-  .pulse-heading {
-    margin-bottom: 12px;
-    gap: 8px;
-  }
-  .pulse-brand {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-  }
-  .pulse-heading h2 {
-    font-size: 21px;
-    margin-top: 5px;
-  }
-  .pulse-heading h2 span {
-    display: none;
-  }
-  .pulse-text-link {
-    font-size: 10px;
-    gap: 7px;
-  }
-  .pulse-layout {
-    display: block;
-  }
-  .pulse-desk {
-    display: none;
-  }
-  .pulse-stage {
-    min-height: 285px;
-    border-radius: 21px;
-  }
-  .pulse-stage-top {
-    padding: 17px 18px 0;
-  }
-  .pulse-badge {
-    font-size: 9px;
-    padding: 7px 9px;
-  }
-  .pulse-source {
-    font-size: 9px;
-  }
-  .pulse-stage-body {
-    gap: 12px;
-    padding: 20px 18px 12px;
-  }
-  .pulse-copy h3 {
-    font-size: 30px;
-    letter-spacing: -1.1px;
-    -webkit-line-clamp: 2;
-    margin: 9px 0;
-  }
-  .pulse-copy p {
-    font-size: 10px;
-    line-height: 1.7;
-  }
-  .pulse-meta {
-    font-size: 9px;
-  }
-  .pulse-poster-wrap {
-    flex-basis: 84px;
-    border-radius: 9px;
-    transform: rotate(4deg);
-  }
-  .pulse-poster-caption {
-    font-size: 6px;
-    letter-spacing: 1px;
-  }
-  .pulse-actions {
-    gap: 7px;
-    margin-top: 15px;
-  }
-  .pulse-actions button {
-    font-size: 10px;
-    padding: 9px 11px;
-    border-radius: 10px;
-  }
-  .pulse-actions svg {
-    width: 14px;
-    height: 14px;
-  }
-  .pulse-secondary {
+  #home-view.at-home-rebuilt > #home-anime-pulse {
     display: none !important;
-  }
-  .pulse-stage-bottom {
-    padding: 0 4px 8px;
-    gap: 0;
-  }
-  .pulse-counter {
-    display: none;
-  }
-  .pulse-playback {
-    gap: 1px;
-  }
-  .pulse-playback button {
-    border-color: transparent;
-    background: none;
-  }
-  .pulse-playback button[data-pulse-action='pause'] {
-    margin-left: 0;
-  }
-  .pulse-playback button[data-pulse-action='previous'] {
-    display: none;
-  }
-  .pulse-dot {
-    width: 44px;
-  }
-  .pulse-dot > span {
-    width: 17px;
-  }
-  .pulse-dot[aria-pressed='true'] > span {
-    width: 23px;
-  }
-  .pulse-date {
-    font-size: 9px;
-    margin-top: 7px;
-  }
-}
-@media (max-width: 350px) {
-  .pulse-poster-wrap {
-    flex-basis: 65px;
-  }
-  .pulse-copy h3 {
-    font-size: 25px;
-  }
-  .pulse-stage-top,
-  .pulse-stage-body {
-    padding-left: 14px;
-    padding-right: 14px;
-  }
-  .pulse-stage-bottom {
-    padding-left: 6px;
-    padding-right: 6px;
-  }
-}
-@keyframes pulse-copy-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes pulse-poster-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px) rotate(1deg);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) rotate(5deg);
   }
 }
 @keyframes pulse-cinema {
   from {
-    transform: scale(1.01);
+    transform: scale(1.005);
   }
   to {
-    transform: scale(1.1) translateX(-1%);
-  }
-}
-@keyframes pulse-orbit-in {
-  from {
-    transform: translateY(-15px) scale(0.94);
-    opacity: 0.4;
-  }
-  to {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-}
-@keyframes pulse-slide-progress {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
+    transform: scale(1.035) translateX(-0.4%);
   }
 }
 @media (prefers-reduced-motion: reduce) {

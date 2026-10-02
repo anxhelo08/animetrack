@@ -31,8 +31,7 @@ export function createMobilePresentation(ctx) {
     releaseTimer,
     pendingMove,
     focusFrame,
-    focusHome = true,
-    focusHomeTop = true;
+    focusHome = true;
   let homeTab = 'watch',
     homeLayout = 'list';
   function home() {
@@ -232,20 +231,9 @@ export function createMobilePresentation(ctx) {
     }
     if (focusHome) {
       focusHome = false;
-      const overview = focusHomeTop;
-      focusHomeTop = false;
       cancelAnimationFrame(focusFrame);
       focusFrame = requestAnimationFrame(() => {
         if (page === 'home' && homeTab === 'watch' && !ctx.state().anime.length) return;
-        if (
-          overview &&
-          page === 'home' &&
-          !$('home-anime-pulse')?.hidden &&
-          $('home-anime-pulse')
-        ) {
-          window.scrollTo({ top: 0, behavior: 'instant' });
-          return;
-        }
         if (page === 'home' && homeTab === 'watch')
           $('mobile-continue')?.scrollIntoView({ block: 'start', behavior: 'instant' });
       });
@@ -347,7 +335,6 @@ export function createMobilePresentation(ctx) {
       filter = 'all';
       homeTab = 'watch';
       focusHome = true;
-      focusHomeTop = true;
       pendingMove = null;
       homeLayout = 'list';
       searchState();
@@ -434,7 +421,7 @@ export function createMobilePresentation(ctx) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query:
-              '{ Page(perPage:20) { studios(isAnimationStudio:true,sort:FAVOURITES_DESC) { id name media(perPage:4,sort:POPULARITY_DESC) { nodes { id idMal title { romaji english } coverImage { large } format episodes seasonYear averageScore genres siteUrl } } } } }',
+              '{ Page(perPage:20) { studios(isAnimationStudio:true,sort:FAVOURITES_DESC) { id name media(perPage:4,sort:POPULARITY_DESC) { nodes { id idMal title { romaji english } coverImage { extraLarge large } format episodes seasonYear averageScore genres siteUrl } } } } }',
           }),
           signal: AbortSignal.timeout(10000),
         });
@@ -745,7 +732,6 @@ export function createMobilePresentation(ctx) {
     if (next === 'home' && next !== page) {
       homeTab = 'watch';
       focusHome = true;
-      focusHomeTop = true;
     }
     page = next;
     if (page !== 'home') {

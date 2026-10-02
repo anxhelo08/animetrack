@@ -10,8 +10,8 @@ const source=fs.readFileSync(path.join(root,'src/modules/recommendations.js'),'u
 function fixture(){
  const store=new Map(),calls=[],previews=[];
  const library=[{id:'mine',title:'Drama Favorite',status:'completed',genre:'Drama, Mystery',rating:9,favorite:true,source:'TVMaze',sourceId:'111',seasons:[{sourceId:'111'}]}],owner={id:'test-user'};
- const shows=[{id:777,name:'Dexter',type:'Scripted',genres:['Drama','Mystery'],premiered:'2006-10-01',rating:{average:8.6},image:{medium:'https://example.com/dexter.jpg'},summary:'<p>A mystery series</p>'},{id:111,name:'Drama Favorite',type:'Scripted',genres:['Drama'],premiered:'2005-01-01',rating:{average:9},image:{medium:'https://example.com/favorite.jpg'}}];
- const media=[{id:21,idMal:121,title:{romaji:'Fantasy Journey'},genres:['Drama','Fantasy'],averageScore:86,popularity:25000,episodes:12,format:'TV',seasonYear:2025,coverImage:{large:'https://example.com/anime.jpg'},description:'Anime about a journey',relations:{edges:[]}}];
+ const shows=[{id:777,name:'Dexter',type:'Scripted',genres:['Drama','Mystery'],premiered:'2006-10-01',rating:{average:8.6},image:{medium:'https://example.com/dexter.jpg',original:'https://example.com/dexter-original.jpg'},summary:'<p>A mystery series</p>'},{id:111,name:'Drama Favorite',type:'Scripted',genres:['Drama'],premiered:'2005-01-01',rating:{average:9},image:{medium:'https://example.com/favorite.jpg'}}];
+ const media=[{id:21,idMal:121,title:{romaji:'Fantasy Journey'},genres:['Drama','Fantasy'],averageScore:86,popularity:25000,episodes:12,format:'TV',seasonYear:2025,coverImage:{large:'https://example.com/anime.jpg',extraLarge:'https://example.com/anime-original.jpg'},description:'Anime about a journey',relations:{edges:[]}}];
  const fetch=async url=>{
   calls.push(String(url));
   if(String(url).includes('tvmaze.com/shows?page='))return {ok:true,json:async()=>shows};
@@ -25,6 +25,8 @@ test('12.5 mixed discovery: TV shows and anime in one list, duplicates excluded'
  const fx=fixture(),snapshot=JSON.stringify(fx.library);await fx.rec.refresh(true);
  const html=fx.rec.render();
  assert.match(html,/Dexter/);assert.match(html,/Fantasy Journey/);
+ assert.match(html,/dexter-original\.jpg/);
+ assert.equal(fx.rec.getUpdates()[0].cover,'https://example.com/anime-original.jpg');
  assert.doesNotMatch(html,/Drama Favorite/);
  assert.match(html,/Burimi: AniList \+ TVMaze/);
  assert.match(html,/Gjithçka/);assert.match(html,/Seriale TV/);

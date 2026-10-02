@@ -60,7 +60,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
   if(show.type!=='Scripted'||!rawGenres.length||!Number.isFinite(rating)||rating<7||!show.image?.medium&&!show.image?.original)return null;
   return {kind:'tv',key:'tv-'+show.id,source:'TVMaze',sourceId:String(show.id),
    title:String(show.name||'Serial TV').slice(0,180),year:Number.isInteger(year)&&year>=1888&&year<=2200?year:null,
-   genre:(show.genres||[]).join(', '),rawGenres,cover:String(show.image?.medium||show.image?.original||''),
+   genre:(show.genres||[]).join(', '),rawGenres,cover:String(show.image?.original||show.image?.medium||''),
    synopsis:clean(show.summary,400),
    score:Math.round(rating*10),format:'TV_SERIES',total:0,popularity:0,related:[],match:0,why:[]};
  }
