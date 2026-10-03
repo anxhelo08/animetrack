@@ -149,6 +149,14 @@ test('background releases use leases, establish unknown baselines and preserve p
   records.length = 0;
   await checkReadingReleases(admin, async () => ({ totalChapters: 51 }));
   expect(records[0].args.p_chapter).toBe(51);
+  records.length = 0;
+  await checkReadingReleases(admin, async () => ({
+    totalChapters: 60,
+    weebCentralId: '01J76XYCPSY3C4BNPBRY8JMCBE',
+    chapterSource: 'WeebCentral',
+  }));
+  expect(records[0].args.p_chapter).toBe(0); // First provider linkage is a baseline, not a new release.
+  expect(records[0].args.p_metadata.weebCentralId).toBe('01J76XYCPSY3C4BNPBRY8JMCBE');
 });
 test('chapter push rechecks opt-in and unread state before sending', () => {
   const job = { event_key: 'reading:reading-al-1:5', anime_id: 'reading-al-1', episode: 5 },

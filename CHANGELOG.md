@@ -1,3 +1,11 @@
+# 14.13.0 — Manga dhe Manhwa nga WeebCentral
+
+- WeebCentral është burimi kryesor i kërkimit dhe rekomandimeve sipas zhanreve. AniList/MyAnimeList mbeten burime rezervë, përfshirë filtrat e vlerësimit dhe intervalit të kapitujve që WeebCentral nuk ofron në kërkim.
+- Skeda “Publikimet në burim” tregon titujt e përditësuar së fundmi. Hapja/shtimi merr listën reale të kapitujve, datat, statusin dhe publikimet që përfshijnë prologë ose shtesa.
+- Titujt ekzistues lidhen vetëm kur përputhet ID-ja e AniList/MyAnimeList, pa bashkuar automatikisht variante me emra të ngjashëm. Progresi dhe shënimet ruhen.
+- Statistikat përmbledhin titujt e kontrolluar, publikimet dhe kapitujt e numëruar pa lexuar. Kontrollet në sfond për llogaritë funksionojnë pavarësisht aktivizimit të njoftimeve; dërgimi i njoftimeve mbetet me pëlqim.
+- API publike e kufizuar, cache 10-minutëshe, kërkesa vetëm te URL-të fikse të metadatave, pa ekzekutim skriptesh ose shkarkim faqesh të leximit. Progresi për kapituj me numra jo të plotë/sezone të veçanta nuk hamendësohet.
+
 # 14.12.1 — Kërkesa të verifikuara për oraret
 
 - Orari përdor Page.airingSchedules me interval kohe dhe pagination; korrigjohen sintaksa dhe parametrat e papranueshëm të AniList.

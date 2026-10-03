@@ -1,7 +1,7 @@
 {
   "name": "animetrack",
-  "version": "14.12.1",
-  "releaseLabel": "14.12.1",
+  "version": "14.13.0",
+  "releaseLabel": "14.13.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -42,7 +42,8 @@
   "dependencies": {
     "@supabase/supabase-js": "2.117.2",
     "dompurify": "3.4.16",
-    "fast-xml-parser": "5.11.2"
+    "fast-xml-parser": "5.11.2",
+    "linkedom": "^0.18.13"
   },
   "engines": {
     "node": ">=22.12.0 <25"

@@ -70,7 +70,17 @@ export function rankReadingRecommendations(items, rows) {
   const taste = readingTaste(rows),
     ids = new Set(rows.filter((r) => !r.deletedAt).map((r) => `${r.source}:${r.sourceId}`));
   return items
-    .filter((row) => !ids.has(`${row.source}:${row.sourceId}`))
+    .filter(
+      (row) =>
+        !ids.has(`${row.source}:${row.sourceId}`) &&
+        !rows.some(
+          (owned) =>
+            !owned.deletedAt &&
+            ((row.weebCentralId && row.weebCentralId === owned.weebCentralId) ||
+              (row.anilistId && row.anilistId === owned.anilistId) ||
+              (row.malId && row.malId === owned.malId)),
+        ),
+    )
     .map((row) => {
       const genres = String(row.genres || '')
         .split(',')

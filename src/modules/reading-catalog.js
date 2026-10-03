@@ -1,5 +1,6 @@
 import { cleanReadingFilters, matchesReadingFilters } from '../core/reading-discovery.js';
 import { catalogJSON } from '../core/request-cache.js';
+import { weebCentralCatalog } from './weebcentral-catalog.js';
 
 const QUERY = `query ReadingCatalog($search:String,$page:Int!,$country:CountryCode,$sort:[MediaSort],$genres:[String],$excluded:[String],$year:String,$status:MediaStatus,$score:Int,$min:Int,$max:Int){Page(page:$page,perPage:18){pageInfo{hasNextPage}media(type:MANGA,isAdult:false,search:$search,countryOfOrigin:$country,sort:$sort,genre_in:$genres,genre_not_in:$excluded,startDate_like:$year,status:$status,averageScore_greater:$score,chapters_greater:$min,chapters_lesser:$max){id idMal type countryOfOrigin title{english romaji native}coverImage{extraLarge large}description(asHtml:false)chapters volumes status startDate{year}genres averageScore}}}`;
 async function searchAniList(query, kind, page = 1, signal, filters = {}) {
@@ -72,6 +73,16 @@ function jikanItem(item) {
   };
 }
 export async function searchReadingCatalog(query, kind, page = 1, signal, filters = {}) {
+  try {
+    const result = await weebCentralCatalog(
+      'search',
+      { q: query, kind, page: String(page), filters: JSON.stringify(filters) },
+      signal,
+    );
+    if (result?.items) return result;
+  } catch (error) {
+    if (error.name === 'AbortError') throw error;
+  }
   let primaryError;
   try {
     const result = await searchAniList(query, kind, page, signal, filters);
@@ -240,6 +251,25 @@ export async function publishedReadingChapters(row, signal) {
   };
 }
 export async function refreshReadingCatalog(row, signal) {
+  if (row.weebCentralId || row.source === 'weebcentral')
+    return weebCentralCatalog('details', { id: row.weebCentralId || row.sourceId }, signal);
+  if (row.title && (row.anilistId || row.malId || row.sourceId)) {
+    try {
+      const linked = await weebCentralCatalog(
+        'resolve',
+        {
+          q: row.title,
+          kind: row.kind || 'all',
+          anilistId: row.anilistId || (row.source === 'anilist' ? row.sourceId : '') || '',
+          malId: row.malId || (row.source === 'jikan' ? row.sourceId : '') || '',
+        },
+        signal,
+      );
+      if (linked) return linked;
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+    }
+  }
   let primary = {},
     primaryError;
   try {

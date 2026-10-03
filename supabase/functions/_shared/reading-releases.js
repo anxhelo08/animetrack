@@ -13,11 +13,16 @@ export async function checkReadingReleases(admin, refresh = refreshReadingCatalo
         if (!row) throw Error('Invalid reading row');
         if (job.metadata?.totalChapters)
           applyReadingUpdate(row, job.metadata, job.checked_at || new Date(now()).toISOString());
-        const previous = row.totalChapters;
+        const previous = row.totalChapters,
+          previousWeebCentralId = row.weebCentralId;
         const fresh = await refresh(row, AbortSignal.timeout(18000));
         const stamp = new Date(now()).toISOString();
         const delta = applyReadingUpdate(row, fresh, stamp);
         const metadata = {
+          weebCentralId: row.weebCentralId,
+          publishedEntries: row.publishedEntries,
+          anilistId: row.anilistId,
+          malId: row.malId,
           totalChapters: row.totalChapters,
           totalVolumes: row.totalVolumes,
           publicationStatus: row.publicationStatus,
@@ -31,7 +36,10 @@ export async function checkReadingReleases(admin, refresh = refreshReadingCatalo
           p_reading_id: row.id,
           p_claim: job.claim_token,
           p_metadata: metadata,
-          p_chapter: previous > 0 && delta > 0 ? row.totalChapters : 0,
+          p_chapter:
+            previous > 0 && delta > 0 && (!fresh.weebCentralId || previousWeebCentralId)
+              ? row.totalChapters
+              : 0,
         });
         if (finish.error) throw Error('Reading queue unavailable');
         stats.checked++;

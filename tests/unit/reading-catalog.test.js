@@ -1,3 +1,6 @@
+vi.mock('../../src/modules/weebcentral-catalog.js', () => ({
+  weebCentralCatalog: vi.fn().mockRejectedValue(new Error('Unavailable')),
+}));
 import { beforeEach, expect, it, vi } from 'vitest';
 vi.mock('../../src/core/request-cache.js', () => ({ catalogJSON: vi.fn() }));
 import { catalogJSON } from '../../src/core/request-cache.js';

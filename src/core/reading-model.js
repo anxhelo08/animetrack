@@ -46,9 +46,23 @@ export function normalizeReadingLibrary(raw) {
         id: row.id,
         title: text(row.title, 180),
         kind: row.kind === 'manhwa' ? 'manhwa' : 'manga',
-        sourceId: /^\d+$/.test(String(row.sourceId || '')) ? text(row.sourceId, 20) : '',
+        sourceId: (row.source === 'weebcentral' ? /^[0-9A-HJKMNP-TV-Z]{26}$/ : /^\d+$/).test(
+          String(row.sourceId || ''),
+        )
+          ? text(row.sourceId, 26)
+          : '',
+        weebCentralId: /^[0-9A-HJKMNP-TV-Z]{26}$/.test(
+          row.weebCentralId || (row.source === 'weebcentral' ? row.sourceId : '') || '',
+        )
+          ? text(row.weebCentralId || row.sourceId, 26)
+          : '',
+        publishedEntries: number(row.publishedEntries, 20000),
         anilistId: /^\d+$/.test(
-          String(row.anilistId || (row.source !== 'jikan' ? row.sourceId : '') || ''),
+          String(
+            row.anilistId ||
+              (!['jikan', 'weebcentral'].includes(row.source) ? row.sourceId : '') ||
+              '',
+          ),
         )
           ? text(row.anilistId || row.sourceId, 20)
           : '',
@@ -68,7 +82,9 @@ export function normalizeReadingLibrary(raw) {
         )
           ? row.mangaDexId
           : '',
-        chapterSource: row.chapterSource === 'MangaDex' ? 'MangaDex' : '',
+        chapterSource: ['MangaDex', 'WeebCentral'].includes(row.chapterSource)
+          ? row.chapterSource
+          : '',
         chapterReleases: (Array.isArray(row.chapterReleases) ? row.chapterReleases : [])
           .slice(-300)
           .filter(
@@ -99,7 +115,7 @@ export function normalizeReadingLibrary(raw) {
               v.end <= (totalChapters || 10000),
           )
           .map(({ volume, start, end }) => ({ volume, start, end })),
-        source: row.source === 'jikan' ? 'jikan' : 'anilist',
+        source: ['jikan', 'weebcentral'].includes(row.source) ? row.source : 'anilist',
         volumesRead: number(row.volumesRead, 1000),
         chaptersRead: [
           ...new Set(
@@ -195,6 +211,10 @@ export function applyReadingUpdate(row, fresh, stamp = new Date().toISOString())
   row.totalChapters = total;
   row.totalVolumes = Math.max(number(fresh.totalVolumes, 1000), row.totalVolumes);
   row.publicationStatus = fresh.publicationStatus || row.publicationStatus;
+  if (fresh.weebCentralId) row.weebCentralId = fresh.weebCentralId;
+  if (fresh.publishedEntries) row.publishedEntries = number(fresh.publishedEntries, 20000);
+  if (fresh.anilistId) row.anilistId = fresh.anilistId;
+  if (fresh.malId) row.malId = fresh.malId;
   if (fresh.mangaDexId) row.mangaDexId = fresh.mangaDexId;
   if (fresh.chapterSource) row.chapterSource = fresh.chapterSource;
   if (!row.volumeRanges.length && fresh.volumeRanges?.length) row.volumeRanges = fresh.volumeRanges;

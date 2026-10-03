@@ -38,6 +38,9 @@
     },
     "api/news-image.js": {
       "maxDuration": 20
+    },
+    "api/weebcentral.js": {
+      "maxDuration": 30
     }
   }
 }

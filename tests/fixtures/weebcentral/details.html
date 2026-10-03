@@ -1,0 +1,590 @@
+<main class="bg-base-100 flex-1 flex flex-col items-center py-4 px-0 md:px-4" hx-ext="response-targets">
+    <div id="top" class="bg-base-200 max-w-7xl w-full flex-1 flex flex-col gap-4 p-6">
+        <!-- SERIES INFO -->
+        <section class="flex flex-col md:flex-row gap-4 md:gap-8" x-data="{ show_detail: false, subscriptions: 31096, last_read_chapter: '' }">
+            <!-- LEFT -->
+            <section class="md:w-4/12 flex flex-col gap-4">
+                <h1 class="md:hidden text-2xl font-bold text-center">Solo Leveling</h1>
+                <section class="md:hidden flex flex-col items-center justify-center">
+                    <div class="flex join bg-gray-200 border-4 border-gray-200">
+                        <div class="bg-gray-200 border-r border-gray-200 text-black flex items-center justify-center join-item px-5" x-text="new Intl.NumberFormat('en-US').format(subscriptions)"></div>
+                        
+                        <button class="btn bg-red-600 hover:bg-red-400 border-none text-white join-item w-32 cursor-pointer" id="left-sub-button" x-on:htmx:after-request="if(event.detail.successful) subscriptions++" hx-post="https://weebcentral.com/series/01J76XYCPSY3C4BNPBRY8JMCBE/subscribe">
+                            Subscribe
+                        </button>
+                        
+                    </div>
+                </section>
+                <section class="flex items-center justify-center">
+                    <picture>
+                        <source srcset="https://temp.compsci88.com/cover/normal/01J76XYCPSY3C4BNPBRY8JMCBE.webp" width="400" height="600" type="image/webp">
+                        <img src="https://temp.compsci88.com/cover/fallback/01J76XYCPSY3C4BNPBRY8JMCBE.jpg" alt="Solo Leveling cover" width="400" height="600" decoding="async">
+                    </picture>
+                </section>
+                <button class="md:hidden border-none bg-primary flex items-center justify-center gap-2 py-2" x-show="!show_detail" @click="show_detail = true">
+                    
+                    <span>Show Details</span>
+                </button>
+                <section :class="show_detail ? '' : 'hidden md:block'">
+                    <ul class="flex flex-col gap-4">
+                        <li>
+                            <strong>Author(s): </strong>
+                            
+                            <span><a href="https://weebcentral.com/search?author=GEE+So-Lyung" class="link link-info link-hover">GEE So-Lyung</a>,</span>
+                            
+                            <span><a href="https://weebcentral.com/search?author=JANG+Sung-Lak" class="link link-info link-hover">JANG Sung-Lak</a>,</span>
+                            
+                            <span><a href="https://weebcentral.com/search?author=Redice+Studio" class="link link-info link-hover">Redice Studio</a></span>
+                            
+                        </li>
+                        <li>
+                            <strong>Tags(s): </strong>
+                            
+                            <span><a href="https://weebcentral.com/search?included_tag=Action" class="link link-info link-hover">Action</a>,</span>
+                            
+                            <span><a href="https://weebcentral.com/search?included_tag=Adventure" class="link link-info link-hover">Adventure</a>,</span>
+                            
+                            <span><a href="https://weebcentral.com/search?included_tag=Fantasy" class="link link-info link-hover">Fantasy</a>,</span>
+                            
+                            <span><a href="https://weebcentral.com/search?included_tag=Shounen" class="link link-info link-hover">Shounen</a></span>
+                            
+                        </li>
+                        <li>
+                            <strong>Type: </strong>
+                            <a href="https://weebcentral.com/search?included_type=Manhwa" class="link link-info link-hover">Manhwa</a>
+                        </li>
+                        <li>
+                            <strong>Status: </strong>
+                            <a href="https://weebcentral.com/search?included_status=Complete" class="link link-info link-hover">Complete</a>
+                        </li>
+                        <li>
+                            <strong>Released: </strong>
+                            <span>2018</span>
+                        </li>
+                        <li>
+                            <strong>Official Translation: </strong>
+                            <a href="https://weebcentral.com/search?official=True" class="link link-info link-hover">Yes</a>
+                        </li>
+                        <li>
+                            <strong>Anime Adaptation: </strong>
+                            <a href="https://weebcentral.com/search?anime=True" class="link link-info link-hover">Yes</a>
+                        </li>
+                        <li>
+                            <strong>Adult Content: </strong>
+                            <a href="https://weebcentral.com/search?adult=False" class="link link-info link-hover">No</a>
+                        </li>
+                        <li>
+                            <strong>RSS: </strong>
+                            <a href="https://weebcentral.com/series/01J76XYCPSY3C4BNPBRY8JMCBE/rss" class="link link-info link-hover">RSS Feed</a>
+                        </li>
+                        
+                        <li class="flex gap-4">
+                            <strong>Track:</strong>
+                            <span class="flex gap-4">
+                                
+                                <span class="tooltip tooltip-bottom" data-tip="Official Source">
+                                    <a href="https://tapas.io/series/solo-leveling-comic/info" target="_blank" rel="noopener noreferrer" aria-label="Go to official website">
+                                        
+                                    </a>
+                                </span>
+                                
+                                
+                                <span class="tooltip tooltip-bottom" data-tip="AniList">
+                                    <a href="https://anilist.co/manga/105398" target="_blank" rel="noopener noreferrer" aria-label="Go to anilist">
+                                        <img src="/static/images/anilist.png" width="20" height="20" alt="Anilist icon">
+                                    </a>
+                                </span>
+                                
+                                
+                                <span class="tooltip tooltip-bottom" data-tip="MangaUpdates">
+                                    <a href="https://www.mangaupdates.com/series/6z1uqw7" target="_blank" rel="noopener noreferrer" aria-label="Go to mangaupdates">
+                                        
+                                    </a>
+                                </span>
+                                
+                            </span>
+                        </li>
+                        
+                    </ul>
+                </section>
+            </section>
+
+            <!-- RIGHT -->
+            <section class="md:w-8/12 flex flex-col gap-4">
+                <h1 class="hidden md:block text-2xl font-bold">Solo Leveling</h1>
+                <section class="hidden md:block">
+                    <div class="inline-block">
+                        <div class="join bg-gray-200 border-4 border-gray-200">
+                            <div class="bg-gray-200 border-r border-gray-200 text-black join-item flex items-center justify-center px-5" x-text="new Intl.NumberFormat('en-US').format(subscriptions)"></div>
+                            
+                            <button class="btn bg-red-600 hover:bg-red-400 border-none text-white join-item w-32 cursor-pointer" id="right-sub-button" x-on:htmx:after-request="if(event.detail.successful) subscriptions++" hx-post="https://weebcentral.com/series/01J76XYCPSY3C4BNPBRY8JMCBE/subscribe">
+                                Subscribe
+                            </button>
+                            
+                        </div>
+                    </div>
+                </section>
+                <section :class="show_detail ? '' : 'hidden md:block'">
+                    <ul class="flex flex-col gap-4">
+                        <li>
+                            <strong>Description</strong>
+                            <p class="whitespace-pre-wrap break-words">E-class hunter Jinwoo Sung is the weakest of them all. Looked down on by everyone, he has no money, no abilities to speak of, and no other job prospects. So when his party finds a hidden dungeon, he's determined to use this chance to change his life for the better...but the opportunity he finds is a bit different from what he had in mind...</p>
+                        </li>
+                        
+                        <li>
+                            <strong>Associated Name(s)</strong>
+                            <ul class="list-disc list-inside">
+                                
+                                <li>Only I level up</li>
+                                
+                            </ul>
+                        </li>
+                        
+                        
+                        <li>
+                            <strong>Related Series(s)</strong>
+                            <ul class="list-disc list-inside">
+                                
+                                <li>
+                                    <a href="https://weebcentral.com/series/01J76XYEJVJ5H6AXPYWS4G0CFV" class="link link-info link-hover">Solo Leveling (Volume)</a>
+                                    <span>(Alternate Story)</span>
+                                </li>
+                                
+                                <li>
+                                    <a href="https://weebcentral.com/series/01J76XYHERFDX1V9X4A032QT6B" class="link link-info link-hover">Solo Leveling: Ragnarok</a>
+                                    <span>(Sequel)</span>
+                                </li>
+                                
+                            </ul>
+                        </li>
+                        
+                        
+                    </ul>
+                </section>
+                
+                <section class="w-full flex flex-col items-center justify-center mb-4">
+                    <!-- Profiton -->
+                    
+                </section>
+                
+                <section x-data="{ mark_chapters: 'null', mark_chapter_option: false }">
+                    
+
+                    
+                    <div id="chapter-list" class="flex flex-col mt-2 divide-y divide-slate-500">
+                        
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XZ666GREP4DQDKEP1YDZG" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 200</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XZ666GREP4DQDKEP1YDZG'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XZ666GREP4DQDKEP1YDZG" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XZ666GREP4DQDKEP1YDZG" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XZ6614Z72ZP8CDK0PV0V3" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 199</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XZ6614Z72ZP8CDK0PV0V3'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XZ6614Z72ZP8CDK0PV0V3" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XZ6614Z72ZP8CDK0PV0V3" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XZ6554SDX5X887FKNVDVB" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 198</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XZ6554SDX5X887FKNVDVB'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XZ6554SDX5X887FKNVDVB" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XZ6554SDX5X887FKNVDVB" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XZ64PB7ET38ZPGYWDCG16" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 197</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XZ64PB7ET38ZPGYWDCG16'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XZ64PB7ET38ZPGYWDCG16" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XZ64PB7ET38ZPGYWDCG16" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XZ642R6JMDTK3FDSC2FW7" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 196</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XZ642R6JMDTK3FDSC2FW7'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XZ642R6JMDTK3FDSC2FW7" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XZ642R6JMDTK3FDSC2FW7" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XZ63SCM4T88S89CE00PN8" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 195</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XZ63SCM4T88S89CE00PN8'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XZ63SCM4T88S89CE00PN8" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XZ63SCM4T88S89CE00PN8" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <button class="hover:bg-base-300 p-2" hx-get="https://weebcentral.com/series/01J76XYCPSY3C4BNPBRY8JMCBE/full-chapter-list" hx-target="#chapter-list" x-on:htmx:after-request="mark_chapter_option = true">Show All Chapters</button>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XYXYZ7KCP3A5WEC0JNTQ2" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 2</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XYXYZ7KCP3A5WEC0JNTQ2'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XYXYZ7KCP3A5WEC0JNTQ2" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XYXYZ7KCP3A5WEC0JNTQ2" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XYXYZHAP5EMZ62S0G3WGA" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 1</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XYXYZHAP5EMZ62S0G3WGA'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XYXYZHAP5EMZ62S0G3WGA" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XYXYZHAP5EMZ62S0G3WGA" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        <div class="flex items-center" x-data="{ new_chapter: checkNewChapter('2024-09-07T17:04:15.717343Z') }" x-show="mark_chapters == 'null' || (mark_chapters == 'read' && 'False'.toLowerCase() === 'false') || (mark_chapters == 'unread' && 'False'.toLowerCase() === 'true')">
+    <a href="/chapters/01J76XYXYZGGRVGEGATYQWFTD8" class="hover:bg-base-300 flex-1 flex items-center p-2">
+        <span class="me-2">
+            
+            <img src="/static/images/chapter-badge-official.svg" alt="" width="16" height="16" class="w-4 h-4" decoding="async">
+            
+        </span>
+        <span class="grow flex items-center gap-2">
+            <span>Chapter 0</span>
+            <span class="flex gap-1 items-center link-info" x-show="last_read_chapter === '01J76XYXYZGGRVGEGATYQWFTD8'">
+                
+                <span class="hidden md:inline">Last Read</span>
+            </span>
+            <span x-show="new_chapter">
+                <img src="/static/images/new-chapter.svg" alt="" width="20" height="20" class="w-5 h-5" decoding="async">
+            </span>
+        </span>
+        <time class="text-datetime opacity-50" datetime="2024-09-07T17:04:15.717Z">2024-09-07T17:04:15.717343Z</time>
+    </a>
+    <input type="checkbox" value="01J76XYXYZGGRVGEGATYQWFTD8" name="chapter_id" form="mark-as-read-form" class="checkbox ms-4" x-show="mark_chapters == 'read'">
+    <input type="checkbox" value="01J76XYXYZGGRVGEGATYQWFTD8" name="chapter_id" form="mark-as-unread-form" class="checkbox ms-4" x-show="mark_chapters == 'unread'">
+</div>
+                        
+                        
+                    </div>
+                    
+                </section>
+            </section>
+        </section>
+
+        <!-- Recommendations -->
+        <section>
+            <h2 class="text-xl flex gap-4">
+                <strong>Recommendations</strong>
+                
+            </h2>
+            <div class="glide mt-3">
+                <div class="glide__track" data-glide-el="track">
+                    <ul class="glide__slides card-group">
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYBHK1X5A9D8J2SRS2XMF/Rokka-No-Yuusha">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYBHK1X5A9D8J2SRS2XMF.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYBHK1X5A9D8J2SRS2XMF.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYBHK1X5A9D8J2SRS2XMF.jpg" alt="Rokka Braves of the Six Flowers cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">Rokka Braves of the Six Flowers</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYC0Z9HW03QRW5MNCEERX/White-Epic">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYC0Z9HW03QRW5MNCEERX.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYC0Z9HW03QRW5MNCEERX.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYC0Z9HW03QRW5MNCEERX.jpg" alt="White Epic cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">White Epic</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYCGT6PWM3EGB9PRXTEZW/Fairy-Tail-100-Years-Quest">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYCGT6PWM3EGB9PRXTEZW.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYCGT6PWM3EGB9PRXTEZW.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYCGT6PWM3EGB9PRXTEZW.jpg" alt="Fairy Tail - 100 Years Quest cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">Fairy Tail - 100 Years Quest</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYCXG1EX4EVP4CYWCJBTR/Kage-No-Jitsuryokusha-Ni-Naritakute">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYCXG1EX4EVP4CYWCJBTR.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYCXG1EX4EVP4CYWCJBTR.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYCXG1EX4EVP4CYWCJBTR.jpg" alt="The Eminence in Shadow cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Eminence in Shadow</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYDF6JFJZ1910468RT0B2/Another-World-Munchkin">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYDF6JFJZ1910468RT0B2.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYDF6JFJZ1910468RT0B2.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYDF6JFJZ1910468RT0B2.jpg" alt="Otherworldly Munchkin - Let's Speedrun the Dungeon with Only 1 HP! cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">Otherworldly Munchkin - Let's Speedrun the Dungeon with Only 1 HP!</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYDT27VJHNB59FJR01G7S/Legend-of-the-Northern-Blade">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYDT27VJHNB59FJR01G7S.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYDT27VJHNB59FJR01G7S.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYDT27VJHNB59FJR01G7S.jpg" alt="The Legend of the Northern Blade cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Legend of the Northern Blade</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYE02CWJZEVYXBW44RJQ1/The-Reincarnated-Sage-who-was-abandoned">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYE02CWJZEVYXBW44RJQ1.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYE02CWJZEVYXBW44RJQ1.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYE02CWJZEVYXBW44RJQ1.jpg" alt="The Abandoned Reincarnation Sage cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Abandoned Reincarnation Sage</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYEJ2RQPQJFDKWGQBW9Q5/Warble">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYEJ2RQPQJFDKWGQBW9Q5.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYEJ2RQPQJFDKWGQBW9Q5.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYEJ2RQPQJFDKWGQBW9Q5.jpg" alt="Warble cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">Warble</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01J76XYEMRNSZDH2NHD2P8FQQA/The-Ultimate-Scheming-System">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01J76XYEMRNSZDH2NHD2P8FQQA.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01J76XYEMRNSZDH2NHD2P8FQQA.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01J76XYEMRNSZDH2NHD2P8FQQA.jpg" alt="The Ultimate Scheming System cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">The Ultimate Scheming System</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                        <li class="glide__slide">
+                            <a href="https://weebcentral.com/series/01K851Z1NBB2ERYVTRBTT1RNAZ/dragon-quest-the-mark-of-erdrick">
+                                <div class="relative">
+                                    <div class="w-full aspect-4/6 overflow-hidden">
+                                        <picture>
+                                            <source srcset="https://temp.compsci88.com/cover/normal/01K851Z1NBB2ERYVTRBTT1RNAZ.webp" width="400" height="600" media="(min-width: 768px)" type="image/webp">
+                                            <source srcset="https://temp.compsci88.com/cover/small/01K851Z1NBB2ERYVTRBTT1RNAZ.webp" width="200" height="300" type="image/webp">
+                                            <img src="https://temp.compsci88.com/cover/fallback/01K851Z1NBB2ERYVTRBTT1RNAZ.jpg" alt="Dragon Quest - The Mark of Erdrick cover" width="400" height="600" decoding="async" loading="lazy">
+                                        </picture>
+                                    </div>
+                                    <div class="w-full h-16 absolute bottom-0 flex flex-col items-center justify-center bg-linear-to-r from-black to-slate-900 hover:from-slate-900 hover:to-black opacity-90">
+                                        <div class="truncate text-white text-center text-lg z-20 w-[90%]">Dragon Quest - The Mark of Erdrick</div>
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        
+                    </ul>
+                </div>
+                <div class="glide__arrows" data-glide-el="controls">
+                    <button class="glide__arrow glide__arrow--left" data-glide-dir="<">&lt;</button>
+                    <button class="glide__arrow glide__arrow--right" data-glide-dir=">">&gt;</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comments -->
+        <section>
+            <button type="button" class="w-full btn btn-secondary" hx-get="https://weebcentral.com/comments/contents/01J76XYCPSY3C4BNPBRY8JMCBE?content_type=series" hx-swap="outerHTML">
+                
+                <span>Click to reveal comments</span>
+            </button>
+        </section>
+    </div>
+</main>

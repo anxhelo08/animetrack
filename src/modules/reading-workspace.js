@@ -60,8 +60,17 @@ export function createReadingWorkspace(ctx, render) {
   }
   function statistics() {
     const stats = readingWeeklyStats(rows()),
-      goal = ctx.state().preferences?.readingWeeklyGoal || 20;
-    return `<section class="reading-panel"><div class="reading-section-title"><h3>Java jote në faqe</h3><p>Numërohen kapitujt e shënuar këtë javë, nga e hëna. Nuk llogaritet kohë leximi e hamendësuar.</p></div><div class="reading-goal"><strong>${stats.chapters} / ${goal}</strong><span>kapituj këtë javë</span><progress max="${goal}" value="${Math.min(goal, stats.chapters)}" aria-label="Progresi i qëllimit javor"></progress></div><form id="reading-goal-form" class="reading-inline-form"><label class="reading-field">Qëllimi javor<input name="goal" type="number" min="1" max="1000" required value="${goal}"></label><button class="ghost">Ruaj qëllimin</button></form><div class="reading-detail-grid"><section><h4>Titujt këtë javë</h4>${stats.titles.map((item) => `<p>${esc(item.title)} <b>${item.chapters} kapituj</b></p>`).join('') || '<p>Vazhdo kapitullin e radhës për të nisur javën.</p>'}</section><section><h4>Zhanret e lexuara</h4><p class="reading-volume-note">Kapitujt e një titulli mund të hyjnë në disa zhanre.</p>${stats.genres.map(([genre, total]) => `<p>${esc(genre)} <b>${total} kapituj</b></p>`).join('') || '<p>Zhanret shfaqen kur titujt kanë metadata.</p>'}</section></div></section>`;
+      goal = ctx.state().preferences?.readingWeeklyGoal || 20,
+      linked = rows().filter((row) => row.weebCentralId && row.checkedAt),
+      published = linked.reduce(
+        (total, row) => total + (row.publishedEntries || row.totalChapters),
+        0,
+      ),
+      unread = linked.reduce(
+        (total, row) => total + Math.max(0, row.totalChapters - row.chaptersRead.length),
+        0,
+      );
+    return `<section class="reading-panel"><div class="reading-section-title"><h3>Java jote në faqe</h3><p>Numërohen kapitujt e shënuar këtë javë, nga e hëna. Nuk llogaritet kohë leximi e hamendësuar.</p></div><div class="reading-facts"><span>WeebCentral · ${linked.length} tituj të kontrolluar</span><span>${published} publikime në këta tituj</span><span>${unread} kapituj të numëruar pa lexuar</span></div><div class="reading-goal"><strong>${stats.chapters} / ${goal}</strong><span>kapituj këtë javë</span><progress max="${goal}" value="${Math.min(goal, stats.chapters)}" aria-label="Progresi i qëllimit javor"></progress></div><form id="reading-goal-form" class="reading-inline-form"><label class="reading-field">Qëllimi javor<input name="goal" type="number" min="1" max="1000" required value="${goal}"></label><button class="ghost">Ruaj qëllimin</button></form><div class="reading-detail-grid"><section><h4>Titujt këtë javë</h4>${stats.titles.map((item) => `<p>${esc(item.title)} <b>${item.chapters} kapituj</b></p>`).join('') || '<p>Vazhdo kapitullin e radhës për të nisur javën.</p>'}</section><section><h4>Zhanret e lexuara</h4><p class="reading-volume-note">Kapitujt e një titulli mund të hyjnë në disa zhanre.</p>${stats.genres.map(([genre, total]) => `<p>${esc(genre)} <b>${total} kapituj</b></p>`).join('') || '<p>Zhanret shfaqen kur titujt kanë metadata.</p>'}</section></div></section>`;
   }
   function snapshot(row) {
     return {
@@ -288,7 +297,7 @@ export function createReadingWorkspace(ctx, render) {
   async function refreshBackground() {
     const user = ctx.user()?.id,
       client = ctx.client?.();
-    if (!user || !client?.from || !ctx.state().preferences?.readingNotifications) return;
+    if (!user || !client?.from) return;
     try {
       const result = await client
         .from('anime_reading_checks')
