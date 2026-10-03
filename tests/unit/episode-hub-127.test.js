@@ -20,12 +20,12 @@ test('12.7.3: completed title with a new episode appears inside regular watching
  assert.equal(out.stale.length,0);assert.equal(out.active.filter(a=>a.id===mentalist.id).length,1,'single ordinary card');
  assert.equal(JSON.stringify([mentalist,other]),before,'render grouping cannot change status, watched or metadata');
 });
-test('12.7.3: Re Zero is not NEW EP while Watching, even when airing today',()=>{
+test('recent unwatched episodes keep NEW after the title automatically returns to Watching',()=>{
  const reZero=entry('Re:Zero','watching',1),old=entry('The Mentalist','completed',30);
  const recent=[{anime:reZero,season:reZero.seasons[0],n:2,when:now-1000,watched:false},
   {anime:old,season:old.seasons[0],n:2,when:now-1000,watched:false}];
  const out=hub.classify([reZero,old],[],recent,now);
- assert.equal(out.newEpisodes.has(reZero.id),false);
+ assert.equal(out.newEpisodes.has(reZero.id),true);
  assert.equal(out.newEpisodes.has(old.id),true);
  assert.equal(out.active.some(x=>x.id===reZero.id),true);
 });

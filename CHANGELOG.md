@@ -1,3 +1,11 @@
+# 14.16.0 — Episodet e reja kthehen te Duke parë
+
+- Episodi me datë të konfirmuar shtohet automatikisht në sezonin përkatës. Seria e përfunduar kalon te “Duke parë” kur ka episode të publikuara pa parë; progresi, shënimet, vlerësimet dhe historia ruhen.
+- Vazhdimet TV/TV_SHORT/ONA shtohen si sezon më vete vetëm kur burimi konfirmon lidhjen SEQUEL dhe ID-të. Sezoni i ri fillon pa episode të shënuara si të para.
+- NEW · EP shfaqet në bibliotekën PC/telefon dhe te vazhdimi i shikimit për publikime të paparë në 7 ditët e fundit. Shenja hiqet pasi episodi shënohet ose përfundon kjo periudhë.
+- Datat e konfirmuara kontrollohen çdo 30 sekonda kur faqja është e dukshme dhe në rikthim, edhe jashtë lidhjes. Burimet/cache vazhdojnë rifreskimin automatik; njoftimet e reja të burimit varen nga kontrolli i metadatave.
+- Cache e vjetër që ka një vazhdim të publikuar pa metadata sezoni kontrollohet sërish. MyAnimeList/Jikan përputhet edhe me sezonet AniList që kanë ID-në MAL përkatëse.
+
 # 14.15.0 — Lexime të ndara dhe kërkim më i plotë
 
 - Manga/Manhwa ka katër hyrje kryesore: Biblioteka, Kërkimi, Kalendari dhe Njoftimet. Koleksionet, rekomandimet, publikimet, statistikat, ditari dhe Manga Sync janë te “Më shumë”.

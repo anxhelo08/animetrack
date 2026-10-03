@@ -1,6 +1,6 @@
 # AnimeTrack
 
-AnimeTrack 14.15.0 ndjek anime, seriale dhe filma, me bibliotekë personale dhe progres të sinkronizuar.
+AnimeTrack 14.16.0 ndjek anime, seriale dhe filma, me bibliotekë personale dhe progres të sinkronizuar.
 
 **[Hap aplikacionin](https://animetrack-flax.vercel.app/)** · [Ndryshimet](CHANGELOG.md) · [Siguria](SECURITY.md)
 

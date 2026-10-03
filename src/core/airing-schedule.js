@@ -29,7 +29,7 @@ export function airingIdentities(anime) {
   }
   return [...ids.values()];
 }
-const fields = `id idMal title{romaji english} nextAiringEpisode{airingAt episode}`;
+const fields = `id idMal type format episodes status title{romaji english} nextAiringEpisode{airingAt episode}`;
 export const AIRING_QUERY = `query($id:Int,$idMal:Int){Media(id:$id,idMal:$idMal,type:ANIME){${fields} relations{edges{relationType node{${fields}}}}}}`;
 export const SCHEDULE_QUERY = `query($ids:[Int],$after:Int,$before:Int,$page:Int){Page(page:$page,perPage:50){pageInfo{hasNextPage}airingSchedules(mediaId_in:$ids,airingAt_greater:$after,airingAt_lesser:$before,sort:TIME){mediaId episode airingAt}}}`;
 /** Exact provider identities only. Broadcast weekday is never converted into a fictional episode date. */
@@ -102,12 +102,24 @@ export async function fetchAiringSchedule(
       const append = (m) => {
         const providerKey = 'anilist:' + m.id,
           malKey = m.idMal ? 'mal:' + m.idMal : '';
+        const part = {
+          format: m.format,
+          plannedTotal: m.episodes || 0,
+          releaseStatus: m.status,
+          ...(m.id !== media.id
+            ? {
+                relation: 'SEQUEL',
+                linkedFrom: ['anilist:' + media.id, ...(media.idMal ? ['mal:' + media.idMal] : [])],
+              }
+            : {}),
+        };
         for (const item of [
           ...(m.airingSchedule?.nodes || []),
           ...(m.future?.nodes || []),
           m.nextAiringEpisode,
         ].filter(Boolean))
           add({
+            ...part,
             providerKey,
             malKey,
             episode: Number(item.episode),
@@ -145,6 +157,18 @@ export async function fetchAiringSchedule(
           if (!m) continue;
           add({
             providerKey: 'anilist:' + m.id,
+            format: m.format,
+            plannedTotal: m.episodes || 0,
+            releaseStatus: m.status,
+            ...(m.id !== media.id
+              ? {
+                  relation: 'SEQUEL',
+                  linkedFrom: [
+                    'anilist:' + media.id,
+                    ...(media.idMal ? ['mal:' + media.idMal] : []),
+                  ],
+                }
+              : {}),
             malKey: m.idMal ? 'mal:' + m.idMal : '',
             episode: Number(item.episode),
             when: Number(item.airingAt) * 1000,
@@ -172,6 +196,10 @@ export async function fetchAiringSchedule(
           .slice(0, 3),
       ];
       for (const id of ids) {
+        const details =
+          id === mal
+            ? full.data
+            : (await request('https://api.jikan.moe/v4/anime/' + id + '/full')).data;
         const first = await request('https://api.jikan.moe/v4/anime/' + id + '/episodes');
         const pages = [first];
         const last = Number(first.pagination?.last_visible_page) || 1;
@@ -184,9 +212,14 @@ export async function fetchAiringSchedule(
             if (ep.aired)
               add({
                 providerKey: 'mal:' + id,
+                format:
+                  details?.type === 'TV' ? 'TV' : details?.type === 'ONA' ? 'ONA' : details?.type,
+                plannedTotal: details?.episodes || 0,
+                ...(id !== mal ? { relation: 'SEQUEL', linkedFrom: ['mal:' + mal] } : {}),
                 episode: Number(ep.mal_id),
+                episodeTitle: ep.title || '',
                 when: Date.parse(ep.aired),
-                partTitle: id === mal ? full.data?.title_english || full.data?.title || '' : '',
+                partTitle: details?.title_english || details?.title || '',
                 source: 'MyAnimeList / Jikan',
                 url: 'https://myanimelist.net/anime/' + id,
               });
@@ -231,9 +264,10 @@ export function mapAiringEvents(anime, result) {
     const keys = [e.providerKey, e.malKey].filter(Boolean);
     const season = (anime.seasons || []).find(
       (s) =>
-        airingIdentities({ ...s, seasons: [] }).some((id) =>
+        (airingIdentities({ ...s, seasons: [] }).some((id) =>
           keys.includes(id.provider + ':' + id.id),
-        ) &&
+        ) ||
+          (s.malId && keys.includes('mal:' + s.malId))) &&
         (!e.seasonNumber ||
           Number(
             s.tvSeasonNumber ||

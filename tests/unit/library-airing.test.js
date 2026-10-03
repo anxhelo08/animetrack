@@ -116,3 +116,27 @@ test('responses from a previous account cannot repaint a new owner calendar', as
   });
   expect(onUpdate).toHaveBeenCalledTimes(2);
 });
+test('an old cache with an aired untyped sequel is refreshed before its daily TTL expires', async () => {
+  const untyped = {
+    ...event,
+    providerKey: 'anilist:9',
+    malKey: 'mal:90',
+    episode: 1,
+    when: now - 1000,
+  };
+  const fetchSchedule = vi.fn(async () => ({
+    events: [{ ...untyped, format: 'TV', relation: 'SEQUEL', linkedFrom: ['anilist:7'] }],
+  }));
+  await loadLibraryAiring([title], {
+    now,
+    readCache: async () => [
+      {
+        lookup_key: 'anilist:7',
+        checked_at: new Date(now).toISOString(),
+        result: { events: [untyped] },
+      },
+    ],
+    fetchSchedule,
+  });
+  expect(fetchSchedule).toHaveBeenCalledTimes(1);
+});

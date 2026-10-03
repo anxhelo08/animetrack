@@ -108,7 +108,14 @@ export async function loadLibraryAiring(
       if (!isCurrent()) return;
       if (!row.result || !Number.isFinite(Date.parse(row.checked_at))) continue;
       results.set(row.lookup_key, row.result);
-      if (Date.parse(row.checked_at) > now - 86400000 && !force) {
+      const missingPart = targets.some(
+        (title) =>
+          airingIdentities(title).some((id) => id.provider + ':' + id.id === row.lookup_key) &&
+          mapAiringEvents(title, row.result).some(
+            (event) => event.when <= now && !event.seasonId && !event.format,
+          ),
+      );
+      if (Date.parse(row.checked_at) > now - 86400000 && !force && !missingPart) {
         fresh.add(row.lookup_key);
         attempted.add(row.lookup_key);
       }

@@ -28,7 +28,7 @@ export function MediaCard(item, options = {}) {
     : '';
   return `<article class="media-card media-card--${variant}${options.library ? ' anime-card' : ''}${variant === 'ContinueWatching' ? ' at114-watch-card' : ''}" data-media-card="${variant}"${options.library ? ` data-media="${esc(options.kind)}" data-status="${esc(item.status)}"` : ''}>
     <button type="button" class="media-card-art${options.library ? ' at120-card-poster' : ''}" ${action} aria-label="Hap ${esc(item.title)}">${art}${variant === 'ContinueWatching' ? '<span class="media-card-play" aria-hidden="true">' + navIcon('watch') + '</span>' : ''}${progress}</button>
-    ${options.library && options.status ? `<span class="status-badge">${esc(options.status)}</span>` : ''}
+    ${options.library && options.status ? `<span class="status-badge">${esc(options.status)}</span>` : ''}${options.newEpisode ? '<span class="anime-new-episode" aria-label="Episod i ri pa parë">NEW · EP</span>' : ''}
     <div class="media-card-copy${options.library ? ' card-info' : ''}">${options.eyebrow ? `<span class="media-card-eyebrow">${esc(options.eyebrow)}</span>` : ''}
       <button type="button" class="media-card-title${options.library ? ' card-title at120-card-title' : ''}" ${action}>${esc(item.title)}</button>
       ${options.subtitle ? `<p>${esc(options.subtitle)}</p>` : ''}
