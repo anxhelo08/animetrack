@@ -2,7 +2,10 @@ vi.mock('../../src/modules/weebcentral-catalog.js', () => ({
   weebCentralCatalog: vi.fn().mockRejectedValue(new Error('Unavailable')),
 }));
 import { beforeEach, expect, it, vi } from 'vitest';
-vi.mock('../../src/core/request-cache.js', () => ({ catalogJSON: vi.fn() }));
+vi.mock('../../src/core/request-cache.js', async (original) => ({
+  ...(await original()),
+  catalogJSON: vi.fn(),
+}));
 import { catalogJSON } from '../../src/core/request-cache.js';
 import { searchReadingCatalog, refreshReadingCatalog } from '../../src/modules/reading-catalog.js';
 beforeEach(() => vi.clearAllMocks());
@@ -28,6 +31,45 @@ it('does not start requests after caller cancellation', async () => {
     name: 'AbortError',
   });
   expect(catalogJSON).not.toHaveBeenCalled();
+});
+it('MangaDex-only titles refresh real chapter metadata without changing personal data or inventing IDs', async () => {
+  const id = '773c2211-750b-4fff-bd64-c914986e4637';
+  const row = {
+    source: 'mangadex',
+    sourceId: id,
+    mangaDexId: id,
+    title: 'Story',
+    kind: 'manhwa',
+    chaptersRead: [1],
+    notes: 'My notes',
+  };
+  const before = structuredClone(row);
+  catalogJSON.mockImplementation(async (url) =>
+    url.endsWith('/aggregate')
+      ? {
+          result: 'ok',
+          volumes: { 1: { volume: '1', chapters: { 1: { chapter: '1' }, 2: { chapter: '2' } } } },
+        }
+      : url.includes('/feed?')
+        ? { data: [{ attributes: { chapter: '2', publishAt: '2026-09-29T12:00:00Z' } }] }
+        : {
+            data: {
+              id,
+              attributes: { status: 'ongoing', title: { en: 'Story' }, originalLanguage: 'ko' },
+            },
+          },
+  );
+  const result = await refreshReadingCatalog(row);
+  expect(result).toMatchObject({
+    totalChapters: 2,
+    mangaDexId: id,
+    chapterSource: 'MangaDex',
+    publicationStatus: 'RELEASING',
+  });
+  expect(row).toEqual(before);
+  expect(catalogJSON.mock.calls.every(([url]) => url.startsWith('https://api.mangadex.org/'))).toBe(
+    true,
+  );
 });
 it('refreshes counts without overwriting personal progress or pretending an unknown count is known', async () => {
   catalogJSON.mockResolvedValueOnce({

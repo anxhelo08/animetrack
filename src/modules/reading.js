@@ -151,7 +151,9 @@ export function createReading(ctx) {
         (status === 'all' || status === 'favorites'
           ? status !== 'favorites' || row.favorite
           : row.status === status) &&
-        `${row.title} ${row.genres}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()),
+        `${row.title} ${(row.aliases || []).join(' ')} ${row.genres}`
+          .toLocaleLowerCase()
+          .includes(query.toLocaleLowerCase()),
     );
     list.sort((a, b) =>
       sort === 'new'
@@ -242,7 +244,7 @@ export function createReading(ctx) {
   }
   function discover() {
     const recommended = tab === 'recommendations';
-    return `<form id="reading-search-form" class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko manga ose manhwa…" aria-label="Kërko manga ose manhwa" maxlength="100" value="${esc(query)}"></label><button class="primary" type="submit">Kërko</button></form>${advancedFilters()}${recommended ? '<p class="reading-volume-note">Nga zhanret e titujve që lexon, vlerëson ose ruan si të preferuar. Titujt në bibliotekë përjashtohen.</p>' : ''}<div class="reading-results-meta" role="status">${busy ? (results.length ? results.length + ' tituj · ' + esc(catalogProvider) + ' · Po kontrolloj burimet e tjera…' : 'Po kërkoj në katalog…') : error ? 'Katalogu nuk u arrit. Leximet e tua janë të ruajtura.' : `${query ? 'Rezultatet për “' + esc(query) + '”' : recommended ? 'Rekomanduar për ty' : tab === 'latest' ? 'Përditësuar së fundmi në WeebCentral' : 'Në trend tani'} · ${esc(catalogProvider)} · ${results.length} tituj`}${error ? button('retry', 'Provo përsëri') : ''}</div><div class="reading-grid" aria-busy="${busy}">${results.map(card).join('') || (busy ? Array.from({ length: 6 }, () => '<div class="reading-skeleton" aria-hidden="true"></div>').join('') : error ? '' : '<section class="reading-empty"><h3>Nuk u gjet titull</h3><p>Ndrysho filtrat ose provo një emër tjetër.</p>' + button('manual', '+ Shto vetë') + '</section>')}</div>${hasNext ? `<div class="reading-more">${button('more', busy ? 'Po ngarkoj…' : 'Shfaq më shumë', '', 'ghost', busy ? 'disabled' : '')}</div>` : ''}`;
+    return `<form id="reading-search-form" class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko manga ose manhwa…" aria-label="Kërko manga ose manhwa" maxlength="100" value="${esc(query)}"></label><button class="primary" type="submit">Kërko</button></form>${advancedFilters()}${recommended ? '<p class="reading-volume-note">Nga zhanret e titujve që lexon, vlerëson ose ruan si të preferuar. Titujt në bibliotekë përjashtohen.</p>' : ''}<div class="reading-results-meta" role="status">${busy ? (results.length ? results.length + ' tituj · ' + esc(catalogProvider) + ' · Po kontrolloj burimet e tjera…' : 'Po kërkoj në katalog…') : error ? 'Katalogu nuk u arrit. Leximet e tua janë të ruajtura.' : `${query ? 'Rezultatet për “' + esc(query) + '”' : recommended ? 'Rekomanduar për ty' : tab === 'latest' ? 'Përditësuar së fundmi në WeebCentral' : 'Në trend tani'} · ${esc(catalogProvider)} · ${results.length} tituj`}${error ? button('retry', 'Provo përsëri') : ''}</div><div class="reading-grid" aria-busy="${busy && !results.length}">${results.map(card).join('') || (busy ? Array.from({ length: 6 }, () => '<div class="reading-skeleton" aria-hidden="true"></div>').join('') : error ? '' : '<section class="reading-empty"><h3>Nuk u gjet titull</h3><p>Ndrysho filtrat ose provo një emër tjetër.</p>' + (kind !== 'all' ? button('scope', 'Kërko në Manga + Manhwa', 'all', 'primary') : '') + button('manual', '+ Shto vetë') + '</section>')}</div>${hasNext ? `<div class="reading-more">${button('more', busy ? 'Po ngarkoj…' : 'Shfaq më shumë', '', 'ghost', busy ? 'disabled' : '')}</div>` : ''}`;
   }
   function releases() {
     const list = scopedRows().filter(
@@ -325,7 +327,7 @@ export function createReading(ctx) {
       visible = ordered.slice(chapterPage * 30, chapterPage * 30 + 30),
       first = visible[0] || 0,
       last = visible.at(-1) || 0;
-    return `<section class="reading-detail" aria-label="Detajet e leximit">${button('back', '← Kthehu', '', 'reading-back')}<div class="reading-detail-top"><div class="reading-detail-cover">${image(row)}</div><div><span class="reading-eyebrow">${label(row)}${row.year ? ' · ' + row.year : ''}</span><h3 id="reading-detail-title" tabindex="-1">${esc(row.title)}</h3><p>${esc(row.genres)}</p><p class="reading-source-freshness">Burimi: ${esc(row.chapterSource || (row.source === 'weebcentral' ? 'WeebCentral' : row.source === 'jikan' ? 'MyAnimeList / Jikan' : 'AniList'))}${row.checkedAt ? ' · Kontrolluar ' + date(row.checkedAt) : ' · Ende pa kontroll të ri'} · Progresi personal ruhet veçmas.</p><div class="reading-facts"><span>${row.totalChapters ? row.totalChapters + (row.publicationStatus === 'RELEASING' ? ' kapituj publikuar' : ' kapituj') : 'Numri aktual ende i pakonfirmuar'}</span>${row.publishedEntries ? '<span>WeebCentral · ' + row.publishedEntries + ' publikime (përfshirë shtesat)</span>' : ''}${row.weebCentralId ? '<a class="ghost" href="https://weebcentral.com/series/' + esc(row.weebCentralId) + '" target="_blank" rel="noopener noreferrer">Hap burimin ↗</a>' : ''}<span>${row.totalVolumes ? row.totalVolumes + ' vëllime' : 'Vëllimet ende të pakonfirmuara'}</span><span>${row.publicationStatus === 'RELEASING' ? 'Në botim' : row.publicationStatus === 'FINISHED' ? 'Botim i përfunduar' : row.publicationStatus === 'HIATUS' ? 'Në pauzë' : 'Publikimi i pakonfirmuar'}</span>${row.communityScore ? `<span>${row.source === 'jikan' ? 'MyAnimeList' : 'AniList'} · ★ ${row.communityScore}/10</span>` : ''}</div>${row.synopsis ? `<details class="reading-synopsis"><summary>Përshkrimi</summary><p>${esc(row.synopsis)}</p></details>` : ''}${tracked ? `<div class="reading-detail-actions">${button('next', 'Vazhdo', row.id, 'primary', nextChapter(tracked) ? '' : 'disabled')}${button('favorite', tracked.favorite ? '♥ E preferuar' : '♡ Shto te të preferuarat', row.id, 'ghost', `aria-pressed="${tracked.favorite}"`)}${button('edit', 'Ndrysho titullin', row.id)}</div>` : button('add', '+ Në listën time', row.id, 'primary')}</div></div>${detailTabs(row)}${
+    return `<section class="reading-detail" aria-label="Detajet e leximit">${button('back', '← Kthehu', '', 'reading-back')}<div class="reading-detail-top"><div class="reading-detail-cover">${image(row)}</div><div><span class="reading-eyebrow">${label(row)}${row.year ? ' · ' + row.year : ''}</span><h3 id="reading-detail-title" tabindex="-1">${esc(row.title)}</h3><p>${esc(row.genres)}</p><p class="reading-source-freshness">Burimi: ${esc(row.chapterSource || (row.source === 'weebcentral' ? 'WeebCentral' : row.source === 'jikan' ? 'MyAnimeList / Jikan' : row.source === 'mangadex' ? 'MangaDex' : 'AniList'))}${row.checkedAt ? ' · Kontrolluar ' + date(row.checkedAt) : ' · Ende pa kontroll të ri'} · Progresi personal ruhet veçmas.</p><div class="reading-facts"><span>${row.totalChapters ? row.totalChapters + (row.publicationStatus === 'RELEASING' ? ' kapituj publikuar' : ' kapituj') : 'Numri aktual ende i pakonfirmuar'}</span>${row.publishedEntries ? '<span>WeebCentral · ' + row.publishedEntries + ' publikime (përfshirë shtesat)</span>' : ''}${row.weebCentralId ? '<a class="ghost" href="https://weebcentral.com/series/' + esc(row.weebCentralId) + '" target="_blank" rel="noopener noreferrer">Hap burimin ↗</a>' : ''}<span>${row.totalVolumes ? row.totalVolumes + ' vëllime' : 'Vëllimet ende të pakonfirmuara'}</span><span>${row.publicationStatus === 'RELEASING' ? 'Në botim' : row.publicationStatus === 'FINISHED' ? 'Botim i përfunduar' : row.publicationStatus === 'HIATUS' ? 'Në pauzë' : 'Publikimi i pakonfirmuar'}</span>${row.communityScore ? `<span>${row.source === 'jikan' ? 'MyAnimeList' : 'AniList'} · ★ ${row.communityScore}/10</span>` : ''}</div>${row.synopsis ? `<details class="reading-synopsis"><summary>Përshkrimi</summary><p>${esc(row.synopsis)}</p></details>` : ''}${tracked ? `<div class="reading-detail-actions">${button('next', 'Vazhdo', row.id, 'primary', nextChapter(tracked) ? '' : 'disabled')}${button('favorite', tracked.favorite ? '♥ E preferuar' : '♡ Shto te të preferuarat', row.id, 'ghost', `aria-pressed="${tracked.favorite}"`)}${button('edit', 'Ndrysho titullin', row.id)}</div>` : button('add', '+ Në listën time', row.id, 'primary')}</div></div>${detailTabs(row)}${
       tracked
         ? `<div class="reading-detail-grid"><section class="reading-panel"><div class="reading-section-title"><h4>Kapitujt e mi</h4><p>${tracked.chaptersRead.length} të lexuar nga ${row.totalChapters || 'një total ende i panjohur'}${!row.totalChapters ? ' · Shëno vetëm kapitujt që ke lexuar.' : ''}</p></div><div class="reading-chapter-tools"><label class="reading-field">Kërko kapitull<input id="reading-chapter-query" type="search" inputmode="numeric" maxlength="5" placeholder="Numri i kapitullit" value="${esc(chapterQuery)}"></label><label class="reading-field">Renditja<select id="reading-chapter-sort"><option value="asc" ${chapterSort === 'asc' ? 'selected' : ''}>1 → ${max}</option><option value="desc" ${chapterSort === 'desc' ? 'selected' : ''}>${max} → 1</option></select></label><label class="reading-field">Vëllimi<select id="reading-volume"><option value="all">Të gjithë kapitujt</option>${(row.volumeRanges || []).map((item) => `<option value="${item.volume}" ${volume === String(item.volume) ? 'selected' : ''}>Vëllimi ${item.volume} · ${item.start}–${item.end}</option>`).join('')}</select></label></div>${!row.volumeRanges?.length ? '<p class="reading-volume-note">Ndarja sipas vëllimeve nuk është dhënë nga katalogu. Mund ta përcaktosh te “Ndrysho titullin”.</p>' : ''}<div class="reading-chapters">${
             visible
@@ -506,7 +508,10 @@ export function createReading(ctx) {
     if (!item || refreshing.has(id)) return;
     refreshing.add(id);
     try {
-      const fresh = await weebCentralCatalog('details', { id: item.sourceId });
+      const fresh =
+        item.source === 'weebcentral'
+          ? await weebCentralCatalog('details', { id: item.sourceId })
+          : await refreshReadingCatalog(item);
       if ((ctx.user()?.id || 'guest') !== requestOwner || !active) return;
       if (saved(id))
         mutate((all) =>
@@ -747,8 +752,10 @@ export function createReading(ctx) {
       eventId = target.dataset.event || '';
       focusAfter = '#reading-detail-title';
       render();
-      if (row?.source === 'weebcentral' && !row.checkedAt) void checkRow(id);
-      else if (!row && find(id)?.source === 'weebcentral') void loadCatalogDetail(id);
+      if (row && (row.source === 'weebcentral' || row.mangaDexId) && !row.checkedAt)
+        void checkRow(id);
+      else if (!row && (find(id)?.source === 'weebcentral' || find(id)?.mangaDexId))
+        void loadCatalogDetail(id);
       if (eventId)
         root
           .querySelector('#reading-journal-form')
@@ -822,7 +829,7 @@ export function createReading(ctx) {
         return;
       ctx.toast('Titulli u shtua te leximet e tua ✓');
       render();
-      if (item.source === 'weebcentral') void checkRow(id);
+      if (item.source === 'weebcentral' || item.mangaDexId) void checkRow(id);
       return;
     }
     if (!row) return;

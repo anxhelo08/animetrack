@@ -1,0 +1,542 @@
+{
+  "doom": {
+    "anilist": {
+      "id": 136220,
+      "type": "MANGA",
+      "idMal": 147172,
+      "title": {
+        "native": "투신전생기",
+        "romaji": "Tusinjeonsaenggi",
+        "english": "Doom Breaker"
+      },
+      "genres": [
+        "Action",
+        "Fantasy"
+      ],
+      "status": "RELEASING",
+      "volumes": null,
+      "chapters": null,
+      "startDate": {
+        "year": 2021
+      },
+      "coverImage": {
+        "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx136220-u9sewv3u02mN.jpg",
+        "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx136220-u9sewv3u02mN.jpg"
+      },
+      "description": "Zephyr is the last human fighting evil in a world abandoned by the gods. When he is killed in battle by Tartarus, the god of destruction, all hope for humanity seems lost. But Zephyr’s fate is not sealed — the gods who find his battles entertaining have gifted him a second chance at life, as he is sent ten years into the past, back to when he was a slave instead of the most powerful human alive. Can Zephyr get his revenge against Tartarus and save the woman he loves, or is he doomed to repeat the past? <br><br>\n(Source: WEBTOON)",
+      "averageScore": 79,
+      "countryOfOrigin": "KR"
+    },
+    "mangadex": {
+      "id": "773c2211-750b-4fff-bd64-c914986e4637",
+      "type": "manga",
+      "attributes": {
+        "tags": [
+          {
+            "id": "292e862b-2d17-4062-90a2-0356caa4ae27",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Time Travel"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "36fd93ea-e8b8-445e-b836-358f02b3d33d",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Monsters"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "391b0423-d847-456f-aff0-8b0cfc03066b",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Action"
+              },
+              "group": "genre",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "39730448-9a5f-48a2-85b0-a70db87b1233",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Demons"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "3e2b8dae-350e-4ab8-a8ce-016e844b9f0d",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Long Strip"
+              },
+              "group": "format",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "799c202e-7daa-44eb-9cf7-8a3c0441531e",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Martial Arts"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "87cc87cd-a395-47af-b27a-93258283bbc6",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Adventure"
+              },
+              "group": "genre",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "a1f53773-c69a-4ce5-8cab-fffcd90b1565",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Magic"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "cdc58593-87dd-415e-bbc0-2ec27bf404cc",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Fantasy"
+              },
+              "group": "genre",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "e197df38-d0e7-43b5-9b09-2842d0c326dd",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Web Comic"
+              },
+              "group": "format",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "eabc5b4c-6aff-42f3-b657-3e90cbd00b75",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Supernatural"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "f5ba408b-0e7a-484d-8d49-4e9125ac96de",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Full Color"
+              },
+              "group": "format",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          }
+        ],
+        "year": 2021,
+        "links": {
+          "al": "136220",
+          "ap": "doom-breaker",
+          "kt": "60196",
+          "mu": "1qs65a6",
+          "mal": "147172",
+          "raw": "https://series.naver.com/comic/detail.nhn?productNo=6325420"
+        },
+        "title": {
+          "en": "Doom Breaker"
+        },
+        "status": "hiatus",
+        "altTitles": [
+          {
+            "ko": "투신전생기"
+          },
+          {
+            "ko-ro": "Tusinjeonsaenggi"
+          },
+          {
+            "en": "The Battle God's Return"
+          },
+          {
+            "en": "A Battle God's Second Chance"
+          },
+          {
+            "en": "Reincarnation of the Suicidal Battle God"
+          },
+          {
+            "en": "To a New Life"
+          },
+          {
+            "es": "Doom Breaker: Venganza contra los Dioses"
+          },
+          {
+            "uk": "Руйнівник долі"
+          },
+          {
+            "ru": "Новая жизнь убийцы богов"
+          },
+          {
+            "fa": "بازگشت خدای جنگ مرگبار"
+          },
+          {
+            "th": "เกิดใหม่นักรบพันธุ์ระห่ำ"
+          },
+          {
+            "ja": "闘神転生記～世界を救うセカンドチャンス～"
+          },
+          {
+            "zh-hk": "鬥神轉生記"
+          },
+          {
+            "zh": "斗神转生记"
+          },
+          {
+            "pt-br": "A Reencarnação do Deus da Guerra"
+          }
+        ],
+        "originalLanguage": "ko"
+      },
+      "relationships": [
+        {
+          "id": "d6ee833b-7e0e-4fc8-8641-64d74c038952",
+          "type": "author"
+        },
+        {
+          "id": "d6ee833b-7e0e-4fc8-8641-64d74c038952",
+          "type": "artist"
+        },
+        {
+          "id": "e6704fa1-8331-41f6-ab05-d313188ec833",
+          "type": "cover_art",
+          "attributes": {
+            "locale": "ko",
+            "volume": "1.2",
+            "version": 1,
+            "fileName": "cf60f76c-19fa-441f-b20d-9528180aaff7.jpg",
+            "createdAt": "2025-01-11T16:31:33+00:00",
+            "updatedAt": "2025-01-11T16:31:33+00:00",
+            "description": ""
+          }
+        },
+        {
+          "id": "b1fe6f90-c7ad-44d1-8669-154744c3dfdf",
+          "type": "creator"
+        }
+      ]
+    }
+  },
+  "player": {
+    "anilist": {
+      "id": 130511,
+      "type": "MANGA",
+      "idMal": 147995,
+      "title": {
+        "native": "레벨업 못하는 플레이어",
+        "romaji": "Level-Up Motaneun Player",
+        "english": "The Player Who Can't Level Up"
+      },
+      "genres": [
+        "Action",
+        "Fantasy"
+      ],
+      "status": "RELEASING",
+      "volumes": null,
+      "chapters": null,
+      "startDate": {
+        "year": 2021
+      },
+      "coverImage": {
+        "large": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/bx130511-4O6dF8oaiVJh.jpg",
+        "extraLarge": "https://s4.anilist.co/file/anilistcdn/media/manga/cover/large/bx130511-4O6dF8oaiVJh.jpg"
+      },
+      "description": "When Kim Kigyu received his invitation to become a player (a unique-ability player, at that), he thought his struggles were over. But no matter how hard he tries, he just can’t seem to get past level 1! After five years of working as a guide on the lower floors of the tower, he’s finally discovered his ability to link with “Egos” and raise his stats. As his new skills unlock adventures in unexplored gates, Kigyu gets his chance to defy expectations and show the world that rank isn’t everything.\n<br><br>(Source: Tapas)",
+      "averageScore": 72,
+      "countryOfOrigin": "KR"
+    },
+    "mangadex": {
+      "id": "a796fb50-cdc9-4c15-a48d-bc1d733d89b2",
+      "type": "manga",
+      "attributes": {
+        "tags": [
+          {
+            "id": "36fd93ea-e8b8-445e-b836-358f02b3d33d",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Monsters"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "391b0423-d847-456f-aff0-8b0cfc03066b",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Action"
+              },
+              "group": "genre",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "39730448-9a5f-48a2-85b0-a70db87b1233",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Demons"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "3e2b8dae-350e-4ab8-a8ce-016e844b9f0d",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Long Strip"
+              },
+              "group": "format",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "87cc87cd-a395-47af-b27a-93258283bbc6",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Adventure"
+              },
+              "group": "genre",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "a1f53773-c69a-4ce5-8cab-fffcd90b1565",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Magic"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "cdc58593-87dd-415e-bbc0-2ec27bf404cc",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Fantasy"
+              },
+              "group": "genre",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "e197df38-d0e7-43b5-9b09-2842d0c326dd",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Web Comic"
+              },
+              "group": "format",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "eabc5b4c-6aff-42f3-b657-3e90cbd00b75",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Supernatural"
+              },
+              "group": "theme",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "ee968100-4191-4968-93d3-f82d72be7e46",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Mystery"
+              },
+              "group": "genre",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "f4122d1c-3b44-44d0-9936-ff7502c39ad3",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Adaptation"
+              },
+              "group": "format",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          },
+          {
+            "id": "f5ba408b-0e7a-484d-8d49-4e9125ac96de",
+            "type": "tag",
+            "attributes": {
+              "name": {
+                "en": "Full Color"
+              },
+              "group": "format",
+              "version": 1,
+              "description": {}
+            },
+            "relationships": []
+          }
+        ],
+        "year": 2021,
+        "links": {
+          "al": "130511",
+          "ap": "the-player-who-cant-level-up",
+          "kt": "58886",
+          "mu": "uc8601r",
+          "mal": "147995",
+          "raw": "https://page.kakao.com/content/56611441",
+          "engtl": "https://tapas.io/series/the-player-who-cant-level-up/info"
+        },
+        "title": {
+          "en": "The Player Who Can't Level Up"
+        },
+        "status": "ongoing",
+        "altTitles": [
+          {
+            "ko": "레벨업 못하는 플레이어"
+          },
+          {
+            "ru": "Игрок, который не может повысить уровень"
+          },
+          {
+            "en": "The Player That Can’t Level Up"
+          },
+          {
+            "zh": "无法升级的玩家"
+          },
+          {
+            "pt-br": "The Player Who Can't Level Up: O Mestre dos Egos"
+          },
+          {
+            "es-la": "El jugador que no puede subir de nivel"
+          }
+        ],
+        "originalLanguage": "ko"
+      },
+      "relationships": [
+        {
+          "id": "18dbda0c-4d0a-4f11-9ab2-1f7a0314ec1f",
+          "type": "author"
+        },
+        {
+          "id": "77074b04-149a-49b2-b076-f0a3fdce0950",
+          "type": "author"
+        },
+        {
+          "id": "0827fc16-205e-4c40-8a6a-32dc714807f7",
+          "type": "artist"
+        },
+        {
+          "id": "adee3664-5731-4530-9b52-7ce6f30c18ca",
+          "type": "artist"
+        },
+        {
+          "id": "a40a65d6-d511-444e-9ffb-1b6812704dc5",
+          "type": "cover_art",
+          "attributes": {
+            "locale": "ko",
+            "volume": "4",
+            "version": 1,
+            "fileName": "ff288e38-47a0-4adf-8825-1d3286ebb69a.jpg",
+            "createdAt": "2025-01-11T16:40:08+00:00",
+            "updatedAt": "2025-01-11T16:40:08+00:00",
+            "description": ""
+          }
+        }
+      ]
+    }
+  }
+}

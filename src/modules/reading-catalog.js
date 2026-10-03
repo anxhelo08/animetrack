@@ -1,14 +1,17 @@
 import { cleanReadingFilters, matchesReadingFilters } from '../core/reading-discovery.js';
 import { catalogJSON } from '../core/request-cache.js';
+import { mangaDexItem } from './mangadex-catalog.js';
+import { createRequestCache } from '../core/request-cache.js';
 import { weebCentralCatalog } from './weebcentral-catalog.js';
 
-const QUERY = `query ReadingCatalog($search:String,$page:Int!,$country:CountryCode,$sort:[MediaSort],$genres:[String],$excluded:[String],$year:String,$status:MediaStatus,$score:Int,$min:Int,$max:Int){Page(page:$page,perPage:18){pageInfo{hasNextPage}media(type:MANGA,isAdult:false,search:$search,countryOfOrigin:$country,sort:$sort,genre_in:$genres,genre_not_in:$excluded,startDate_like:$year,status:$status,averageScore_greater:$score,chapters_greater:$min,chapters_lesser:$max){id idMal type countryOfOrigin title{english romaji native}coverImage{extraLarge large}description(asHtml:false)chapters volumes status startDate{year}genres averageScore}}}`;
-async function searchAniList(query, kind, page = 1, signal, filters = {}) {
+const QUERY = `query ReadingCatalog($search:String,$page:Int!,$country:CountryCode,$sort:[MediaSort],$genres:[String],$excluded:[String],$year:String,$status:MediaStatus,$score:Int,$min:Int,$max:Int){Page(page:$page,perPage:30){pageInfo{hasNextPage}media(type:MANGA,isAdult:false,search:$search,countryOfOrigin:$country,sort:$sort,genre_in:$genres,genre_not_in:$excluded,startDate_like:$year,status:$status,averageScore_greater:$score,chapters_greater:$min,chapters_lesser:$max){id idMal type countryOfOrigin title{english romaji native}coverImage{extraLarge large}description(asHtml:false)chapters volumes status startDate{year}genres averageScore}}}`;
+export async function searchAniList(query, kind, page = 1, signal, filters = {}) {
   const f = cleanReadingFilters(filters);
   const result = await catalogJSON('https://graphql.anilist.co', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     signal,
+    timeoutMs: 4500,
     body: JSON.stringify({
       query: QUERY,
       variables: {
@@ -77,7 +80,7 @@ async function searchJikan(query, kind, page, signal, filters) {
   const params = new URLSearchParams({
     q: query.trim(),
     page: String(page),
-    limit: '18',
+    limit: '25',
     sfw: 'true',
   });
   if (kind !== 'all') params.set('type', kind);
@@ -105,7 +108,10 @@ async function searchJikan(query, kind, page, signal, filters) {
   if (f.score) params.set('min_score', String(f.score));
   if (f.publication === 'RELEASING' || f.publication === 'FINISHED')
     params.set('status', f.publication === 'RELEASING' ? 'publishing' : 'complete');
-  const result = await catalogJSON('https://api.jikan.moe/v4/manga?' + params, { signal });
+  const result = await catalogJSON('https://api.jikan.moe/v4/manga?' + params, {
+    signal,
+    timeoutMs: 4500,
+  });
   if (!Array.isArray(result.data)) throw Error('Katalogu nuk u përgjigj.');
   return {
     provider: 'MyAnimeList / Jikan',
@@ -116,19 +122,40 @@ async function searchJikan(query, kind, page, signal, filters) {
     hasNext: result.pagination?.has_next_page === true,
   };
 }
+const searchCache = createRequestCache();
+async function searchServer(q, kind, page, signal, filters) {
+  if (typeof document === 'undefined') throw Error('Browser search only');
+  const url =
+    '/api/reading-search?' +
+    new URLSearchParams({ q, kind, page: String(page), filters: JSON.stringify(filters) });
+  return searchCache(
+    url,
+    async () => {
+      const response = await fetch(url, { credentials: 'omit', signal: AbortSignal.timeout(6000) });
+      if (!response.ok) throw Error('Catalog unavailable');
+      return response.json();
+    },
+    { signal, ttl: 5 * 60000 },
+  );
+}
 /** Keep exact tracker identities distinct; never merge unrelated titles by a similar name. */
-function combineCatalogs(results) {
+export function combineCatalogs(results) {
   const items = [];
   for (const result of results)
     for (const row of result.items || []) {
       const same = items.find(
         (other) =>
           (other.source === row.source && other.sourceId === row.sourceId) ||
-          ['weebCentralId', 'anilistId', 'malId'].some(
+          ['weebCentralId', 'anilistId', 'malId', 'mangaDexId'].some(
             (key) => row[key] && row[key] === other[key],
           ),
       );
       if (!same) items.push(row);
+      else {
+        for (const key of ['mangaDexId', 'anilistId', 'malId', 'weebCentralId'])
+          if (!same[key] && row[key]) same[key] = row[key];
+        same.aliases = [...new Set([...(same.aliases || []), ...(row.aliases || [])])];
+      }
     }
   return {
     items,
@@ -145,34 +172,23 @@ export async function searchReadingCatalog(
   { onUpdate } = {},
 ) {
   if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
+  query = query.normalize('NFKC').replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();
+  signal = signal
+    ? AbortSignal.any([signal, AbortSignal.timeout(6500)])
+    : AbortSignal.timeout(6500);
   const primary = () =>
     weebCentralCatalog(
       'search',
       { q: query, kind, page: String(page), filters: JSON.stringify(filters) },
       signal,
     );
-  // Browsing uses the preferred source. A named search searches all catalogs for broader coverage.
-  if (!query.trim()) {
-    try {
-      const result = await primary();
-      if (result?.items?.length) return result;
-    } catch (error) {
-      if (signal?.aborted) throw error;
-    }
-    try {
-      const result = await searchAniList(query, kind, page, signal, filters);
-      if (result.items.length) return result;
-    } catch (error) {
-      if (signal?.aborted) throw error;
-    }
-    return searchJikan(query, kind, page, signal, filters);
-  }
   const completed = [],
     failures = [];
   const sources = [
     primary,
     () => searchAniList(query, kind, page, signal, filters),
     () => searchJikan(query, kind, page, signal, filters),
+    () => searchServer(query, kind, page, signal, filters),
   ];
   await Promise.all(
     sources.map(async (load) => {
@@ -193,6 +209,12 @@ export async function searchReadingCatalog(
   return { ...result, partial: failures.length > 0 };
 }
 async function refreshPrimaryCatalog(row, signal) {
+  if (row.source === 'mangadex' && uuid(row.sourceId)) {
+    const result = await catalogJSON('https://api.mangadex.org/manga/' + row.sourceId, { signal });
+    if (!result.data?.id) throw Error('Katalogu nuk u përgjigj.');
+    const item = mangaDexItem(result.data);
+    return { publicationStatus: item.publicationStatus, totalChapters: 0, totalVolumes: 0 };
+  }
   if (!/^\d+$/.test(row.sourceId)) throw Error('Titull pa burim.');
   if (row.source === 'jikan') {
     const result = await catalogJSON('https://api.jikan.moe/v4/manga/' + row.sourceId, { signal });
@@ -317,8 +339,25 @@ export async function refreshReadingCatalog(row, signal) {
       }
     }
   }
+  if (uuid(row.mangaDexId)) {
+    const results = await Promise.allSettled([
+      refreshPrimaryCatalog(row, signal),
+      publishedReadingChapters(row, signal),
+    ]);
+    if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
+    const primary = results[0].status === 'fulfilled' ? results[0].value : {};
+    const chapters = results[1].status === 'fulfilled' ? results[1].value : {};
+    if (!Object.keys(primary).length && !Object.keys(chapters).length)
+      throw Error('Katalogu nuk u përgjigj.');
+    return {
+      ...primary,
+      ...chapters,
+      totalChapters: Math.max(primary.totalChapters || 0, chapters.totalChapters || 0),
+    };
+  }
   if (
     !row.weebCentralId &&
+    !row.mangaDexId &&
     row.source !== 'weebcentral' &&
     row.title &&
     (row.anilistId || row.malId || row.sourceId)

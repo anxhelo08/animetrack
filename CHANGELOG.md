@@ -1,3 +1,11 @@
+# 14.17.0 — Kërkim më i gjerë dhe pritje më e shkurtër për lexime
+
+- Kërkimi përmes serverit kontrollon AniList dhe MangaDex, krahas AniList, MyAnimeList/Jikan dhe WeebCentral në shfletues. Titujt mbeten të kërkueshëm kur lidhja e shfletuesit me një katalog dështon.
+- Rezultatet shfaqen gradualisht dhe mund të hapen/shtohen ndërsa burimet e tjera kontrollohen. Katalogu pa emër kërkimi përdor burimet paralelisht; pritjet e kërkimit kufizohen në 4.5–6 sekonda për burim dhe cache ruan përgjigjet publike.
+- MangaDex sjell emra alternativë dhe lidhje të konfirmuara AniList/MAL. Kopjet bashkohen sipas ID-ve, pa bashkuar tituj vetëm nga emri. Apostrofat tipografike normalizohen.
+- ID-të dhe emrat alternativë MangaDex ruhen në bibliotekë, përfshirë tituj pa ID të një katalogu tjetër. Kapitujt dhe metadata e një titulli të lidhur MangaDex kontrollohen paralelisht, duke ruajtur shënimet/progresin.
+- Kërkimi bosh me lloj të kufizuar ofron një buton për Manga + Manhwa. Kufizimi i kërkesave dhe kontrolli në sfond përfshijnë katalogun e ri.
+
 # 14.16.1 — Rikthim vetëm kur episodet e mëparshme janë parë
 
 - Kalimi automatik nga “Përfunduar” te “Duke parë” kërkon që çdo episod i publikuar përpara episodit të ri të jetë shënuar si i parë, në të gjitha sezonet e dukshme. Boshllëqet në numrat e parë nuk llogariten si përfundim.

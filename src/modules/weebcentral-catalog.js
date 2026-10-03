@@ -13,7 +13,7 @@ export async function weebCentralCatalog(action, params = {}, signal) {
     async () => {
       const response = await fetch(url, {
         credentials: 'omit',
-        signal: AbortSignal.timeout(25000),
+        signal: AbortSignal.timeout(action === 'search' ? 6000 : 25000),
       });
       if (!response.ok) throw Error('WeebCentral HTTP ' + response.status);
       return response.json();

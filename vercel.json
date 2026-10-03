@@ -41,6 +41,9 @@
     },
     "api/weebcentral.js": {
       "maxDuration": 30
+    },
+    "api/reading-search.js": {
+      "maxDuration": 15
     }
   }
 }

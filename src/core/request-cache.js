@@ -68,7 +68,7 @@ export function createRequestCache({ now = Date.now, limit = 100 } = {}) {
 
 const read = createRequestCache();
 export const retryCatalogRequests = () => read.retryFailures();
-export function catalogJSON(url, { signal, ttl, ...options } = {}) {
+export function catalogJSON(url, { signal, ttl, timeoutMs = 15000, ...options } = {}) {
   const endpoint = new URL(url);
   if (
     ![
@@ -89,7 +89,7 @@ export function catalogJSON(url, { signal, ttl, ...options } = {}) {
     key,
     async () => {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       try {
         const response = await fetch(url, {
           ...options,

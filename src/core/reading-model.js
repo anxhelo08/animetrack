@@ -45,11 +45,21 @@ export function normalizeReadingLibrary(raw) {
       return {
         id: row.id,
         title: text(row.title, 180),
+        aliases: [
+          ...new Set(
+            (Array.isArray(row.aliases) ? row.aliases : [])
+              .map((a) => text(a, 180))
+              .filter(Boolean),
+          ),
+        ].slice(0, 30),
         kind: row.kind === 'manhwa' ? 'manhwa' : 'manga',
-        sourceId: (row.source === 'weebcentral' ? /^[0-9A-HJKMNP-TV-Z]{26}$/ : /^\d+$/).test(
-          String(row.sourceId || ''),
-        )
-          ? text(row.sourceId, 26)
+        sourceId: (row.source === 'mangadex'
+          ? /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+          : row.source === 'weebcentral'
+            ? /^[0-9A-HJKMNP-TV-Z]{26}$/
+            : /^\d+$/
+        ).test(String(row.sourceId || ''))
+          ? text(row.sourceId, 36)
           : '',
         weebCentralId: /^[0-9A-HJKMNP-TV-Z]{26}$/.test(
           row.weebCentralId || (row.source === 'weebcentral' ? row.sourceId : '') || '',
@@ -60,7 +70,7 @@ export function normalizeReadingLibrary(raw) {
         anilistId: /^\d+$/.test(
           String(
             row.anilistId ||
-              (!['jikan', 'weebcentral'].includes(row.source) ? row.sourceId : '') ||
+              (!['jikan', 'weebcentral', 'mangadex'].includes(row.source) ? row.sourceId : '') ||
               '',
           ),
         )
@@ -115,7 +125,7 @@ export function normalizeReadingLibrary(raw) {
               v.end <= (totalChapters || 10000),
           )
           .map(({ volume, start, end }) => ({ volume, start, end })),
-        source: ['jikan', 'weebcentral'].includes(row.source) ? row.source : 'anilist',
+        source: ['jikan', 'weebcentral', 'mangadex'].includes(row.source) ? row.source : 'anilist',
         volumesRead: number(row.volumesRead, 1000),
         chaptersRead: [
           ...new Set(
