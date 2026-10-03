@@ -4,7 +4,12 @@ window.ATCommand124=function ATCommand124(ctx){
  const pages=[['news','✦','Lajme anime','Lajmet e fundit anime, industria dhe premierat'],['home','⌂','Kryefaqja','Vazhdo shikimin'],['library','▤','Biblioteka','Anime dhe seriale'],['explore','⌕','Katalogu online','Kërko anime dhe seriale'],['recommendations','✦','Rekomandime për ty','Zbulo histori të reja'],['calendar','◷','Kalendari','Premierat e javës'],['collections','▣','Listat e mia','Koleksionet'],['profile','◉','Profili im','Statistikat personale'],['friends','♧','Miqtë','Kërko dhe shto miq'],['notifications','◈','Njoftimet','Aktiviteti i ri'],['wrapped','◇','Anime Wrapped','Statistikat e vitit'],['watch','▶','Ku ta shoh','Lidhjet e shikimit'],['sync','⇄','MAL / AniList Sync','Sinkronizo listat']];
  let root=null,input=null,list=null,items=[],selected=0,returnTo=null,open=false;
  const activeModals=()=>[...document.querySelectorAll('.modal-backdrop.show')].length;
- function index(value){const q=normalize(value),found=[];for(const [id,icon,label,desc] of pages){
+ function index(value){const q=normalize(value),found=[];
+ if(typeof document!=='undefined'&&document.body.classList.contains('reading-active')&&!window.matchMedia('(max-width:760px)').matches){
+  for(const row of ctx.state().readingLibrary||[])if(!row.deletedAt&&(!q||normalize(row.title+' '+row.genres).includes(q)))found.push({kind:'reading',id:row.id,icon:'▤',label:row.title,desc:row.kind==='manhwa'?'Manhwa · Hap kapitujt':'Manga · Hap kapitujt'});
+  if(q.length>=2)found.push({kind:'reading-online',id:String(value).trim().slice(0,100),icon:'↗',label:'Kërko “'+String(value).trim().slice(0,100)+'” në lexim',desc:'Vetëm Manga / Manhwa'});
+  return found.slice(0,22);
+ }for(const [id,icon,label,desc] of pages){
   if(!q||normalize(label+' '+desc+' '+id).includes(q))found.push({kind:'page',id,icon,label,desc});
  }
  const anime=ctx.state().anime||[];
@@ -35,8 +40,8 @@ window.ATCommand124=function ATCommand124(ctx){
   const count=root.querySelector('.at124-count');if(count)count.textContent=current.length+' rezultate';
  }
  function hide(){if(!open)return;open=false;root.hidden=true;root.classList.remove('show');document.body.classList.remove('at124-command-open');window.dispatchEvent(new CustomEvent('at-command-visibility'));if(returnTo?.isConnected&&typeof returnTo.focus==='function')returnTo.focus({preventScroll:true});}
- function show(){if(!root||activeModals())return;returnTo=document.activeElement;open=true;root.hidden=false;root.classList.add('show');document.body.classList.add('at124-command-open');window.dispatchEvent(new CustomEvent('at-command-visibility'));input.value='';selected=0;paint();input.focus({preventScroll:true});}
- function run(i){const x=items[i];if(!x)return;hide();if(x.kind==='page')ctx.navigate(x.id);else if(x.kind==='anime')ctx.openAnime(x.id);else if(x.kind==='episode')ctx.openEpisode(x.id,x.seasonId,x.n);else if(x.kind==='online')ctx.online(x.id);}
+ function show(){if(!root||activeModals())return;returnTo=document.activeElement;open=true;root.hidden=false;root.classList.add('show');document.body.classList.add('at124-command-open');window.dispatchEvent(new CustomEvent('at-command-visibility'));input.placeholder=document.body.classList.contains('reading-active')?'Kërko Manga / Manhwa…':'Kërko anime, seriale, episode ose faqe…';input.value='';selected=0;paint();input.focus({preventScroll:true});}
+ function run(i){const x=items[i];if(!x)return;hide();if(x.kind==='reading'||x.kind==='reading-online'){window.dispatchEvent(new CustomEvent('at-reading-command',{detail:x.kind==='reading'?{id:x.id}:{query:x.id}}));return}if(x.kind==='page')ctx.navigate(x.id);else if(x.kind==='anime')ctx.openAnime(x.id);else if(x.kind==='episode')ctx.openEpisode(x.id,x.seasonId,x.n);else if(x.kind==='online')ctx.online(x.id);}
  function mount(){
   if(root)return;
   root=document.createElement('div');root.id='at124-command';root.className='at124-command';root.hidden=true;

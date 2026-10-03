@@ -43,6 +43,15 @@ export async function verifyDatabase(db) {
       'utf8',
     ),
   );
+  await db.query(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261003112237_reading_background_releases.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
   const A = '00000000-0000-4000-8000-000000000001',
     B = '00000000-0000-4000-8000-000000000002',
     C = '00000000-0000-4000-8000-000000000003';
@@ -77,6 +86,100 @@ export async function verifyDatabase(db) {
     checks++;
     console.log('DB_PASS', name);
   };
+  await check(
+    'reading leases, deduplication, metadata isolation and owner-only access',
+    async () => {
+      const reading = {
+        id: 'reading-al-7',
+        title: 'Book',
+        sourceId: '7',
+        publicationStatus: 'RELEASING',
+        totalChapters: 5,
+        chaptersRead: [],
+        notes: 'Private',
+        journal: [],
+      };
+      await db.query('UPDATE public.anime_libraries SET payload=$1 WHERE user_id=$2', [
+        {
+          anime: [],
+          readingLibrary: [reading],
+          preferences: { readingNotifications: true, pushEnabled: true },
+        },
+        A,
+      ]);
+      const jobs = await as(
+        'service_role',
+        null,
+        null,
+        () => db.query('SELECT * FROM public.anime_claim_reading_checks()'),
+        { commit: true },
+      );
+      assert.equal(jobs.rows.length, 1);
+      assert.equal(jobs.rows[0].reading.notes, undefined);
+      assert.equal(
+        (
+          await as('service_role', null, null, () =>
+            db.query('SELECT * FROM public.anime_claim_reading_checks()'),
+          )
+        ).rows.length,
+        0,
+      );
+      const params = [A, reading.id, jobs.rows[0].claim_token, { totalChapters: 6 }, 6];
+      assert.equal(
+        (
+          await as(
+            'service_role',
+            null,
+            null,
+            () =>
+              db.query('SELECT public.anime_finish_reading_check($1,$2,$3,$4,$5) AS ok', params),
+            { commit: true },
+          )
+        ).rows[0].ok,
+        true,
+      );
+      assert.equal(
+        (
+          await as('service_role', null, null, () =>
+            db.query('SELECT public.anime_finish_reading_check($1,$2,$3,$4,$5) AS ok', params),
+          )
+        ).rows[0].ok,
+        false,
+      );
+      assert.equal(
+        (
+          await as('authenticated', A, SA, () =>
+            db.query('SELECT * FROM public.anime_reading_checks'),
+          )
+        ).rows.length,
+        1,
+      );
+      assert.equal(
+        (
+          await as('authenticated', B, SB, () =>
+            db.query('SELECT * FROM public.anime_reading_checks'),
+          )
+        ).rows.length,
+        0,
+      );
+      assert.equal(
+        (await db.query('SELECT payload FROM public.anime_libraries WHERE user_id=$1', [A])).rows[0]
+          .payload.readingLibrary[0].totalChapters,
+        5,
+      );
+      await assert.rejects(
+        as('authenticated', A, SA, () =>
+          db.query('SELECT * FROM public.anime_claim_reading_checks()'),
+        ),
+        (e) => e.code === '42501',
+      );
+      await db.query("DELETE FROM public.anime_push_reminders WHERE event_key LIKE 'reading:%'");
+      await db.query('UPDATE public.anime_libraries SET payload=$1 WHERE user_id=$2', [
+        { anime: [{ id: 'own' }], history: [] },
+        A,
+      ]);
+    },
+  );
   await check('anonymous cannot read libraries or discover private handles', async () => {
     await assert.rejects(
       as('anon', null, null, () => db.query('SELECT * FROM public.anime_libraries')),

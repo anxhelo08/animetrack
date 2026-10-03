@@ -2,7 +2,7 @@
 window.ATNotifications=function ATNotifications(ctx){
  let notices=[],read=new Set(),refreshing=false,filter='all',onlyUnread=false,showSettings=false;
  const esc=ctx.esc,client=()=>ctx.client(),user=()=>ctx.user(),state=()=>ctx.state(),D=86400000;
- const categories=[['all','Të gjitha'],['episodes','📺 Episode'],['comments','💬 Komente'],['friends','👥 Miq'],['system','✦ Sistemi']];
+ const categories=[['all','Të gjitha'],['episodes','📺 Episode'],['reading','▤ Kapituj'],['comments','💬 Komente'],['friends','👥 Miq'],['system','✦ Sistemi']];
  function preferences(){
   state().preferences=state().preferences||{};const p=state().preferences;
   p.notificationRead=Array.isArray(p.notificationRead)?p.notificationRead:[];
@@ -12,6 +12,7 @@ window.ATNotifications=function ATNotifications(ctx){
  }
  function collect(){
   const out=[],now=Date.now();
+  for(const row of state().readingLibrary||[])if(!row.deletedAt)for(const release of row.chapterReleases||[]){const at=Date.parse(release.date);if(at<=now&&at>=now-7*D&&!row.chaptersRead.includes(release.chapter))out.push({key:'reading:'+row.id+':'+release.chapter,category:'reading',title:'Kapitull i ri',body:row.title+' · Kapitulli '+release.chapter+(release.detected?' · Zbuluar në katalog':''),at,id:row.id,cover:row.cover});}
   const reminders=preferences().calendarReminders||{};
   const alreadyWatched=e=>{const a=state().anime.find(x=>x.id===e.animeId),season=a?.seasons?.find(x=>x.id===e.seasonId);return !!season?.watched?.includes(Number(e.seasonEpisode||e.episode))};
   for(const e of ctx.upcoming()){
@@ -69,6 +70,7 @@ window.ATNotifications=function ATNotifications(ctx){
  function open(key){
   const n=notices.find(x=>x.key===key);if(!n)return;readOne(key);
   if(n.category==='comments'&&n.episodeKey){if(ctx.openDiscussion?.(n.episodeKey))return;ctx.toast('Episodi nuk është gjetur në bibliotekën tënde.');return}
+  if(n.category==='reading'){if(window.matchMedia('(max-width:760px)').matches){ctx.toast('Manga / Manhwa hapet në PC.');return}window.dispatchEvent(new CustomEvent('at-reading-command',{detail:{id:n.id}}));return}
   if(n.category==='friends'){ctx.navigate('friends');return}
   if(n.id)ctx.openAnime(n.id);else if(n.page)ctx.navigate(n.page);
  }

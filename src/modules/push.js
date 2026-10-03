@@ -60,7 +60,7 @@ window.ATPush109=function ATPush109(ctx){
    if(records.length){const {error}=await ctx.client().from('anime_push_reminders').upsert(records,{onConflict:'user_id,event_key'});if(error)throw error}
    const {data,error}=await ctx.client().from('anime_push_reminders').select('event_key').eq('user_id',uid).is('sent_at',null).limit(300);
    if(error)throw error;
-   const current=new Set(records.map(x=>x.event_key)),stale=(data||[]).map(x=>x.event_key).filter(k=>!current.has(k));
+   const current=new Set(records.map(x=>x.event_key)),stale=(data||[]).map(x=>x.event_key).filter(k=>!k.startsWith('reading:')&&!current.has(k));
    if(stale.length){const {error:removeError}=await ctx.client().from('anime_push_reminders').delete().eq('user_id',uid).in('event_key',stale);if(removeError)throw removeError}
   }catch(err){console.warn('Push reminder sync failed; in-app reminders remain available',err)}
  }

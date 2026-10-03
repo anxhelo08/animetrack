@@ -7,8 +7,16 @@ const statuses = {
 };
 const listQuery =
   'query($userId:Int!){MediaListCollection(type:ANIME,userId:$userId){lists{entries{id mediaId status score(format:POINT_10) progress repeat updatedAt media{id idMal title{romaji english} episodes format seasonYear coverImage{extraLarge large} genres averageScore siteUrl}}}}}';
+const mangaStatuses = {
+  anilist: statuses.anilist,
+  mal: ['reading', 'completed', 'on_hold', 'dropped', 'plan_to_read'],
+};
+const mangaListQuery =
+  'query($userId:Int!){MediaListCollection(type:MANGA,userId:$userId){lists{entries{id mediaId status score(format:POINT_10) progress progressVolumes updatedAt media{id idMal countryOfOrigin title{romaji english} chapters volumes status startDate{year} coverImage{extraLarge large} genres}}}}}';
 const updateQuery =
   'mutation($mediaId:Int!,$status:MediaListStatus,$score:Float,$progress:Int){SaveMediaListEntry(mediaId:$mediaId,status:$status,score:$score,progress:$progress){id mediaId status score(format:POINT_10) progress updatedAt}}';
+const mangaUpdateQuery =
+  'mutation($mediaId:Int!,$status:MediaListStatus,$score:Float,$progress:Int,$progressVolumes:Int){SaveMediaListEntry(mediaId:$mediaId,status:$status,score:$score,progress:$progress,progressVolumes:$progressVolumes){id mediaId status score(format:POINT_10) progress progressVolumes updatedAt}}';
 const validInt = (n, min, max) => Number.isInteger(n) && n >= min && n <= max;
 export function createAccountHandler({ admin, clientForToken, secret, fetchImpl = fetch }) {
   return async (request) => {
@@ -149,6 +157,9 @@ export function createAccountHandler({ admin, clientForToken, secret, fetchImpl 
       }
       if (action !== 'provider' || !['me', 'list', 'update'].includes(input.operation))
         return reply({ error: 'Invalid action' }, 400);
+      if (input.mediaType !== undefined && !['ANIME', 'MANGA'].includes(input.mediaType))
+        return reply({ error: 'Invalid media type' }, 400);
+      const manga = input.mediaType === 'MANGA';
       const r = await admin
         .from('anime_provider_credentials')
         .select('ciphertext')
@@ -163,16 +174,23 @@ export function createAccountHandler({ admin, clientForToken, secret, fetchImpl 
       if (op === 'list') {
         if (provider === 'anilist')
           return reply(
-            await ani(listQuery, { userId: credential.userId }, credential.token, fetchImpl),
+            await ani(
+              manga ? mangaListQuery : listQuery,
+              { userId: credential.userId },
+              credential.token,
+              fetchImpl,
+            ),
           );
         const offset = input.offset ?? 0;
         if (!validInt(offset, 0, 100000)) return reply({ error: 'Invalid pagination' }, 400);
         return reply(
           await remote(
             MAL +
-              '/users/@me/animelist?' +
+              (manga ? '/users/@me/mangalist?' : '/users/@me/animelist?') +
               new URLSearchParams({
-                fields: 'list_status,num_episodes,media_type,start_date,mean,main_picture',
+                fields: manga
+                  ? 'list_status,num_chapters,num_volumes,media_type,start_date,mean,main_picture,genres'
+                  : 'list_status,num_episodes,media_type,start_date,mean,main_picture',
                 sort: 'list_updated_at',
                 limit: '1000',
                 offset: String(offset),
@@ -186,11 +204,13 @@ export function createAccountHandler({ admin, clientForToken, secret, fetchImpl 
       const id = input.id,
         status = input.status,
         progress = input.progress,
-        score = input.score;
+        score = input.score,
+        volumes = input.volumesRead ?? 0;
       if (
         !validInt(id, 1, 999999999) ||
-        !statuses[provider].includes(status) ||
+        !(manga ? mangaStatuses : statuses)[provider].includes(status) ||
         !validInt(progress, 0, 10000) ||
+        (manga && !validInt(volumes, 0, 1000)) ||
         !Number.isFinite(score) ||
         score < 0 ||
         score > 10
@@ -199,21 +219,29 @@ export function createAccountHandler({ admin, clientForToken, secret, fetchImpl 
       if (provider === 'anilist')
         return reply(
           await ani(
-            updateQuery,
-            { mediaId: id, status, progress, score },
+            manga ? mangaUpdateQuery : updateQuery,
+            {
+              mediaId: id,
+              status,
+              progress,
+              score,
+              ...(manga ? { progressVolumes: volumes } : {}),
+            },
             credential.token,
             fetchImpl,
           ),
         );
       return reply(
         await remote(
-          MAL + '/anime/' + id + '/my_list_status',
+          MAL + (manga ? '/manga/' : '/anime/') + id + '/my_list_status',
           credential.token,
           {
             method: 'PATCH',
             body: new URLSearchParams({
               status,
-              num_watched_episodes: String(progress),
+              ...(manga
+                ? { num_chapters_read: String(progress), num_volumes_read: String(volumes) }
+                : { num_watched_episodes: String(progress) }),
               score: String(Math.round(score)),
             }),
           },

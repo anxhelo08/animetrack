@@ -560,7 +560,7 @@ export function createLibraryModel(dependencies = {}) {
 
   function normalizePreferences(raw) {
     const p = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
-    const allowed = new Set(['episodes', 'comments', 'friends', 'system']);
+    const allowed = new Set(['episodes', 'reading', 'comments', 'friends', 'system']);
     const reminderEntries = Object.entries(
       p.calendarReminders &&
         typeof p.calendarReminders === 'object' &&
@@ -587,6 +587,16 @@ export function createLibraryModel(dependencies = {}) {
           .map((row) => ({
             id: row.id,
             title: row.title.replace(/\s+/g, ' ').trim().slice(0, 50),
+            scope: row.scope === 'reading' ? 'reading' : 'watch',
+            readingIds: Array.isArray(row.readingIds)
+              ? [
+                  ...new Set(
+                    row.readingIds.filter(
+                      (id) => typeof id === 'string' && /^reading-[a-zA-Z0-9_-]{1,100}$/.test(id),
+                    ),
+                  ),
+                ].slice(0, 150)
+              : [],
             animeIds: Array.isArray(row.animeIds)
               ? [
                   ...new Set(
@@ -627,6 +637,31 @@ export function createLibraryModel(dependencies = {}) {
       watchRegion: /^[A-Z]{2}$/.test(String(p.watchRegion || '').toUpperCase())
         ? String(p.watchRegion).toUpperCase()
         : 'AL',
+      playerTracking: p.playerTracking === true,
+      playerMappings: (Array.isArray(p.playerMappings) ? p.playerMappings : [])
+        .slice(0, 100)
+        .filter(
+          (row) =>
+            row &&
+            typeof row.url === 'string' &&
+            /^https:\/\/(www\.)?(crunchyroll\.com|netflix\.com|disneyplus\.com|primevideo\.com)\//.test(
+              row.url,
+            ) &&
+            typeof row.animeId === 'string' &&
+            typeof row.seasonId === 'string' &&
+            Number.isInteger(row.episode) &&
+            row.episode > 0 &&
+            row.episode <= 10000,
+        )
+        .map((row) => ({
+          url: row.url.slice(0, 2000),
+          animeId: row.animeId.slice(0, 90),
+          seasonId: row.seasonId.slice(0, 90),
+          episode: row.episode,
+        })),
+      readingWeeklyGoal: Math.max(1, Math.min(1000, Number(p.readingWeeklyGoal) || 20)),
+      readingDensity: p.readingDensity === 'compact' ? 'compact' : 'normal',
+      readingNotifications: p.readingNotifications === true,
       providerAutoSync: p.providerAutoSync === true,
       customLists,
     };

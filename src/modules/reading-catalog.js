@@ -1,7 +1,9 @@
+import { cleanReadingFilters, matchesReadingFilters } from '../core/reading-discovery.js';
 import { catalogJSON } from '../core/request-cache.js';
 
-const QUERY = `query ReadingCatalog($search:String,$page:Int!,$country:CountryCode,$sort:[MediaSort]){Page(page:$page,perPage:18){pageInfo{hasNextPage}media(type:MANGA,isAdult:false,search:$search,countryOfOrigin:$country,sort:$sort){id type countryOfOrigin title{english romaji native}coverImage{extraLarge large}description(asHtml:false)chapters volumes status startDate{year}genres averageScore}}}`;
-async function searchAniList(query, kind, page = 1, signal) {
+const QUERY = `query ReadingCatalog($search:String,$page:Int!,$country:CountryCode,$sort:[MediaSort],$genres:[String],$excluded:[String],$year:String,$status:MediaStatus,$score:Int,$min:Int,$max:Int){Page(page:$page,perPage:18){pageInfo{hasNextPage}media(type:MANGA,isAdult:false,search:$search,countryOfOrigin:$country,sort:$sort,genre_in:$genres,genre_not_in:$excluded,startDate_like:$year,status:$status,averageScore_greater:$score,chapters_greater:$min,chapters_lesser:$max){id idMal type countryOfOrigin title{english romaji native}coverImage{extraLarge large}description(asHtml:false)chapters volumes status startDate{year}genres averageScore}}}`;
+async function searchAniList(query, kind, page = 1, signal, filters = {}) {
+  const f = cleanReadingFilters(filters);
   const result = await catalogJSON('https://graphql.anilist.co', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -11,6 +13,13 @@ async function searchAniList(query, kind, page = 1, signal) {
       variables: {
         search: query.trim() || undefined,
         page,
+        genres: f.include.length ? f.include : undefined,
+        excluded: f.exclude.length ? f.exclude : undefined,
+        year: f.year ? `${f.year}%` : undefined,
+        status: f.publication || undefined,
+        score: f.score ? f.score * 10 - 1 : undefined,
+        min: f.minChapters ? f.minChapters - 1 : undefined,
+        max: f.maxChapters ? f.maxChapters + 1 : undefined,
         country: kind === 'manhwa' ? 'KR' : kind === 'manga' ? 'JP' : undefined,
         sort: query.trim() ? ['SEARCH_MATCH'] : ['TRENDING_DESC'],
       },
@@ -25,6 +34,8 @@ async function searchAniList(query, kind, page = 1, signal) {
         id: 'reading-al-' + item.id,
         sourceId: String(item.id),
         source: 'anilist',
+        anilistId: String(item.id),
+        malId: String(item.idMal || ''),
         title: item.title.english || item.title.romaji || item.title.native,
         kind: item.countryOfOrigin === 'KR' ? 'manhwa' : 'manga',
         cover: item.coverImage?.extraLarge || item.coverImage?.large || '',
@@ -47,6 +58,7 @@ function jikanItem(item) {
     id: 'reading-mal-' + item.mal_id,
     sourceId: String(item.mal_id),
     source: 'jikan',
+    malId: String(item.mal_id),
     title: item.title_english || item.title,
     kind: item.type === 'Manhwa' ? 'manhwa' : 'manga',
     cover: item.images?.jpg?.large_image_url || '',
@@ -59,10 +71,10 @@ function jikanItem(item) {
     communityScore: item.score ?? null,
   };
 }
-export async function searchReadingCatalog(query, kind, page = 1, signal) {
+export async function searchReadingCatalog(query, kind, page = 1, signal, filters = {}) {
   let primaryError;
   try {
-    const result = await searchAniList(query, kind, page, signal);
+    const result = await searchAniList(query, kind, page, signal, filters);
     if (result.items.length || !query.trim()) return result;
   } catch (error) {
     if (error.name === 'AbortError') throw error;
@@ -76,6 +88,30 @@ export async function searchReadingCatalog(query, kind, page = 1, signal) {
       sfw: 'true',
     });
     if (kind !== 'all') params.set('type', kind);
+    const f = cleanReadingFilters(filters);
+    const ids = {
+      Action: 1,
+      Adventure: 2,
+      Comedy: 4,
+      Drama: 8,
+      Fantasy: 10,
+      Horror: 14,
+      Mystery: 7,
+      Romance: 22,
+      'Sci-Fi': 24,
+      'Slice of Life': 36,
+      Sports: 30,
+      Thriller: 41,
+    };
+    if (f.include.length) params.set('genres', f.include.map((g) => ids[g]).join(','));
+    if (f.exclude.length) params.set('genres_exclude', f.exclude.map((g) => ids[g]).join(','));
+    if (f.year) {
+      params.set('start_date', `${f.year}-01-01`);
+      params.set('end_date', `${f.year}-12-31`);
+    }
+    if (f.score) params.set('min_score', String(f.score));
+    if (f.publication === 'RELEASING' || f.publication === 'FINISHED')
+      params.set('status', f.publication === 'RELEASING' ? 'publishing' : 'complete');
     const result = await catalogJSON('https://api.jikan.moe/v4/manga?' + params, { signal });
     if (!Array.isArray(result.data)) throw Error('Katalogu nuk u përgjigj.');
     return {
@@ -83,7 +119,8 @@ export async function searchReadingCatalog(query, kind, page = 1, signal) {
         .filter((item) =>
           ['Manga', 'Manhwa', 'Manhua', 'One-shot', 'Doujinshi'].includes(item.type),
         )
-        .map(jikanItem),
+        .map(jikanItem)
+        .filter((item) => matchesReadingFilters(item, filters)),
       hasNext: result.pagination?.has_next_page === true,
     };
   } catch (error) {
@@ -231,4 +268,44 @@ export async function refreshReadingCatalog(row, signal) {
   }
   if (primaryError) throw primaryError;
   return primary;
+}
+
+/** Provider-confirmed relationships; no inferred episode/chapter offsets. */
+export async function readingRelations(row, signal) {
+  if (!/^\d+$/.test(row.sourceId || '')) return [];
+  if (row.source === 'jikan') {
+    const result = await catalogJSON(
+      'https://api.jikan.moe/v4/manga/' + row.sourceId + '/relations',
+      { signal },
+    );
+    return (result.data || []).flatMap((group) =>
+      (group.entry || []).map((item) => ({
+        title: item.name,
+        relation: group.relation,
+        type: item.type === 'anime' ? 'ANIME' : 'MANGA',
+        url:
+          item.type === 'anime'
+            ? `https://myanimelist.net/anime/${Number(item.mal_id)}`
+            : `https://myanimelist.net/manga/${Number(item.mal_id)}`,
+      })),
+    );
+  }
+  const result = await catalogJSON('https://graphql.anilist.co', {
+    method: 'POST',
+    signal,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query:
+        'query($id:Int!){Media(id:$id,type:MANGA){relations{edges{relationType node{id type isAdult title{english romaji}}}}}}',
+      variables: { id: Number(row.sourceId) },
+    }),
+  });
+  return (result.data?.Media?.relations?.edges || [])
+    .filter((edge) => !edge.node?.isAdult && edge.node?.id)
+    .map((edge) => ({
+      title: edge.node.title.english || edge.node.title.romaji,
+      relation: edge.relationType,
+      type: edge.node.type,
+      url: `https://anilist.co/${edge.node.type === 'ANIME' ? 'anime' : 'manga'}/${edge.node.id}`,
+    }));
 }

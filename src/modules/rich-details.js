@@ -48,7 +48,7 @@ window.ATRich134=function ATRich134(ctx){
  async function animeRich(a,part){
   const id=animeId(a,part);
   if(!id)return{kind:'anime',cast:[],staff:[],meta:[],source:'AniList',unavailable:true};
-  const query='query($id:Int!){Media(id:$id,type:ANIME){id format status seasonYear episodes duration genres averageScore siteUrl trailer{id site thumbnail} tags{name rank isMediaSpoiler} studios(isMain:true){nodes{id name siteUrl}} staff(page:1,perPage:25){edges{role node{id name{full userPreferred} image{large medium} primaryOccupations siteUrl}}} characters(page:1,perPage:20){edges{role node{id name{full userPreferred}} voiceActors{id name{full userPreferred} image{large medium} primaryOccupations languageV2 siteUrl}}}}}';
+  const query='query($id:Int!){Media(id:$id,type:ANIME){relations{edges{relationType node{id type isAdult title{english romaji}}}} id format status seasonYear episodes duration genres averageScore siteUrl trailer{id site thumbnail} tags{name rank isMediaSpoiler} studios(isMain:true){nodes{id name siteUrl}} staff(page:1,perPage:25){edges{role node{id name{full userPreferred} image{large medium} primaryOccupations siteUrl}}} characters(page:1,perPage:20){edges{role node{id name{full userPreferred}} voiceActors{id name{full userPreferred} image{large medium} primaryOccupations languageV2 siteUrl}}}}}';
   const m=(await gql(query,{id})).Media;
   if(!m)throw Error('Anime details unavailable');
   const cast=[];
@@ -64,7 +64,7 @@ window.ATRich134=function ATRich134(ctx){
   const trailer=m.trailer?.site==='youtube'&&m.trailer?.id?'https://www.youtube.com/watch?v='+encodeURIComponent(m.trailer.id):'';
   const tags=(m.tags||[]).filter(x=>!x.isMediaSpoiler&&Number(x.rank)>=60).sort((x,y)=>Number(y.rank)-Number(x.rank)).slice(0,8).map(x=>x.name);
   const meta=[m.format&&{k:'Format',v:String(m.format).replaceAll('_',' ')},m.status&&{k:'Status',v:String(m.status).replaceAll('_',' ')},m.seasonYear&&{k:'Viti',v:String(m.seasonYear)},m.episodes&&{k:'Episode',v:String(m.episodes)},m.duration&&{k:'Kohë',v:m.duration+' min'},m.averageScore&&{k:'AniList',v:(m.averageScore/10).toFixed(1)+'/10'}].filter(Boolean);
-  return{kind:'anime',cast:dedupePeople(cast).slice(0,16),staff:dedupePeople(staff),meta,genres:m.genres||[],tags,studios:(m.studios?.nodes||[]).map(x=>({name:x.name,url:x.siteUrl||''})),trailer,source:'AniList',sourceUrl:m.siteUrl||''};
+  return{kind:'anime',relatedReading:(m.relations?.edges||[]).filter(e=>e.node?.type==='MANGA'&&!e.node.isAdult).map(e=>({id:e.node.id,title:e.node.title?.english||e.node.title?.romaji,relation:e.relationType})),cast:dedupePeople(cast).slice(0,16),staff:dedupePeople(staff),meta,genres:m.genres||[],tags,studios:(m.studios?.nodes||[]).map(x=>({name:x.name,url:x.siteUrl||''})),trailer,source:'AniList',sourceUrl:m.siteUrl||''};
  }
 
  async function tvRich(a){
@@ -171,7 +171,8 @@ window.ATRich134=function ATRich134(ctx){
   const staff=fallback&&data.staffText?.length?'<div class="at134-static"><b>Regjia / staff</b><p>'+data.staffText.map(esc).join(' · ')+'</p></div>':data.staff?.length?'<section><div class="at134-section-head"><h5>Regji & Staff</h5><small>Regjisorë, creatorë, shkrim, produksion</small></div><div class="at134-people">'+data.staff.map(personCard).join('')+'</div></section>':'';
   const setup=data.needsToken?'<div class="at134-token"><span>◈</span><div><strong>Lidh TMDB për profile të klikueshme te filmat</strong><small>Emrat bazë shfaqen edhe pa token; filmografia dhe person IDs vijnë nga TMDB.</small></div><button type="button" class="ghost" data-at134-settings>Cilësimet TMDB</button></div>':'';
   const empty=!cast&&!staff?'<div class="at134-empty">Nuk u gjet cast/staff i strukturuar për këtë titull.</div>':'';
-  return metaHTML(data)+setup+cast+staff+empty+'<div class="at134-source"><span>Burimi: '+esc(data.source||'')+'</span>'+(data.trailer?'<a href="'+esc(data.trailer)+'" target="_blank" rel="noopener noreferrer">▶ Trailer ↗</a>':'')+(data.sourceUrl?'<a href="'+esc(data.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Burimi ↗</a>':'')+'</div>';
+  const related=(data.relatedReading||[]).length?'<section class="at134-reading-relations"><h5>Bazuar në Manga / Manhwa</h5><p>Lidhje të konfirmuara nga AniList; kapitulli i vazhdimit nuk hamendësohet.</p>'+data.relatedReading.map(item=>'<a href="https://anilist.co/manga/'+Number(item.id)+'" target="_blank" rel="noopener noreferrer">'+esc(item.title)+' · '+esc(item.relation)+'</a>'+(!window.matchMedia('(max-width:760px)').matches?'<button type="button" class="ghost" data-related-reading="'+esc(item.title)+'">Gjeje te leximi →</button>':'')).join('')+'</section>':'';
+  return related+metaHTML(data)+setup+cast+staff+empty+'<div class="at134-source"><span>Burimi: '+esc(data.source||'')+'</span>'+(data.trailer?'<a href="'+esc(data.trailer)+'" target="_blank" rel="noopener noreferrer">▶ Trailer ↗</a>':'')+(data.sourceUrl?'<a href="'+esc(data.sourceUrl)+'" target="_blank" rel="noopener noreferrer">Burimi ↗</a>':'')+'</div>';
  }
  function shell(){return'<section class="at134-rich"><header><div><span class="eyebrow">ANIMETRACK 13.4 · RICH DETAILS</span><h4>Cast, Regji & Staff ✦</h4><p>Hap një person dhe eksploro filmat, serialet ose animet ku ka punuar.</p></div><button type="button" class="ghost" data-at134-refresh>↻</button></header><div class="at134-body"><div class="at134-loading"><span></span><div><strong>Po ngarkohen njerëzit…</strong><small>Cast, staff dhe lidhjet e veprave.</small></div></div></div></section>'}
  async function attach(root,a,part){
@@ -216,6 +217,7 @@ window.ATRich134=function ATRich134(ctx){
  }
  function mount(){
   ensureDialog();
+  document.addEventListener('click',event=>{const button=event.target.closest('[data-related-reading]');if(!button)return;ctx.closeDetail?.();window.dispatchEvent(new CustomEvent('at-reading-command',{detail:{query:button.dataset.relatedReading}}));});
   document.addEventListener('click',e=>{
    const close=e.target.closest('[data-at134-close]');if(close){ensureDialog().close?.();activePerson=null;return}
    const p=e.target.closest('[data-at134-person]');if(p){void openPerson(p.dataset.provider,p.dataset.at134Person,p.dataset.role||'');return}

@@ -78,7 +78,7 @@ window.ATWatch133=function ATWatch133(ctx){
   if(anime?.year)params.set(type==='movie'?'year':'first_air_date_year',String(anime.year));
   const r=await request('https://api.themoviedb.org/3/search/'+type+'?'+params,{headers:tmdbHeaders(t)});if(!r.ok)throw Error('TMDB search '+r.status);const j=await r.json(),want=canonical(title);
   const rows=(j.results||[]).map(x=>({x,key:canonical(type==='movie'?(x.title||x.original_title):(x.name||x.original_name)),year:Number(String(type==='movie'?x.release_date:x.first_air_date).slice(0,4))||0}));
-  const match=rows.find(r=>r.key===want&&(!anime?.year||!r.year||Math.abs(Number(anime.year)-r.year)<=1))||rows.find(r=>r.key===want)||rows[0];
+  const match=rows.find(r=>r.key===want&&(!anime?.year||!r.year||Math.abs(Number(anime.year)-r.year)<=1))||rows.find(r=>r.key===want);
   return match?.x?.id?String(match.x.id):'';
  }
  async function resolveTmdb(anime,type,t){
@@ -119,10 +119,11 @@ window.ATWatch133=function ATWatch133(ctx){
   const inner=logo+'<strong>'+esc(p.name)+'</strong>';return url?'<a class="at133-provider" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">'+inner+'<em>↗</em></a>':'<div class="at133-provider">'+inner+'</div>';
  }
  function resultHTML(data){
+  const status='<p class="at133-availability-status"><strong>'+esc(data.source==='TMDB / JustWatch'&&data.categories?.length?'Disponueshmëri e raportuar për '+regionName(data.region):data.kind==='anime'&&data.categories?.length?'Lidhje zyrtare · rajoni ende i pakonfirmuar':'Disponueshmëria në rajon ende e pakonfirmuar')+'</strong><small> · '+esc(data.source||'')+(data.checkedAt?' · Kontrolluar '+new Date(data.checkedAt).toLocaleString('sq-AL'):'')+'</small></p>';
   const discovery=data.discovery?.length?'<div class="at133-discovery"><strong>Kontrollo ku mund ta shohësh</strong><div class="at133-provider-grid">'+data.discovery.map(p=>providerCard(p,'',data.title)).join('')+'</div><small>'+esc(data.note||'')+'</small></div>':'';
-    if(!data.categories?.length&&discovery)return discovery;
+    if(!data.categories?.length&&discovery)return status+discovery;
   if(!data.categories?.length)return'<div class="at133-empty"><span>⌁</span><div><strong>Nuk u gjet availability</strong><p>'+esc(data.note||'Provo një rajon tjetër ose rifresko më vonë.')+'</p></div></div><p class="at133-credit">'+esc(data.source||'')+'</p>';
-  return'<div class="at133-groups">'+data.categories.map(group=>'<section class="at133-group"><header><strong>'+esc(group.label)+'</strong><small>'+group.providers.length+' provider'+(group.providers.length===1?'':'ë')+'</small></header><div class="at133-provider-grid">'+group.providers.map(p=>providerCard(p,data.link,data.title)).join('')+'</div></section>').join('')+'</div>'+discovery+'<div class="at133-watch-foot"><span>'+esc(data.note||'')+'</span>'+(data.link?'<a href="'+esc(safeUrl(data.link))+'" target="_blank" rel="noopener noreferrer">Shiko të gjitha opsionet ↗</a>':'')+'</div><p class="at133-credit">'+(data.kind==='anime'?'Burimet e streaming: '+esc(data.source||'AniList / MyAnimeList'):'Burimet: '+esc(data.source||'TMDB · JustWatch'))+'</p>';
+  return status+'<div class="at133-groups">'+data.categories.map(group=>'<section class="at133-group"><header><strong>'+esc(group.label)+'</strong><small>'+group.providers.length+' provider'+(group.providers.length===1?'':'ë')+'</small></header><div class="at133-provider-grid">'+group.providers.map(p=>providerCard(p,data.link,data.title)).join('')+'</div></section>').join('')+'</div>'+discovery+'<div class="at133-watch-foot"><span>'+esc(data.note||'')+'</span>'+(data.link?'<a href="'+esc(safeUrl(data.link))+'" target="_blank" rel="noopener noreferrer">Shiko të gjitha opsionet ↗</a>':'')+'</div><p class="at133-credit">'+(data.kind==='anime'?'Burimet e streaming: '+esc(data.source||'AniList / MyAnimeList'):'Burimet: '+esc(data.source||'TMDB · JustWatch'))+'</p>';
  }
  function regionOptions(selected){return regions.map(([code,name])=>'<option value="'+code+'" '+(selected===code?'selected':'')+'>'+esc(name)+' · '+code+'</option>').join('')}
  function detailShell(anime,part){

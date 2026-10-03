@@ -1,3 +1,6 @@
+import { createDetailNavigation } from './detail-navigation.js';
+import { createPlayerTracking } from './player-tracking.js';
+import { mountSharedList } from './shared-lists.js';
 import { createVisibleScheduler } from '../core/visible-scheduler.js';
 import {navIcon} from './nav-icons.js';
 import {createProductExperience} from './product-experience.js';
@@ -12,6 +15,10 @@ export function createFeatures(ctx){
  let spotlight=null,newsController=null,newsHost=null;
  const product=createProductExperience(ctx);
  const reading=createReading(ctx);
+ const details=createDetailNavigation(ctx);
+ const player=createPlayerTracking(ctx);
+ player.mount();
+ mountSharedList(ctx);
  const proPages=['news','notifications','recommendations','calendar','diary','watch','sync','wrapped','profile','friends','moderation','collections'];
  ctx.button=(label,action,id='')=>window.ATHTML.html`<button type="button" class="pro-btn" data-pro-action="${action}" data-id="${id}">${label}</button>`;
  const modules={
@@ -35,6 +42,7 @@ export function createFeatures(ctx){
   tv:window.ATTVShows(ctx),
   experience:window.ATExperience112(ctx)
  };
+ ctx.readingPush=()=>modules.push.banner();
  modules.friends=window.ATFriends(ctx,modules.profiles);
  ctx.mobileRecommendations=()=>modules.recommendations.getItems();
  ctx.animeUpdates=()=>modules.recommendations.getUpdates();
@@ -173,7 +181,7 @@ export function createFeatures(ctx){
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void refreshLive(false)});
   window.addEventListener('online',()=>void refreshLive(false));
   window.addEventListener('focus',()=>void refreshLive(false));
-  createVisibleScheduler(()=>{if(ctx.user())return modules.notifications.refresh()},{interval:5*60000});
+  createVisibleScheduler(async()=>{if(ctx.user()){await reading.refreshBackground();return modules.notifications.refresh()}},{interval:5*60000});
   trackAchievements(false);renderHome();
   await new Promise(resolve=>setTimeout(resolve,0));
   if(ctx.user())void modules.recommendations.refresh(false);
@@ -203,12 +211,14 @@ export function createFeatures(ctx){
   try{
    if(!ctx.user())modules.recommendations.reset();
    // Social, notifications and external recommendations must not hold the entire account UI hostage.
-   const work=[['provider',()=>modules.providerSync.onAccount()],['profiles',()=>modules.profiles.load()],['friends',()=>modules.friends.load()],['moderation',()=>modules.moderation.load()],['notifications',()=>modules.notifications.refresh()],['recommendations',()=>modules.recommendations.refresh(false)]];
+   const work=[['reading',()=>reading.refreshBackground()],['provider',()=>modules.providerSync.onAccount()],['profiles',()=>modules.profiles.load()],['friends',()=>modules.friends.load()],['moderation',()=>modules.moderation.load()],['notifications',()=>modules.notifications.refresh()],['recommendations',()=>modules.recommendations.refresh(false)]];
    void Promise.allSettled(work.map(async([name,fn])=>{
     try{await fn()}catch(err){console.warn('Account module '+name,err)}
     finally{if((name==='provider'&&(active==='sync'||active==='profile'))||(name==='profiles'&&active==='profile')||(name==='friends'&&active==='friends'))render();if(name==='profiles'||name==='friends')renderHome()}
    }));
    trackAchievements(false);render();renderHome();
+   const readingId=new URLSearchParams(location.search).get('reading');
+   if(readingId&&!window.matchMedia('(max-width:760px)').matches)window.dispatchEvent(new CustomEvent('at-reading-command',{detail:{id:readingId}}));
    void modules.push.prepare().then(()=>modules.push.scheduleSync()).catch(console.warn);
    void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');
@@ -276,5 +286,5 @@ export function createFeatures(ctx){
    if(op.startsWith('rewatch-'))return modules.rewatch.action(op,id);
   }catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120))}
  }
- return{product,init,open,hide,syncMobile,onAccount,onStateChange,renderRewatch,renderHome,render,renderBackground,modules};
+ return{product,details,init,open,hide,syncMobile,onAccount,onStateChange,renderRewatch,renderHome,render,renderBackground,modules};
 }

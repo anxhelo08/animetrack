@@ -256,3 +256,77 @@ test('disconnect can remove only the current account credential', async () => {
   );
   expect(calls.at(-1).filters).toEqual({ user_id: uid, provider: 'mal' });
 });
+
+test('manga sync sends MANGA queries and uses manga progress fields without accepting anime statuses', async () => {
+  const credential = await seal({ token: 'provider-token', userId: 7, name: 'Demo' }, secret),
+    requests = [];
+  const { send } = setup({
+    credential,
+    fetchImpl: async (url, options) => {
+      requests.push({ url, body: JSON.parse(options.body) });
+      return Response.json({ data: { MediaListCollection: { lists: [] } } });
+    },
+  });
+  const result = await send({
+    action: 'provider',
+    provider: 'anilist',
+    operation: 'list',
+    mediaType: 'MANGA',
+  });
+  expect(result.status).toBe(200);
+  expect(requests[0].body.query).toContain('type:MANGA');
+  expect(requests[0].body.query).toContain('chapters');
+  const invalid = await send({
+    action: 'provider',
+    provider: 'anilist',
+    operation: 'list',
+    mediaType: 'FILM',
+  });
+  expect(invalid.status).toBe(400);
+});
+
+test('MAL manga writes accept reading statuses and update chapters and volumes', async () => {
+  const requests = [],
+    { send } = setup({
+      fetchImpl: async (url, options) => {
+        requests.push({ url, options });
+        return Response.json({ id: 9, name: 'Demo' });
+      },
+    });
+  expect(
+    (await send({ action: 'connect', provider: 'mal', token: 'test-provider-token' })).status,
+  ).toBe(200);
+  expect(
+    (
+      await send({
+        action: 'provider',
+        provider: 'mal',
+        operation: 'update',
+        mediaType: 'MANGA',
+        id: 70,
+        status: 'reading',
+        progress: 5,
+        volumesRead: 2,
+        score: 8,
+      })
+    ).status,
+  ).toBe(200);
+  const request = requests.at(-1);
+  expect(request.url).toContain('/manga/70/my_list_status');
+  expect(request.options.body.get('num_chapters_read')).toBe('5');
+  expect(request.options.body.get('num_volumes_read')).toBe('2');
+  expect(
+    (
+      await send({
+        action: 'provider',
+        provider: 'mal',
+        operation: 'update',
+        mediaType: 'MANGA',
+        id: 70,
+        status: 'watching',
+        progress: 5,
+        score: 8,
+      })
+    ).status,
+  ).toBe(400);
+});

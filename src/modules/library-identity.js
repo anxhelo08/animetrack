@@ -92,6 +92,7 @@ window.ATLibraryIdentity137=(()=>{
   for(const a of payload.anime)for(const id of a.mergedIds||[])if(id!==a.id&&!remap.some(x=>x.from===id))remap.push({from:id,to:a.id});
   const resolve=id=>{let current=id;for(let n=0;n<remap.length;n++){const hit=remap.find(x=>x.from===current);if(!hit)break;current=hit.to}return current};
   let referencesChanged=false;
+  for(const mapping of payload.preferences?.playerMappings||[]){const original=mapping.animeId;for(const link of remap){if(link.from===mapping.animeId){mapping.animeId=link.to;mapping.seasonId=link.seasons?.[mapping.seasonId]||mapping.seasonId;}}if(mapping.animeId!==original)referencesChanged=true;}
   for(const collection of payload.preferences?.customLists||[]){const ids=unique((collection.animeIds||[]).map(resolve));if(JSON.stringify(ids)!==JSON.stringify(collection.animeIds))referencesChanged=true;collection.animeIds=ids}
   if(!removed.length&&!referencesChanged)return {payload:input,changed:false,removed,remap:[]};
   for(const a of payload.anime){

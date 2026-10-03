@@ -29,6 +29,7 @@ test('one complete Demon Slayer card survives login, realtime, reload and episod
  await expect(page.locator('[data-sync-seasons="anime-demon"]')).toHaveCount(1);
  const ordered=await page.locator('.at131-part').evaluateAll(cards=>cards.map(x=>x.dataset.partFormat));
  expect(ordered).toEqual(['TV','MOVIE','TV','TV','TV','TV','MOVIE']);
+ if(mobile)await page.locator('[data-mobile-detail-tab="overview"]').click();
  await page.locator('[data-at137-timeline="movies"]').click();
  await expect(page.locator('.at131-part:visible')).toHaveCount(2);
  await expect(page.locator('[data-at137-timeline="movies"]')).toHaveAttribute('aria-pressed','true');

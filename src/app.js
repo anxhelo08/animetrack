@@ -1944,6 +1944,7 @@ const proContext={
 
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
  markEpisode:(id,seasonId,n)=>requestEpisodeToggle(id,seasonId,n),
+ markPlayedEpisode:(id,seasonId,n)=>updateSeasonEpisode(id,seasonId,n,true),
  refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
  liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshTrackedTV127(force);await refreshUpcoming(force);if(catalogSyncAt&&Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.renderBackground();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
@@ -2163,7 +2164,7 @@ const at134PriorDetail=renderDetail;renderDetail=function(id){
 
 // Product presentation runs after the legacy detail extensions are composed.
 const mobilePriorPreview=openCatalogPreview;openCatalogPreview=function(key,options){const result=mobilePriorPreview(key,options);proApp.product?.preview(catalogItems.find(item=>item.key===key));return result};
-const productPriorDetail=renderDetail;renderDetail=function(id){const result=productPriorDetail(id);proApp.product?.detail(id);return result};
+const productPriorDetail=renderDetail;renderDetail=function(id){const result=productPriorDetail(id);proApp.product?.detail(id);proApp.details.attach($('detail-body'),id);return result};
 const productPriorCatalog=searchCatalog;searchCatalog=async function(q,page=1){
  const work=productPriorCatalog(q,page),request=catalogRequest,grid=$('catalog-grid');
  grid.setAttribute('aria-busy','true');

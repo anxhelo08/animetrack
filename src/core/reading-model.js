@@ -47,6 +47,14 @@ export function normalizeReadingLibrary(raw) {
         title: text(row.title, 180),
         kind: row.kind === 'manhwa' ? 'manhwa' : 'manga',
         sourceId: /^\d+$/.test(String(row.sourceId || '')) ? text(row.sourceId, 20) : '',
+        anilistId: /^\d+$/.test(
+          String(row.anilistId || (row.source !== 'jikan' ? row.sourceId : '') || ''),
+        )
+          ? text(row.anilistId || row.sourceId, 20)
+          : '',
+        malId: /^\d+$/.test(String(row.malId || (row.source === 'jikan' ? row.sourceId : '') || ''))
+          ? text(row.malId || row.sourceId, 20)
+          : '',
         cover: url(row.cover),
         synopsis: text(row.synopsis, 1800),
         genres: text(row.genres, 180),

@@ -22,6 +22,16 @@ export function permittedEndpoint(raw) {
 }
 export function stillWanted(job, payload) {
   const p = payload?.preferences || {};
+  if (String(job.event_key).startsWith('reading:')) {
+    const row = payload?.readingLibrary?.find((row) => row.id === job.anime_id && !row.deletedAt);
+    return !!(
+      p.pushEnabled &&
+      p.readingNotifications &&
+      !(p.notificationMuted || []).includes('reading') &&
+      row &&
+      !row.chaptersRead?.includes(job.episode)
+    );
+  }
   if (
     !p.pushEnabled ||
     !Object.hasOwn(p.calendarReminders || {}, job.event_key) ||

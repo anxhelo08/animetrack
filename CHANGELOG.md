@@ -1,3 +1,13 @@
+# 14.11.0 — Zbulim, koleksione dhe integrime leximi
+
+- Filtra të avancuar me përfshirje/përjashtim zhanresh, vit, botim, notë dhe gjatësi të konfirmuar; rekomandime Manga/Manhwa sipas leximeve personale.
+- Bibliotekë më kompakte, pamje normale/kompakte, “Vazhdo”, tabs të detajeve dhe kërkim Ctrl+K i veçuar për leximin.
+- Koleksione leximi, lidhje që hapin kopje publike të listave pa shënime/progres, statistika javore dhe qëllim kapitujsh.
+- Lidhje të verifikuara anime–manga, burim/freski kapitujsh dhe disponueshmëri rajonale më e qartë.
+- Import/sync Manga me AniList dhe MAL, preview me zgjedhje për ndryshimet dhe ruajtje të ditarit personal.
+- Kontroll kapitujsh në server me opt-in, leases, deduplikim dhe Web Push për kapituj të palexuar.
+- Shtesë Chrome/Edge për gjurmim nga player-at e mbështetur; instalim dhe lidhje e videos kërkohen, AnimeTrack duhet të jetë hapur.
+
 # 14.10.2 — Karta leximi më të qarta
 
 - Karta horizontale me kopertinë kompakte, titull të lexueshëm dhe më shumë hapësirë për progresin e veprimet.

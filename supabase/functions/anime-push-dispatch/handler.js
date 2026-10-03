@@ -20,6 +20,7 @@ export function createDispatcher({
   configured = true,
   getVapid,
   now = Date.now,
+  readingCheck,
 }) {
   return async (request) => {
     if (request.method !== 'POST') return new Response('Unauthorized', { status: 401 });
@@ -44,6 +45,7 @@ export function createDispatcher({
     }
     const stats = { processed: 0, sent: 0, skipped: 0, retried: 0, failed: 0 };
     try {
+      if (readingCheck) stats.reading = await readingCheck();
       const jobs = (await checked(admin.rpc('anime_claim_push_reminders'))) || [];
       stats.processed = jobs.length;
       const owners = [...new Set(jobs.map((j) => j.user_id))];
@@ -135,10 +137,17 @@ export function createDispatcher({
                   await send(
                     { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth_key } },
                     JSON.stringify({
-                      title: 'AnimeTrack · Kujtesa e episodit',
-                      body: String(job.title).slice(0, 140) + ' · EP ' + job.episode,
+                      title: job.event_key.startsWith('reading:')
+                        ? 'AnimeTrack · Kapitull i ri'
+                        : 'AnimeTrack · Kujtesa e episodit',
+                      body:
+                        String(job.title).slice(0, 140) +
+                        (job.event_key.startsWith('reading:') ? ' · Kapitulli ' : ' · EP ') +
+                        job.episode,
                       tag: 'animetrack:' + job.event_key,
-                      url: '/?source=push',
+                      url: job.event_key.startsWith('reading:')
+                        ? '/?reading=' + encodeURIComponent(job.anime_id) + '&source=push'
+                        : '/?source=push',
                     }),
                     {
                       TTL: 3600,

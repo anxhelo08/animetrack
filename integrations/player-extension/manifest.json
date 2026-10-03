@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "AnimeTrack Player",
+  "version": "1.0.0",
+  "description": "Send played video progress to your open AnimeTrack tab without account tokens.",
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.crunchyroll.com/*",
+        "https://www.netflix.com/*",
+        "https://www.disneyplus.com/*",
+        "https://www.primevideo.com/*"
+      ],
+      "js": [
+        "video.js"
+      ]
+    },
+    {
+      "matches": [
+        "https://animetrack-flax.vercel.app/*"
+      ],
+      "js": [
+        "bridge.js"
+      ]
+    }
+  ],
+  "host_permissions": [
+    "https://animetrack-flax.vercel.app/*"
+  ]
+}
