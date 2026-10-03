@@ -32,6 +32,35 @@ const payload = {
   preferences: {},
 };
 test.use({ serviceWorkers: 'block' });
+test('opening an offline calendar immediately shows stored dates and tracked titles outside this week', async ({
+  page,
+}) => {
+  const row = structuredClone(payload.anime[0]);
+  row.seasons[0].nextAiringEpisode = 171;
+  row.seasons[0].nextAiringAt = Date.parse('2026-11-29T15:00:00Z') / 1000;
+  await openFixture(page, {
+    payload: { ...payload, anime: [row] },
+    owner: 'offline-calendar',
+    persistWrites: true,
+  });
+  await page.route('https://graphql.anilist.co', (route) =>
+    route.fulfill({ status: 503, json: { error: 'offline' } }),
+  );
+  await page.route('https://api.jikan.moe/**', (route) =>
+    route.fulfill({ status: 503, json: { error: 'offline' } }),
+  );
+  await page.evaluate(() => document.querySelector('#pro-nav-calendar').click());
+  await expect(page.locator('.at-cal-followed')).toContainText('Black Clover');
+  await expect(page.locator('.at-cal-followed')).toContainText('EP 171');
+  await expect(page.locator('.at-cal-stage')).toHaveAttribute('aria-busy', 'false');
+  await page.locator('.at-cal-followed [data-pro-action="calendar-day"]').click();
+  await expect(page.locator('.at-cal-agenda')).toContainText('Black Clover');
+  await expect(page.locator('.at-cal-agenda')).toContainText('EP 171');
+  await page.locator('[data-pro-action="calendar-refresh"]').first().click();
+  await expect(page.locator('.at-cal-stage')).toHaveAttribute('aria-busy', 'false');
+  await expect(page.locator('.at-cal-agenda .at-cal-event')).toHaveCount(1);
+  await expect(page.locator('.at-cal-freshness')).toContainText('Disa burime nuk u arritën');
+});
 test('completed titles, confirmed sequels, source coverage and calendar controls work', async ({
   page,
 }, info) => {

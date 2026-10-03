@@ -1,3 +1,11 @@
+# 14.14.0 — Kalendari ngarkohet menjëherë
+
+- Hapja e kalendarit nis rifreskimin. Orari i konfirmuar i ruajtur dhe cache e serverit shfaqen përpara kërkesave; rezultatet dalin gradualisht gjatë kontrollit të bibliotekës.
+- Dështimi i një burimi nuk fshin një orar të konfirmuar. Datat e korrigjuara zëvendësojnë datën e vjetër të të njëjtit episod.
+- ID-të AniList/MyAnimeList të të njëjtit titull nuk kontrollohen dy herë. Episodet e ruajtura dhe përgjigjet e burimeve bashkohen pa karta të dyfishta.
+- “Anime që ndjek” mbetet e dukshme edhe pa episode këtë javë. Për orare jashtë periudhës, butoni hap datën e konfirmuar; mungesa e një date shpjegohet pa krijuar episode të hamendësuara.
+- Kontrollet shumëburimore dhe cache ditore mbeten aktive. Progresi personal nuk ndryshohet nga rifreskimi.
+
 # 14.13.0 — Manga dhe Manhwa nga WeebCentral
 
 - WeebCentral është burimi kryesor i kërkimit dhe rekomandimeve sipas zhanreve. AniList/MyAnimeList mbeten burime rezervë, përfshirë filtrat e vlerësimit dhe intervalit të kapitujve që WeebCentral nuk ofron në kërkim.

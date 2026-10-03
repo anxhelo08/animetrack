@@ -34,6 +34,74 @@
 #pro-content .at-cal-summary b {
   color: var(--text);
 }
+
+#pro-content .at-cal-followed {
+  margin-top: 28px;
+}
+#pro-content .at-cal-followed-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+#pro-content .at-cal-followed-heading span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+#pro-content .at-cal-followed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+#pro-content .at-cal-followed-grid > article {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+#pro-content .at-cal-followed-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+  padding: 0;
+}
+#pro-content .at-cal-followed-title img {
+  width: 44px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+#pro-content .at-cal-followed-title span {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+#pro-content .at-cal-followed-title strong {
+  overflow-wrap: anywhere;
+}
+#pro-content .at-cal-followed-title small {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+#pro-content .at-cal-followed-grid .at-cal-mini {
+  align-self: flex-start;
+}
+#pro-content .at-cal-nearest {
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  color: var(--muted);
+}
+#pro-content .at-cal-nearest .pro-btn {
+  margin: 8px 0 0 10px;
+}
 #pro-content .at-calendar-modern .at-cal-freshness {
   text-align: right;
   font-size: 0.78rem;

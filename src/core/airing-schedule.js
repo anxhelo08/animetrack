@@ -268,7 +268,7 @@ export function mergeAiringEvents(entries, now = Date.now()) {
     const part = e.malKey || e.providerKey || e.seasonId || e.season;
     const key = [e.animeId, part, e.seasonNumber || '', e.episode].join(':');
     const prior = rows.get(key);
-    if (!prior || (e.source === 'AniList' && prior.source !== 'AniList')) rows.set(key, e);
+    if (!prior || e.source === 'AniList' || prior.source !== 'AniList') rows.set(key, e);
   }
   return [...rows.values()].sort((a, b) => a.when - b.when).slice(0, 2000);
 }

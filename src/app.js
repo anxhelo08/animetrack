@@ -1,4 +1,5 @@
-import { airingIdentities, fetchAiringSchedule, mapAiringEvents, mergeAiringEvents } from './core/airing-schedule.js';
+import { loadLibraryAiring } from './core/library-airing.js';
+import { airingIdentities, mergeAiringEvents } from './core/airing-schedule.js';
 import { mountEpisodeControls } from './modules/episode-controls.js';
 import { presentEpisode } from './modules/episode-presentation.js';
 import { MediaCard } from './modules/media-card.js';
@@ -744,27 +745,15 @@ async function refreshUpcoming(force=false){
  if(upcomingBusy)return;
  if(!force&&upcomingCheckedAt&&Date.now()-upcomingCheckedAt<30*60000){renderUpcoming();return}
  upcomingBusy=true;$('refresh-upcoming').disabled=true;renderHome();proApp?.renderBackground?.();
- const owner=accountUser?.id||null,storageKey=KEY,targets=state.anime.filter(a=>['watching','completed','planning','waiting'].includes(a.status));
- const rows=[],coverage=[],results=new Map();let failures=0;
+ const owner=accountUser?.id||null,storageKey=KEY,targets=state.anime;
+ const current=()=>owner===(accountUser?.id||null)&&storageKey===KEY;
  try{
-  const identities=new Map(targets.flatMap(a=>airingIdentities(a)).map(i=>[i.provider+':'+i.id,i]));
-  if(accountUser){try{const keys=[...identities.keys()];for(let offset=0;offset<keys.length;offset+=100){const response=await accountInitClient().from('anime_airing_cache').select('lookup_key,result,checked_at').in('lookup_key',keys.slice(offset,offset+100));for(const row of response.data||[])if(row.result&&Date.parse(row.checked_at)>Date.now()-DAY&&!force)results.set(row.lookup_key,row.result)}}catch{}}
-  const pending=[...identities.entries()].filter(([key])=>!results.has(key));
-  for(let i=0;i<pending.length;i+=2){
-   if(owner!==(accountUser?.id||null)||storageKey!==KEY)return;
-   await Promise.all(pending.slice(i,i+2).map(async([key,id])=>{try{results.set(key,await fetchAiringSchedule(id,{signal:AbortSignal.timeout(22000)}))}catch{failures++}}));
-  }
-  for(const anime of targets){
-   const ids=airingIdentities(anime),found=ids.map(i=>results.get(i.provider+':'+i.id)).filter(Boolean);
-   for(const result of found)rows.push(...mapAiringEvents(anime,result));
-   for(const season of anime.seasons||[])for(const ep of season.episodes||[]){const when=Date.parse(ep.airedAt||ep.aired||'');if(Number.isFinite(when))rows.push({animeId:anime.id,title:anime.title,cover:anime.cover,seasonId:season.id,season:season.title,episode:ep.number,seasonEpisode:ep.number,when,source:season.source||'Katalogu',url:season.sourceUrl||anime.sourceUrl||''})}
-   coverage.push({animeId:anime.id,title:anime.title,checkedAt:found.map(x=>x.checkedAt).sort().at(-1)||null,checks:found.flatMap(x=>x.checks||[]),status:!ids.length?'unlinked':!found.length?'unavailable':rows.some(e=>e.animeId===anime.id&&e.when>Date.now())?'scheduled':'unannounced'});
-  }
-  if(owner!==(accountUser?.id||null)||storageKey!==KEY)return;
-  const known=new Set(rows.map(e=>[e.animeId,e.seasonId,e.episode].join(':')));
-  const kept=upcomingEntries.filter(e=>!known.has([e.animeId,e.seasonId,e.episode].join(':'))&&(failures||e.when<Date.now()));
-  upcomingEntries=mergeAiringEvents([...kept,...rows]);airingCoverage=coverage;upcomingFailures=failures;
-  if(!failures)upcomingCheckedAt=Date.now();persistCache();
+  const result=await loadLibraryAiring(targets,{force,isCurrent:current,
+   readCache:async(keys)=>{if(!accountUser)return [];const cached=[];for(let offset=0;offset<keys.length;offset+=100){if(!current())return [];const response=await accountInitClient().from('anime_airing_cache').select('lookup_key,result,checked_at').in('lookup_key',keys.slice(offset,offset+100));cached.push(...(response.data||[]))}return cached},
+   onUpdate:({events,coverage,failures})=>{if(!current())return;upcomingEntries=mergeAiringEvents([...upcomingEntries,...events]);airingCoverage=coverage;upcomingFailures=failures;renderUpcoming();renderHome();proApp?.renderBackground?.()}
+  });
+  if(!current())return;
+  if(result)upcomingCheckedAt=Date.now();persistCache();
  }finally{upcomingBusy=false;$('refresh-upcoming').disabled=false;renderUpcoming();renderHome();proApp?.renderBackground?.()}
 }
 
@@ -1939,7 +1928,7 @@ const proContext={
  openEpisode:(id,seasonId,n)=>v81OpenEpisode(id,seasonId,n),
  markEpisode:(id,seasonId,n)=>requestEpisodeToggle(id,seasonId,n),
  markPlayedEpisode:(id,seasonId,n)=>updateSeasonEpisode(id,seasonId,n,true),
- refreshAiring:async()=>{await refreshUpcoming(true);proApp.render();await proApp.modules.notifications.refresh()},
+ refreshAiring:async(force=true)=>{await refreshUpcoming(force);proApp.render();await proApp.modules.notifications.refresh()},
  liveRefresh:async(force=false)=>{if(accountMode==='cloud'&&accountUser)await accountPullQuiet();await refreshTrackedTV127(force);await refreshUpcoming(force);if(!catalogSyncAt||Date.now()-catalogSyncAt>DAY)await refreshCatalogDaily(false);await proApp.modules.notifications.refresh();proApp.renderHome();proApp.renderBackground();return {at:upcomingCheckedAt,failed:upcomingFailures,cloud:cloudConnected}},
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
  canReload:()=>!cloudSaving&&!(cloudDirty&&cloudMirrorUnavailable),
