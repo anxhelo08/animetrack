@@ -3,6 +3,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { openFixture } from '../fixtures/browser-app.js';
 import { normalizeReadingLibrary } from '../../src/core/reading-model.js';
 
+// These mocked catalog checks should not be navigated by background PWA updates.
+test.use({ serviceWorkers: 'block' });
+
 const titles = normalizeReadingLibrary([
   {
     id: 'reading-al-30013',
@@ -403,4 +406,53 @@ test('ongoing manhwa finds published counts automatically and NEW expires withou
   await expect(page.locator('.reading-new-badge')).toHaveCount(0);
   row = (await state(page)).readingLibrary[0];
   expect(row.chapterReleases.map((event) => event.date)).toEqual(dates);
+});
+
+test('long reading titles and unknown totals use wide compact cards', async ({ page }, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop reading only');
+  const unknown = normalizeReadingLibrary([
+    {
+      id: 'reading-player',
+      title: "The Player Who Can't Level Up",
+      kind: 'manhwa',
+      publicationStatus: 'RELEASING',
+      totalChapters: 0,
+      chaptersRead: Array.from({ length: 132 }, (_, i) => i + 1),
+      cover: 'https://posters.animetrack.test/player.jpg',
+      checkedAt: '2026-09-30T12:00:00Z',
+    },
+  ]);
+  await openFixture(page, {
+    owner: 'reading-compact-cards',
+    persistWrites: true,
+    payload: { anime: [], history: [], readingLibrary: [titles[0], ...unknown], preferences: {} },
+  });
+  await page.route('https://posters.animetrack.test/**', (route) =>
+    route.fulfill({
+      contentType: 'image/jpeg',
+      path: 'public/welcome/one-piece.jpg',
+    }),
+  );
+  await page.locator('#pro-nav-reading').click();
+  const card = page.locator('.reading-card').filter({
+    has: page.getByRole('button', { name: "The Player Who Can't Level Up", exact: true }),
+  });
+  await expect(card.locator('.reading-card-progress')).toHaveText('132 kapituj të lexuar');
+  await expect(card).toContainText('Totali ende i pakonfirmuar');
+  await expect(card).not.toContainText('?');
+  for (const theme of ['dark', 'light']) {
+    await page.evaluate((theme) => (document.documentElement.dataset.theme = theme), theme);
+    for (const width of [1440, 1024]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const bounds = await card.boundingBox();
+      expect(bounds.width).toBeGreaterThanOrEqual(300);
+      expect(bounds.height).toBeLessThan(bounds.width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+    }
+  }
+  const stored = (await state(page)).readingLibrary.find((row) => row.id === 'reading-player');
+  expect(stored.totalChapters).toBe(0);
+  expect(stored.chaptersRead).toHaveLength(132);
 });

@@ -208,10 +208,13 @@
 }
 .reading-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
   gap: 20px;
 }
 .reading-card {
+  display: grid;
+  grid-template-columns: 104px minmax(0, 1fr);
+  align-items: stretch;
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
@@ -231,7 +234,8 @@
   border: 0;
   background: var(--surface2);
   padding: 0;
-  aspect-ratio: 3/4;
+  height: 100%;
+  min-height: 188px;
   overflow: hidden;
 }
 .reading-cover img,
@@ -266,7 +270,10 @@
   font-weight: 750;
 }
 .reading-card-body {
-  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 16px;
 }
 .reading-card-body > small {
   color: var(--muted);
@@ -293,11 +300,13 @@
 .reading-card-progress {
   display: flex;
   align-items: baseline;
-  gap: 5px;
-  margin: 10px 0;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 8px 0;
 }
 .reading-card-progress strong {
-  font-size: 23px;
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
 }
 .reading-card-progress span {
   color: var(--muted);
@@ -749,7 +758,22 @@
   .reading-shelf {
     min-width: 0;
   }
-  .reading-shelf .reading-card {
-    max-width: 240px;
-  }
+}
+
+/* Reading cards keep a compact cover and enough room for titles and progress. */
+.reading-cover > img,
+.reading-cover > .reading-cover-empty {
+  position: absolute;
+  inset: 0;
+}
+.reading-card-body .reading-total-pending {
+  margin: 0 0 8px;
+  font-size: 11px;
+}
+.reading-card-actions {
+  margin-top: auto;
+  padding-top: 12px;
+}
+.reading-card-title {
+  overflow-wrap: anywhere;
 }

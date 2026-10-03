@@ -100,3 +100,17 @@ it('an imported read chapter can receive a journal note without changing progres
   expect(state.readingLibrary[0].chaptersRead).toEqual([1]);
   expect(state.readingLibrary[0].journal[0].chapter).toBe(1);
 });
+
+it('unknown chapter totals show verified reading progress without a question-mark denominator', () => {
+  const { state, reading } = fixture();
+  state.readingLibrary[0].totalChapters = 0;
+  state.readingLibrary[0].chaptersRead = Array.from({ length: 132 }, (_, i) => i + 1);
+  state.readingLibrary[0].publicationStatus = 'RELEASING';
+  reading.render();
+  const card = document.querySelector('.reading-card');
+  expect(card.querySelector('.reading-card-progress').textContent).toBe('132 kapituj të lexuar');
+  expect(card.textContent).toContain('Totali ende i pakonfirmuar');
+  expect(card.textContent).not.toContain('?');
+  expect(state.readingLibrary[0].totalChapters).toBe(0);
+  expect(state.readingLibrary[0].chaptersRead).toHaveLength(132);
+});

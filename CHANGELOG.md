@@ -1,3 +1,8 @@
+# 14.10.2 — Karta leximi më të qarta
+
+- Karta horizontale me kopertinë kompakte, titull të lexueshëm dhe më shumë hapësirë për progresin e veprimet.
+- Totali i panjohur paraqitet si i pakonfirmuar; numri i kapitujve të lexuar ruhet pa emërues me pikëpyetje.
+
 # 14.10.1 — Trailer në sfond për 20 sekonda
 
 - Trailer pa zë në sfondin e Anime Pulse, i prerë për të mbushur kartën dhe me segment 20-sekondësh.
