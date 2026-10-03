@@ -846,10 +846,10 @@
 }
 @keyframes pulse-cinema {
   from {
-    transform: scale(1.025) translateX(0.3%);
+    transform: scale(1) translateX(0);
   }
   to {
-    transform: scale(1.07) translateX(-0.8%);
+    transform: scale(1.025) translateX(-0.3%);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -863,6 +863,71 @@
   #at-home-main .at-h2-lineup-card:hover,
   .pulse-actions button:hover,
   .top-actions #add-btn:hover {
+    transform: none;
+  }
+}
+
+/* Widescreen art stays sharp; covers are never stretched into a backdrop. */
+.pulse-backdrop {
+  object-position: center;
+}
+.pulse-art-graphic {
+  background:
+    radial-gradient(ellipse at 75% 35%, var(--purple), transparent 60%),
+    linear-gradient(135deg, var(--surface2), var(--bg));
+}
+.pulse-trailer {
+  position: absolute;
+  inset: -15%;
+  width: 130%;
+  height: 130%;
+  border: 0;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: pulse-preview-enter 700ms ease-out;
+}
+@keyframes pulse-preview-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.7;
+  }
+}
+
+#side-nav .nav-btn {
+  transition:
+    background 180ms ease,
+    border-color 180ms ease;
+}
+#side-nav .nav-btn svg {
+  transition: transform 220ms ease;
+}
+#side-nav .nav-btn:hover svg {
+  transform: rotate(-7deg) scale(1.12);
+}
+#reading-subnav {
+  animation: reading-subnav-enter 180ms ease-out;
+}
+@keyframes reading-subnav-enter {
+  from {
+    opacity: 0;
+    translate: 0 -5px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-trailer {
+    display: none;
+  }
+  #side-nav .nav-btn,
+  #side-nav .nav-btn svg,
+  #reading-subnav {
+    animation: none;
+    transition: none;
     transform: none;
   }
 }

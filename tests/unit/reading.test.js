@@ -122,3 +122,73 @@ describe('separate reading library', () => {
     expect(Array.from(merged.readingLibrary[0].chaptersRead)).toEqual([1]);
   });
 });
+
+it('count discovery retains personal progress and does not extend NEW on repeated refreshes', async () => {
+  const { applyReadingUpdate } = await import('../../src/core/reading-model.js');
+  const input = row({
+    totalChapters: 10,
+    volumeRanges: [{ volume: 1, start: 1, end: 10 }],
+    notes: 'My own note',
+  });
+  applyReadingUpdate(
+    input,
+    {
+      totalChapters: 12,
+      publicationStatus: 'RELEASING',
+      volumeRanges: [{ volume: 1, start: 1, end: 12 }],
+    },
+    '2026-10-01T12:00:00Z',
+  );
+  applyReadingUpdate(
+    input,
+    { totalChapters: 12, publicationStatus: 'RELEASING' },
+    '2026-10-03T12:00:00Z',
+  );
+  expect(input.chapterReleases).toEqual([
+    { chapter: 11, date: '2026-10-01T12:00:00Z', detected: true },
+    { chapter: 12, date: '2026-10-01T12:00:00Z', detected: true },
+  ]);
+  expect(input.chaptersRead).toEqual([1]);
+  expect(input.notes).toBe('My own note');
+  expect(input.volumeRanges).toEqual([{ volume: 1, start: 1, end: 10 }]);
+});
+it('an unknown initial count establishes a baseline without inventing release dates', async () => {
+  const { applyReadingUpdate } = await import('../../src/core/reading-model.js');
+  const input = row({ totalChapters: 0 });
+  applyReadingUpdate(
+    input,
+    { totalChapters: 120, publicationStatus: 'RELEASING' },
+    '2026-10-03T12:00:00Z',
+  );
+  expect(input.chapterReleases).toEqual([]);
+  expect(input.totalChapters).toBe(120);
+});
+it('cross-device metadata merges keep the higher count and the original NEW date', () => {
+  const api = cloud();
+  const old = row({
+    totalChapters: 12,
+    chapterReleases: [{ chapter: 12, date: '2026-10-01T12:00:00Z', detected: true }],
+    updatedAt: '2026-10-01T12:00:00Z',
+  });
+  const newer = row({
+    totalChapters: 10,
+    chapterReleases: [{ chapter: 12, date: '2026-10-03T12:00:00Z', detected: true }],
+    updatedAt: '2026-10-03T12:00:00Z',
+  });
+  // Normalization strips a release outside its reported total, as it should.
+  newer.chapterReleases = [{ chapter: 12, date: '2026-10-03T12:00:00Z', detected: true }];
+  const merged = api.merge(
+    { anime: [], readingLibrary: [old] },
+    { anime: [], readingLibrary: [newer] },
+  ).readingLibrary[0];
+  expect(merged.totalChapters).toBe(12);
+  expect(merged.chapterReleases[0].date).toBe('2026-10-01T12:00:00Z');
+});
+
+it('an unavailable chapter count stays unknown even when personal progress is known', async () => {
+  const { applyReadingUpdate } = await import('../../src/core/reading-model.js');
+  const input = row({ totalChapters: 0, chaptersRead: [1, 2, 3] });
+  applyReadingUpdate(input, { totalChapters: 0, publicationStatus: 'RELEASING' });
+  expect(input.totalChapters).toBe(0);
+  expect(input.chaptersRead).toEqual([1, 2, 3]);
+});

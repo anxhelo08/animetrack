@@ -3,7 +3,7 @@
    metadata stays out of the hot sync path so PC <-> mobile updates remain small. */
 window.ATCloudLocal12123=(()=>{
  const clone=value=>JSON.parse(JSON.stringify(value));
- const ANIME_FIELDS=['id','title','status','rating','year','genre','cover','notes','favorite','communityScore','communitySource','source','sourceId','malId','aliases','mergedIds','providerIds','format','sourceUrl','synopsis','hydrated','franchiseVersion','tvmazeId','rewatches','activeRewatchId','imdbId','imdbRating','imdbVotes','tmdbId','runtime','director','cast','backdrop','releaseDate','movieWatchCount','lastWatchedAt','collectionId','collectionName','createdAt','updatedAt'];
+ const ANIME_FIELDS=['id','title','status','rating','year','genre','cover','notes','favorite','communityScore','communitySource','source','sourceId','malId','aliases','mergedIds','providerIds','format','sourceUrl','synopsis','hydrated','franchiseVersion','tvmazeId','rewatches','activeRewatchId','imdbId','imdbRating','imdbVotes','tmdbId','runtime','director','cast','backdrop','trailer','releaseDate','movieWatchCount','lastWatchedAt','collectionId','collectionName','createdAt','updatedAt'];
  const SEASON_FIELDS=['id','title','subtitle','aliases','total','watched','year','source','sourceId','malId','format','globalStart','epPage','myRating','arcRatings','releaseStatus','releaseStart','nextAiringAt','nextAiringEpisode','airedCount','imdbId','imdbSeasonNumber','hidden','watchEpisodeOffset'];
  const pick=(value,fields)=>{
   const out={};
@@ -118,8 +118,9 @@ window.ATCloudLocal12123=(()=>{
    const journal=[...events.values()].sort((a,b)=>(a.recordedAt||a.date).localeCompare(b.recordedAt||b.date));
    const read=new Set([...(prior.chaptersRead||[]),...(row.chaptersRead||[])]);
    for(const event of journal){if(event.action==='read')read.add(event.chapter);else read.delete(event.chapter)}
-   const total=Math.max(newer.totalChapters||0,...read);
-   rows.set(row.id,{...older,...newer,totalChapters:newer.totalChapters?total:0,chaptersRead:[...read].sort((a,b)=>a-b),journal:journal.slice(-5000)});
+   const total=Math.max(newer.totalChapters||0,older.totalChapters||0,...read);
+   const releases=new Map();for(const entry of [...(older.chapterReleases||[]),...(newer.chapterReleases||[])]){const previous=releases.get(entry.chapter);if(!previous||Date.parse(entry.date)<Date.parse(previous.date))releases.set(entry.chapter,entry)}
+   rows.set(row.id,{...older,...newer,totalChapters:(newer.totalChapters||older.totalChapters)?total:0,chapterReleases:[...releases.values()].sort((a,b)=>a.chapter-b.chapter).slice(-300),chaptersRead:[...read].sort((a,b)=>a-b),journal:journal.slice(-5000)});
   }
   return [...rows.values()];
  }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { homeStories } from '../../src/modules/home-spotlight.js';
+import { homeStories, trailerId } from '../../src/modules/home-spotlight.js';
 
 describe('anime spotlight facts', () => {
   const now = Date.parse('2026-10-02T12:00:00Z');
@@ -66,4 +66,10 @@ describe('daily anime selections', () => {
     expect(tomorrow[0].storyKey).not.toBe(today[0].storyKey);
     expect(tomorrow.map((x) => x.storyKey)).not.toEqual(today.map((x) => x.storyKey));
   });
+});
+
+it('accepts only provider-labelled YouTube IDs for the isolated preview frame', () => {
+  expect(trailerId({ site: 'youtube', id: 'abcdefghijk' })).toBe('abcdefghijk');
+  expect(trailerId({ site: 'youtube', id: 'https://evil.example' })).toBe('');
+  expect(trailerId({ site: 'unknown', id: 'abcdefghijk' })).toBe('');
 });

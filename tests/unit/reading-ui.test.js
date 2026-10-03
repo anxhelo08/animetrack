@@ -88,3 +88,15 @@ it('bulk completion remains reading for an ongoing title and preserves the journ
   expect(state.readingLibrary[0].status).toBe('reading');
   expect(state.readingLibrary[0].journal).toHaveLength(4);
 });
+
+it('an imported read chapter can receive a journal note without changing progress', () => {
+  const { state } = fixture();
+  document.querySelector('[data-reading-action="detail"]').click();
+  document.querySelector('#reading-chapter-note-form [name="chapter"]').value = '1';
+  document
+    .querySelector('#reading-chapter-note-form')
+    .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  expect(document.querySelector('#reading-journal-form')).not.toBeNull();
+  expect(state.readingLibrary[0].chaptersRead).toEqual([1]);
+  expect(state.readingLibrary[0].journal[0].chapter).toBe(1);
+});

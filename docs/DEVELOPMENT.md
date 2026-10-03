@@ -103,4 +103,12 @@ Home spotlight keeps its 20-second deadline across hidden routes and catches up 
 
 Search keeps its toolbar and hero DOM nodes mounted while updating results. AniList is the primary catalog; MyAnimeList/Jikan is a fallback for missing matches or service failures. Provider identity is persisted for later count checks. No catalog guarantees every published title or a current count for ongoing publications.
 
-Chapter controls support numeric filtering, ascending/descending order, bulk marking and optional preceding chapters. `volumeRanges` stores explicit `{volume,start,end}` intervals; boundaries are entered manually because these metadata providers do not publish chapter-to-volume maps. Unknown totals remain unknown. New chapter checks fetch public metadata and preserve personal notes and reading history.
+Chapter controls support numeric filtering, ascending/descending order, bulk marking and optional preceding chapters. `volumeRanges` stores explicit `{volume,start,end}` intervals; AniList/Jikan boundaries are entered manually; verified MangaDex intervals can fill an empty map. Unknown totals remain unknown. New chapter checks fetch public metadata and preserve personal notes and reading history.
+
+### Release discovery and preview (14.10.0)
+
+Home requests AniList banner artwork and validated YouTube trailer IDs. No cover is stretched as a backdrop. The active desktop slide may load a muted, 25-second looping YouTube privacy-enhanced embed; it is removed on hidden routes, tabs, modals, reduced motion, and user stop. CSP permits only the privacy-enhanced player host for frames; the HTML sanitizer still rejects arbitrary iframes. Playback depends on provider embedding and browser autoplay policies.
+
+Reading checks up to eight stale ongoing titles sequentially while the reading view is visible. AniList/Jikan metadata is supplemented by MangaDex only after one exact title/alternate-title and original-language match, or a previously matched ID. The displayed ongoing count is the highest verified integer chapter; fractional/special chapters are not currently tracked. Volume boundaries come from aggregate metadata and never replace manually entered intervals. No match or provider failures retain existing data; an unknown count remains unknown.
+
+Chapter release dates persist in `chapterReleases` (max 300). A known count increase without source dates uses a labelled discovery date, while an initial unknown count establishes a baseline. NEW expires strictly after seven days and does not extend on refresh or cross-device merge. Public chapter lookup is metadata only and does not host pages or scanlations.

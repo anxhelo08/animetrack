@@ -1,3 +1,12 @@
+# 14.10.0 — Preview dhe publikime të reja
+
+- Sfond horizontal i verifikuar ose pamje grafike në vend të kopertinës së zmadhuar; preview i shkurtër pa zë nga traileri YouTube, me ndalim dhe reduced motion.
+- Animacion i lehtë i ikonave të navigimit dhe nëndarjeve.
+- Manga dhe Manhwa në rafte të veçanta, filtra botimi dhe renditje sipas kapitujve të rinj.
+- Kontroll automatik për titujt në botim kur leximet janë të hapura, MangaDex si burim shtesë për numrin aktual dhe vëllimet kur titulli përputhet saktë.
+- NEW për shtatë ditë në kapituj, bibliotekë dhe episode; datat e publikimit ose të zbulimit ruhen pa rinisur afatin në çdo rifreskim.
+- Hapje e ditarit sipas numrit të kapitullit dhe ruajtje e publikimeve të reja gjatë bashkimit të cloud.
+
 # 14.9.0 — Përmirësime të leximit
 
 - Kërkim i qëndrueshëm pa rinisje të animacionit dhe MyAnimeList si katalog rezervë.

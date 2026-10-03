@@ -518,6 +518,10 @@ export function createLibraryModel(dependencies = {}) {
       director: String(a.director || '').slice(0, 220),
       cast: String(a.cast || '').slice(0, 1200),
       backdrop: validPoster(a.backdrop || ''),
+      trailer:
+        a.trailer?.site === 'youtube' && /^[a-zA-Z0-9_-]{11}$/.test(a.trailer.id || '')
+          ? { id: a.trailer.id, site: 'youtube' }
+          : null,
       releaseDate: String(a.releaseDate || '').slice(0, 20),
       movieWatchCount: Math.max(0, Math.min(999, Number(a.movieWatchCount) || 0)),
       lastWatchedAt: String(a.lastWatchedAt || '').slice(0, 40),

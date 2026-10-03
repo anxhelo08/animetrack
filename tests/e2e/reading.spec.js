@@ -200,11 +200,11 @@ test('manual titles validate totals and preserve deletion after reload', async (
   ).toBe(3);
   page.once('dialog', (dialog) => dialog.accept());
   await page.locator('[data-reading-action="delete"]').click();
-  await expect(page.locator('.reading-grid')).not.toContainText('My manga');
+  await expect(page.locator('.reading-library-shelves')).not.toContainText('My manga');
   await page.reload();
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
   await page.locator('#pro-nav-reading').click();
-  await expect(page.locator('.reading-grid')).not.toContainText('My manga');
+  await expect(page.locator('.reading-library-shelves')).not.toContainText('My manga');
   expect(
     (await state(page)).readingLibrary.find((row) => row.title === 'My manga').deletedAt,
   ).not.toBe('');
@@ -240,7 +240,7 @@ test('desktop reading layouts remain accessible at 1024 and 1440 pixels', async 
       });
     }
   }
-  await page.locator('[data-reading-action="detail"]').first().click();
+  await page.locator('[data-reading-action="detail"][data-id="reading-al-30013"]').first().click();
   const audit = await new AxeBuilder({ page })
     .include('#reading-view')
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
@@ -328,4 +328,79 @@ test('new chapter checks update metadata while retaining personal reading data',
   });
   await page.locator('#reading-view [data-reading-action="tab"][data-id="releases"]').click();
   await expect(page.locator('#reading-content')).toContainText('Berserk');
+});
+
+test('ongoing manhwa finds published counts automatically and NEW expires without extending dates', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop only');
+  const ongoing = normalizeReadingLibrary([
+    {
+      id: 'reading-al-42',
+      sourceId: '42',
+      title: 'Story',
+      kind: 'manhwa',
+      publicationStatus: 'RELEASING',
+      status: 'reading',
+      totalChapters: 0,
+      chaptersRead: [1],
+      notes: 'My private note',
+    },
+  ]);
+  await openFixture(page, {
+    owner: 'reading-live-counts',
+    persistWrites: true,
+    payload: { anime: [], history: [], readingLibrary: ongoing, preferences: {} },
+  });
+  await page.route('https://graphql.anilist.co', (route) =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: { Media: { chapters: null, volumes: null, status: 'RELEASING' } },
+      }),
+    }),
+  );
+  const id = '12345678-1234-1234-1234-123456789abc';
+  await page.route('https://api.mangadex.org/**', (route) => {
+    const url = new URL(route.request().url());
+    const body = url.pathname.endsWith('/aggregate')
+      ? {
+          result: 'ok',
+          volumes: {
+            1: {
+              volume: '1',
+              chapters: { 1: { chapter: '1' }, 2: { chapter: '2' }, 3: { chapter: '3' } },
+            },
+          },
+        }
+      : url.pathname.endsWith('/feed')
+        ? {
+            data: [
+              { attributes: { chapter: '1', publishAt: '2026-09-20T12:00:00Z' } },
+              { attributes: { chapter: '2', publishAt: '2026-09-29T12:00:00Z' } },
+              { attributes: { chapter: '3', publishAt: '2026-09-30T10:00:00Z' } },
+            ],
+          }
+        : { data: [{ id, attributes: { title: { en: 'Story' }, originalLanguage: 'ko' } }] };
+    return route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
+  });
+  await page.locator('#pro-nav-reading').click();
+  await expect(page.locator('.reading-card-progress')).toContainText('3 publikuar');
+  await expect(page.locator('.reading-new-badge')).toHaveText('NEW · 2 kapituj');
+  let row = (await state(page)).readingLibrary[0];
+  expect(row).toMatchObject({
+    totalChapters: 3,
+    chaptersRead: [1],
+    notes: 'My private note',
+    mangaDexId: id,
+    volumeRanges: [{ volume: 1, start: 1, end: 3 }],
+  });
+  const dates = row.chapterReleases.map((event) => event.date);
+  await page.locator('[data-reading-action="detail"]').first().click();
+  await expect(page.locator('[data-chapter="3"]')).toContainText('NEW');
+  await page.clock.setFixedTime(new Date('2026-10-08T12:00:00Z'));
+  await page.locator('#reading-view [data-reading-action="tab"][data-id="library"]').click();
+  await expect(page.locator('.reading-new-badge')).toHaveCount(0);
+  row = (await state(page)).readingLibrary[0];
+  expect(row.chapterReleases.map((event) => event.date)).toEqual(dates);
 });

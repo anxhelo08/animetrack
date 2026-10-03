@@ -1,4 +1,8 @@
+import { catalogJSON } from '../core/request-cache.js';
 import { navIcon } from './nav-icons.js';
+
+export const trailerId = (value) =>
+  value?.site === 'youtube' && /^[a-zA-Z0-9_-]{11}$/.test(value.id || '') ? value.id : '';
 
 const plain = (value, max = 220) =>
   String(value || '')
@@ -83,12 +87,16 @@ export function createHomeSpotlight(ctx) {
     shownDay,
     nextAt,
     animationEpoch = performance.now();
-  let intersecting = false;
+  const artwork = new Map(),
+    artworkRequests = new Set();
+  let intersecting = false,
+    previewTimer,
+    previewEnabled = true;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const phone = window.matchMedia('(max-width: 760px)');
   const esc = ctx.esc;
   const image = (item, kind, active = false) => {
-    const url = ctx.poster(kind === 'backdrop' ? item.backdrop || item.cover : item.cover);
+    const url = ctx.poster(kind === 'backdrop' ? item.backdrop : item.cover);
     return url
       ? `<img class="pulse-${kind}" src="${esc(url)}" alt="" decoding="async" loading="${kind === 'backdrop' || active ? 'eager' : 'lazy'}" fetchpriority="${active && kind === 'backdrop' ? 'high' : 'low'}" referrerpolicy="no-referrer">`
       : '';
@@ -127,8 +135,87 @@ export function createHomeSpotlight(ctx) {
       if (typeof img.decode === 'function') void img.decode().catch(() => {});
     }
   }
+  function loadArtwork() {
+    if (!visible()) return;
+    const ids = stories
+      .filter(
+        (item) =>
+          item.source === 'AniList' &&
+          /^\d+$/.test(item.sourceId || '') &&
+          (!item.backdrop || item.trailer === undefined) &&
+          !artworkRequests.has(item.sourceId),
+      )
+      .map((item) => Number(item.sourceId));
+    if (!ids.length) return;
+    for (const id of ids) artworkRequests.add(String(id));
+    void catalogJSON('https://graphql.anilist.co', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query:
+          'query HomePreview($ids:[Int]){Page(perPage:4){media(id_in:$ids,type:ANIME,isAdult:false){id bannerImage trailer{id site}}}}',
+        variables: { ids },
+      }),
+    })
+      .then((result) => {
+        let changed = false;
+        for (const item of result.data?.Page?.media || []) {
+          if (!ids.includes(item.id)) continue;
+          const backdrop = ctx.poster(item.bannerImage || '');
+          const id = trailerId(item.trailer);
+          artwork.set(String(item.id), {
+            ...(backdrop ? { backdrop } : {}),
+            trailer: id ? { id, site: 'youtube' } : null,
+          });
+          changed = true;
+        }
+        if (changed) refresh();
+      })
+      .catch(() => {});
+  }
+  function syncPreview() {
+    loadArtwork();
+    const panel = root?.querySelector('.pulse-slide.is-active');
+    const id = trailerId(stories[current()]?.trailer);
+    const enabled = visible() && !motion.matches && previewEnabled && !!id;
+    for (const frame of root?.querySelectorAll('.pulse-trailer') || []) {
+      if (!enabled || frame.dataset.trailer !== id || !panel?.contains(frame)) frame.remove();
+    }
+    for (const button of root?.querySelectorAll('[data-pulse-action="preview"]') || []) {
+      button.setAttribute('aria-pressed', String(previewEnabled && !motion.matches));
+      button.disabled = motion.matches;
+      button.textContent = previewEnabled ? 'Ⅱ Ndalo preview' : '▶ Preview pa zë';
+    }
+    clearTimeout(previewTimer);
+    if (!enabled || panel.querySelector('.pulse-trailer')) return;
+    previewTimer = setTimeout(() => {
+      if (
+        !visible() ||
+        motion.matches ||
+        !previewEnabled ||
+        panel !== root.querySelector('.pulse-slide.is-active')
+      )
+        return;
+      const frame = document.createElement('iframe');
+      frame.className = 'pulse-trailer';
+      frame.dataset.trailer = id;
+      frame.title = 'Preview pa zë i trailerit';
+      frame.tabIndex = -1;
+      frame.setAttribute('aria-hidden', 'true');
+      frame.setAttribute('allow', 'autoplay; encrypted-media');
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      frame.src =
+        'https://www.youtube-nocookie.com/embed/' +
+        id +
+        '?autoplay=1&mute=1&controls=0&playsinline=1&loop=1&playlist=' +
+        id +
+        '&start=0&end=25&rel=0';
+      panel.querySelector('.pulse-art').append(frame);
+    }, 1200);
+  }
   function schedule() {
     if (!root) return;
+    syncPreview();
     root.dataset.motion = visible() && !motion.matches ? 'running' : 'paused';
     // display:none recreates CSS animations. Restore their position on the same
     // wall-clock timeline instead of restarting the camera drift on each visit.
@@ -178,9 +265,9 @@ export function createHomeSpotlight(ctx) {
     const active = current() === index;
     return `
         <article class="pulse-slide${active ? ' is-active' : ''}" aria-label="${esc(title)}" aria-hidden="${!active}" ${active ? '' : 'inert'}>
-          <div class="pulse-art" aria-hidden="true">${image(item, 'backdrop', active)}</div>
+          <div class="pulse-art${item.backdrop ? '' : ' pulse-art-graphic'}" aria-hidden="true">${image(item, 'backdrop', active)}</div>
           <div class="pulse-stage-top"><span class="pulse-badge"><span aria-hidden="true"></span>${esc(item?.badge || 'Zbulo anime')}</span><span class="pulse-source">${esc(item?.sourceLabel || 'ANIMETRACK')}</span></div>
-          <div class="pulse-stage-body"><div class="pulse-copy"><div class="pulse-meta">${esc(item?.genresLabel || 'Bota e animeve')}${item?.year ? ' <span>·</span> ' + esc(item.year) : ''}${rating ? ' <span>·</span> ★ ' + rating.toFixed(1) : ''}</div><h3>${esc(title)}</h3><p>${esc(description)}</p>${item?.dateLabel ? `<div class="pulse-date">${navIcon('calendar')} ${esc(item.dateLabel)}</div>` : ''}<div class="pulse-actions"><button type="button" class="pulse-primary" data-pulse-action="open" data-key="${esc(item?.storyKey || '')}">${navIcon('watch')} ${item?.remote ? 'Zbulo animen' : item ? 'Hap animen' : 'Zbulo anime'}</button><button type="button" class="pulse-secondary" data-pro-page="calendar">${navIcon('calendar')} Kalendari</button></div></div>${item ? `<div class="pulse-poster-wrap" aria-hidden="true">${image(item, 'poster', active)}<span class="pulse-poster-caption">${esc(item.format === 'MOVIE' ? 'FILM ANIME' : 'ANIME SERIES')}</span></div>` : ''}</div>
+          <div class="pulse-stage-body"><div class="pulse-copy"><div class="pulse-meta">${esc(item?.genresLabel || 'Bota e animeve')}${item?.year ? ' <span>·</span> ' + esc(item.year) : ''}${rating ? ' <span>·</span> ★ ' + rating.toFixed(1) : ''}</div><h3>${esc(title)}</h3><p>${esc(description)}</p>${item?.dateLabel ? `<div class="pulse-date">${navIcon('calendar')} ${esc(item.dateLabel)}</div>` : ''}<div class="pulse-actions"><button type="button" class="pulse-primary" data-pulse-action="open" data-key="${esc(item?.storyKey || '')}">${navIcon('watch')} ${item?.remote ? 'Zbulo animen' : item ? 'Hap animen' : 'Zbulo anime'}</button><button type="button" class="pulse-secondary" data-pro-page="calendar">${navIcon('calendar')} Kalendari</button>${trailerId(item.trailer) ? '<button type="button" class="pulse-secondary" data-pulse-action="preview" aria-pressed="true">Ⅱ Ndalo preview</button>' : ''}</div></div>${item ? `<div class="pulse-poster-wrap" aria-hidden="true">${image(item, 'poster', active)}<span class="pulse-poster-caption">${esc(item.format === 'MOVIE' ? 'FILM ANIME' : 'ANIME SERIES')}</span></div>` : ''}</div>
         </article>`;
   }
   function paint() {
@@ -235,7 +322,10 @@ export function createHomeSpotlight(ctx) {
     }
     const now = Date.now();
     const day = dayNumber(now);
-    const nextStories = homeStories(ctx.animeUpdates?.() || [], library, now);
+    const nextStories = homeStories(ctx.animeUpdates?.() || [], library, now).map((item) => ({
+      ...item,
+      ...(item.source === 'AniList' ? artwork.get(String(item.sourceId)) : {}),
+    }));
     const nextSignature = JSON.stringify(
       nextStories.map((item) => [
         item.storyKey,
@@ -247,6 +337,7 @@ export function createHomeSpotlight(ctx) {
         item.genresLabel,
         item.cover,
         item.backdrop,
+        item.trailer,
         item.year,
         item.score,
         item.communityScore,
@@ -276,6 +367,11 @@ export function createHomeSpotlight(ctx) {
       const button = event.target.closest('[data-pulse-action]');
       if (!button) return;
       const action = button.dataset.pulseAction;
+      if (action === 'preview') {
+        previewEnabled = !previewEnabled;
+        syncPreview();
+        return;
+      }
       if (action === 'open') {
         const item = stories.find((item) => item.storyKey === button.dataset.key);
         if (!item) ctx.navigate('recommendations');
@@ -286,9 +382,27 @@ export function createHomeSpotlight(ctx) {
     root.addEventListener('focusin', schedule);
     root.addEventListener('focusout', () => queueMicrotask(schedule));
     root.addEventListener(
+      'load',
+      (event) => {
+        const img = event.target;
+        if (
+          img.matches?.('.pulse-backdrop') &&
+          (img.naturalWidth < 900 || img.naturalWidth / img.naturalHeight < 1.3)
+        ) {
+          img.classList.add('pulse-image-unavailable');
+          img.closest('.pulse-art')?.classList.add('pulse-art-graphic');
+        }
+      },
+      true,
+    );
+    root.addEventListener(
       'error',
       (event) => {
-        if (event.target.matches('img')) event.target.classList.add('pulse-image-unavailable');
+        if (event.target.matches('img')) {
+          event.target.classList.add('pulse-image-unavailable');
+          if (event.target.matches('.pulse-backdrop'))
+            event.target.closest('.pulse-art')?.classList.add('pulse-art-graphic');
+        }
       },
       true,
     );

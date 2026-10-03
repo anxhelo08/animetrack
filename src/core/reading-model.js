@@ -55,6 +55,27 @@ export function normalizeReadingLibrary(raw) {
         totalChapters,
         totalVolumes: number(row.totalVolumes, 1000),
         checkedAt: text(row.checkedAt, 40),
+        mangaDexId: /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+          row.mangaDexId || '',
+        )
+          ? row.mangaDexId
+          : '',
+        chapterSource: row.chapterSource === 'MangaDex' ? 'MangaDex' : '',
+        chapterReleases: (Array.isArray(row.chapterReleases) ? row.chapterReleases : [])
+          .slice(-300)
+          .filter(
+            (entry) =>
+              entry &&
+              Number.isInteger(entry.chapter) &&
+              entry.chapter > 0 &&
+              entry.chapter <= (totalChapters || 10000) &&
+              Number.isFinite(Date.parse(entry.date)),
+          )
+          .map((entry) => ({
+            chapter: entry.chapter,
+            date: text(entry.date, 40),
+            detected: entry.detected === true,
+          })),
         volumeRanges: (Array.isArray(row.volumeRanges) ? row.volumeRanges : [])
           .slice(0, 1000)
           .filter(
@@ -145,4 +166,36 @@ export function nextChapter(row) {
   const read = new Set(row.chaptersRead);
   while (read.has(chapter)) chapter++;
   return chapter <= (row.totalChapters || 10000) ? chapter : null;
+}
+
+/** Metadata updates never replace personal progress, notes, or manual volume boundaries. */
+export function applyReadingUpdate(row, fresh, stamp = new Date().toISOString()) {
+  const previous = row.totalChapters;
+  const reported = Math.max(number(fresh.totalChapters), previous);
+  const total = reported > 0 ? Math.max(reported, ...row.chaptersRead) : 0;
+  const events = new Map((row.chapterReleases || []).map((entry) => [entry.chapter, entry]));
+  for (const entry of fresh.chapterReleases || []) {
+    if (!events.has(entry.chapter)) events.set(entry.chapter, entry);
+  }
+  // A first unknown-count lookup establishes a baseline, not thousands of fake premieres.
+  if (previous > 0 && total > previous) {
+    for (let chapter = previous + 1; chapter <= total; chapter++) {
+      if (!events.has(chapter)) events.set(chapter, { chapter, date: stamp, detected: true });
+    }
+  }
+  row.chapterReleases = [...events.values()].sort((a, b) => a.chapter - b.chapter).slice(-300);
+  row.totalChapters = total;
+  row.totalVolumes = Math.max(number(fresh.totalVolumes, 1000), row.totalVolumes);
+  row.publicationStatus = fresh.publicationStatus || row.publicationStatus;
+  if (fresh.mangaDexId) row.mangaDexId = fresh.mangaDexId;
+  if (fresh.chapterSource) row.chapterSource = fresh.chapterSource;
+  if (!row.volumeRanges.length && fresh.volumeRanges?.length) row.volumeRanges = fresh.volumeRanges;
+  if (
+    row.status === 'completed' &&
+    (total > row.chaptersRead.length || row.publicationStatus === 'RELEASING')
+  )
+    row.status = 'reading';
+  row.checkedAt = stamp;
+  row.updatedAt = stamp;
+  return total - previous;
 }

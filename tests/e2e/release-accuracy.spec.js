@@ -406,3 +406,59 @@ test('a serial shows the exact Cinemeta episode image and description when TVmaz
   );
   await expect(page.locator('#ep-detail-body')).not.toContainText('Wrong text');
 });
+
+test('new episodes display NEW in the episode list and the detail card for seven days', async ({
+  page,
+}, info) => {
+  await openFixture(page, {
+    owner: 'episode-new-window',
+    payload: {
+      anime: [
+        {
+          id: 'new-series',
+          title: 'Release Story',
+          status: 'watching',
+          source: '',
+          format: 'TV',
+          year: 2026,
+          createdAt: '2026-09-29T10:00:00Z',
+          updatedAt: '2026-09-29T10:00:00Z',
+          seasons: [
+            {
+              id: 'local-season',
+              title: 'Season 1',
+              format: 'TV',
+              total: 2,
+              watched: [],
+              releaseStatus: 'FINISHED',
+              episodes: [
+                { number: 1, title: 'A new beginning', airedAt: '2026-09-29T12:00:00Z' },
+                { number: 2, title: 'Old episode', airedAt: '2026-09-20T12:00:00Z' },
+              ],
+            },
+          ],
+        },
+      ],
+      history: [],
+      preferences: {},
+    },
+  });
+  await page
+    .locator(
+      info.project.name.startsWith('iphone') ? '[data-mobile-nav="library"]' : '#library-nav',
+    )
+    .click();
+  await page.locator('#library-view [data-detail="new-series"]:visible').first().click();
+  await expect(page.locator('.episode-row-new')).toHaveCount(1);
+  await page
+    .locator('.ep-info-btn[data-episode-detail="new-series"][data-episode-number="1"]')
+    .click();
+  await expect(page.locator('.episode-new-badge')).toBeVisible();
+  await page.clock.setFixedTime(new Date('2026-10-08T12:00:00Z'));
+  await page.locator('[data-close="episode-detail-modal"]').click();
+  await page.locator('#library-view [data-detail="new-series"]:visible').first().click();
+  await page
+    .locator('.ep-info-btn[data-episode-detail="new-series"][data-episode-number="1"]')
+    .click();
+  await expect(page.locator('.episode-new-badge')).toHaveCount(0);
+});

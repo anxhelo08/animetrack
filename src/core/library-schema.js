@@ -60,6 +60,20 @@ export function validateLibrary(value, { requireHistory = false } = {}) {
       integer(n, 10000, path + '.chaptersRead');
       if (Number(n) < 1) fail(path + '.chaptersRead');
     }
+    if (row.chapterReleases != null) {
+      if (!Array.isArray(row.chapterReleases) || row.chapterReleases.length > 300)
+        fail(path + '.chapterReleases');
+      for (const entry of row.chapterReleases) {
+        if (
+          !object(entry) ||
+          !Number.isInteger(entry.chapter) ||
+          entry.chapter < 1 ||
+          entry.chapter > (row.totalChapters || 10000) ||
+          !Number.isFinite(Date.parse(entry.date))
+        )
+          fail(path + '.chapterReleases');
+      }
+    }
     if (row.volumeRanges != null) {
       if (!Array.isArray(row.volumeRanges) || row.volumeRanges.length > 1000)
         fail(path + '.volumeRanges');

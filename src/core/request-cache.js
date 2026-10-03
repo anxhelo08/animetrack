@@ -71,9 +71,13 @@ export const retryCatalogRequests = () => read.retryFailures();
 export function catalogJSON(url, { signal, ttl, ...options } = {}) {
   const endpoint = new URL(url);
   if (
-    !['graphql.anilist.co', 'api.jikan.moe', 'api.tvmaze.com', 'v3-cinemeta.strem.io'].includes(
-      endpoint.hostname,
-    ) ||
+    ![
+      'graphql.anilist.co',
+      'api.jikan.moe',
+      'api.mangadex.org',
+      'api.tvmaze.com',
+      'v3-cinemeta.strem.io',
+    ].includes(endpoint.hostname) ||
     endpoint.protocol !== 'https:'
   )
     throw Error('Only public catalog endpoints can use this cache.');

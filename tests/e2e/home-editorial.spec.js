@@ -73,14 +73,19 @@ const payload = {
   history: [],
   preferences: { weeklyGoal: 10, homeQueue: ['story-0', 'story-1'] },
 };
-async function editorial(page) {
+async function editorial(page, { trailers = false } = {}) {
   await page.addInitScript(
     ({ owner, candidates }) =>
       localStorage.setItem(
         'animetrack_recs_v125_' + owner,
         JSON.stringify({ at: Date.parse('2026-09-30T12:00:00Z'), candidates }),
       ),
-    { owner, candidates },
+    {
+      owner,
+      candidates: trailers
+        ? candidates.map((item) => ({ ...item, trailer: { site: 'youtube', id: 'abcdefghijk' } }))
+        : candidates,
+    },
   );
   await openFixture(page, { owner, payload });
   await page.route('https://posters.animetrack.test/**', (route) =>
@@ -102,6 +107,7 @@ async function editorial(page) {
     await expect(page.locator('.pulse-slide.is-active h3')).toHaveText(daily[0].title);
   }
 }
+for (const candidate of candidates) candidate.backdrop = candidate.cover;
 const frozenNow = Date.parse('2026-09-30T12:00:00Z');
 const daily = homeStories(candidates, [], frozenNow);
 const activeTitle = (page) => page.locator('.pulse-slide.is-active h3');
@@ -281,4 +287,48 @@ test('daily stories change at midnight while the app remains open', async ({ pag
   const tomorrow = homeStories(candidates, [], new Date('2026-10-01T00:00:01Z').getTime());
   await expect(activeTitle(page)).toHaveText(tomorrow[0].title);
   expect(tomorrow[0].title).not.toBe(daily[0].title);
+});
+
+test('muted trailer preview validates the provider and stops on navigation, user stop and reduced motion', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
+  await editorial(page, { trailers: true });
+  await page.route('https://www.youtube-nocookie.com/**', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><html lang="en"><title>Muted trailer fixture</title><body></body></html>',
+    }),
+  );
+  await page.reload();
+  const frame = page.locator('.pulse-slide.is-active .pulse-trailer');
+  await expect(frame).toHaveAttribute(
+    'src',
+    /youtube-nocookie\.com\/embed\/abcdefghijk\?.*mute=1.*end=25/,
+  );
+  await page.locator('.pulse-slide.is-active [data-pulse-action="preview"]').click();
+  await expect(frame).toHaveCount(0);
+  await page.locator('.pulse-slide.is-active [data-pulse-action="preview"]').click();
+  await expect(frame).toHaveCount(1);
+  await page.locator('#library-nav').click();
+  await expect(page.locator('.pulse-trailer')).toHaveCount(0);
+  await page.locator('#home-nav').click();
+  await expect(frame).toHaveCount(1);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.pulse-trailer')).toHaveCount(0);
+});
+
+test('undersized or portrait artwork uses the graphic backdrop instead of pixelated stretching', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
+  await editorial(page);
+  await expect(page.locator('.pulse-slide.is-active .pulse-art')).toHaveClass(/pulse-art-graphic/);
+  await expect(page.locator('.pulse-slide.is-active .pulse-backdrop')).toBeHidden();
+  await expect(page.locator('.pulse-slide.is-active .pulse-poster')).toBeVisible();
+  await page.screenshot({
+    path: info.outputPath('home-graphic-backdrop.png'),
+    fullPage: true,
+    animations: 'disabled',
+  });
 });
