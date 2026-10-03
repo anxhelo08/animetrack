@@ -73,7 +73,7 @@ const payload = {
   history: [],
   preferences: { weeklyGoal: 10, homeQueue: ['story-0', 'story-1'] },
 };
-async function editorial(page, { trailers = false } = {}) {
+async function editorial(page, { trailers = false, missingTrailers = false } = {}) {
   await page.addInitScript(
     ({ owner, candidates }) =>
       localStorage.setItem(
@@ -84,7 +84,9 @@ async function editorial(page, { trailers = false } = {}) {
       owner,
       candidates: trailers
         ? candidates.map((item) => ({ ...item, trailer: { site: 'youtube', id: 'abcdefghijk' } }))
-        : candidates,
+        : missingTrailers
+          ? candidates.map((item) => ({ ...item, trailer: null }))
+          : candidates,
     },
   );
   await openFixture(page, { owner, payload });
@@ -304,7 +306,7 @@ test('muted trailer preview validates the provider and stops on navigation, user
   const frame = page.locator('.pulse-slide.is-active .pulse-trailer');
   await expect(frame).toHaveAttribute(
     'src',
-    /youtube-nocookie\.com\/embed\/abcdefghijk\?.*mute=1.*end=25/,
+    /youtube-nocookie\.com\/embed\/abcdefghijk\?.*mute=1.*end=20/,
   );
   await page.locator('.pulse-slide.is-active [data-pulse-action="preview"]').click();
   await expect(frame).toHaveCount(0);
@@ -316,6 +318,66 @@ test('muted trailer preview validates the provider and stops on navigation, user
   await expect(frame).toHaveCount(1);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(page.locator('.pulse-trailer')).toHaveCount(0);
+});
+
+test('cached empty trailers are enriched and the background changes on the 20-second story cycle', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
+  await page.clock.install({ time: new Date(frozenNow) });
+  await editorial(page, { missingTrailers: true });
+  let lookups = 0;
+  await page.route('https://graphql.anilist.co', async (route) => {
+    const request = route.request().postDataJSON();
+    if (!request.query.includes('HomePreview')) return route.fallback();
+    lookups++;
+    await route.fulfill({
+      json: {
+        data: {
+          Page: {
+            media: candidates.map((item) => ({
+              id: Number(item.sourceId),
+              bannerImage: item.backdrop,
+              trailer: { site: 'youtube', id: 'abcdefghijk' },
+            })),
+          },
+        },
+      },
+    });
+  });
+  await page.route('https://www.youtube-nocookie.com/**', (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      body: '<!doctype html><title>Background fixture</title>',
+    }),
+  );
+  await page.reload();
+  await page.mouse.move(0, 0);
+  const frame = page.locator('.pulse-slide.is-active .pulse-trailer');
+  await expect(frame).toHaveAttribute('src', /start=0&end=20&rel=0$/);
+  expect(lookups).toBe(1);
+  const cover = await frame.evaluate((node) => {
+    const player = node.getBoundingClientRect(),
+      art = node.parentElement.getBoundingClientRect();
+    return (
+      player.width >= art.width &&
+      player.height >= art.height &&
+      Math.abs(player.width / player.height - 16 / 9) < 0.01
+    );
+  });
+  expect(cover).toBe(true);
+  await page.evaluate(() => {
+    window.__originalPulseFrame = document.querySelector('.pulse-trailer');
+  });
+  await page.locator('.pulse-stage').hover();
+  await page.clock.runFor(19000);
+  await expect(activeTitle(page)).toHaveText(daily[0].title);
+  expect(await page.evaluate(() => window.__originalPulseFrame.isConnected)).toBe(true);
+  await page.clock.runFor(1200);
+  await expect(activeTitle(page)).toHaveText(daily[1].title);
+  await expect(page.locator('.pulse-trailer')).toHaveCount(1);
+  expect(await page.evaluate(() => window.__originalPulseFrame.isConnected)).toBe(false);
+  await expect(frame).toHaveAttribute('src', /start=0&end=20&rel=0$/);
 });
 
 test('undersized or portrait artwork uses the graphic backdrop instead of pixelated stretching', async ({

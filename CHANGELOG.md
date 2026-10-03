@@ -1,3 +1,9 @@
+# 14.10.1 — Trailer në sfond për 20 sekonda
+
+- Trailer pa zë në sfondin e Anime Pulse, i prerë për të mbushur kartën dhe me segment 20-sekondësh.
+- Nisje pa vonesën e mëparshme; ndërrimi dhe kthimi në Kreu ndjekin ciklin ekzistues të kartës.
+- Kërkim i trailerit edhe për të dhënat e ruajtura me vlerë bosh.
+
 # 14.10.0 — Preview dhe publikime të reja
 
 - Sfond horizontal i verifikuar ose pamje grafike në vend të kopertinës së zmadhuar; preview i shkurtër pa zë nga traileri YouTube, me ndalim dhe reduced motion.

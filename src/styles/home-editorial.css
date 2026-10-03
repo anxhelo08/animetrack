@@ -105,7 +105,7 @@
   object-fit: cover;
   object-position: 65% 35%;
   opacity: 0.8;
-  animation: pulse-cinema 22s cubic-bezier(0.2, 0.5, 0.4, 1) infinite alternate both;
+  animation: pulse-cinema 20s cubic-bezier(0.2, 0.5, 0.4, 1) infinite alternate both;
   animation-play-state: paused;
 }
 .pulse-art::after {
@@ -876,23 +876,20 @@
     radial-gradient(ellipse at 75% 35%, var(--purple), transparent 60%),
     linear-gradient(135deg, var(--surface2), var(--bg));
 }
+.pulse-art {
+  container-type: size;
+}
 .pulse-trailer {
   position: absolute;
-  inset: -15%;
-  width: 130%;
-  height: 130%;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  /* Fill the backdrop with 16:9 video, cropping letterboxing from tall cards. */
+  width: max(105cqw, 186.67cqh);
+  height: max(105cqh, 59.0625cqw);
   border: 0;
   pointer-events: none;
-  opacity: 0.7;
-  animation: pulse-preview-enter 700ms ease-out;
-}
-@keyframes pulse-preview-enter {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 0.7;
-  }
+  opacity: 0.85;
 }
 
 #side-nav .nav-btn {

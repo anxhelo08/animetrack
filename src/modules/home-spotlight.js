@@ -90,7 +90,7 @@ export function createHomeSpotlight(ctx) {
   const artwork = new Map(),
     artworkRequests = new Set();
   let intersecting = false,
-    previewTimer,
+    previewEndTimer,
     previewEnabled = true;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const phone = window.matchMedia('(max-width: 760px)');
@@ -142,8 +142,8 @@ export function createHomeSpotlight(ctx) {
         (item) =>
           item.source === 'AniList' &&
           /^\d+$/.test(item.sourceId || '') &&
-          (!item.backdrop || item.trailer === undefined) &&
-          !artworkRequests.has(item.sourceId),
+          (!item.backdrop || !trailerId(item.trailer)) &&
+          !artworkRequests.has(String(item.sourceId)),
       )
       .map((item) => Number(item.sourceId));
     if (!ids.length) return;
@@ -184,35 +184,41 @@ export function createHomeSpotlight(ctx) {
     for (const button of root?.querySelectorAll('[data-pulse-action="preview"]') || []) {
       button.setAttribute('aria-pressed', String(previewEnabled && !motion.matches));
       button.disabled = motion.matches;
-      button.textContent = previewEnabled ? 'Ⅱ Ndalo preview' : '▶ Preview pa zë';
+      button.textContent = previewEnabled ? 'Ⅱ Ndalo sfondin video' : '▶ Trailer në sfond · 20 sek';
     }
-    clearTimeout(previewTimer);
+    if (!root?.querySelector('.pulse-trailer')) clearTimeout(previewEndTimer);
     if (!enabled || panel.querySelector('.pulse-trailer')) return;
-    previewTimer = setTimeout(() => {
-      if (
-        !visible() ||
-        motion.matches ||
-        !previewEnabled ||
-        panel !== root.querySelector('.pulse-slide.is-active')
-      )
-        return;
-      const frame = document.createElement('iframe');
-      frame.className = 'pulse-trailer';
-      frame.dataset.trailer = id;
-      frame.title = 'Preview pa zë i trailerit';
-      frame.tabIndex = -1;
-      frame.setAttribute('aria-hidden', 'true');
-      frame.setAttribute('allow', 'autoplay; encrypted-media');
-      frame.referrerPolicy = 'strict-origin-when-cross-origin';
-      frame.src =
-        'https://www.youtube-nocookie.com/embed/' +
-        id +
-        '?autoplay=1&mute=1&controls=0&playsinline=1&loop=1&playlist=' +
-        id +
-        '&start=0&end=25&rel=0';
-      panel.querySelector('.pulse-art').append(frame);
-    }, 1200);
+    // Start immediately, including after mouse/focus events. Re-entering the same
+    // story resumes its position on the existing 20-second slideshow timeline.
+    const elapsed = nextAt ? 20 - (nextAt - performance.now()) / 1000 : 0;
+    const start = Math.max(0, Math.min(19, Math.floor(elapsed)));
+    const frame = document.createElement('iframe');
+    frame.className = 'pulse-trailer';
+    frame.dataset.trailer = id;
+    frame.title = 'Trailer në sfond · 20 sekonda pa zë';
+    frame.tabIndex = -1;
+    frame.setAttribute('aria-hidden', 'true');
+    frame.setAttribute('allow', 'autoplay; encrypted-media');
+    frame.referrerPolicy = 'strict-origin-when-cross-origin';
+    frame.src =
+      'https://www.youtube-nocookie.com/embed/' +
+      id +
+      '?autoplay=1&mute=1&controls=0&playsinline=1&start=' +
+      start +
+      '&end=20&rel=0';
+    panel.querySelector('.pulse-art').append(frame);
+    // Loop this bounded segment for a single story or a keyboard-paused story.
+    // Multi-story transitions remove the previous player at the same deadline.
+    previewEndTimer = setTimeout(
+      () => {
+        if (!frame.isConnected) return;
+        frame.remove();
+        syncPreview();
+      },
+      (20 - start) * 1000,
+    );
   }
+
   function schedule() {
     if (!root) return;
     syncPreview();
@@ -222,7 +228,7 @@ export function createHomeSpotlight(ctx) {
     if (visible() && !motion.matches) {
       for (const animation of root.getAnimations({ subtree: true })) {
         if (animation.animationName === 'pulse-cinema')
-          animation.currentTime = (performance.now() - animationEpoch) % 44000;
+          animation.currentTime = (performance.now() - animationEpoch) % 40000;
       }
     }
     const interactionPaused =
@@ -267,7 +273,7 @@ export function createHomeSpotlight(ctx) {
         <article class="pulse-slide${active ? ' is-active' : ''}" aria-label="${esc(title)}" aria-hidden="${!active}" ${active ? '' : 'inert'}>
           <div class="pulse-art${item.backdrop ? '' : ' pulse-art-graphic'}" aria-hidden="true">${image(item, 'backdrop', active)}</div>
           <div class="pulse-stage-top"><span class="pulse-badge"><span aria-hidden="true"></span>${esc(item?.badge || 'Zbulo anime')}</span><span class="pulse-source">${esc(item?.sourceLabel || 'ANIMETRACK')}</span></div>
-          <div class="pulse-stage-body"><div class="pulse-copy"><div class="pulse-meta">${esc(item?.genresLabel || 'Bota e animeve')}${item?.year ? ' <span>·</span> ' + esc(item.year) : ''}${rating ? ' <span>·</span> ★ ' + rating.toFixed(1) : ''}</div><h3>${esc(title)}</h3><p>${esc(description)}</p>${item?.dateLabel ? `<div class="pulse-date">${navIcon('calendar')} ${esc(item.dateLabel)}</div>` : ''}<div class="pulse-actions"><button type="button" class="pulse-primary" data-pulse-action="open" data-key="${esc(item?.storyKey || '')}">${navIcon('watch')} ${item?.remote ? 'Zbulo animen' : item ? 'Hap animen' : 'Zbulo anime'}</button><button type="button" class="pulse-secondary" data-pro-page="calendar">${navIcon('calendar')} Kalendari</button>${trailerId(item.trailer) ? '<button type="button" class="pulse-secondary" data-pulse-action="preview" aria-pressed="true">Ⅱ Ndalo preview</button>' : ''}</div></div>${item ? `<div class="pulse-poster-wrap" aria-hidden="true">${image(item, 'poster', active)}<span class="pulse-poster-caption">${esc(item.format === 'MOVIE' ? 'FILM ANIME' : 'ANIME SERIES')}</span></div>` : ''}</div>
+          <div class="pulse-stage-body"><div class="pulse-copy"><div class="pulse-meta">${esc(item?.genresLabel || 'Bota e animeve')}${item?.year ? ' <span>·</span> ' + esc(item.year) : ''}${rating ? ' <span>·</span> ★ ' + rating.toFixed(1) : ''}</div><h3>${esc(title)}</h3><p>${esc(description)}</p>${item?.dateLabel ? `<div class="pulse-date">${navIcon('calendar')} ${esc(item.dateLabel)}</div>` : ''}<div class="pulse-actions"><button type="button" class="pulse-primary" data-pulse-action="open" data-key="${esc(item?.storyKey || '')}">${navIcon('watch')} ${item?.remote ? 'Zbulo animen' : item ? 'Hap animen' : 'Zbulo anime'}</button><button type="button" class="pulse-secondary" data-pro-page="calendar">${navIcon('calendar')} Kalendari</button>${trailerId(item.trailer) ? '<button type="button" class="pulse-secondary" data-pulse-action="preview" aria-pressed="true">Ⅱ Ndalo sfondin video</button>' : ''}</div></div>${item ? `<div class="pulse-poster-wrap" aria-hidden="true">${image(item, 'poster', active)}<span class="pulse-poster-caption">${esc(item.format === 'MOVIE' ? 'FILM ANIME' : 'ANIME SERIES')}</span></div>` : ''}</div>
         </article>`;
   }
   function paint() {
