@@ -31,6 +31,25 @@ export function setPercent(node, value, axis = 'w') {
 /** One HTML boundary for both new templates and legacy feature renderers. */
 export function createHTML(window) {
   const purifier = createDOMPurify(window);
+  // Search fields must never be mistaken for account/contact fields by autofill.
+  purifier.addHook('afterSanitizeAttributes', (node) => {
+    if (node.tagName !== 'INPUT') return;
+    if (
+      node.getAttribute('type') !== 'search' &&
+      !/(?:search|query|command-input)$/.test(node.id || '')
+    )
+      return;
+    if (['email', 'password'].includes(node.getAttribute('type'))) return;
+    node.setAttribute('type', 'search');
+    node.setAttribute('name', 'at-search-' + (node.id || 'titles'));
+    node.setAttribute('autocomplete', 'off');
+    node.setAttribute('autocapitalize', 'none');
+    node.setAttribute('autocorrect', 'off');
+    node.setAttribute('spellcheck', 'false');
+    node.setAttribute('enterkeyhint', 'search');
+    node.setAttribute('data-lpignore', 'true');
+    node.setAttribute('data-1p-ignore', 'true');
+  });
   const fragments = new WeakSet();
   const policy = {
     USE_PROFILES: { html: true, svg: true },

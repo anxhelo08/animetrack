@@ -173,6 +173,9 @@ export function createFeatures(ctx){
    if(node?.dataset?.smartReminder!==undefined)modules.smart.setReminder(node.dataset.smartReminder,node.value);
    if(node?.id==='at109-default-lead')modules.smart.setDefault(node.value);
   });
+  let calendarSearchTimer=null;
+  document.addEventListener('input',e=>{if(e.target?.id!=='calendar-query')return;const value=e.target.value,caret=e.target.selectionStart;clearTimeout(calendarSearchTimer);calendarSearchTimer=setTimeout(()=>{if(active!=='calendar')return;modules.calendar.setSearch(value);const next=$('calendar-query');next?.focus({preventScroll:true});try{next?.setSelectionRange(caret,caret)}catch{}},160)});
+  document.addEventListener('change',e=>{if(e.target?.id==='calendar-release')modules.calendar.setRelease(e.target.value)});
   document.addEventListener('input',e=>{if(e.target?.id==='at118-query')modules.tv.input(e.target.value)});
   document.addEventListener('keydown',e=>{if(e.target?.id==='at118-query'&&e.key==='Enter'){e.preventDefault();void modules.tv.searchNow()}});
   let pcSearchTimer=null;document.addEventListener('input',e=>{if(e.target?.id!=='at-pc-watch-search')return;const value=e.target.value,caret=e.target.selectionStart,focused=document.activeElement===e.target;clearTimeout(pcSearchTimer);pcSearchTimer=setTimeout(()=>{if(!$('home-view')||$('home-view').classList.contains('hidden'))return;modules.home.search(value);const next=$('at-pc-watch-search');if(focused&&next){next.focus({preventScroll:true});try{next.setSelectionRange(caret,caret)}catch{}}},140)});

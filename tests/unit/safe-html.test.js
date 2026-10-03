@@ -114,3 +114,18 @@ test('public cloud configuration is immutable and ignores localStorage', () => {
     window.ANIMETRACK_CONFIG = {};
   }).toThrow();
 });
+
+test('search autofill hints cannot become email fields while account autofill is retained', () => {
+  const node = document.createElement('div');
+  ui.renderHTML(
+    node,
+    '<input id="reading-query" type="text" autocomplete="email"><input type="search" id="some-search"><input id="account-email" type="email" autocomplete="email"><input type="password" autocomplete="current-password">',
+  );
+  for (const input of node.querySelectorAll('input[type="search"]')) {
+    expect(input.autocomplete).toBe('off');
+    expect(input.name).toMatch(/^at-search-/);
+    expect(input.getAttribute('data-lpignore')).toBe('true');
+  }
+  expect(node.querySelector('#account-email').autocomplete).toBe('email');
+  expect(node.querySelector('input[type="password"]').autocomplete).toBe('current-password');
+});

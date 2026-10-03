@@ -49,3 +49,26 @@ it('clears autofill already present before the account becomes known', () => {
   recheck();
   expect(input.value).toBe('');
 });
+
+it('protects newly mounted searches and preserves deliberate queries and search form submits', async () => {
+  const { installSearchProtection } = await import('../../src/modules/catalog-search-input.js');
+  installSearchProtection(() => 'owner@example.com');
+  const form = document.createElement('form');
+  form.id = 'reading-search-form';
+  form.innerHTML = '<input id="reading-query" type="search">';
+  document.body.append(form);
+  await Promise.resolve();
+  const input = form.querySelector('input');
+  expect(input.form).toBe(form);
+  expect(input.name).toBe('at-search-reading-query');
+  input.value = 'owner@example.com';
+  input.dispatchEvent(
+    new InputEvent('input', { bubbles: true, inputType: 'insertReplacementText' }),
+  );
+  expect(input.value).toBe('');
+  input.value = 'owner@example.com';
+  input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertFromPaste' }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  expect(input.value).toBe('owner@example.com');
+  expect(document.querySelector('#account-password').type).toBe('password');
+});

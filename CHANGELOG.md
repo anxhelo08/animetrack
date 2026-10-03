@@ -1,3 +1,11 @@
+# 14.12.0 — Kërkim pa email dhe kalendar me disa burime
+
+- Fushat e kërkimit në PC/telefon kanë semantikë të veçuar nga llogaria; autofill i emailit ndalet edhe në fusha që krijohen më vonë.
+- Kalendari përfshin si parazgjedhje “Duke parë” dhe “Përfunduar”, me vazhdime nga lidhje të konfirmuara dhe pa shënim në sezonin e gabuar.
+- AniList, MyAnimeList/Jikan dhe TVMaze sipas ID-ve të sakta, gjendje për çdo burim dhe orare të ruajtura kur një burim nuk arrihet.
+- Rifreskim ditor në server me lease dhe cache metadata publike; shënimet, progresi dhe statusi personal nuk ndryshojnë.
+- Pamje Java/Muaji/Agjenda, kërkim në orar, filtra për episode të ardhshme ose të paparë, animacion i lehtë dhe reduced motion.
+
 # 14.11.0 — Zbulim, koleksione dhe integrime leximi
 
 - Filtra të avancuar me përfshirje/përjashtim zhanresh, vit, botim, notë dhe gjatësi të konfirmuar; rekomandime Manga/Manhwa sipas leximeve personale.
