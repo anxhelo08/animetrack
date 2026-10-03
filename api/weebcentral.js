@@ -57,7 +57,16 @@ export function createHandler({ provider = createWeebCentral(), limit = allowPro
               );
       res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=300');
       return res.status(200).json(result);
-    } catch {
+    } catch (error) {
+      const diagnostic = /^Provider HTTP \d{3}$/.test(error.message)
+        ? error.message.replaceAll(' ', '-')
+        : ['AbortError', 'TimeoutError'].includes(error.name)
+          ? 'timeout'
+          : /Missing|Unsupported|Unexpected|filters/.test(error.message)
+            ? 'invalid-metadata'
+            : 'network';
+      res.setHeader('X-Reading-Upstream-Status', diagnostic);
+      console.warn('WeebCentral metadata unavailable:', diagnostic);
       return res.status(502).json({ error: 'WeebCentral temporarily unavailable' });
     }
   };
