@@ -157,7 +157,7 @@ test('cloud round-trip preserves watch session and reminder preferences',()=>{
  assert.match(core,/homeQueue:\s*Array.isArray\(p.homeQueue\)/);
  assert.match(core,/calendarReminders:\s*Object.fromEntries/);
  assert.match(core,/async function accountPullQuiet/);
- assert.match(core,/upcomingCheckedAt<30\*60000/);
+ assert.match(core,/upcomingCheckedAt<5\*60000/);
 });
 test('watched notifications are excluded and foreground sync refreshes views',()=>{
  const notify=fs.readFileSync(path.join(root,'src/modules/notifications.js'),'utf8'),features=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8');

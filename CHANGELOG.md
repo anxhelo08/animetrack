@@ -1,3 +1,12 @@
+# 14.15.0 — Lexime të ndara dhe kërkim më i plotë
+
+- Manga/Manhwa ka katër hyrje kryesore: Biblioteka, Kërkimi, Kalendari dhe Njoftimet. Koleksionet, rekomandimet, publikimet, statistikat, ditari dhe Manga Sync janë te “Më shumë”.
+- Zgjedhja Manga ose Manhwa ruhet kur ndryshon seksionin; biblioteka, kërkimi, kalendari dhe kapitujt e rinj respektojnë këtë zgjedhje.
+- Kërkimi sipas emrit kontrollon paralelisht WeebCentral, AniList dhe MyAnimeList/Jikan. Rezultatet shfaqen sapo vijnë, pa u fshehur nga një burim bosh ose i bllokuar; ID-të e konfirmuara shmangin kopjet.
+- Kalendari i leximit shfaq datat e ruajtura të kapitujve sipas muajit. Publikimi në burim dallohet nga data kur kapitulli u zbulua në katalog; nuk krijohen orare të hamendësuara.
+- Rifreskimi i orarit merr cache e re të serverit çdo 10 minuta gjatë përdorimit dhe kur rikthehet fokusi/interneti, me kufi 5-minutësh për kërkesat e përsëritura. Kontrolli ditor i serverit mbetet aktiv.
+- Titujt WeebCentral me lidhje të konfirmuara AniList/MyAnimeList përdorin burimet rezervë edhe për metadata, duke ruajtur progresin dhe shënimet.
+
 # 14.14.0 — Kalendari ngarkohet menjëherë
 
 - Hapja e kalendarit nis rifreskimin. Orari i konfirmuar i ruajtur dhe cache e serverit shfaqen përpara kërkesave; rezultatet dalin gradualisht gjatë kontrollit të bibliotekës.

@@ -28,8 +28,12 @@ async function setup(page, rows = []) {
   );
   await page.locator('#pro-nav-reading').click();
 }
-const tab = (page, name) =>
-  page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`);
+const tab = (page, name) => ({
+  click: () =>
+    ['library', 'discover', 'calendar', 'releases'].includes(name)
+      ? page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`).click()
+      : page.locator('#reading-tools').selectOption(name),
+});
 test('WeebCentral discovery, chapter metadata, recommendations, publications and statistics work together', async ({
   page,
 }, info) => {

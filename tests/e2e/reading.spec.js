@@ -85,7 +85,7 @@ test('chapters, notes and journals persist separately from watching data', async
   await page.locator('#reading-personal-form [name="rating"]').fill('9');
   await page.locator('#reading-personal-form [name="volumesRead"]').fill('2');
   await page.locator('#reading-personal-form button[type="submit"]').click();
-  await page.locator('#reading-view [data-reading-action="tab"][data-id="activity"]').click();
+  await page.locator('#reading-tools').selectOption('activity');
   await page.locator('[data-reading-action="journal"]').filter({ hasText: 'Kapitulli 5' }).click();
   await page.locator('#reading-journal-form [name="note"]').fill('Kapitulli im i preferuar');
   await page.locator('#reading-journal-form [name="rating"]').fill('8.5');
@@ -103,7 +103,7 @@ test('chapters, notes and journals persist separately from watching data', async
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
   expect((await state(page)).readingLibrary[0]).toEqual(before.readingLibrary[0]);
   await page.locator('#pro-nav-reading').click();
-  await page.locator('#reading-view [data-reading-action="tab"][data-id="activity"]').click();
+  await page.locator('#reading-tools').selectOption('activity');
   await expect(page.locator('.reading-journal')).toContainText('Kapitulli im i preferuar');
 });
 test('own catalog searches, kind filters and late replies cannot alter anime search', async ({
@@ -164,7 +164,7 @@ test('own catalog searches, kind filters and late replies cannot alter anime sea
   expect(
     await page.locator('#reading-query').evaluate((node) => node === window.readingSearchNode),
   ).toBe(true);
-  await page.locator('#reading-kind').selectOption('manhwa');
+  await page.locator('.reading-scope [data-id="manhwa"]').click();
   await expect(page.locator('.reading-grid')).toContainText('New Manhwa');
   await expect(page.locator('.reading-grid')).not.toContainText('Old result');
   expect(requests.some((query) => query.search === 'New' && query.country === 'KR')).toBe(true);
@@ -262,12 +262,7 @@ test('desktop reading layouts remain accessible at 1024 and 1440 pixels', async 
     animations: 'disabled',
   });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  expect(
-    await page
-      .locator('.reading-hero-art > span')
-      .first()
-      .evaluate((node) => getComputedStyle(node).animationName),
-  ).toBe('none');
+  await expect(page.locator('.reading-hero-art')).toHaveCount(0);
 });
 
 test('chapter tools, volume ranges, bulk read and hover navigation work', async ({

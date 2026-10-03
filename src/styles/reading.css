@@ -1068,3 +1068,148 @@
 #reading-content {
   animation: none;
 }
+
+/* Reading has its own clear destinations and persistent Manga / Manhwa scope. */
+.reading-hero {
+  padding: 0;
+  margin: 0 0 24px;
+  border: 0;
+  background: none;
+  min-height: 0;
+}
+.reading-hero h2 {
+  margin: 0 0 8px;
+  font-size: clamp(26px, 3vw, 36px);
+  letter-spacing: -0.025em;
+}
+.reading-navigation {
+  margin-bottom: 24px;
+}
+.reading-scope {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--surface2);
+}
+.reading-scope button {
+  padding: 10px 18px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+}
+.reading-scope button.active {
+  background: var(--surface);
+  color: var(--text);
+}
+.reading-scope button:hover,
+.reading-tabs button:hover {
+  color: var(--text);
+  background: var(--surface2);
+}
+.reading-tabs {
+  flex-wrap: wrap;
+  overflow: visible;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding: 0 0 12px;
+}
+.reading-tabs button {
+  padding: 12px 16px;
+  font-size: 14px;
+}
+.reading-tools {
+  margin-left: auto;
+}
+.reading-tools select {
+  min-height: 44px;
+  width: 190px;
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+}
+.reading-calendar > section {
+  margin-bottom: 28px;
+}
+.reading-calendar h4 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.reading-calendar-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+.reading-calendar-list button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+.reading-calendar-list button:hover {
+  background: var(--surface2);
+}
+.reading-calendar-list img,
+.reading-calendar-list .reading-cover-empty {
+  width: 44px;
+  height: 62px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+.reading-calendar-list button > span:not(.reading-cover-empty) {
+  flex: 1;
+  min-width: 0;
+}
+.reading-calendar-list small {
+  display: block;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.reading-calendar-list svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+@media (min-width: 761px) and (max-width: 1100px) {
+  .reading-tabs button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  .reading-tools {
+    margin-left: 0;
+  }
+  .reading-tools select {
+    width: 170px;
+  }
+}
+.reading-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin-bottom: 16px;
+}
+.reading-stats > div {
+  padding: 0;
+  gap: 8px;
+  align-items: baseline;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.reading-stats strong {
+  font-size: 18px;
+  letter-spacing: 0;
+}

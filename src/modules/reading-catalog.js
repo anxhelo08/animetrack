@@ -28,6 +28,7 @@ async function searchAniList(query, kind, page = 1, signal, filters = {}) {
   });
   if (!result.data?.Page) throw Error('Katalogu nuk u përgjigj.');
   return {
+    provider: 'AniList',
     hasNext: result.data.Page.pageInfo?.hasNextPage === true,
     items: (result.data.Page.media || [])
       .filter((item) => item.type === 'MANGA')
@@ -72,71 +73,124 @@ function jikanItem(item) {
     communityScore: item.score ?? null,
   };
 }
-export async function searchReadingCatalog(query, kind, page = 1, signal, filters = {}) {
-  try {
-    const result = await weebCentralCatalog(
+async function searchJikan(query, kind, page, signal, filters) {
+  const params = new URLSearchParams({
+    q: query.trim(),
+    page: String(page),
+    limit: '18',
+    sfw: 'true',
+  });
+  if (kind !== 'all') params.set('type', kind);
+  const f = cleanReadingFilters(filters);
+  const ids = {
+    Action: 1,
+    Adventure: 2,
+    Comedy: 4,
+    Drama: 8,
+    Fantasy: 10,
+    Horror: 14,
+    Mystery: 7,
+    Romance: 22,
+    'Sci-Fi': 24,
+    'Slice of Life': 36,
+    Sports: 30,
+    Thriller: 41,
+  };
+  if (f.include.length) params.set('genres', f.include.map((g) => ids[g]).join(','));
+  if (f.exclude.length) params.set('genres_exclude', f.exclude.map((g) => ids[g]).join(','));
+  if (f.year) {
+    params.set('start_date', `${f.year}-01-01`);
+    params.set('end_date', `${f.year}-12-31`);
+  }
+  if (f.score) params.set('min_score', String(f.score));
+  if (f.publication === 'RELEASING' || f.publication === 'FINISHED')
+    params.set('status', f.publication === 'RELEASING' ? 'publishing' : 'complete');
+  const result = await catalogJSON('https://api.jikan.moe/v4/manga?' + params, { signal });
+  if (!Array.isArray(result.data)) throw Error('Katalogu nuk u përgjigj.');
+  return {
+    provider: 'MyAnimeList / Jikan',
+    items: result.data
+      .filter((item) => ['Manga', 'Manhwa', 'Manhua', 'One-shot', 'Doujinshi'].includes(item.type))
+      .map(jikanItem)
+      .filter((item) => matchesReadingFilters(item, filters)),
+    hasNext: result.pagination?.has_next_page === true,
+  };
+}
+/** Keep exact tracker identities distinct; never merge unrelated titles by a similar name. */
+function combineCatalogs(results) {
+  const items = [];
+  for (const result of results)
+    for (const row of result.items || []) {
+      const same = items.find(
+        (other) =>
+          (other.source === row.source && other.sourceId === row.sourceId) ||
+          ['weebCentralId', 'anilistId', 'malId'].some(
+            (key) => row[key] && row[key] === other[key],
+          ),
+      );
+      if (!same) items.push(row);
+    }
+  return {
+    items,
+    hasNext: results.some((r) => r.hasNext),
+    provider: [...new Set(results.map((r) => r.provider).filter(Boolean))].join(' + '),
+  };
+}
+export async function searchReadingCatalog(
+  query,
+  kind,
+  page = 1,
+  signal,
+  filters = {},
+  { onUpdate } = {},
+) {
+  if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
+  const primary = () =>
+    weebCentralCatalog(
       'search',
       { q: query, kind, page: String(page), filters: JSON.stringify(filters) },
       signal,
     );
-    if (result?.items) return result;
-  } catch (error) {
-    if (error.name === 'AbortError') throw error;
-  }
-  let primaryError;
-  try {
-    const result = await searchAniList(query, kind, page, signal, filters);
-    if (result.items.length || !query.trim()) return result;
-  } catch (error) {
-    if (error.name === 'AbortError') throw error;
-    primaryError = error;
-  }
-  try {
-    const params = new URLSearchParams({
-      q: query.trim(),
-      page: String(page),
-      limit: '18',
-      sfw: 'true',
-    });
-    if (kind !== 'all') params.set('type', kind);
-    const f = cleanReadingFilters(filters);
-    const ids = {
-      Action: 1,
-      Adventure: 2,
-      Comedy: 4,
-      Drama: 8,
-      Fantasy: 10,
-      Horror: 14,
-      Mystery: 7,
-      Romance: 22,
-      'Sci-Fi': 24,
-      'Slice of Life': 36,
-      Sports: 30,
-      Thriller: 41,
-    };
-    if (f.include.length) params.set('genres', f.include.map((g) => ids[g]).join(','));
-    if (f.exclude.length) params.set('genres_exclude', f.exclude.map((g) => ids[g]).join(','));
-    if (f.year) {
-      params.set('start_date', `${f.year}-01-01`);
-      params.set('end_date', `${f.year}-12-31`);
+  // Browsing uses the preferred source. A named search searches all catalogs for broader coverage.
+  if (!query.trim()) {
+    try {
+      const result = await primary();
+      if (result?.items?.length) return result;
+    } catch (error) {
+      if (signal?.aborted) throw error;
     }
-    if (f.score) params.set('min_score', String(f.score));
-    if (f.publication === 'RELEASING' || f.publication === 'FINISHED')
-      params.set('status', f.publication === 'RELEASING' ? 'publishing' : 'complete');
-    const result = await catalogJSON('https://api.jikan.moe/v4/manga?' + params, { signal });
-    if (!Array.isArray(result.data)) throw Error('Katalogu nuk u përgjigj.');
-    return {
-      items: result.data
-        .filter((item) =>
-          ['Manga', 'Manhwa', 'Manhua', 'One-shot', 'Doujinshi'].includes(item.type),
-        )
-        .map(jikanItem)
-        .filter((item) => matchesReadingFilters(item, filters)),
-      hasNext: result.pagination?.has_next_page === true,
-    };
-  } catch (error) {
-    throw error.name === 'AbortError' ? error : primaryError || error;
+    try {
+      const result = await searchAniList(query, kind, page, signal, filters);
+      if (result.items.length) return result;
+    } catch (error) {
+      if (signal?.aborted) throw error;
+    }
+    return searchJikan(query, kind, page, signal, filters);
   }
+  const completed = [],
+    failures = [];
+  const sources = [
+    primary,
+    () => searchAniList(query, kind, page, signal, filters),
+    () => searchJikan(query, kind, page, signal, filters),
+  ];
+  await Promise.all(
+    sources.map(async (load) => {
+      try {
+        const result = await load();
+        if (!Array.isArray(result?.items)) throw Error('Katalogu nuk u përgjigj.');
+        if (signal?.aborted) return;
+        completed.push(result);
+        onUpdate?.(combineCatalogs(completed));
+      } catch (error) {
+        failures.push(error);
+      }
+    }),
+  );
+  if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
+  if (!completed.length) throw failures[0] || Error('Katalogu nuk u përgjigj.');
+  const result = combineCatalogs(completed);
+  return { ...result, partial: failures.length > 0 };
 }
 async function refreshPrimaryCatalog(row, signal) {
   if (!/^\d+$/.test(row.sourceId)) throw Error('Titull pa burim.');
@@ -251,9 +305,24 @@ export async function publishedReadingChapters(row, signal) {
   };
 }
 export async function refreshReadingCatalog(row, signal) {
-  if (row.weebCentralId || row.source === 'weebcentral')
-    return weebCentralCatalog('details', { id: row.weebCentralId || row.sourceId }, signal);
-  if (row.title && (row.anilistId || row.malId || row.sourceId)) {
+  if (row.weebCentralId || row.source === 'weebcentral') {
+    try {
+      return await weebCentralCatalog('details', { id: row.weebCentralId || row.sourceId }, signal);
+    } catch (error) {
+      if (error.name === 'AbortError') throw error;
+      if (row.source === 'weebcentral') {
+        if (row.anilistId) row = { ...row, source: 'anilist', sourceId: row.anilistId };
+        else if (row.malId) row = { ...row, source: 'jikan', sourceId: row.malId };
+        else throw error;
+      }
+    }
+  }
+  if (
+    !row.weebCentralId &&
+    row.source !== 'weebcentral' &&
+    row.title &&
+    (row.anilistId || row.malId || row.sourceId)
+  ) {
     try {
       const linked = await weebCentralCatalog(
         'resolve',

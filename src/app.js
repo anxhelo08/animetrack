@@ -743,7 +743,7 @@ function confirmEpisode(all){const transactionBefore=JSON.parse(JSON.stringify(s
 let airingCoverage=[];
 async function refreshUpcoming(force=false){
  if(upcomingBusy)return;
- if(!force&&upcomingCheckedAt&&Date.now()-upcomingCheckedAt<30*60000){renderUpcoming();return}
+ if(!force&&upcomingCheckedAt&&Date.now()-upcomingCheckedAt<5*60000){renderUpcoming();return}
  upcomingBusy=true;$('refresh-upcoming').disabled=true;renderHome();proApp?.renderBackground?.();
  const owner=accountUser?.id||null,storageKey=KEY,targets=state.anime;
  const current=()=>owner===(accountUser?.id||null)&&storageKey===KEY;

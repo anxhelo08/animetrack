@@ -35,14 +35,20 @@ async function setup(page) {
   });
   await page.locator('#pro-nav-reading').click();
 }
-const tab = (page, name) =>
-  page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`);
+const tab = (page, name) => ({
+  click: () =>
+    ['library', 'discover', 'calendar', 'releases'].includes(name)
+      ? page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`).click()
+      : page.locator('#reading-tools').selectOption(name),
+});
 test('reading collections, weekly goal, density, scoped keyboard and shared URLs work', async ({
   page,
 }, info) => {
   test.skip(info.project.name.startsWith('iphone'), 'Reading remains desktop only');
   await setup(page);
+  await page.locator('.reading-library-more summary').click();
   await page.locator('#reading-density').selectOption('compact');
+  await page.locator('.reading-library-more summary').click();
   await expect(page.locator('#reading-view')).toHaveClass(/reading-density-compact/);
   await tab(page, 'collections').click();
   await page.locator('#reading-collection-create input').fill('Për fundjavë');
@@ -139,8 +145,8 @@ test('compact reading library and filters have usable desktop layout', async ({ 
       await page
         .locator('.reading-card')
         .first()
-        .evaluate((el) => el.getBoundingClientRect().top),
-    ).toBeLessThan(650);
+        .evaluate((el) => el.getBoundingClientRect().bottom),
+    ).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

@@ -320,7 +320,7 @@ export function createReadingWorkspace(ctx, render) {
       if (changed) {
         state.readingLibrary = normalizeReadingLibrary(state.readingLibrary);
         if (!ctx.save()) state.readingLibrary = before;
-        render();
+        render(false);
       }
     } catch {
       /* Existing personal state remains available during a network outage. */

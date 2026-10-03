@@ -21,6 +21,7 @@ import {
   readingTaste,
   rankReadingRecommendations,
 } from '../core/reading-discovery.js';
+import { readingCalendarEntries } from '../core/reading-calendar.js';
 import { createReadingWorkspace } from './reading-workspace.js';
 
 export function createReading(ctx) {
@@ -55,13 +56,15 @@ export function createReading(ctx) {
     catalogProvider = 'WeebCentral',
     controller,
     debounce,
-    focusAfter = '';
+    focusAfter = '',
+    calendarMonth = new Date().toLocaleDateString('sv-SE').slice(0, 7);
   let filters = cleanReadingFilters(),
     detailTab = 'overview',
     relations = [],
     relationBusy = false;
-  const workspace = createReadingWorkspace(ctx, () => render());
+  const workspace = createReadingWorkspace(ctx, (force = true) => render(force));
   const rows = () => (ctx.state().readingLibrary || []).filter((row) => !row.deletedAt);
+  const scopedRows = () => rows().filter((row) => kind === 'all' || row.kind === kind);
   const saved = (id) => rows().find((row) => row.id === id);
   const find = (id) => saved(id) || results.find((row) => row.id === id);
   const label = (row) => (row.kind === 'manhwa' ? 'Manhwa' : 'Manga');
@@ -75,17 +78,6 @@ export function createReading(ctx) {
       : `<span class="reading-cover-empty" aria-hidden="true">${navIcon('reading')}</span>`;
   const statusOptions = (current) =>
     Object.entries(READING_STATUS)
-      .map(
-        ([value, text]) =>
-          `<option value="${value}" ${current === value ? 'selected' : ''}>${text}</option>`,
-      )
-      .join('');
-  const kindOptions = (current) =>
-    [
-      ['all', 'Manga & Manhwa'],
-      ['manga', 'Manga'],
-      ['manhwa', 'Manhwa'],
-    ]
       .map(
         ([value, text]) =>
           `<option value="${value}" ${current === value ? 'selected' : ''}>${text}</option>`,
@@ -141,7 +133,7 @@ export function createReading(ctx) {
     return `<article class="reading-card"><button type="button" class="reading-cover" data-reading-action="detail" data-id="${esc(row.id)}" aria-label="Hap ${esc(row.title)}">${image(row)}<span class="reading-kind">${label(row)}</span>${recent.length ? `<span class="reading-new-badge">NEW · ${new Set(recent.map((entry) => entry.chapter)).size} kapituj</span>` : ''}</button><div class="reading-card-body"><small>${row.year || 'Viti i panjohur'}${row.communityScore ? ' · ★ ' + row.communityScore.toFixed(1) : ''}</small><button type="button" class="reading-card-title" data-reading-action="detail" data-id="${esc(row.id)}">${esc(row.title)}</button>${tracked ? `<p>${READING_STATUS[tracked.status]}${tracked.favorite ? ' · ♥' : ''}</p><div class="reading-card-progress"><strong>${progress}</strong> <span>${row.totalChapters ? 'nga ' + row.totalChapters + (row.publicationStatus === 'RELEASING' ? ' publikuar' : ' kapituj') : 'kapituj të lexuar'}</span></div>${row.totalChapters ? '' : '<p class="reading-total-pending">Totali ende i pakonfirmuar</p>'}<div class="reading-card-actions">${button('detail', 'Detaje', row.id)}${button('next', 'Vazhdo', row.id, 'primary', nextChapter(tracked) ? '' : 'disabled')}</div>` : `<p>${esc(row.recommendationReason || row.genres || 'Zbulo historinë')}</p>${button('add', '+ Në listën time', row.id, 'primary')}`}</div></article>`;
   }
   function stats() {
-    const all = rows(),
+    const all = scopedRows(),
       reading = all.filter((row) => row.status === 'reading').length,
       chapters = all.reduce((n, row) => n + row.chaptersRead.length, 0);
     return `<div class="reading-stats"><div><strong>${all.length}</strong><span>Tituj në bibliotekë</span></div><div><strong>${reading}</strong><span>Po lexoj tani</span></div><div><strong>${chapters.toLocaleString('sq-AL')}</strong><span>Kapituj të lexuar</span></div></div>`;
@@ -183,7 +175,7 @@ export function createReading(ctx) {
               ? b.chaptersRead.length - a.chaptersRead.length
               : String(b.updatedAt).localeCompare(String(a.updatedAt)),
     );
-    return `<div class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko në leximet e tua…" aria-label="Kërko në leximet e tua" maxlength="100" value="${esc(query)}"></label><label class="reading-field">Lloji<select id="reading-kind">${kindOptions(kind)}</select></label><label class="reading-field">Statusi<select id="reading-status"><option value="all">Të gjitha</option>${statusOptions(status)}<option value="favorites" ${status === 'favorites' ? 'selected' : ''}>Të preferuarat</option></select></label><details class="reading-library-more"><summary>Më shumë filtra</summary><div><label class="reading-field">Publikimi<select id="reading-publication">${[
+    return `<div class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko në leximet e tua…" aria-label="Kërko në leximet e tua" maxlength="100" value="${esc(query)}"></label><label class="reading-field">Statusi<select id="reading-status"><option value="all">Të gjitha</option>${statusOptions(status)}<option value="favorites" ${status === 'favorites' ? 'selected' : ''}>Të preferuarat</option></select></label><details class="reading-library-more"><summary>Më shumë filtra</summary><div><label class="reading-field">Publikimi<select id="reading-publication">${[
       ['all', 'Çdo botim'],
       ['ongoing', 'Në botim / pauzë'],
       ['finished', 'Botim i përfunduar'],
@@ -205,7 +197,7 @@ export function createReading(ctx) {
       )
       .join(
         '',
-      )}</select></label></div></details><label class="reading-field">Pamja<select id="reading-density"><option value="normal">Normale</option><option value="compact" ${ctx.state().preferences?.readingDensity === 'compact' ? 'selected' : ''}>Kompakte</option></select></label>${button('manual', '+ Shto vetë', '', 'primary')}</div>${stats()}<div class="reading-library-shelves">${
+      )}</select></label><label class="reading-field">Pamja<select id="reading-density"><option value="normal">Normale</option><option value="compact" ${ctx.state().preferences?.readingDensity === 'compact' ? 'selected' : ''}>Kompakte</option></select></label></div></details>${button('manual', '+ Shto vetë', '', 'primary')}</div>${stats()}<div class="reading-library-shelves">${
       list.length
         ? (kind === 'all' ? ['manhwa', 'manga'] : [kind])
             .map((type) => {
@@ -250,10 +242,10 @@ export function createReading(ctx) {
   }
   function discover() {
     const recommended = tab === 'recommendations';
-    return `<form id="reading-search-form" class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko manga ose manhwa…" aria-label="Kërko manga ose manhwa" maxlength="100" value="${esc(query)}"></label><label class="reading-field">Lloji<select id="reading-kind">${kindOptions(kind)}</select></label><button class="primary" type="submit">Kërko</button></form>${advancedFilters()}${recommended ? '<p class="reading-volume-note">Nga zhanret e titujve që lexon, vlerëson ose ruan si të preferuar. Titujt në bibliotekë përjashtohen.</p>' : ''}<div class="reading-results-meta" role="status">${busy ? 'Po kërkoj në katalog…' : error ? 'Katalogu nuk u arrit. Leximet e tua janë të ruajtura.' : `${query ? 'Rezultatet për “' + esc(query) + '”' : recommended ? 'Rekomanduar për ty' : tab === 'latest' ? 'Përditësuar së fundmi në WeebCentral' : 'Në trend tani'} · ${esc(catalogProvider)} · ${results.length} tituj`}${error ? button('retry', 'Provo përsëri') : ''}</div><div class="reading-grid" aria-busy="${busy}">${results.map(card).join('') || (busy ? Array.from({ length: 6 }, () => '<div class="reading-skeleton" aria-hidden="true"></div>').join('') : error ? '' : '<section class="reading-empty"><h3>Nuk u gjet titull</h3><p>Ndrysho filtrat ose provo një emër tjetër.</p>' + button('manual', '+ Shto vetë') + '</section>')}</div>${hasNext ? `<div class="reading-more">${button('more', busy ? 'Po ngarkoj…' : 'Shfaq më shumë', '', 'ghost', busy ? 'disabled' : '')}</div>` : ''}`;
+    return `<form id="reading-search-form" class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko manga ose manhwa…" aria-label="Kërko manga ose manhwa" maxlength="100" value="${esc(query)}"></label><button class="primary" type="submit">Kërko</button></form>${advancedFilters()}${recommended ? '<p class="reading-volume-note">Nga zhanret e titujve që lexon, vlerëson ose ruan si të preferuar. Titujt në bibliotekë përjashtohen.</p>' : ''}<div class="reading-results-meta" role="status">${busy ? (results.length ? results.length + ' tituj · ' + esc(catalogProvider) + ' · Po kontrolloj burimet e tjera…' : 'Po kërkoj në katalog…') : error ? 'Katalogu nuk u arrit. Leximet e tua janë të ruajtura.' : `${query ? 'Rezultatet për “' + esc(query) + '”' : recommended ? 'Rekomanduar për ty' : tab === 'latest' ? 'Përditësuar së fundmi në WeebCentral' : 'Në trend tani'} · ${esc(catalogProvider)} · ${results.length} tituj`}${error ? button('retry', 'Provo përsëri') : ''}</div><div class="reading-grid" aria-busy="${busy}">${results.map(card).join('') || (busy ? Array.from({ length: 6 }, () => '<div class="reading-skeleton" aria-hidden="true"></div>').join('') : error ? '' : '<section class="reading-empty"><h3>Nuk u gjet titull</h3><p>Ndrysho filtrat ose provo një emër tjetër.</p>' + button('manual', '+ Shto vetë') + '</section>')}</div>${hasNext ? `<div class="reading-more">${button('more', busy ? 'Po ngarkoj…' : 'Shfaq më shumë', '', 'ghost', busy ? 'disabled' : '')}</div>` : ''}`;
   }
   function releases() {
-    const list = rows().filter(
+    const list = scopedRows().filter(
       (row) =>
         (row.chapterReleases || []).some((entry) => isNewRelease(entry.date)) ||
         row.publicationStatus === 'RELEASING' ||
@@ -261,8 +253,44 @@ export function createReading(ctx) {
     );
     return `<section class="reading-panel"><label><input type="checkbox" id="reading-notifications" ${ctx.state().preferences?.readingNotifications ? 'checked' : ''}> Njoftime për kapitujt e rinj</label><p class="reading-volume-note">Për llogaritë cloud, metadata kontrollohet automatikisht edhe kur aplikacioni është i mbyllur. Njoftimet push kërkojnë aktivizimin në këtë pajisje. Kontrolli bëhet me radhë; koha varet nga burimi dhe numri i titujve.</p>${ctx.readingPush?.() || ''}</section><div class="reading-section-title"><h3>Kapituj për të lexuar</h3><p>Kontroll automatik çdo 30 minuta kur ky seksion është i hapur. NEW qëndron shtatë ditë nga publikimi në burim ose zbulimi në katalog. Totali i botimit të papërfunduar tregon kapitullin më të lartë të verifikuar.</p></div><div class="reading-grid">${list.map(card).join('') || '<section class="reading-empty"><h3>Je në hap me leximet e tua</h3><p>Kontrollo katalogun nga detajet kur publikohen kapituj të rinj.</p></section>'}</div>`;
   }
+  function calendar() {
+    const events = readingCalendarEntries(scopedRows(), { month: calendarMonth, query });
+    const days = new Map();
+    for (const entry of events) {
+      if (!days.has(entry.day)) days.set(entry.day, []);
+      days.get(entry.day).push(entry);
+    }
+    return `<div class="reading-section-title"><div><h3>Kalendari i kapitujve</h3><p>Publikime të bibliotekës sate. Datat e burimit dhe datat e zbulimit dallohen.</p></div>${button('calendar-refresh', 'Rifresko kapitujt', '', 'ghost', autoController ? 'disabled' : '')}</div><div class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input id="reading-query" type="search" placeholder="Kërko në kalendar…" aria-label="Kërko në kalendar" maxlength="100" value="${esc(query)}"></label><label class="reading-field">Muaji<input id="reading-calendar-month" type="month" value="${calendarMonth}"></label>${button('calendar-today', 'Ky muaj')}</div><div class="reading-calendar">${[...days].map(([day, entries]) => `<section><h4>${date(day + 'T12:00:00')}</h4><div class="reading-calendar-list">${entries.map(({ row, entry }) => `<button type="button" data-reading-action="detail" data-id="${esc(row.id)}">${image(row)}<span><strong>${esc(row.title)}</strong><small>Kapitulli ${entry.chapter} · ${row.chaptersRead.includes(entry.chapter) ? 'I lexuar' : 'Pa lexuar'}</small><small>${entry.detected ? 'Zbuluar në katalog' : 'Publikuar në burim'} · ${esc(row.chapterSource || 'Katalogu')}</small></span>${navIcon('reading')}</button>`).join('')}</div></section>`).join('') || '<section class="reading-empty"><h3>Pa publikime në këtë muaj</h3><p>Zgjidh një muaj tjetër ose rifresko kapitujt. Nuk krijohen data të hamendësuara.</p></section>'}</div>`;
+  }
+  function navigation() {
+    const main = [
+      ['library', 'Biblioteka', 'reading'],
+      ['discover', 'Kërkimi', 'explore'],
+      ['calendar', 'Kalendari', 'calendar'],
+      ['releases', 'Njoftimet', 'notifications'],
+    ];
+    const more = [
+      ['recommendations', 'Për ty'],
+      ['latest', 'Publikimet në burim'],
+      ['collections', 'Koleksionet'],
+      ['statistics', 'Statistikat'],
+      ['activity', 'Ditari i leximit'],
+      ['integration', 'Manga Sync'],
+    ];
+    return `<div class="reading-navigation"><div class="reading-scope" role="group" aria-label="Biblioteka Manga ose Manhwa">${[
+      ['all', 'Të gjitha'],
+      ['manga', 'Manga'],
+      ['manhwa', 'Manhwa'],
+    ]
+      .map(([id, text]) =>
+        button('scope', text, id, kind === id ? 'active' : '', `aria-pressed="${kind === id}"`),
+      )
+      .join(
+        '',
+      )}</div><nav class="reading-tabs" aria-label="Seksionet Manga dhe Manhwa">${main.map(([id, text, icon]) => button('tab', navIcon(icon) + text, id, tab === id ? 'active' : '', `aria-current="${tab === id ? 'page' : 'false'}"`)).join('')}<label class="reading-tools"><span class="sr-only">Mjete dhe zbulime</span><select id="reading-tools" aria-label="Mjete dhe zbulime"><option value="">Më shumë</option>${more.map(([id, text]) => `<option value="${id}" ${tab === id ? 'selected' : ''}>${text}</option>`).join('')}</select></label></nav></div>`;
+  }
   function activity() {
-    const events = rows()
+    const events = scopedRows()
       .flatMap((row) => row.journal.map((event) => ({ row, event })))
       .sort((a, b) => b.event.date.localeCompare(a.event.date))
       .slice(0, 150);
@@ -409,29 +437,7 @@ export function createReading(ctx) {
     const container = document.createElement('div');
     window.ATHTML.renderHTML(
       container,
-      `<div class="reading-hero ${tab === 'discover' || tab === 'latest' || tab === 'recommendations' || !rows().length ? '' : 'reading-hero-compact'}"><div><span class="reading-eyebrow">HISTORITË VAZHDOJNË NË FAQE</span><h2>Manga <span>&</span> Manhwa</h2><p>Një botë më vete. Mbaj kapitujt, mendimet dhe historitë e tua në një vend.</p></div><div class="reading-hero-art" aria-hidden="true"><span>漫</span><span>만</span>${navIcon('reading')}</div></div><nav class="reading-tabs" aria-label="Seksionet Manga dhe Manhwa">${[
-        ['library', 'Leximet e mia', 'reading'],
-        ['discover', 'Zbulo', 'explore'],
-        ['recommendations', 'Për ty', 'explore'],
-        ['latest', 'Publikimet në burim', 'calendar'],
-        ['collections', 'Koleksionet', 'reading'],
-        ['statistics', 'Statistikat', 'diary'],
-        ['integration', 'Manga Sync', 'sync'],
-        ['activity', 'Ditari i leximit', 'diary'],
-        ['releases', 'Kapituj të rinj', 'notifications'],
-      ]
-        .map(([id, text, icon]) =>
-          button(
-            'tab',
-            navIcon(icon) + text,
-            id,
-            tab === id ? 'active' : '',
-            `aria-current="${tab === id ? 'page' : 'false'}"`,
-          ),
-        )
-        .join(
-          '',
-        )}</nav><div id="reading-content">${editing ? editor(saved(selected)) : selected ? detail(find(selected)) : tab === 'library' ? library() : ['discover', 'latest', 'recommendations'].includes(tab) ? discover() : tab === 'collections' ? workspace.collections() : tab === 'statistics' ? workspace.statistics() : tab === 'integration' ? workspace.integration() : tab === 'releases' ? releases() : activity()}</div>`,
+      `<div class="reading-hero ${tab === 'library' || selected ? 'reading-hero-compact' : ''}"><p>Biblioteka jote, kapitujt e rinj dhe historitë për të zbuluar.</p></div>${navigation()}<div id="reading-content">${editing ? editor(saved(selected)) : selected ? detail(find(selected)) : tab === 'library' ? library() : ['discover', 'latest', 'recommendations'].includes(tab) ? discover() : tab === 'calendar' ? calendar() : tab === 'collections' ? workspace.collections() : tab === 'statistics' ? workspace.statistics() : tab === 'integration' ? workspace.integration() : tab === 'releases' ? releases() : activity()}</div>`,
     );
     if (root.querySelector('#reading-content')) {
       const fresh = container.querySelector('#reading-content');
@@ -440,7 +446,9 @@ export function createReading(ctx) {
       if (advanced && fresh.querySelector('.reading-advanced'))
         fresh.querySelector('.reading-advanced').replaceWith(advanced);
       root.querySelector('#reading-content').replaceWith(fresh);
-      root.querySelector('.reading-tabs').replaceWith(container.querySelector('.reading-tabs'));
+      root
+        .querySelector('.reading-navigation')
+        .replaceWith(container.querySelector('.reading-navigation'));
     } else root.replaceChildren(...container.childNodes);
     const hero = root.querySelector('.reading-hero'),
       freshHero = container.querySelector('.reading-hero');
@@ -555,30 +563,36 @@ export function createReading(ctx) {
       if (active && (ctx.user()?.id || 'guest') === requestOwner) render(false);
     }
   }
-  async function autoCheck() {
+  async function autoCheck(force = false) {
     clearTimeout(autoTimer);
     if (!active || phone.matches || document.hidden) return;
-    void workspace.refreshBackground();
-    render(false);
-    autoController?.abort();
+    if (autoController && !autoController.signal.aborted) return;
     const token = new AbortController();
     autoController = token;
+    await workspace.refreshBackground();
+    if (!active || document.hidden || token.signal.aborted) {
+      if (autoController === token) autoController = null;
+      return;
+    }
     const stale = rows()
       .filter(
         (row) =>
           row.sourceId &&
-          (row.publicationStatus === 'RELEASING' ||
+          (force ||
+            row.publicationStatus === 'RELEASING' ||
             row.publicationStatus === 'HIATUS' ||
             (row.status === 'reading' && row.publicationStatus !== 'FINISHED')) &&
           (!attempted.has(row.id) || Date.now() - attempted.get(row.id) >= 30 * 60000) &&
-          (!row.checkedAt || Date.now() - Date.parse(row.checkedAt) >= 30 * 60000),
+          (force || !row.checkedAt || Date.now() - Date.parse(row.checkedAt) >= 30 * 60000),
       )
       .sort((a, b) => String(a.checkedAt).localeCompare(String(b.checkedAt)))
-      .slice(0, 8);
+      .slice(0, force ? rows().length : 8);
     for (const row of stale) {
       if (token.signal.aborted || !active) break;
       await checkRow(row.id, false, token.signal);
     }
+    if (autoController === token) autoController = null;
+    if (active && stale.length) render(false);
     if (active && !token.signal.aborted) autoTimer = setTimeout(() => void autoCheck(), 60000);
   }
   async function search(more = false) {
@@ -596,8 +610,19 @@ export function createReading(ctx) {
     if (!more) {
       hasNext = false;
       page = 1;
+      results = [];
     }
     render();
+    const priorResults = more ? results : [];
+    const accept = (result) => {
+      if (controller !== token || requestOwner !== (ctx.user()?.id || 'guest') || !active) return;
+      const items =
+        tab === 'recommendations' ? rankReadingRecommendations(result.items, rows()) : result.items;
+      results = [...new Map([...priorResults, ...items].map((row) => [row.id, row])).values()];
+      catalogProvider = result.provider || 'AniList / MyAnimeList';
+      hasNext = result.hasNext;
+      render();
+    };
     try {
       const result =
         tab === 'latest'
@@ -617,14 +642,10 @@ export function createReading(ctx) {
               next,
               token.signal,
               requestFilters,
+              { onUpdate: accept },
             );
       if (controller !== token || requestOwner !== (ctx.user()?.id || 'guest') || !active) return;
-      if (tab === 'recommendations')
-        result.items = rankReadingRecommendations(result.items, rows());
-      results = more
-        ? [...new Map([...results, ...result.items].map((row) => [row.id, row])).values()]
-        : result.items;
-      catalogProvider = result.provider || 'AniList / MyAnimeList (burim rezervë)';
+      accept(result);
       page = next;
       hasNext = result.hasNext;
     } catch (err) {
@@ -643,15 +664,14 @@ export function createReading(ctx) {
     editing = false;
     eventId = '';
     query = '';
-    kind = 'all';
     status = 'all';
     publication = 'all';
     results = [];
     error = '';
     focusAfter = '#reading-query';
-    render();
     filters = cleanReadingFilters();
     if (tab === 'recommendations') filters.include = readingTaste(rows()).genres.slice(0, 1);
+    render();
     if (['discover', 'latest', 'recommendations'].includes(tab)) void search();
   }
   function action(event) {
@@ -660,6 +680,32 @@ export function createReading(ctx) {
     const op = target.dataset.readingAction,
       id = target.dataset.id,
       row = saved(id);
+    if (op === 'scope') {
+      if (!['all', 'manga', 'manhwa'].includes(id)) return;
+      kind = id;
+      renderedView = '';
+      selected = '';
+      editing = false;
+      cancel();
+      results = [];
+      render();
+      if (['discover', 'latest', 'recommendations'].includes(tab)) void search();
+      return;
+    }
+    if (op === 'calendar-refresh') {
+      retryCatalogRequests();
+      retryWeebCentral();
+      attempted.clear();
+      for (const row of scopedRows()) attempted.delete(row.id);
+      void autoCheck(true);
+      return;
+    }
+    if (op === 'calendar-today') {
+      renderedView = '';
+      calendarMonth = new Date().toLocaleDateString('sv-SE').slice(0, 7);
+      render();
+      return;
+    }
     if (op === 'filter-reset' || op === 'filter-remove') {
       if (op === 'filter-reset') filters = cleanReadingFilters();
       else if (id === 'include' || id === 'exclude')
@@ -1044,10 +1090,10 @@ export function createReading(ctx) {
       window.ATHTML.renderHTML(
         submenu,
         [
-          ['library', 'Leximet e mia'],
-          ['discover', 'Kërko manga / manhwa'],
-          ['activity', 'Ditari i leximit'],
-          ['releases', 'Kapituj të rinj'],
+          ['library', 'Biblioteka'],
+          ['discover', 'Kërkimi'],
+          ['calendar', 'Kalendari'],
+          ['releases', 'Njoftimet'],
         ]
           .map(([id, title]) =>
             button(
@@ -1136,10 +1182,15 @@ export function createReading(ctx) {
         publication = event.target.value;
         render();
       }
-      if (event.target.id === 'reading-kind') {
-        kind = event.target.value;
-        if (['discover', 'latest', 'recommendations'].includes(tab)) void search();
-        else render();
+      if (event.target.id === 'reading-tools') {
+        if (event.target.value) switchTab(event.target.value);
+        return;
+      }
+      if (event.target.id === 'reading-calendar-month') {
+        if (/^\d{4}-\d{2}$/.test(event.target.value)) calendarMonth = event.target.value;
+        renderedView = '';
+        render();
+        return;
       }
       if (event.target.id === 'reading-status') {
         status = event.target.value;
