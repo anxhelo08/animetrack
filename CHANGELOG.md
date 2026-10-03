@@ -1,5 +1,6 @@
 # 14.18.0 — Katalog më i gjerë dhe kapituj në rezultatet e kërkimit
 
+- Përputhjet e sakta të titullit ose emrit alternativ dalin përpara botimeve të tjera dhe rezultateve më të largëta.
 - MangaUpdates shtohet në kërkimin e serverit me emra alternativë, metadata dhe numrat e kapitujve. Novelat përjashtohen nga rezultatet e komikëve.
 - Manga/OEL me origjinë anglisht, përfshirë The Beginning After the End, nuk përjashtohen më nga kërkimi vetëm për shkak të gjuhës ose vendit.
 - Numrat e kapitujve shfaqen në kartat e kërkimit dhe ruhen në bibliotekë. MangaDex dhe MangaUpdates bashkohen vetëm nga lidhjet e tyre të konfirmuara.

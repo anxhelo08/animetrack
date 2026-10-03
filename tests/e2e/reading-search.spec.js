@@ -43,7 +43,30 @@ for (const key of ['doom', 'player', 'tbate'])
       const q = params.get('q');
       searches.push(q);
       return route.fulfill({
-        json: { items: q ? [entry] : [], provider: 'MangaDex', hasNext: false },
+        json: {
+          items: q
+            ? key === 'tbate'
+              ? [
+                  {
+                    ...entry,
+                    id: 'reading-al-1',
+                    source: 'anilist',
+                    sourceId: '1',
+                    anilistId: '1',
+                    malId: '',
+                    mangaDexId: '',
+                    mangaUpdatesId: '',
+                    title: entry.title + ' (Book Version)',
+                    aliases: [],
+                    totalChapters: 0,
+                  },
+                  entry,
+                ]
+              : [entry]
+            : [],
+          provider: 'MangaDex',
+          hasNext: false,
+        },
       });
     });
     await page.locator('#pro-nav-reading').click();
@@ -53,14 +76,14 @@ for (const key of ['doom', 'player', 'tbate'])
     const title = entry.title;
     const started = Date.now();
     await page.locator('#reading-query').fill(title.replace("'", '’'));
-    await expect(page.locator('.reading-card-title')).toHaveText(title, { timeout: 3000 });
+    await expect(page.locator('.reading-card-title').first()).toHaveText(title, { timeout: 3000 });
     expect(Date.now() - started).toBeLessThan(3000);
     expect(searches).toContain(title);
-    await expect(page.locator('.reading-catalog-chapters')).toContainText(
+    await expect(page.locator('.reading-catalog-chapters').first()).toContainText(
       String(meta.totalChapters) + ' kapituj',
     );
     await expect(page.locator('.reading-grid')).toHaveAttribute('aria-busy', 'false');
-    await page.locator('.reading-card [data-reading-action="add"]').click();
+    await page.locator('.reading-card [data-reading-action="add"]').first().click();
     await expect
       .poll(() => page.evaluate(() => window.ATMobile113.state().readingLibrary.length))
       .toBe(1);

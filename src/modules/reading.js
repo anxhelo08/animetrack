@@ -623,6 +623,11 @@ export function createReading(ctx) {
       if (controller !== token || requestOwner !== (ctx.user()?.id || 'guest') || !active) return;
       const items =
         tab === 'recommendations' ? rankReadingRecommendations(result.items, rows()) : result.items;
+      const exact = (row) =>
+        [row.title, ...(row.aliases || [])].some(
+          (name) => name.toLowerCase() === requestQuery.toLowerCase(),
+        );
+      items.sort((a, b) => Number(exact(b)) - Number(exact(a)));
       results = [...new Map([...priorResults, ...items].map((row) => [row.id, row])).values()];
       catalogProvider = result.provider || 'AniList / MyAnimeList';
       hasNext = result.hasNext;
