@@ -75,6 +75,7 @@ export function catalogJSON(url, { signal, ttl, timeoutMs = 15000, ...options } 
       'graphql.anilist.co',
       'api.jikan.moe',
       'api.mangadex.org',
+      'api.mangaupdates.com',
       'api.tvmaze.com',
       'v3-cinemeta.strem.io',
     ].includes(endpoint.hostname) ||

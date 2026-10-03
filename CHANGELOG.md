@@ -1,3 +1,11 @@
+# 14.18.0 — Katalog më i gjerë dhe kapituj në rezultatet e kërkimit
+
+- MangaUpdates shtohet në kërkimin e serverit me emra alternativë, metadata dhe numrat e kapitujve. Novelat përjashtohen nga rezultatet e komikëve.
+- Manga/OEL me origjinë anglisht, përfshirë The Beginning After the End, nuk përjashtohen më nga kërkimi vetëm për shkak të gjuhës ose vendit.
+- Numrat e kapitujve shfaqen në kartat e kërkimit dhe ruhen në bibliotekë. MangaDex dhe MangaUpdates bashkohen vetëm nga lidhjet e tyre të konfirmuara.
+- Numri origjinal i kapitujve në metadata krahasohet me kapitullin e fundit të listuar; një përkthim i shkurtër nuk zëvendëson totalin e njohur të serisë. Detajet merren edhe nga serveri kur shfletuesi nuk arrin burimet.
+- Kërkimi, marrja e detajeve dhe kontrolli në sfond ruajnë ID-të, shënimet dhe progresin. Kontrolli i listës së publikimeve nuk bllokon numrin e kapitujve kur feed-i dështon.
+
 # 14.17.1 — Fotot e episodeve ruhen pas rihapjes
 
 - Kopja lokale e llogarisë ruan fotot dhe detajet e verifikuara të episodeve. Ngarkimet në cloud mbeten të vogla.

@@ -1,0 +1,485 @@
+{
+  "doom": {
+    "type": "Manhwa",
+    "year": "2021",
+    "title": "Doom Breaker",
+    "status": "101 Chapters (Hiatus) From 12-2023\n\nS1: 60 Chapters (1-60)  \nS2: 41 Chapters (61-101)  \nS3: TBA  \n\n*Nov 2024: Author confirmed it was too early to set an official return date on their [Naver blog](https://comic.naver.com/community/u/zephyr/posts/0-uboyb-16). However their health has improved enough for them to start drawing again and the post included a sneak peek at the current progress.*\n\n*Feb 11 2025: Author posted on [Naver blog](https://comic.naver.com/community/u/zephyr/posts/0-uboyb-13) that there is still a long way to go until he returns.*\n\n**Physical Book:**  \n 1 Volume (Ongoing)",
+    "completed": false,
+    "series_id": 3796218942,
+    "associated": [
+      {
+        "title": "A Battle God's Second Chance"
+      },
+      {
+        "title": "Reencarnación del dios de la batalla suicida"
+      },
+      {
+        "title": "Reincarnation of the Suicidal Battle God"
+      },
+      {
+        "title": "The Battle God's Return"
+      },
+      {
+        "title": "To a New Life"
+      },
+      {
+        "title": "Tusin Jeonsaenggi"
+      },
+      {
+        "title": "Tusinjeonsaenggi"
+      },
+      {
+        "title": "Новая жизнь убийцы богов"
+      },
+      {
+        "title": "Руйнівник долі"
+      },
+      {
+        "title": "بازگشت خدای جنگ مرگبار"
+      },
+      {
+        "title": "عودة إله الحرب"
+      },
+      {
+        "title": "เกิดใหม่นักรบพันธุ์ระห่ำ"
+      },
+      {
+        "title": "เกิดใหม่นักรบพันธุ์ระห่ำ 2"
+      },
+      {
+        "title": "斗神转生记"
+      },
+      {
+        "title": "闘神転生記～世界を救うセカンドチャンス～"
+      },
+      {
+        "title": "鬥神轉生記"
+      },
+      {
+        "title": "투신전생기"
+      }
+    ],
+    "latest_chapter": 101
+  },
+  "tbate": {
+    "type": "OEL",
+    "year": "2018",
+    "title": "The Beginning After the End",
+    "status": "250 Chapters (Ongoing)  \n3 Volumes (Ongoing)  \n\nS1: 25 Chapters (1-25)                              \nS2: 31 Chapters (26-56)                                                        \nS3: 29 Chapters (57-85)                                                        \nS4: 40 Chapters (86-125)                             \nS5: 50 Chapters (126-175) + 3 Bonus Chapters                                                        \nSide Story: 10 Chapters (Jasmine: Wind-Borne 1-10)                                                        \nS1-S5 Recap (175.9)                      \nS6: 50 Chapters (176-225)     \nS7: 24 Chapters (226-)                 \n                     ",
+    "completed": false,
+    "series_id": 60735012287,
+    "associated": [
+      {
+        "title": "El comienzo después del fin"
+      },
+      {
+        "title": "La Vida después de la Muerte"
+      },
+      {
+        "title": "O Começo Depois do Fim"
+      },
+      {
+        "title": "Sondan Sonraki Başlangıç"
+      },
+      {
+        "title": "TBATE"
+      },
+      {
+        "title": "Ánh sáng cuối con đường"
+      },
+      {
+        "title": "آغاز پس از پایان"
+      },
+      {
+        "title": "البداية بعد النهاية"
+      },
+      {
+        "title": "三岁开始做王者"
+      },
+      {
+        "title": "最強の王様、二度目の人生は何をする?"
+      },
+      {
+        "title": "终末起点"
+      },
+      {
+        "title": "끝이 아닌 시작"
+      }
+    ],
+    "latest_chapter": 1
+  },
+  "player": {
+    "type": "Manhwa",
+    "year": "2021",
+    "title": "The Player Who Can't Level Up",
+    "status": "244 Chapters (Ongoing)\n\n**S1** : 69 Chapters (1\\~69)                                           \n**S2** : 53 Chapters (70\\~122)  \n**S3** : 48 Chapters (123\\~170)                                     \n**S4** : 50 Chapters (171\\~220)\\\n**S5** : 24 Chapters (Ongoing) 221\\~",
+    "completed": false,
+    "series_id": 66042781119,
+    "associated": [
+      {
+        "title": "El jugador que no puede subir de nivel"
+      },
+      {
+        "title": "Level-Up Motaneun Player"
+      },
+      {
+        "title": "Player Who Can't Level Up"
+      },
+      {
+        "title": "The Player That Can't Level Up"
+      },
+      {
+        "title": "The Player Who Can't Level Up: O Mestre dos Egos"
+      },
+      {
+        "title": "Игрок, который не может повысить уровень"
+      },
+      {
+        "title": "เพลเยอร์เลเวลไม่อัป"
+      },
+      {
+        "title": "无法升级的玩家"
+      },
+      {
+        "title": "留級玩家"
+      },
+      {
+        "title": "레벨업 못하는 플레이어"
+      }
+    ],
+    "latest_chapter": 246
+  },
+  "mdTbate": {
+    "id": "4ada20eb-085a-491a-8c49-477ab42014d7",
+    "type": "manga",
+    "attributes": {
+      "tags": [
+        {
+          "id": "0bc90acb-ccc1-44ca-a34a-b9f3a73259d0",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Reincarnation"
+            },
+            "group": "theme",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "36fd93ea-e8b8-445e-b836-358f02b3d33d",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Monsters"
+            },
+            "group": "theme",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "391b0423-d847-456f-aff0-8b0cfc03066b",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Action"
+            },
+            "group": "genre",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "39730448-9a5f-48a2-85b0-a70db87b1233",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Demons"
+            },
+            "group": "theme",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "3e2b8dae-350e-4ab8-a8ce-016e844b9f0d",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Long Strip"
+            },
+            "group": "format",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "87cc87cd-a395-47af-b27a-93258283bbc6",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Adventure"
+            },
+            "group": "genre",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "a1f53773-c69a-4ce5-8cab-fffcd90b1565",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Magic"
+            },
+            "group": "theme",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "ace04997-f6bd-436e-b261-779182193d3d",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Isekai"
+            },
+            "group": "genre",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "b29d6a3d-1569-4e7a-8caf-7557bc92cd5d",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Gore"
+            },
+            "group": "content",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "caaa44eb-cd40-4177-b930-79d3ef2afe87",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "School Life"
+            },
+            "group": "theme",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "cdc58593-87dd-415e-bbc0-2ec27bf404cc",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Fantasy"
+            },
+            "group": "genre",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "e197df38-d0e7-43b5-9b09-2842d0c326dd",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Web Comic"
+            },
+            "group": "format",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "f4122d1c-3b44-44d0-9936-ff7502c39ad3",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Adaptation"
+            },
+            "group": "format",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "f5ba408b-0e7a-484d-8d49-4e9125ac96de",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Full Color"
+            },
+            "group": "format",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        },
+        {
+          "id": "f8f62932-27da-4fe4-8ee1-6779a8c5edba",
+          "type": "tag",
+          "attributes": {
+            "name": {
+              "en": "Tragedy"
+            },
+            "group": "genre",
+            "version": 1,
+            "description": {}
+          },
+          "relationships": []
+        }
+      ],
+      "year": 2018,
+      "links": {
+        "ap": "the-beginning-after-the-end",
+        "bw": "series/316257",
+        "kt": "54597",
+        "mu": "rwg23en",
+        "amz": "https://www.amazon.com/dp/B0B3JHX9D2",
+        "engtl": "https://tapas.io/series/tbate-comic/info"
+      },
+      "state": "published",
+      "title": {
+        "en": "The Beginning After the End"
+      },
+      "status": "ongoing",
+      "version": 70,
+      "isLocked": false,
+      "altTitles": [
+        {
+          "pt-br": "O começo depois do fim"
+        },
+        {
+          "en": "TBATE"
+        },
+        {
+          "zh": "三岁开始做王者"
+        },
+        {
+          "ja": "最強の王様、二度目の人生は何をする？"
+        },
+        {
+          "ko": "끝이 아닌 시작"
+        },
+        {
+          "ru": "Начало после конца"
+        },
+        {
+          "es": "El comienzo después del fin"
+        },
+        {
+          "es-la": "La Vida Después de la Muerte"
+        },
+        {
+          "uz": "Oxiridan Keyingi Boshlanish"
+        },
+        {
+          "bn": "সমাপ্তির পর সূচনা"
+        },
+        {
+          "uk": "Початок після кінця"
+        }
+      ],
+      "createdAt": "2019-10-11T04:11:29+00:00",
+      "updatedAt": "2026-03-21T18:50:25+00:00",
+      "lastVolume": "",
+      "description": {
+        "de": "In einer Welt regiert durch die stärksten Kämpfer ist König Grey der unangefochten Stärkste, Reichste und Berühmteste. Aber eine solche Macht kommt Hand in Hand mit Einsamkeit. Unter der glamourösen Erscheinung eines mächtigen Königs liegt die leere Hülle eines Mannes, beraubt von Ziel und Willen.\n\nNach einer Wiedergeburt in eine Welt voller Magie und Monster hat der König die Möglichkeit, sein Leben erneut zu leben. Die Fehler seiner Vergangenheit zu korrigieren wird aber nicht seine einzige Herausforderung sein. Unter dem Frieden und Reichtum dieser neuen Welt lauert etwas, das alles vernichten kann, was er jemals erreicht hat, was seine Rolle darin und den Grund für seine Wiedergeburt in Frage stellt.",
+        "en": "King Grey has unrivaled strength, wealth, and prestige in a world governed by martial ability. However, solitude lingers closely behind those with great power. Beneath the glamorous exterior of a powerful king lurks the shell of man, devoid of purpose and will.\n\nReincarnated into a new world filled with magic and monsters, the king has a second chance to relive his life. Correcting the mistakes of his past will not be his only challenge, however. Underneath the peace and prosperity of the new world is an undercurrent threatening to destroy everything he has worked for, questioning his role and reason for being born again.\n\n---\n\n**Original Webcomic:**  \n- [Digital](https://tapas.io/series/tbate-comic/info)\n- [Volumes](https://yenpress.com/series/the-beginning-after-the-end-comic)\n\n**Official Translations:**  \n- [Japanese](https://jp.piccoma.com/web/product/19682)\n- [Spanish](https://tapas.io/series/el-comienzo-despues-del-fin/info)\n- [T.Chinese](https://tw.kakaowebtoon.com/content/%E7%B5%82%E6%9C%AB%E8%B5%B7%E9%BB%9E/575)\n- [French](https://www.delitoon.com/detail/daf_0000303)  \n- **Korean**: \n  - [Daum](https://webtoon.kakao.com/content/%EB%81%9D%EC%9D%B4-%EC%95%84%EB%8B%8C-%EC%8B%9C%EC%9E%91/3162)\n  - [KakaoPage](https://page.kakao.com/content/53142176)  \n- **Thai**:   \n  - [Kakao Webtoon](https://th.kakaowebtoon.com/content/The_Beginning_After_The_End/468)\n  - [Lezhin](https://www.lezhinth.com/titles/1171)      \n- **S.Chinese**: \n  - [KuaiKan](https://www.kuaikanmanhua.com/web/topic/6884/)\n  - [AC.QQ](https://ac.qq.com/Comic/comicInfo/id/656549)\n  - [BiliBili](https://manga.bilibili.com/detail/mc37565)",
+        "fr": "Le Roi Grey a une force, une richesse et un prestige inégalés dans un monde gouverné par l'aptitude martiale. Cependant, la solitude s'approche de près derrière ceux ayant de grands pouvoirs. Sous l'apparence glamour d'un Roi puissant se cache la carapace de l'homme, dépourvue de volonté et de but.\n\nRéincarné dans un nouveau monde rempli de monstres et de magie, le Roi a une seconde chance de revivre sa vie. Cependant, corriger les erreurs de sa précédente vie ne sera pas sa seule tâche. Sous la paix et la prospérité de ce nouveau monde se cache une menace sous-jacente remettant en question tout ce pour quoi il a travaillé, son rôle, et sa raison de renaître.",
+        "ja": "私は史上最強の「王」である。数多の敵を退け、数々の功績を残した歴代最高の覇王だ。 しかし、ある朝目覚めた私は奇妙な違和感を覚える。手足が短い、視界が極端に低い、見知らぬ男女が私を「アーサー」と呼び、微笑みながら覗き込む。そう…私は無力な赤子に転生してしまったのだ！最強の王様がいたいけな赤ちゃんに転生する、痛快冒険ファンタジー‼",
+        "pl": "Król Gray ma niezrównaną siłę, bogactwo i prestiż w świecie rządzonym przez umiejętności walki. Jednak samotność pozostaje tuż za tymi, którzy mają wielką moc. Pod olśniewającą powierzchownością potężnego króla kryje się skorupa człowieka, pozbawionego celu i woli.\n\nWskrzeszony w nowym świecie wypełnionym magią i potworami, król ma drugą szansę na ponowne przeżycie swojego życia. Jednak naprawienie błędów przeszłości nie będzie jego jedynym wyzwaniem. Pod pokojem i dobrobytem nowego świata kryje się ukryty nurt, który grozi zniszczeniem wszystkiego, na co pracował, kwestionując jego rolę i powód narodzin na nowo.",
+        "ru": "Король Грей обладает непревзойденной силой, богатством и престижем в мире, во главе которого стоит боевая мощь. Однако одиночество обычно появляется именно у тех, кто обладает большой властью. Мало кто знает, но под гламурной внешностью могущественного короля скрывается оболочка человека, лишённого цели и воли.",
+        "uk": "Король Грей має неперевершені силу, багатство й престиж у світі, де панує військова сила. Однак самотність тісно переслідує тих, хто має велику владу. Під вражаючою зовнішністю могутнього короля ховається оболонка людини, позбавленої мети й волі. Перевтілившись у новому світі, сповненому магії та чудовиськ, король отримує другий шанс на життя. Однак виправлення помилок минулого буде не єдиним його викликом. Під миром і процвітанням нового світу ховається підводна течія, що загрожує знищити все, заради чого він працював, ставлячи під сумнів його роль і причину повторного народження.",
+        "pt-br": "Dizem que a solidão acompanha aqueles com grande poder. Permanecendo como um Rei com força incomparável, status, e fama… e muito mais. Eu, que uma vez lutei para viver, me afogava em meu raso trono sem nenhuma vontade ou propósito. Haviam muitos que tinham inveja de mim, mas eu diria de bom grado, “Tirem tudo de mim! Será meu presente!” Um dia, eu finalmente consegui meu presente – uma nova vida.\n\nCom uma segunda chance de corrigir meus erros e cumprir meus arrependimentos, permita-me mostrar a você o que um (ex-rei) pode fazer!"
+      },
+      "lastChapter": "",
+      "contentRating": "safe",
+      "officialLinks": null,
+      "originalLanguage": "en",
+      "latestUploadedChapter": "f85ebaaa-ff86-44c2-995a-0bd584fa0ead",
+      "publicationDemographic": null,
+      "availableTranslatedLanguages": [
+        "en",
+        "fa",
+        "pl",
+        "pt-br",
+        "es-la",
+        "fr",
+        "ru",
+        "hu",
+        "uk",
+        "de",
+        "it",
+        "pt",
+        "es",
+        "tr",
+        "bn",
+        "id",
+        "bg"
+      ],
+      "chapterNumbersResetOnNewVolume": false
+    },
+    "relationships": [
+      {
+        "id": "4785e565-01e5-497c-9c60-6bfb7b429253",
+        "type": "author"
+      },
+      {
+        "id": "55be27df-c66c-4f5e-a460-e5501ac6a997",
+        "type": "artist"
+      },
+      {
+        "id": "84e1b9a6-80cf-4b6a-acf9-36c596aef189",
+        "type": "artist"
+      },
+      {
+        "id": "dcd588d8-a9d7-4e74-a066-4246d95deb03",
+        "type": "artist"
+      },
+      {
+        "id": "eeef1916-e280-45d8-850f-e59b17b49182",
+        "type": "artist"
+      },
+      {
+        "id": "f016dcdc-6b7c-498f-a798-4782e9a81210",
+        "type": "artist"
+      },
+      {
+        "id": "946b593a-9690-49e8-b332-71959f19608a",
+        "type": "cover_art"
+      },
+      {
+        "id": "f30a1d56-f3a4-4848-8cf2-b4369e784dcb",
+        "type": "manga",
+        "related": "alternate_version"
+      },
+      {
+        "id": "f705dea9-2d3a-47ed-8337-12b6a08249f7",
+        "type": "manga",
+        "related": "side_story"
+      }
+    ]
+  }
+}

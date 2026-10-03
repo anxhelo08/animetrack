@@ -1,14 +1,22 @@
 import { test, expect } from '@playwright/test';
 import { openFixture } from '../fixtures/browser-app.js';
 import fixtures from '../fixtures/reading-search-live.json' with { type: 'json' };
+import muFixtures from '../fixtures/mangaupdates-live.json' with { type: 'json' };
+import { mangaUpdatesItem } from '../../src/modules/mangaupdates-catalog.js';
 import { mangaDexItem } from '../../src/modules/mangadex-catalog.js';
 test.use({ serviceWorkers: 'block' });
-for (const key of ['doom', 'player'])
+for (const key of ['doom', 'player', 'tbate'])
   test(`${key}: server results appear promptly when browser catalogs fail, remain usable, and persist`, async ({
     page,
   }, info) => {
     test.skip(info.project.name.startsWith('iphone'), 'Reading is desktop only');
-    const entry = mangaDexItem(fixtures[key].mangadex);
+    const entry = mangaDexItem(key === 'tbate' ? muFixtures.mdTbate : fixtures[key].mangadex);
+    const meta = mangaUpdatesItem(muFixtures[key]);
+    Object.assign(entry, {
+      totalChapters: meta.totalChapters,
+      mangaUpdatesId: meta.mangaUpdatesId,
+      chapterSource: 'MangaUpdates',
+    });
     await openFixture(page, {
       owner: 'search-' + key,
       persistWrites: true,
@@ -30,7 +38,9 @@ for (const key of ['doom', 'player'])
     });
     const searches = [];
     await page.route('**/api/reading-search?**', (route) => {
-      const q = new URL(route.request().url()).searchParams.get('q');
+      const params = new URL(route.request().url()).searchParams;
+      if (params.get('action') === 'details') return route.fulfill({ json: entry });
+      const q = params.get('q');
       searches.push(q);
       return route.fulfill({
         json: { items: q ? [entry] : [], provider: 'MangaDex', hasNext: false },
@@ -38,12 +48,17 @@ for (const key of ['doom', 'player'])
     });
     await page.locator('#pro-nav-reading').click();
     await page.locator('#reading-view [data-reading-action="tab"][data-id="discover"]').click();
-    const title = fixtures[key].anilist.title.english;
+    if (key === 'tbate')
+      await page.locator('#reading-view [data-reading-action="scope"][data-id="manga"]').click();
+    const title = entry.title;
     const started = Date.now();
     await page.locator('#reading-query').fill(title.replace("'", '’'));
     await expect(page.locator('.reading-card-title')).toHaveText(title, { timeout: 3000 });
     expect(Date.now() - started).toBeLessThan(3000);
     expect(searches).toContain(title);
+    await expect(page.locator('.reading-catalog-chapters')).toContainText(
+      String(meta.totalChapters) + ' kapituj',
+    );
     await expect(page.locator('.reading-grid')).toHaveAttribute('aria-busy', 'false');
     await page.locator('.reading-card [data-reading-action="add"]').click();
     await expect
@@ -63,4 +78,6 @@ for (const key of ['doom', 'player'])
     expect(saved.anilistId).toBe(entry.anilistId);
     expect(saved.mangaDexId).toBe(entry.mangaDexId);
     expect(saved.chaptersRead).toEqual([]);
+    expect(saved.totalChapters).toBe(meta.totalChapters);
+    expect(saved.mangaUpdatesId).toBe(meta.mangaUpdatesId);
   });

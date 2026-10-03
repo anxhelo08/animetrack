@@ -1,3 +1,4 @@
+import { mangaUpdatesDetails } from './mangaupdates-catalog.js';
 import { cleanReadingFilters, matchesReadingFilters } from '../core/reading-discovery.js';
 import { catalogJSON } from '../core/request-cache.js';
 import { mangaDexItem } from './mangadex-catalog.js';
@@ -24,7 +25,7 @@ export async function searchAniList(query, kind, page = 1, signal, filters = {})
         score: f.score ? f.score * 10 - 1 : undefined,
         min: f.minChapters ? f.minChapters - 1 : undefined,
         max: f.maxChapters ? f.maxChapters + 1 : undefined,
-        country: kind === 'manhwa' ? 'KR' : kind === 'manga' ? 'JP' : undefined,
+        country: kind === 'manhwa' ? 'KR' : undefined,
         sort: query.trim() ? ['SEARCH_MATCH'] : ['TRENDING_DESC'],
       },
     }),
@@ -34,7 +35,9 @@ export async function searchAniList(query, kind, page = 1, signal, filters = {})
     provider: 'AniList',
     hasNext: result.data.Page.pageInfo?.hasNextPage === true,
     items: (result.data.Page.media || [])
-      .filter((item) => item.type === 'MANGA')
+      .filter(
+        (item) => item.type === 'MANGA' && (kind !== 'manga' || item.countryOfOrigin !== 'KR'),
+      )
       .map((item) => ({
         id: 'reading-al-' + item.id,
         sourceId: String(item.id),
@@ -146,14 +149,19 @@ export function combineCatalogs(results) {
       const same = items.find(
         (other) =>
           (other.source === row.source && other.sourceId === row.sourceId) ||
-          ['weebCentralId', 'anilistId', 'malId', 'mangaDexId'].some(
+          ['weebCentralId', 'anilistId', 'malId', 'mangaDexId', 'mangaUpdatesId'].some(
             (key) => row[key] && row[key] === other[key],
           ),
       );
       if (!same) items.push(row);
       else {
-        for (const key of ['mangaDexId', 'anilistId', 'malId', 'weebCentralId'])
+        for (const key of ['mangaDexId', 'anilistId', 'malId', 'weebCentralId', 'mangaUpdatesId'])
           if (!same[key] && row[key]) same[key] = row[key];
+        if ((row.totalChapters || 0) > (same.totalChapters || 0)) {
+          same.totalChapters = row.totalChapters;
+          same.chapterSource = row.chapterSource || same.chapterSource;
+        }
+        if (!same.cover && row.cover) same.cover = row.cover;
         same.aliases = [...new Set([...(same.aliases || []), ...(row.aliases || [])])];
       }
     }
@@ -272,13 +280,16 @@ export async function publishedReadingChapters(row, signal) {
     if (matches.length !== 1 || !uuid(matches[0].id)) return {};
     id = matches[0].id;
   }
-  const [aggregate, feed] = await Promise.all([
+  const [aggregateResult, feedResult] = await Promise.allSettled([
     catalogJSON(`https://api.mangadex.org/manga/${id}/aggregate`, { signal }),
     catalogJSON(
       `https://api.mangadex.org/manga/${id}/feed?limit=100&order[publishAt]=desc&contentRating[]=safe&contentRating[]=suggestive`,
       { signal },
     ),
   ]);
+  if (aggregateResult.status !== 'fulfilled') throw aggregateResult.reason;
+  const aggregate = aggregateResult.value,
+    feed = feedResult.status === 'fulfilled' ? feedResult.value : {};
   if (aggregate.result !== 'ok' || !aggregate.volumes) throw Error('Kapitujt nuk u verifikuan.');
   const groups = Object.values(aggregate.volumes).map((group) => ({
     volume: Number(group.volume),
@@ -327,6 +338,39 @@ export async function publishedReadingChapters(row, signal) {
   };
 }
 export async function refreshReadingCatalog(row, signal) {
+  if (typeof document !== 'undefined' && (row.mangaDexId || row.mangaUpdatesId)) {
+    try {
+      const url =
+        '/api/reading-search?' +
+        new URLSearchParams({
+          action: 'details',
+          mangaDexId: row.mangaDexId || '',
+          mangaUpdatesId: row.mangaUpdatesId || '',
+        });
+      const response = await fetch(url, {
+        credentials: 'omit',
+        signal: signal
+          ? AbortSignal.any([signal, AbortSignal.timeout(6000)])
+          : AbortSignal.timeout(6000),
+      });
+      if (response.ok) return await response.json();
+    } catch (error) {
+      if (signal?.aborted) throw error;
+    }
+  }
+  if (row.mangaUpdatesId || row.source === 'mangaupdates') {
+    try {
+      const item = await mangaUpdatesDetails(row.mangaUpdatesId || row.sourceId, signal);
+      return {
+        totalChapters: item.totalChapters,
+        publicationStatus: item.publicationStatus,
+        chapterSource: 'MangaUpdates',
+        mangaUpdatesId: item.mangaUpdatesId,
+      };
+    } catch (error) {
+      if (row.source === 'mangaupdates' || signal?.aborted) throw error;
+    }
+  }
   if (row.weebCentralId || row.source === 'weebcentral') {
     try {
       return await weebCentralCatalog('details', { id: row.weebCentralId || row.sourceId }, signal);
@@ -410,6 +454,7 @@ export async function refreshReadingCatalog(row, signal) {
 
 /** Provider-confirmed relationships; no inferred episode/chapter offsets. */
 export async function readingRelations(row, signal) {
+  if (row.source === 'mangaupdates') return [];
   if (!/^\d+$/.test(row.sourceId || '')) return [];
   if (row.source === 'jikan') {
     const result = await catalogJSON(

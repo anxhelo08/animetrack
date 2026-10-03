@@ -70,7 +70,9 @@ export function normalizeReadingLibrary(raw) {
         anilistId: /^\d+$/.test(
           String(
             row.anilistId ||
-              (!['jikan', 'weebcentral', 'mangadex'].includes(row.source) ? row.sourceId : '') ||
+              (!['jikan', 'weebcentral', 'mangadex', 'mangaupdates'].includes(row.source)
+                ? row.sourceId
+                : '') ||
               '',
           ),
         )
@@ -92,7 +94,12 @@ export function normalizeReadingLibrary(raw) {
         )
           ? row.mangaDexId
           : '',
-        chapterSource: ['MangaDex', 'WeebCentral'].includes(row.chapterSource)
+        mangaUpdatesId: /^\d{1,14}$/.test(
+          String(row.mangaUpdatesId || (row.source === 'mangaupdates' ? row.sourceId : '') || ''),
+        )
+          ? String(row.mangaUpdatesId || row.sourceId)
+          : '',
+        chapterSource: ['MangaDex', 'WeebCentral', 'MangaUpdates'].includes(row.chapterSource)
           ? row.chapterSource
           : '',
         chapterReleases: (Array.isArray(row.chapterReleases) ? row.chapterReleases : [])
@@ -125,7 +132,9 @@ export function normalizeReadingLibrary(raw) {
               v.end <= (totalChapters || 10000),
           )
           .map(({ volume, start, end }) => ({ volume, start, end })),
-        source: ['jikan', 'weebcentral', 'mangadex'].includes(row.source) ? row.source : 'anilist',
+        source: ['jikan', 'weebcentral', 'mangadex', 'mangaupdates'].includes(row.source)
+          ? row.source
+          : 'anilist',
         volumesRead: number(row.volumesRead, 1000),
         chaptersRead: [
           ...new Set(
@@ -225,6 +234,7 @@ export function applyReadingUpdate(row, fresh, stamp = new Date().toISOString())
   if (fresh.publishedEntries) row.publishedEntries = number(fresh.publishedEntries, 20000);
   if (fresh.anilistId) row.anilistId = fresh.anilistId;
   if (fresh.malId) row.malId = fresh.malId;
+  if (fresh.mangaUpdatesId) row.mangaUpdatesId = fresh.mangaUpdatesId;
   if (fresh.mangaDexId) row.mangaDexId = fresh.mangaDexId;
   if (fresh.chapterSource) row.chapterSource = fresh.chapterSource;
   if (!row.volumeRanges.length && fresh.volumeRanges?.length) row.volumeRanges = fresh.volumeRanges;

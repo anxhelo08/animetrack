@@ -1,3 +1,4 @@
+import { mangaUpdatesID } from './mangaupdates-catalog.js';
 import { catalogJSON } from '../core/request-cache.js';
 import { matchesReadingFilters } from '../core/reading-discovery.js';
 
@@ -16,6 +17,7 @@ export function mangaDexItem(item) {
     anilistId: al,
     malId: mal,
     mangaDexId: item.id,
+    mangaUpdatesId: mangaUpdatesID(links.mu),
     title: a.title?.en || Object.values(a.title || {})[0] || '',
     aliases: (a.altTitles || []).flatMap(Object.values).slice(0, 30),
     kind: a.originalLanguage === 'ko' ? 'manhwa' : 'manga',
@@ -49,7 +51,7 @@ export async function searchMangaDex(query, kind, page = 1, signal, filters = {}
     'order[relevance]': 'desc',
   });
   p.append('contentRating[]', 'suggestive');
-  if (kind !== 'all') p.set('originalLanguage[]', kind === 'manhwa' ? 'ko' : 'ja');
+  if (kind === 'manhwa') p.set('originalLanguage[]', 'ko');
   if (!query) {
     p.delete('title');
     p.delete('order[relevance]');
@@ -65,8 +67,8 @@ export async function searchMangaDex(query, kind, page = 1, signal, filters = {}
     provider: 'MangaDex',
     hasNext: result.offset + result.limit < result.total,
     items: result.data
-      .filter((r) => ['ja', 'ko', 'zh', 'zh-hk'].includes(r.attributes?.originalLanguage))
+      .filter((r) => ['ja', 'ko', 'zh', 'zh-hk', 'en'].includes(r.attributes?.originalLanguage))
       .map(mangaDexItem)
-      .filter((r) => matchesReadingFilters(r, filters)),
+      .filter((r) => (kind === 'all' || r.kind === kind) && matchesReadingFilters(r, filters)),
   };
 }
