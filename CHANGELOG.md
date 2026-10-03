@@ -1,3 +1,9 @@
+# 14.16.1 — Rikthim vetëm kur episodet e mëparshme janë parë
+
+- Kalimi automatik nga “Përfunduar” te “Duke parë” kërkon që çdo episod i publikuar përpara episodit të ri të jetë shënuar si i parë, në të gjitha sezonet e dukshme. Boshllëqet në numrat e parë nuk llogariten si përfundim.
+- I njëjti kusht zbatohet edhe në rifreskimin ditor të katalogut dhe kur del një sezon i ri.
+- Seritë e përfunduara me episode të vjetra pa parë ruajnë statusin; episodet e reja shtohen në sezonin e duhur, pa hyrë automatikisht në radhën e shikimit ose marrë NEW në bibliotekë.
+
 # 14.16.0 — Episodet e reja kthehen te Duke parë
 
 - Episodi me datë të konfirmuar shtohet automatikisht në sezonin përkatës. Seria e përfunduar kalon te “Duke parë” kur ka episode të publikuara pa parë; progresi, shënimet, vlerësimet dhe historia ruhen.

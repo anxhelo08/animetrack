@@ -3,6 +3,7 @@ import { createLibraryModel } from '../../src/core/library-model.js';
 import {
   applyAiringReleases,
   hasNewUnwatchedEpisode,
+  hasWatchedAllReleased,
 } from '../../src/core/airing-library-updates.js';
 const model = createLibraryModel(),
   now = Date.parse('2026-10-03T12:00:00Z');
@@ -148,4 +149,45 @@ it('watched, hidden, expired or future releases cannot keep a NEW badge', () => 
   row.seasons[0].watched.pop();
   row.seasons[0].hidden = true;
   expect(hasNewUnwatchedEpisode(row, now)).toBe(false);
+});
+it('a completed title with any previous episode unwatched keeps its status when another episode releases', () => {
+  for (const watched of [[1], [2], []]) {
+    const original = title();
+    original.seasons[0].watched = watched;
+    const row = applyAiringReleases([original], [event()], options()).anime[0];
+    expect(row.status).toBe('completed');
+    expect(row.seasons[0].watched).toEqual(watched);
+    expect(row.seasons[0].episodes.some((ep) => ep.number === 3)).toBe(true);
+    expect(hasNewUnwatchedEpisode(row, now)).toBe(false);
+  }
+});
+it('an unwatched older episode remains a blocker even if it also released recently', () => {
+  const original = title();
+  original.seasons[0].watched = [1];
+  original.seasons[0].episodes.push({ number: 2, airedAt: new Date(now - 86400000).toISOString() });
+  expect(applyAiringReleases([original], [event()], options()).anime[0].status).toBe('completed');
+});
+it('watching the newest episode does not reopen a completed title because an older recent episode was skipped', () => {
+  const original = title();
+  original.seasons[0].total = 3;
+  original.seasons[0].watched = [1, 3];
+  original.seasons[0].episodes.push({ number: 2, airedAt: new Date(now - 86400000).toISOString() });
+  expect(applyAiringReleases([original], [event()], options()).anime[0].status).toBe('completed');
+});
+it('a sequel cannot reopen a title with gaps in any earlier visible season', () => {
+  const original = title();
+  original.seasons[0].total = 3;
+  original.seasons[0].watched = [1, 3];
+  const sequel = event({
+    providerKey: 'anilist:8',
+    malKey: 'mal:80',
+    episode: 1,
+    format: 'TV',
+    relation: 'SEQUEL',
+    linkedFrom: ['anilist:7'],
+  });
+  const row = applyAiringReleases([original], [sequel], options()).anime[0];
+  expect(row.seasons).toHaveLength(2);
+  expect(row.status).toBe('completed');
+  expect(hasWatchedAllReleased(original, model.releasedCount, now)).toBe(false);
 });

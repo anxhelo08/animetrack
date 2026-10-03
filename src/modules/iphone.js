@@ -23,10 +23,9 @@ window.ATiPhone=function ATiPhone(ctx){
   return String(found?.title||found?.name||fallback);
  }
  function lastTouched(anime){return window.ATEpisodeHub127.lastTouched(anime,state().history||[])}
- function eligibleAnime(releases=[]){
-  const returns=new Set(releases.filter(item=>item?.anime?.status==='completed'&&!item.watched&&!item.season?.watched?.includes(item.n)).map(item=>item.anime.id));
+ function eligibleAnime(){
   return (state().anime||[]).filter(a=>{
-   try{return (['watching','waiting'].includes(a?.status)||(a?.status==='completed'&&returns.has(a.id)))&&!!ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a)}
+   try{return ['watching','waiting'].includes(a?.status)&&!!ctx.nextEpisode(a)&&ctx.releasedTotal(a)>ctx.count(a)}
    catch(err){console.warn('Skipping incomplete anime in iPhone feed',a?.id,err);return false}
   });
  }

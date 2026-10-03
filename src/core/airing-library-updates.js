@@ -5,6 +5,35 @@ const keysFor = (row) => [
   ...airingIdentities({ ...row, seasons: [] }).map((id) => id.provider + ':' + id.id),
   ...(/^\d+$/.test(String(row.malId || '')) ? ['mal:' + row.malId] : []),
 ];
+/** Watched numbers must cover every released episode, including gaps and earlier seasons. */
+export function hasWatchedAllReleased(anime, releasedCount, at = Date.now()) {
+  let available = 0;
+  for (const season of anime.seasons || []) {
+    if (season.hidden) continue;
+    const total = releasedCount(season, at),
+      watched = new Set(season.watched || []);
+    available += total;
+    for (let n = 1; n <= total; n++) if (!watched.has(n)) return false;
+  }
+  return available > 0;
+}
+function canReturnToWatching(anime, releasedCount, now) {
+  const releases = (anime.seasons || [])
+    .filter((s) => !s.hidden)
+    .flatMap((s) =>
+      (s.episodes || [])
+        .filter((ep) => isNewRelease(ep.airedAt || ep.aired, now))
+        .map((ep) => ({
+          when: Date.parse(ep.airedAt || ep.aired),
+          watched: (s.watched || []).includes(ep.number),
+        })),
+    );
+  const latest = Math.max(...releases.map((ep) => ep.when));
+  return (
+    releases.some((ep) => ep.when === latest && !ep.watched) &&
+    hasWatchedAllReleased(anime, releasedCount, latest - 1)
+  );
+}
 /** Apply confirmed provider episodes without modifying watched flags, notes or history. */
 export function applyAiringReleases(
   anime,
@@ -105,10 +134,7 @@ export function applyAiringReleases(
         season.nextAiringEpisode = 0;
       }
     }
-    if (
-      row.status === 'completed' &&
-      row.seasons.some((s) => !s.hidden && releasedCount(s, now) > (s.watched || []).length)
-    )
+    if (row.status === 'completed' && canReturnToWatching(row, releasedCount, now))
       row.status = 'watching';
     syncTotals(row);
     if (JSON.stringify(row) === JSON.stringify(original)) return original;
@@ -119,6 +145,7 @@ export function applyAiringReleases(
   return { anime: updated, changedIds };
 }
 export function hasNewUnwatchedEpisode(anime, now = Date.now()) {
+  if (anime.status === 'completed') return false;
   return (anime.seasons || []).some(
     (s) =>
       !s.hidden &&

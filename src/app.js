@@ -1,4 +1,4 @@
-import { applyAiringReleases, hasNewUnwatchedEpisode } from './core/airing-library-updates.js';
+import { applyAiringReleases, hasNewUnwatchedEpisode, hasWatchedAllReleased } from './core/airing-library-updates.js';
 import { loadLibraryAiring } from './core/library-airing.js';
 import { airingIdentities, mapAiringEvents, mergeAiringEvents } from './core/airing-schedule.js';
 import { mountEpisodeControls } from './modules/episode-controls.js';
@@ -1616,7 +1616,7 @@ renderDetail=function(id){
 const v93BaseUpdate=updateSeasonEpisode;
 updateSeasonEpisode=function(id,seasonId,n,seen,quiet=false){const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId);if(seen&&s&&n>releasedCount(s)){notify('Ky episod nuk ka dalë ende.');return false;}return v93BaseUpdate(id,seasonId,n,seen,quiet)};
 const v93BaseDaily=refreshCatalogDaily;
-refreshCatalogDaily=async function(force=false){const before=new Map(state.anime.map(a=>[a.id,releasedTotal(a)]));await v93BaseDaily(force);if(catalogSyncFailed)return;let changed=false;for(const a of state.anime){const prev=before.get(a.id)||0,current=releasedTotal(a);if(prev>0&&current>prev&&a.status==='completed'&&count(a)<current){a.status='watching';changed=true}}if(changed){save();render();renderHome();if(detailId)renderDetail(detailId)}};
+refreshCatalogDaily=async function(force=false){const before=new Map(state.anime.map(a=>[a.id,hasWatchedAllReleased(a,releasedCount)?releasedTotal(a):0]));await v93BaseDaily(force);if(catalogSyncFailed)return;let changed=false;for(const a of state.anime){const prev=before.get(a.id)||0,current=releasedTotal(a);if(prev>0&&current>prev&&a.status==='completed'&&count(a)<current){a.status='watching';changed=true}}if(changed){save();render();renderHome();if(detailId)renderDetail(detailId)}};
 const v93BaseOpenCloud=accountOpenCloud;
 accountOpenCloud=async function(user){await v93BaseOpenCloud(user);if(state.anime.length){const key='animetrack_release_sync_1461_'+user.id,prior=Number(localStorage.getItem(key)||0);if(!prior||Date.now()-prior>=DAY){catalogSyncAt=0;upcomingCheckedAt=0;setTimeout(async()=>{if(accountUser?.id!==user.id)return;await dailySync(false);if(!catalogSyncFailed){try{localStorage.setItem(key,String(Date.now()))}catch{}}},800)}}};
 // Refresh the released-episode clock while the tab remains open.

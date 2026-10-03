@@ -557,7 +557,7 @@ test('11.5 daily experience uses shared library, real weekly history and existin
 });
 test('11.5 ongoing seasons remain watching and surface the next released episode',()=>{
  const core=readCoreSource(),phone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),home=fs.readFileSync(path.join(root,'src/modules/home.js'),'utf8');
- assert.match(core,/a\.status\s*=\s*future\s*\?\s*'watching'\s*:\s*'completed'/);assert.match(phone,/\['watching','waiting'\]\.includes\(a\?\.status\)/);assert.match(phone,/a\?\.status==='completed'&&returns\.has\(a\.id\)/);assert.match(home,/\['watching','waiting','completed'\]\.includes\(a\.status\)/);
+ assert.match(core,/a\.status\s*=\s*future\s*\?\s*'watching'\s*:\s*'completed'/);assert.match(phone,/\['watching','waiting'\]\.includes\(a\?\.status\)/);assert.doesNotMatch(phone,/a\?\.status==='completed'&&returns\.has\(a\.id\)/);assert.match(home,/\['watching','waiting'\]\.includes\(a\.status\)/);
 });
 test('11.5 guarded cloud write uses updated_at CAS and does not silently overwrite other devices',()=>{
  const core=readCoreSource();

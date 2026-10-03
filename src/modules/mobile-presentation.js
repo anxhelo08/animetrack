@@ -59,7 +59,7 @@ export function createMobilePresentation(ctx) {
       ]),
     );
     const candidates = items
-      .filter((a) => ['watching', 'waiting', 'completed'].includes(a.status))
+      .filter((a) => ['watching', 'waiting'].includes(a.status))
       .map((a) => {
         const next = ctx.nextEpisode(a);
         if (!next) return null;

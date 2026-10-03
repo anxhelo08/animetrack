@@ -88,6 +88,34 @@ async function library(page) {
   await page.evaluate(() => document.querySelector('#library-nav').click());
 }
 
+for (const sequel of [false, true])
+  test(`a completed title with old unwatched episodes stays completed after a new ${sequel ? 'season' : 'episode'}`, async ({
+    page,
+  }) => {
+    const partial = structuredClone(payload);
+    partial.anime[0].seasons[0].watched = [1];
+    await openFixture(page, { payload: partial, owner: 'partial-' + sequel, persistWrites: true });
+    const now = await page.evaluate(() => Date.now());
+    await mockSchedule(page, { sequel, when: now - 60000 });
+    await calendar(page);
+    await expect.poll(async () => (await row(page)).seasons.length).toBe(sequel ? 2 : 1);
+    await expect
+      .poll(async () => (await row(page)).seasons[sequel ? 1 : 0].episodes.length)
+      .toBe(1);
+    expect((await row(page)).status).toBe('completed');
+    expect((await row(page)).seasons[0].watched).toEqual([1]);
+    await library(page);
+    await expect(page.locator('#anime-grid .anime-new-episode')).toHaveCount(0);
+    await page.evaluate(() => document.querySelector('#home-nav').click());
+    await expect(
+      page.locator(
+        test.info().project.name.startsWith('iphone')
+          ? '#mobile-continue .watch-row'
+          : '.at-h2-lineup-card',
+      ),
+    ).toHaveCount(0);
+  });
+
 test('a new release restores Watching, shows NEW on both devices and survives reload without changing progress', async ({
   page,
 }) => {
