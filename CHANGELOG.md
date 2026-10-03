@@ -1,3 +1,10 @@
+# 14.17.1 — Fotot e episodeve ruhen pas rihapjes
+
+- Kopja lokale e llogarisë ruan fotot dhe detajet e verifikuara të episodeve. Ngarkimet në cloud mbeten të vogla.
+- Hyrja, rihapja, sinkronizimi në kohë reale dhe shkarkimi nga cloud ruajnë metadata lokale; vlerat bosh të normalizuara nuk fshijnë fotot. Shënimet, vlerësimet dhe progresi online mbeten autoritative.
+- Lidhja e verifikuar me sezonin TVmaze ruhet për marrjen e fotove të episodeve të tjera.
+- Teste për anime dhe seriale TV në PC/telefon mbulojnë ruajtjen në cloud, rihapjen dhe burimet që nuk përgjigjen.
+
 # 14.17.0 — Kërkim më i gjerë dhe pritje më e shkurtër për lexime
 
 - Kërkimi përmes serverit kontrollon AniList dhe MangaDex, krahas AniList, MyAnimeList/Jikan dhe WeebCentral në shfletues. Titujt mbeten të kërkueshëm kur lidhja e shfletuesit me një katalog dështon.

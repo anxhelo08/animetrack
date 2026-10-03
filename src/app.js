@@ -116,7 +116,8 @@ function setSeasonHidden(id,seasonId,hidden){
 
 function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.anime)){if(Array.isArray(s.tvShows)&&s.tvShows.length){try{const backupKey=KEY+'_before_tv_unify_120';if(!localStorage.getItem(backupKey))localStorage.setItem(backupKey,JSON.stringify(s))}catch(err){console.warn('TV backup unavailable',err)}}const merged=window.ATTVUnified120.migrate(s.anime.map(normalized).filter(Boolean),normalizeTVShows(s.tvShows),normalized);return {anime:merged.anime,tvShows:[],readingLibrary:normalizeReadingLibrary(s.readingLibrary),history:Array.isArray(s.history)?s.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(s.preferences)}}}catch(e){console.warn('Nuk u lexuan të dhënat:',e)}return{anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}}
 function accountCompact(value){if(value)validateLibrary(value);return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value):value}
-function accountLocalSnapshot(value=state){return accountMode==='cloud'&&accountUser?accountCompact(value):value}
+// Keep verified episode metadata on this device; only uploads use accountCompact.
+function accountLocalSnapshot(value=state){return value}
 function accountMergeRecovery(remote,local){return window.ATCloudLocal12123?.merge?window.ATCloudLocal12123.merge(remote,local):local}
 function accountHydrateRemote(remote,rich=state){return window.ATCloudLocal12123?.hydrate?window.ATCloudLocal12123.hydrate(remote,rich):remote}
 function repairLibraryState(){
@@ -1299,7 +1300,7 @@ function accountApplyRemoteRecord(record){
   cloudRevision=revision||cloudRevision;cloudBaseKnown=true;cloudConnected=true;cloudConflict=false;cloudLastPullAt=Date.now();
   if(revision)cloudLastSync=new Date(revision).toLocaleString('sq-AL');
   if(!same){
-   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
    render();renderHome();renderUpcoming();proApp?.renderBackground?.();void proApp?.modules?.notifications?.refresh?.();proApp?.modules?.recommendations?.onLibraryChange?.();
   }
   if(!cloudMirrorUnavailable)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Realtime revision cache unavailable',err)}
@@ -1334,23 +1335,23 @@ async function accountOpenCloud(user){
  const status=readError?(journal?'pending':'cached'):window.ATSync126.remoteStatus(accountCompact(cached),journal,data,payload=>accountCompact(accountNormalizePayload(payload)));
  if(status==='pending'){
   state=remote?accountMergeRecovery(remote,cached):cached;cloudDirty=!!journal;cloudConflict=false;
-  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
+  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
  }else if(status==='remote-newer'||status==='local-newer'){
   // Both copies moved from the same base. Merge progress first, then conditionally
   // push against the exact Supabase updated_at revision that we just read.
   state=accountMergeRecovery(remote,cached);cloudDirty=true;cloudConflict=false;cloudRevision=data?.updated_at||cloudRevision;
-  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
+  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
  }else if(status==='conflict'||status==='cached'){
   state=cached;cloudDirty=!!journal;cloudConflict=status==='conflict';
   if(cloudConflict)cloudRevision=journal.baseRevision;
-  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
+  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
  }else if(status==='same'){
-  state=remote||cached;cloudDirty=false;
-  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
+  state=remote?accountHydrateRemote(remote,cached):cached;cloudDirty=false;
+  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
   if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,key,data?.updated_at||null,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}
  }else{
-  state=remote||{anime:[],tvShows:[],history:[],preferences:normalizePreferences({})};
-  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;cloudDirty=false;
+  state=remote?accountHydrateRemote(remote,cached):{anime:[],tvShows:[],history:[],preferences:normalizePreferences({})};
+  const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;cloudDirty=false;
   if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,key,cloudRevision,false)}catch(err){console.warn('Cloud revision persistence failed',err)}
  }
  persistLibraryRepair();accountRefreshViews(view==='reading');accountStartRealtime(uid);
@@ -1395,7 +1396,7 @@ async function accountPush(showResult=true){
     const remoteBase=baseline.data?.payload?accountNormalizePayload(baseline.data.payload):null;
     if(!remoteBase)throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
     state=accountMergeRecovery(remoteBase,state);
-    const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(state)));cloudMirrorUnavailable=!mirror.ok;
+    const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
     cloudRevision=baseline.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudDirty=true;
    }else if(check==='conflict'||(!record&&baseline.data?.updated_at!==window.ATSync126.revision(localStorage,KEY))){
     throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
@@ -1435,7 +1436,7 @@ async function accountPullQuiet(){
   const remote=accountNormalizePayload(data.payload);
   if(JSON.stringify(accountCompact(remote))===JSON.stringify(accountCompact(state))){cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConnected=true;if(persistLibraryRepair()){render();renderHome();if(detailId)renderDetail(detailId)}return false;}
   if(cloudDirty||cloudSaving)return false;
-  const next=accountHydrateRemote(remote,state);const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
+  const next=accountHydrateRemote(remote,state);const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
   cloudConnected=true;cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');
   persistLibraryRepair();if(detailId)renderDetail(detailId);
   render();renderHome();renderUpcoming();proApp.renderBackground();void proApp.modules.notifications.refresh();
@@ -1454,7 +1455,7 @@ async function accountPull(manual=false){
   if(accountUser?.id!==uid||JSON.stringify(state)!==prior){if(manual)accountStatus('Biblioteka ndryshoi gjatë shkarkimit; nuk e zëvendësuam kopjen lokale.','error');return}
   if(data?.payload){
    const remote=accountNormalizePayload(data.payload),next=accountHydrateRemote(remote,state);
-   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountCompact(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
    cloudDirty=false;cloudConnected=true;cloudBaseKnown=true;cloudRevision=data.updated_at;cloudConflict=false;
    cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');cloudLastPullAt=Date.now();
    if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}

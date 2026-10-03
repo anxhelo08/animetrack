@@ -132,11 +132,19 @@ window.ATCloudLocal12123=(()=>{
   for(const ep of richEpisodes.values()){
    const n=Number(ep.number);
    const metadata={...ep,myNote:'',personalRating:null,fillerManual:null};delete metadata.watchUrl;
-   episodes.push({...metadata,...(remoteEpisodes.get(n)||{})});
+   const incoming=remoteEpisodes.get(n)||{};
+   // Normalization adds empty metadata to compact cloud rows. Those defaults
+   // must not erase the richer device cache; personal values remain authoritative.
+   for(const [key,value] of Object.entries(incoming)){
+    if(['myNote','personalRating','fillerManual','watchUrl','number'].includes(key)||
+       (incoming.fillerChecked===true&&['filler','recap'].includes(key))||
+       (value!==''&&value!=null&&value!==false&&value!==0))metadata[key]=value;
+   }
+   episodes.push(metadata);
    remoteEpisodes.delete(n);
   }
   for(const ep of remoteEpisodes.values())episodes.push(ep);
-  return {...rich,...remote,watchUrl:remote.watchUrl||'',watchEpisodeOffset:remote.watchEpisodeOffset||0,episodes:episodes.sort((a,b)=>Number(a.number)-Number(b.number))};
+  return {...rich,...remote,tvmazeShowId:remote.tvmazeShowId||rich.tvmazeShowId||'',tvmazeSeasonNumber:remote.tvmazeSeasonNumber||rich.tvmazeSeasonNumber||0,watchUrl:remote.watchUrl||'',watchEpisodeOffset:remote.watchEpisodeOffset||0,episodes:episodes.sort((a,b)=>Number(a.number)-Number(b.number))};
  }
  function hydrateAnime(remote,rich){
   if(!rich)return clone(remote);

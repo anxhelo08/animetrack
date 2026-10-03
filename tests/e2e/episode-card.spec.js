@@ -249,3 +249,74 @@ test('a saved episode link survives reload and does not leak into the next episo
     'https://cinehd.vc/tv/5920',
   );
 });
+
+for (const kind of ['anime', 'tv']) {
+  test(`${kind}: episode artwork survives compact cloud saves and reload when catalogs are unavailable`, async ({
+    page,
+  }, info) => {
+    const initial = structuredClone(payload);
+    const anime = initial.anime[0];
+    if (kind === 'anime') {
+      anime.title = 'Anime fixture';
+      anime.format = 'TV';
+    }
+    const owner = `episode-art-${kind}`;
+    await openFixture(page, { payload: initial, owner, persistWrites: true });
+    await page.route('**/episode-test.jpg', (route) =>
+      route.fulfill({
+        contentType: 'image/svg+xml',
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450"><rect width="800" height="450" fill="#873d44"/></svg>',
+      }),
+    );
+    const openEpisode = async () => {
+      if (info.project.name.startsWith('iphone'))
+        await page.locator('#mobile-history [data-mobile-action="episode"]').first().click();
+      else {
+        await page.locator('#library-nav').click();
+        await page.locator('#anime-grid [data-detail="episode-show"]').first().click();
+        await page.locator('#detail-body .ep-info-btn[data-episode-number="1"]').click();
+      }
+    };
+    await openEpisode();
+    const image = page.locator('.episode-card-art img');
+    await expect.poll(() => image.evaluate((el) => el.complete && el.naturalWidth > 0)).toBe(true);
+    await page.locator('[data-episode-stars="4"]').click();
+    await expect
+      .poll(() =>
+        page.evaluate((id) => {
+          const cloud = JSON.parse(sessionStorage.getItem('fixture-server-' + id) || 'null');
+          return cloud?.anime[0]?.seasons[0]?.episodes[0]?.personalRating;
+        }, owner),
+      )
+      .toBe(8);
+    // The server remains compact; keeping the image is a device persistence responsibility.
+    expect(
+      await page.evaluate(
+        (id) =>
+          JSON.parse(sessionStorage.getItem('fixture-server-' + id)).anime[0].seasons[0].episodes[0]
+            .image,
+        owner,
+      ),
+    ).toBeUndefined();
+    for (const host of [
+      'graphql.anilist.co',
+      'api.jikan.moe',
+      'api.tvmaze.com',
+      'v3-cinemeta.strem.io',
+    ])
+      await page.route(`https://${host}/**`, (route) =>
+        route.fulfill({ status: 503, contentType: 'application/json', body: '{}' }),
+      );
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
+    await openEpisode();
+    await expect(image).toHaveAttribute('src', 'https://fixture.test/episode-test.jpg');
+    await expect.poll(() => image.evaluate((el) => el.complete && el.naturalWidth > 0)).toBe(true);
+    const restored = await page.evaluate(() => window.ATMobile113.state());
+    expect(restored.anime[0].seasons[0].episodes[0].summary).toBe(
+      'Përshkrimi i verifikuar i episodit.',
+    );
+    expect(restored.anime[0].seasons[0].watched).toEqual([1]);
+    expect(restored.anime[0].seasons[0].episodes[0].personalRating).toBe(8);
+  });
+}

@@ -1,3 +1,4 @@
+import { createLibraryModel } from '../../src/core/library-model.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test} from 'vitest';
 import {createRequire} from 'node:module';
@@ -100,3 +101,17 @@ test('shared series links and episode numbering survive compact cloud recovery a
  const cleared=api.hydrate(removed,rich);
  assert.equal(cleared.anime[0].watchUrl,'');assert.equal(cleared.anime[0].seasons[0].watchEpisodeOffset,0);
 });
+
+ test('normalized compact cloud defaults cannot erase cached episode images or revive cleared personal values',()=>{
+  const api=load(),rich=sample();rich.anime[0].seasons[0].tvmazeShowId='123';rich.anime[0].seasons[0].tvmazeSeasonNumber=2;const raw=api.compact(rich);
+  raw.anime[0].seasons[0].episodes[0].myNote='';raw.anime[0].seasons[0].episodes[0].personalRating=null;
+  const {normalized}=createLibraryModel();
+  const remote={...raw,anime:raw.anime.map(normalized)};
+  assert.equal(remote.anime[0].seasons[0].episodes[0].image,'');
+  const restored=api.hydrate(remote,rich),episode=restored.anime[0].seasons[0].episodes.find(ep=>ep.number===2);
+  assert.equal(restored.anime[0].seasons[0].tvmazeShowId,'123');assert.equal(restored.anime[0].seasons[0].tvmazeSeasonNumber,2);
+  assert.equal(episode.image,rich.anime[0].seasons[0].episodes[1].image);
+  assert.equal(episode.summary,rich.anime[0].seasons[0].episodes[1].summary);
+  assert.equal(episode.title,'Episode 2');assert.equal(episode.myNote,'');assert.equal(episode.personalRating,null);
+  assert.deepEqual(Array.from(restored.anime[0].seasons[0].watched),[1,2,3]);
+ });
