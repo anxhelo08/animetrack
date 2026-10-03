@@ -1,3 +1,8 @@
+# 14.12.1 — Kërkesa të verifikuara për oraret
+
+- Orari përdor Page.airingSchedules me interval kohe dhe pagination; korrigjohen sintaksa dhe parametrat e papranueshëm të AniList.
+- Rifreskimi ditor përdor metadata të vlefshme dhe datat e konfirmuara, duke ruajtur progresin kur një katalog nuk jep episode të reja.
+
 # 14.12.0 — Kërkim pa email dhe kalendar me disa burime
 
 - Fushat e kërkimit në PC/telefon kanë semantikë të veçuar nga llogaria; autofill i emailit ndalet edhe në fusha që krijohen më vonë.

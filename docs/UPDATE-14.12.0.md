@@ -13,3 +13,9 @@ The public metadata table grants authenticated active sessions access to lookup 
 Browser fixtures verify a synthetic Black Clover sequel to reproduce the missing-completed-title behavior; they do **not** claim a real Black Clover broadcast date. PC/phone checks cover search autofill, calendar filtering, coverage, responsive widths, WCAG checks and reduced motion. Live upstream availability can still delay new information; coverage makes that visible. AniList and direct Supabase HTTP requests are restricted by this workspace's network policy, so provider payload behavior is verified with deterministic responses and server deployment/permissions through the connected tools.
 
 CLI migration creation failed because its startup attempted to write to the read-only home directory. The migration was saved directly, tested, and applied with the connected Supabase migration tool.
+
+## 14.12.1 live verification
+
+Live probes from the server exposed an invalid selection closing brace and AniList's rejection of `sort` on `Media.airingSchedule` (including the old daily query). The loader now uses `Page.airingSchedules` with explicit recent/future bounds and pagination; identity and schedule queries returned HTTP 200 from the real AniList endpoint. The old daily query no longer contains unsupported airing-schedule arguments. Confirmed local schedule events provide aired counts, and missing ongoing metadata does not reset them. Duplicate next-episode/schedule events are merged. MAL/Jikan full metadata also returned HTTP 200 from the server.
+
+After deploying the corrected loader, the live dispatcher verification returned HTTP 200 with `airing.checked=2` and `airing.failed=0`; it sent no notifications during this verification.

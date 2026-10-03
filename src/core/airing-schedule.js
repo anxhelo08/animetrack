@@ -29,8 +29,9 @@ export function airingIdentities(anime) {
   }
   return [...ids.values()];
 }
-const fields = `id idMal title{romaji english} nextAiringEpisode{airingAt episode} airingSchedule(notYetAired:false,perPage:50,sort:TIME_DESC){nodes{airingAt episode}} future:airingSchedule(notYetAired:true,perPage:50,sort:TIME){nodes{airingAt episode}}`;
-export const AIRING_QUERY = `query($id:Int,$idMal:Int){Media(id:$id,idMal:$idMal,type:ANIME){${fields} relations{edges{relationType node{${fields}}}}}}}`;
+const fields = `id idMal title{romaji english} nextAiringEpisode{airingAt episode}`;
+export const AIRING_QUERY = `query($id:Int,$idMal:Int){Media(id:$id,idMal:$idMal,type:ANIME){${fields} relations{edges{relationType node{${fields}}}}}}`;
+export const SCHEDULE_QUERY = `query($ids:[Int],$after:Int,$before:Int,$page:Int){Page(page:$page,perPage:50){pageInfo{hasNextPage}airingSchedules(mediaId_in:$ids,airingAt_greater:$after,airingAt_lesser:$before,sort:TIME){mediaId episode airingAt}}}`;
 /** Exact provider identities only. Broadcast weekday is never converted into a fictional episode date. */
 export async function fetchAiringSchedule(
   identity,
@@ -46,7 +47,7 @@ export async function fetchAiringSchedule(
         wait = Math.max(0, nextJikanRequest - tick);
       nextJikanRequest = Math.max(tick, nextJikanRequest) + 450;
       if (wait) await new Promise((resolve) => setTimeout(resolve, wait));
-      signal?.throwIfAborted();
+      if (signal?.aborted) throw Error('Schedule check cancelled');
     }
     const res = await fetcher(url, { ...options, signal: signal || AbortSignal.timeout(12000) });
     if (!res.ok) throw Error('Provider unavailable');
@@ -116,9 +117,44 @@ export async function fetchAiringSchedule(
             url: 'https://anilist.co/anime/' + m.id,
           });
       };
-      append(media);
-      for (const edge of media.relations?.edges || [])
-        if (edge.relationType === 'SEQUEL' && edge.node?.id) append(edge.node);
+      const linked = [
+        media,
+        ...(media.relations?.edges || [])
+          .filter((edge) => edge.relationType === 'SEQUEL' && edge.node?.id)
+          .map((edge) => edge.node),
+      ].slice(0, 10);
+      for (const m of linked) append(m);
+      const byId = new Map(linked.map((m) => [m.id, m]));
+      for (let page = 1; page <= 10; page++) {
+        const data = await request('https://graphql.anilist.co', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: SCHEDULE_QUERY,
+            variables: {
+              ids: [...byId.keys()],
+              after: Math.floor((now - 30 * DAY) / 1000),
+              before: Math.floor((now + 120 * DAY) / 1000),
+              page,
+            },
+          }),
+        });
+        if (!Array.isArray(data.data?.Page?.airingSchedules)) throw Error('Missing schedule');
+        for (const item of data.data.Page.airingSchedules) {
+          const m = byId.get(item.mediaId);
+          if (!m) continue;
+          add({
+            providerKey: 'anilist:' + m.id,
+            malKey: m.idMal ? 'mal:' + m.idMal : '',
+            episode: Number(item.episode),
+            when: Number(item.airingAt) * 1000,
+            partTitle: m.title?.english || m.title?.romaji || '',
+            source: 'AniList',
+            url: 'https://anilist.co/anime/' + m.id,
+          });
+        }
+        if (!data.data.Page.pageInfo?.hasNextPage) break;
+      }
     });
   // Independent MAL episode dates fill missing/recent episodes without repeating the entire archive.
   if (mal)
@@ -176,7 +212,19 @@ export async function fetchAiringSchedule(
     });
   if (!checks.some((c) => c.status === 'ok')) throw Error('No schedule provider available');
   if (!events.length) notices.push('Pa datë episodi të konfirmuar');
-  return { events, checks, aliases, notices, checkedAt: new Date(now).toISOString() };
+  const unique = new Map();
+  for (const e of events) {
+    const key = [e.malKey || e.providerKey, e.seasonNumber || '', e.episode].join(':');
+    const prior = unique.get(key);
+    if (!prior || e.source === 'AniList') unique.set(key, e);
+  }
+  return {
+    events: [...unique.values()],
+    checks,
+    aliases,
+    notices,
+    checkedAt: new Date(now).toISOString(),
+  };
 }
 export function mapAiringEvents(anime, result) {
   return (result.events || []).map((e) => {
@@ -206,6 +254,7 @@ export function mapAiringEvents(anime, result) {
     };
   });
 }
+
 export function mergeAiringEvents(entries, now = Date.now()) {
   const rows = new Map();
   for (const e of entries) {

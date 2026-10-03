@@ -1,5 +1,7 @@
 import { test, expect, vi } from 'vitest';
 import {
+  AIRING_QUERY,
+  SCHEDULE_QUERY,
   airingIdentities,
   fetchAiringSchedule,
   mapAiringEvents,
@@ -9,34 +11,46 @@ import { checkAiringSchedules } from '../../supabase/functions/_shared/airing-re
 const now = Date.parse('2026-10-03T12:00:00Z');
 const response = (data) => ({ ok: true, json: async () => data });
 test('completed series includes confirmed sequel schedules without assigning old watched flags', async () => {
-  const fetcher = vi.fn(async (url) =>
-    url.includes('graphql')
+  const fetcher = vi.fn(async (url, options = {}) =>
+    url.includes('graphql') && JSON.parse(options.body || '{}').query === SCHEDULE_QUERY
       ? response({
           data: {
-            Media: {
-              id: 7,
-              idMal: 70,
-              title: { english: 'Series' },
-              future: { nodes: [{ episode: 3, airingAt: (now + 60000) / 1000 }] },
-              relations: {
-                edges: [
-                  {
-                    relationType: 'SEQUEL',
-                    node: {
-                      id: 8,
-                      idMal: 80,
-                      title: { english: 'Series 2' },
-                      future: { nodes: [{ episode: 1, airingAt: (now + 120000) / 1000 }] },
-                    },
-                  },
-                ],
-              },
+            Page: {
+              pageInfo: { hasNextPage: false },
+              airingSchedules: [
+                { mediaId: 7, episode: 3, airingAt: (now + 60000) / 1000 },
+                { mediaId: 8, episode: 1, airingAt: (now + 120000) / 1000 },
+              ],
             },
           },
         })
-      : url.endsWith('/full')
-        ? response({ data: { relations: [] } })
-        : response({ data: [], pagination: { last_visible_page: 1 } }),
+      : url.includes('graphql')
+        ? response({
+            data: {
+              Media: {
+                id: 7,
+                idMal: 70,
+                title: { english: 'Series' },
+                future: { nodes: [{ episode: 3, airingAt: (now + 60000) / 1000 }] },
+                relations: {
+                  edges: [
+                    {
+                      relationType: 'SEQUEL',
+                      node: {
+                        id: 8,
+                        idMal: 80,
+                        title: { english: 'Series 2' },
+                        future: { nodes: [{ episode: 1, airingAt: (now + 120000) / 1000 }] },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          })
+        : url.endsWith('/full')
+          ? response({ data: { relations: [] } })
+          : response({ data: [], pagination: { last_visible_page: 1 } }),
   );
   const result = await fetchAiringSchedule({ provider: 'anilist', id: '7' }, { fetcher, now });
   expect(result.events).toHaveLength(2);
@@ -132,4 +146,17 @@ test('daily worker preserves previous metadata on failure and only finishes the 
   });
   expect(rpc.mock.calls[1][1]).toMatchObject({ p_key: 'anilist:7', p_claim: 'claim', p_ok: false });
   expect(rpc.mock.calls.every((c) => !c[0].includes('library'))).toBe(true);
+});
+
+test('serialized AniList query has balanced selections and valid exact identity variables', () => {
+  let depth = 0;
+  for (const c of AIRING_QUERY) {
+    if (c === '{') depth++;
+    if (c === '}') depth--;
+    expect(depth).toBeGreaterThanOrEqual(0);
+  }
+  expect(depth).toBe(0);
+  expect(AIRING_QUERY).not.toContain('airingSchedule(');
+  expect(SCHEDULE_QUERY).toContain('airingSchedules(mediaId_in:$ids');
+  expect(AIRING_QUERY).toContain('Media(id:$id,idMal:$idMal,type:ANIME)');
 });

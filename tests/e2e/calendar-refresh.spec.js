@@ -39,38 +39,50 @@ test('completed titles, confirmed sequels, source coverage and calendar controls
   const now = await page.evaluate(() => Date.now());
   await page.route('https://graphql.anilist.co', (route) => {
     const query = route.request().postDataJSON().query;
-    const body = query.includes('Media(id:$id,idMal:$idMal')
+    const body = query.includes('airingSchedules(mediaId_in:')
       ? {
           data: {
-            Media: {
-              id: 97940,
-              idMal: 34572,
-              title: { english: 'Black Clover' },
-              airingSchedule: { nodes: [{ episode: 170, airingAt: (now - 3600000) / 1000 }] },
-              relations: {
-                edges: [
-                  {
-                    relationType: 'SEQUEL',
-                    node: {
-                      id: 999001,
-                      idMal: 999002,
-                      title: { english: 'Black Clover continuation' },
-                      future: { nodes: [{ episode: 1, airingAt: (now + 3600000) / 1000 }] },
-                    },
-                  },
-                ],
-              },
+            Page: {
+              pageInfo: { hasNextPage: false },
+              airingSchedules: [
+                { mediaId: 97940, episode: 170, airingAt: (now - 3600000) / 1000 },
+                { mediaId: 999001, episode: 1, airingAt: (now + 3600000) / 1000 },
+              ],
             },
           },
         }
-      : {
-          data: {
-            a: { media: [] },
-            b: { media: [] },
-            Page: { media: [], pageInfo: { hasNextPage: false } },
-            Media: null,
-          },
-        };
+      : query.includes('Media(id:$id,idMal:$idMal')
+        ? {
+            data: {
+              Media: {
+                id: 97940,
+                idMal: 34572,
+                title: { english: 'Black Clover' },
+                airingSchedule: { nodes: [{ episode: 170, airingAt: (now - 3600000) / 1000 }] },
+                relations: {
+                  edges: [
+                    {
+                      relationType: 'SEQUEL',
+                      node: {
+                        id: 999001,
+                        idMal: 999002,
+                        title: { english: 'Black Clover continuation' },
+                        future: { nodes: [{ episode: 1, airingAt: (now + 3600000) / 1000 }] },
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          }
+        : {
+            data: {
+              a: { media: [] },
+              b: { media: [] },
+              Page: { media: [], pageInfo: { hasNextPage: false } },
+              Media: null,
+            },
+          };
     return route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
   });
   await page.route('https://api.jikan.moe/**', (route) =>
