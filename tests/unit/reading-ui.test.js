@@ -114,3 +114,83 @@ it('unknown chapter totals show verified reading progress without a question-mar
   expect(state.readingLibrary[0].totalChapters).toBe(0);
   expect(state.readingLibrary[0].chaptersRead).toHaveLength(132);
 });
+
+it('removes directly from details and restores every personal field with undo', () => {
+  const { state } = fixture();
+  state.readingLibrary[0].notes = 'Keep this note';
+  state.readingLibrary[0].rating = 8;
+  const before = structuredClone(state.readingLibrary[0]);
+  document.querySelector('[data-reading-action="detail"]').click();
+  document.querySelector('[data-reading-action="delete"]').click();
+  expect(state.readingLibrary[0].deletedAt).not.toBe('');
+  expect(document.querySelector('.reading-card')).toBeNull();
+  document.querySelector('[data-reading-action="restore"]').click();
+  expect(state.readingLibrary[0]).toEqual({
+    ...before,
+    updatedAt: state.readingLibrary[0].updatedAt,
+  });
+  expect(document.querySelector('#reading-detail-title').textContent).toBe('My manga');
+});
+it('failed removal preserves the row and offers no misleading undo', () => {
+  const { state } = fixture(false);
+  const before = structuredClone(state.readingLibrary);
+  document.querySelector('[data-reading-action="detail"]').click();
+  document.querySelector('[data-reading-action="delete"]').click();
+  expect(state.readingLibrary).toEqual(before);
+  expect(document.querySelector('.reading-removed')).toBeNull();
+});
+it('restarting preserves notes and ratings, and records unread changes in the journal', () => {
+  const { state } = fixture();
+  Object.assign(state.readingLibrary[0], {
+    notes: 'My notes',
+    rating: 9,
+    favorite: true,
+    volumesRead: 1,
+  });
+  document.querySelector('[data-reading-action="detail"]').click();
+  document.querySelector('[data-reading-action="restart"]').click();
+  expect(state.readingLibrary[0]).toMatchObject({
+    chaptersRead: [],
+    volumesRead: 0,
+    status: 'reading',
+    notes: 'My notes',
+    rating: 9,
+    favorite: true,
+  });
+  expect(state.readingLibrary[0].journal).toContainEqual(
+    expect.objectContaining({ chapter: 1, action: 'unread' }),
+  );
+  expect(state.anime).toEqual([]);
+});
+it('shows escaped alternate titles, confirmed source links and accurate progress with gaps', () => {
+  const { state } = fixture();
+  Object.assign(state.readingLibrary[0], {
+    aliases: ['<img src=x onerror=alert(1)>'],
+    mangaUpdatesId: '123',
+    chaptersRead: [1, 3],
+    sourceId: '42',
+  });
+  document.querySelector('[data-reading-action="detail"]').click();
+  expect(document.querySelector('.reading-personal-summary').textContent).toContain('2 / 5');
+  expect(document.querySelector('.reading-personal-summary').textContent).toContain(
+    'Kapitulli i radhës2',
+  );
+  expect(document.querySelector('.reading-synopsis li').textContent).toBe(
+    '<img src=x onerror=alert(1)>',
+  );
+  expect(document.querySelector('.reading-synopsis img')).toBeNull();
+  expect(
+    document.querySelector('a[href="https://www.mangaupdates.com/series.html?id=123"]'),
+  ).not.toBeNull();
+  document.querySelector('[data-reading-action="last-chapter"]').click();
+  expect(document.querySelector('#reading-chapter-query').value).toBe('5');
+  expect(state.readingLibrary[0].chaptersRead).toEqual([1, 3]);
+});
+
+it('background metadata renders retain an open management menu', () => {
+  const { reading } = fixture();
+  document.querySelector('[data-reading-action="detail"]').click();
+  document.querySelector('.reading-manage').open = true;
+  reading.render();
+  expect(document.querySelector('.reading-manage').open).toBe(true);
+});

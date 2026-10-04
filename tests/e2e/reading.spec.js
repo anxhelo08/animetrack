@@ -452,3 +452,35 @@ test('long reading titles and unknown totals use wide compact cards', async ({ p
   expect(stored.totalChapters).toBe(0);
   expect(stored.chaptersRead).toHaveLength(132);
 });
+
+test('title management removes, restores and restarts a reading without losing personal notes', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop reading workspace');
+  await setup(page);
+  await page.locator('#pro-nav-reading').click();
+  await page.locator('[data-reading-action="detail"][data-id="reading-al-30013"]').first().click();
+  await expect(page.locator('.reading-personal-summary')).toContainText('2 / 10');
+  if (!(await page.locator('.reading-manage').evaluate((node) => node.open)))
+    await page.locator('.reading-manage summary').click();
+  await page.locator('[data-reading-action="last-chapter"]').click();
+  await expect(page.locator('#reading-chapter-query')).toHaveValue('10');
+  if (!(await page.locator('.reading-manage').evaluate((node) => node.open)))
+    await page.locator('.reading-manage summary').click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('.reading-manage [data-reading-action="delete"]').click();
+  await expect(page.locator('.reading-library-shelves')).not.toContainText('Berserk');
+  await page.locator('[data-reading-action="restore"]').click();
+  await expect(page.locator('#reading-detail-title')).toHaveText('Berserk');
+  expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([1, 3]);
+  if (!(await page.locator('.reading-manage').evaluate((node) => node.open)))
+    await page.locator('.reading-manage summary').click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.locator('[data-reading-action="restart"]').click();
+  expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([]);
+  await page.reload();
+  await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
+  await page.locator('#pro-nav-reading').click();
+  expect((await state(page)).readingLibrary[0].deletedAt).toBe('');
+  expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([]);
+});
