@@ -71,7 +71,7 @@ export function createProductExperience(ctx) {
       else node.removeAttribute('aria-current');
     }
     document.querySelectorAll('[data-mobile-nav]').forEach((node) => {
-      const active = node.dataset.mobileNav === selected;
+      const active = node.dataset.mobileNav === (selected === 'reading' ? 'library' : selected);
       node.classList.toggle('active', active);
       if (active) node.setAttribute('aria-current', 'page');
       else node.removeAttribute('aria-current');

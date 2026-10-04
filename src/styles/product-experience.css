@@ -1,7 +1,7 @@
 /* 14.0: one clear primary action per state; supporting information can be opened when needed. */
 .product-hidden,
 .product-tools button[hidden],
-#library-view.product-is-empty > :not(#product-library-empty) {
+#library-view.product-is-empty > :not(#product-library-empty):not(.reading-mobile-switch) {
   display: none !important;
 }
 .product-sync {

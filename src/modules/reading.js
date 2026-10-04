@@ -281,7 +281,7 @@ export function createReading(ctx) {
       ['activity', 'Ditari i leximit'],
       ['integration', 'Manga Sync'],
     ];
-    return `<div class="reading-navigation"><div class="reading-scope" role="group" aria-label="Biblioteka Manga ose Manhwa">${[
+    return `<nav class="reading-mobile-switch" aria-label="Lloji i bibliotekës"><button type="button" data-pro-page="library">Anime dhe seriale</button><button type="button" data-pro-page="reading" aria-current="page">Manga &amp; Manhwa</button></nav><div class="reading-navigation"><div class="reading-scope" role="group" aria-label="Biblioteka Manga ose Manhwa">${[
       ['all', 'Të gjitha'],
       ['manga', 'Manga'],
       ['manhwa', 'Manhwa'],
@@ -433,7 +433,7 @@ export function createReading(ctx) {
   }
   function render(force = true) {
     resetOwner();
-    if (!root || !active || phone.matches) return;
+    if (!root || !active) return;
     if (
       !force &&
       root.contains(document.activeElement) &&
@@ -484,6 +484,9 @@ export function createReading(ctx) {
       if (advanced && fresh.querySelector('.reading-advanced'))
         fresh.querySelector('.reading-advanced').replaceWith(advanced);
       root.querySelector('#reading-content').replaceWith(fresh);
+      root
+        .querySelector('.reading-mobile-switch')
+        ?.replaceWith(container.querySelector('.reading-mobile-switch'));
       root
         .querySelector('.reading-navigation')
         .replaceWith(container.querySelector('.reading-navigation'));
@@ -606,7 +609,7 @@ export function createReading(ctx) {
   }
   async function autoCheck(force = false) {
     clearTimeout(autoTimer);
-    if (!active || phone.matches || document.hidden) return;
+    if (!active || document.hidden) return;
     if (autoController && !autoController.signal.aborted) return;
     const token = new AbortController();
     autoController = token;
@@ -1239,7 +1242,6 @@ export function createReading(ctx) {
     workspace.mount(root);
     root.addEventListener('click', action);
     window.addEventListener('at-reading-command', (event) => {
-      if (phone.matches) return;
       ctx.navigate('reading');
       if (event.detail?.id && saved(event.detail.id)) {
         selected = event.detail.id;
@@ -1321,11 +1323,11 @@ export function createReading(ctx) {
       } else if (active) void autoCheck();
     });
     phone.addEventListener('change', () => {
-      if (phone.matches && active) ctx.navigate('home');
+      if (active) render(false);
     });
   }
   function open(name) {
-    if (name !== 'reading' || phone.matches) return false;
+    if (name !== 'reading') return false;
     resetOwner();
     active = true;
     root.classList.remove('hidden');

@@ -1,4 +1,4 @@
-/* Desktop reading space: deliberately separate from the watching library. */
+/* Reading and watching share an account, with separate libraries. */
 #pro-nav-reading {
   margin-top: 14px;
   border-top: 1px solid var(--border);
@@ -613,8 +613,7 @@
   }
 }
 @media (max-width: 760px) {
-  #pro-nav-reading,
-  #reading-view {
+  #pro-nav-reading {
     display: none !important;
   }
 }
@@ -1277,5 +1276,156 @@
 @media (max-width: 1024px) {
   .reading-personal-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.reading-mobile-switch {
+  display: none;
+}
+@media (max-width: 760px) {
+  .reading-mobile-switch {
+    display: flex;
+    gap: 6px;
+    padding: 5px;
+    margin: 12px 0 20px;
+    background: var(--surface2);
+    border-radius: 12px;
+  }
+  .reading-mobile-switch button {
+    flex: 1;
+    min-height: 44px;
+    min-width: 0;
+    padding: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    border-radius: 8px;
+  }
+  .reading-mobile-switch [aria-current='page'] {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 700;
+  }
+  .reading-view {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom));
+  }
+  .reading-view input,
+  .reading-view select,
+  .reading-view textarea {
+    font-size: 16px;
+    max-width: 100%;
+  }
+  .reading-view button {
+    min-height: 44px;
+  }
+  .reading-navigation,
+  .reading-tabs {
+    min-width: 0;
+  }
+  .reading-tabs {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .reading-tabs button {
+    flex: 1 1 40%;
+    justify-content: center;
+    font-size: 12px;
+    padding: 8px;
+  }
+  .reading-tools {
+    width: 100%;
+  }
+  .reading-tools select {
+    width: 100%;
+  }
+  .reading-search {
+    min-width: 0;
+    flex-basis: 100%;
+  }
+  .reading-toolbar > .reading-field {
+    flex: 1;
+    min-width: 0;
+  }
+  .reading-detail-top {
+    display: block;
+  }
+  .reading-detail-cover {
+    width: 100px;
+    float: left;
+    margin: 0 16px 16px 0;
+  }
+  .reading-detail-top h3 {
+    font-size: 26px;
+    overflow-wrap: anywhere;
+  }
+  .reading-facts,
+  .reading-personal-summary {
+    clear: both;
+  }
+  .reading-personal-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .reading-chapter-tools,
+  .reading-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .reading-panel {
+    padding: 16px;
+    min-width: 0;
+  }
+  .reading-detail-actions > button {
+    flex: 1 1 40%;
+  }
+  .reading-chapter-note-form,
+  #reading-progress-form {
+    flex-wrap: wrap;
+  }
+  .reading-chapter-note-form > label,
+  #reading-progress-form > label {
+    width: 100%;
+  }
+  .reading-detail-tabs button {
+    flex: 1 1 40%;
+  }
+  .reading-stats {
+    flex-wrap: wrap;
+  }
+  .reading-view .reading-inline-form {
+    align-items: stretch;
+  }
+  .reading-view .reading-inline-form > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 760px) {
+  .reading-scope {
+    width: 100%;
+  }
+  .reading-scope button {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 6px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .reading-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: end;
+  }
+  .reading-toolbar > .reading-search,
+  .reading-toolbar > .reading-field {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+  .reading-toolbar > * {
+    min-width: 0;
+  }
+  .reading-library-more summary {
+    padding-inline: 8px;
+    font-size: 12px;
   }
 }

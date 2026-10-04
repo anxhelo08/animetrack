@@ -9,7 +9,6 @@ for (const key of ['doom', 'player', 'tbate'])
   test(`${key}: server results appear promptly when browser catalogs fail, remain usable, and persist`, async ({
     page,
   }, info) => {
-    test.skip(info.project.name.startsWith('iphone'), 'Reading is desktop only');
     const entry = mangaDexItem(key === 'tbate' ? muFixtures.mdTbate : fixtures[key].mangadex);
     const meta = mangaUpdatesItem(muFixtures[key]);
     Object.assign(entry, {
@@ -69,7 +68,10 @@ for (const key of ['doom', 'player', 'tbate'])
         },
       });
     });
-    await page.locator('#pro-nav-reading').click();
+    if (info.project.name.startsWith('iphone')) {
+      await page.locator('[data-mobile-nav="library"]').click();
+      await page.locator('#library-view [data-pro-page="reading"]').click();
+    } else await page.locator('#pro-nav-reading').click();
     await page.locator('#reading-view [data-reading-action="tab"][data-id="discover"]').click();
     if (key === 'tbate')
       await page.locator('#reading-view [data-reading-action="scope"][data-id="manga"]').click();

@@ -138,6 +138,7 @@ export function createFeatures(ctx){
   window.ATHTML.insertHTML($('discover'),'beforebegin','<section id="at117-mobile-discover" class="at117-mobile-discover" aria-label="Rekomandimet dhe animet popullore"></section>');
   modules.collections.mountLibrary();
   await new Promise(resolve=>setTimeout(resolve,0));
+  window.ATHTML.insertHTML($('library-view'),'afterbegin','<nav class="reading-mobile-switch" aria-label="Lloji i bibliotekës"><button type="button" data-pro-page="library" aria-current="page">Anime dhe seriale</button><button type="button" data-pro-page="reading">Manga &amp; Manhwa</button></nav>');
   window.ATHTML.insertHTML($('library-view'),'afterbegin','<div class="at119-library-intro"><span>✦ BIBLIOTEKA JOTE</span><strong>Anime dhe seriale, bashkë.</strong><button type="button" data-at119-add-tv>+ Shto anime ose serial</button></div>');
   window.ATImport116?.mount?.(ctx);
   document.addEventListener('submit',e=>{if(e.target?.id==='at110-create-form'){e.preventDefault();modules.collections.action('collection-create')}if(e.target?.id==='at11-friend-form'){e.preventDefault();void modules.friends.find()}});
@@ -200,7 +201,7 @@ export function createFeatures(ctx){
   return diaryLoading;
  }
  function open(name){
-  if(name==='reading'&&reading.open(name)){newsController?.setActive(false);active=name;ctx.setLocalView(name);return true}
+  if(name==='reading'&&reading.open(name)){newsController?.setActive(false);active=name;ctx.setLocalView(name);setMobileActive('library');return true}
   reading.hide();
   if(!proPages.includes(name))return false;
   active=name;ctx.setLocalView(name);

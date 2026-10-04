@@ -46,7 +46,7 @@ async function setup(page) {
   );
 }
 const state = (page) => page.evaluate(() => structuredClone(window.ATMobile113.state()));
-test('reading is desktop-only and never changes the five phone destinations', async ({
+test('reading is available from both layouts while retaining five phone destinations', async ({
   page,
 }, info) => {
   await setup(page);
@@ -54,7 +54,9 @@ test('reading is desktop-only and never changes the five phone destinations', as
   if (phone) {
     await expect(page.locator('#pro-nav-reading')).toBeHidden();
     await expect(page.locator('[data-mobile-nav]')).toHaveCount(5);
-    await expect(page.locator('#reading-view')).toBeHidden();
+    await page.locator('[data-mobile-nav="library"]').click();
+    await page.locator('#library-view [data-pro-page="reading"]').click();
+    await expect(page.locator('#reading-view')).toBeVisible();
     expect((await state(page)).readingLibrary).toEqual(titles);
     return;
   }
@@ -63,8 +65,8 @@ test('reading is desktop-only and never changes the five phone destinations', as
   await expect(page.locator('#search')).toBeHidden();
   await expect(page.locator('#pro-nav-reading')).toHaveAttribute('aria-current', 'page');
   await page.setViewportSize({ width: 390, height: 844 });
-  await expect(page.locator('#reading-view')).toBeHidden();
-  await expect(page.locator('#home-view')).toBeVisible();
+  await expect(page.locator('#reading-view')).toBeVisible();
+  await expect(page.locator('#home-view')).toBeHidden();
   expect((await state(page)).readingLibrary).toEqual(titles);
 });
 test('chapters, notes and journals persist separately from watching data', async ({
@@ -483,4 +485,47 @@ test('title management removes, restores and restarts a reading without losing p
   await page.locator('#pro-nav-reading').click();
   expect((await state(page)).readingLibrary[0].deletedAt).toBe('');
   expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([]);
+});
+
+test('mobile reading preserves chapters and notes with responsive library, details and calendar', async ({
+  page,
+}, info) => {
+  test.skip(!info.project.name.startsWith('iphone'), 'Mobile reading flow');
+  await setup(page);
+  await page.locator('[data-mobile-nav="library"]').click();
+  await page.locator('#library-view [data-pro-page="reading"]').click();
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 844 });
+    await expect(page.locator('#reading-view')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.screenshot({ path: info.outputPath('reading-mobile-library-' + width + '.png') });
+  }
+  await page.locator('[data-reading-action="detail"][data-id="reading-al-30013"]').first().click();
+  await expect(page.locator('#reading-detail-title')).toHaveText('Berserk');
+  await page.locator('[data-reading-action="chapter"][data-chapter="2"]').click();
+  await page.locator('.reading-detail-tabs [data-id="notes"]').click();
+  await page.locator('#reading-personal-form [name="notes"]').fill('Lexim në telefon');
+  await page.locator('#reading-personal-form button[type="submit"]').click();
+  expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([1, 2, 3]);
+  expect((await state(page)).readingLibrary[0].notes).toBe('Lexim në telefon');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: info.outputPath('reading-mobile-detail.png'), fullPage: true });
+  await page.locator('#reading-view [data-reading-action="tab"][data-id="calendar"]').click();
+  await expect(page.locator('.reading-calendar')).toBeVisible();
+  await page.locator('[data-mobile-nav="home"]').click();
+  await expect(page.locator('#home-view')).toBeVisible();
+  await expect(page.locator('#reading-view')).toBeHidden();
+  await page.reload();
+  await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
+  await page.locator('[data-mobile-nav="library"]').click();
+  await page.locator('#library-view [data-pro-page="reading"]').click();
+  expect((await state(page)).readingLibrary[0].chaptersRead).toEqual([1, 2, 3]);
+  expect((await state(page)).readingLibrary[0].notes).toBe('Lexim në telefon');
+  const audit = await new AxeBuilder({ page })
+    .include('#reading-view')
+    .withTags(['wcag2a', 'wcag2aa'])
+    .analyze();
+  expect(audit.violations).toEqual([]);
 });
