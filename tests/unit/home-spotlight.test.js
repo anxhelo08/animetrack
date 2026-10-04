@@ -59,11 +59,13 @@ describe('daily anime selections', () => {
     );
     expect(pool).toEqual(before);
   });
-  it('changes the featured anime and daily set after local midnight', () => {
+  it('replaces all four picks after Tirana midnight when enough titles exist', () => {
     const today = homeStories(pool, [], morning);
     const tomorrow = homeStories(pool, [], new Date(2026, 9, 3, 0).getTime());
     expect(today).toHaveLength(4);
-    expect(tomorrow[0].storyKey).not.toBe(today[0].storyKey);
+    expect(tomorrow.every((item) => !today.some((old) => old.storyKey === item.storyKey))).toBe(
+      true,
+    );
     expect(tomorrow.map((x) => x.storyKey)).not.toEqual(today.map((x) => x.storyKey));
   });
 });
@@ -72,4 +74,12 @@ it('accepts only provider-labelled YouTube IDs for the isolated preview frame', 
   expect(trailerId({ site: 'youtube', id: 'abcdefghijk' })).toBe('abcdefghijk');
   expect(trailerId({ site: 'youtube', id: 'https://evil.example' })).toBe('');
   expect(trailerId({ site: 'unknown', id: 'abcdefghijk' })).toBe('');
+});
+
+it('changes at Tirana midnight, including winter time, rather than device midnight', () => {
+  const pool = Array.from({ length: 12 }, (_, id) => ({ key: 'al-' + id, title: 'Anime ' + id }));
+  const keys = (time) => homeStories(pool, [], Date.parse(time)).map((item) => item.storyKey);
+  expect(keys('2026-10-04T21:59:59Z')).not.toEqual(keys('2026-10-04T22:00:00Z'));
+  expect(keys('2026-10-04T22:00:00Z')).toEqual(keys('2026-10-05T12:00:00Z'));
+  expect(keys('2026-12-04T22:59:59Z')).not.toEqual(keys('2026-12-04T23:00:00Z'));
 });

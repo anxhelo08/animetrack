@@ -198,7 +198,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  async function refresh(force=false){
   switchOwner();if(loading)return;
   const id=requestId,stored=getStore(storageKey());
-  if(!force&&stored&&Date.now()-stored.at<18*3600000&&Array.isArray(stored.candidates)){
+  if(!force&&stored&&ctx.catalogueDay?.(stored.at)===ctx.catalogueDay?.(Date.now())&&Array.isArray(stored.candidates)){
    candidates=stored.candidates;fetchedAt=stored.at;source=(candidates.some(x=>x.kind==='tv')?'AniList + TVMaze':'AniList')+' · cache';error='';rerank();return;
   }
   loading=true;error='';redraw();

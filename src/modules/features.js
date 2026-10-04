@@ -4,7 +4,7 @@ import { mountSharedList } from './shared-lists.js';
 import { createVisibleScheduler } from '../core/visible-scheduler.js';
 import {navIcon} from './nav-icons.js';
 import {createProductExperience} from './product-experience.js';
-import { createHomeSpotlight } from './home-spotlight.js';
+import { createHomeSpotlight, dayNumber } from './home-spotlight.js';
 import { renderNewsSection } from './news.js';
 import { createReading } from './reading.js';
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
@@ -46,6 +46,8 @@ export function createFeatures(ctx){
  modules.friends=window.ATFriends(ctx,modules.profiles);
  ctx.mobileRecommendations=()=>modules.recommendations.getItems();
  ctx.animeUpdates=()=>modules.recommendations.getUpdates();
+ ctx.catalogueDay=dayNumber;
+ ctx.refreshAnimeUpdates=()=>modules.recommendations.refresh(true);
  ctx.mobileFriends=()=>modules.friends.render();
  ctx.socialCounts=()=>modules.friends.counts();
  ctx.dayBrief=compact=>modules.day.render(!!compact);

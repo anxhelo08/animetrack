@@ -361,6 +361,7 @@
   flex-direction: column;
 }
 .pulse-story {
+  position: relative;
   display: flex;
   flex: 1;
   align-items: center;
@@ -377,6 +378,53 @@
   transition:
     background 0.18s,
     transform 0.18s;
+}
+/* Radar tracks the same 20-second story, without moving its text or controls. */
+.pulse-story.is-current {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--purple) 8%, transparent),
+    transparent
+  );
+}
+.pulse-story.is-current::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--purple),
+    color-mix(in srgb, var(--purple) 30%, transparent)
+  );
+  transform-origin: left;
+  animation: pulse-radar 20s linear infinite;
+}
+#home-anime-pulse[data-motion='paused'] .pulse-story::after {
+  animation-play-state: paused;
+}
+@keyframes pulse-radar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-story.is-current::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+  .pulse-story {
+    transition: none;
+  }
+  .pulse-story:hover {
+    transform: none;
+  }
 }
 .pulse-story:hover {
   transform: translateX(3px);

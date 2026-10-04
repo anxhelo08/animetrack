@@ -282,13 +282,20 @@ test('daily stories change at midnight while the app remains open', async ({ pag
   test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
   await page.clock.install({ time: new Date(frozenNow) });
   await editorial(page);
-  const endOfDay = new Date('2026-09-30T23:59:50Z');
+  let catalogueRequests = 0;
+  await page.route('https://graphql.anilist.co', async (route) => {
+    if (!route.request().postData()?.includes('perPage:50')) return route.fallback();
+    catalogueRequests++;
+    await route.fulfill({ json: { data: { Page: { media: [] } } } });
+  });
+  const endOfDay = new Date('2026-09-30T21:59:50Z');
   await page.clock.setSystemTime(endOfDay);
   await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')));
-  await page.clock.runFor(10500);
-  const tomorrow = homeStories(candidates, [], new Date('2026-10-01T00:00:01Z').getTime());
-  await expect(activeTitle(page)).toHaveText(tomorrow[0].title);
+  await page.clock.runFor(60500);
+  const tomorrow = homeStories(candidates, [], new Date('2026-09-30T22:01:00Z').getTime());
+  await expect(page.locator('.pulse-story').first()).toContainText(tomorrow[0].title);
   expect(tomorrow[0].title).not.toBe(daily[0].title);
+  await expect.poll(() => catalogueRequests).toBeGreaterThanOrEqual(3);
 });
 
 test('muted trailer preview validates the provider and stops on navigation, user stop and reduced motion', async ({
@@ -393,4 +400,21 @@ test('undersized or portrait artwork uses the graphic backdrop instead of pixela
     fullPage: true,
     animations: 'disabled',
   });
+});
+
+test('radar progress follows the active anime and respects reduced motion', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Desktop spotlight only.');
+  await editorial(page);
+  const radar = page.locator('.pulse-story.is-current');
+  await expect(radar).toContainText(daily[0].title);
+  expect(await radar.evaluate((node) => getComputedStyle(node, '::after').animationName)).toBe(
+    'pulse-radar',
+  );
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(await radar.evaluate((node) => getComputedStyle(node, '::after').animationName)).toBe(
+    'none',
+  );
+  await expect(radar).toBeVisible();
 });

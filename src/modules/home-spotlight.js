@@ -11,10 +11,10 @@ const plain = (value, max = 220) =>
     .trim()
     .slice(0, max);
 
-const dayNumber = (now) => {
-  const date = new Date(now);
-  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86400000);
-};
+export const dayNumber = (now) =>
+  Math.floor(
+    Date.parse(new Date(now).toLocaleDateString('sv-SE', { timeZone: 'Europe/Tirane' })) / 86400000,
+  );
 
 /** Catalogue facts are labelled as premieres or discoveries, never invented news headlines. */
 export function homeStories(updates = [], library = [], now = Date.now()) {
@@ -38,8 +38,10 @@ export function homeStories(updates = [], library = [], now = Date.now()) {
         numeric: true,
       }),
     );
-  // Stable within a local calendar day; the next day starts with another title.
-  const offset = dailyPool.length ? dayNumber(now) % dailyPool.length : 0;
+  // Four fresh picks each Tirana day; small catalogues rotate one place.
+  const offset = dailyPool.length
+    ? (dayNumber(now) * (dailyPool.length >= 8 ? 4 : 1)) % dailyPool.length
+    : 0;
   return [...dailyPool.slice(offset), ...dailyPool.slice(0, offset)].slice(0, 4).map((item) => {
     const nextAt = Number(item.nextAiringAt) * 1000;
     const nextEpisode = Number(item.nextAiringEpisode);
@@ -52,6 +54,7 @@ export function homeStories(updates = [], library = [], now = Date.now()) {
           day: 'numeric',
           month: 'short',
           year: 'numeric',
+          timeZone: 'Europe/Tirane',
         })
       : '';
     const badge = upcoming
@@ -222,13 +225,18 @@ export function createHomeSpotlight(ctx) {
   function schedule() {
     if (!root) return;
     syncPreview();
-    root.dataset.motion = visible() && !motion.matches ? 'running' : 'paused';
+    root.dataset.motion =
+      visible() && !motion.matches && !root.querySelector('.pulse-slide.is-active :focus-visible')
+        ? 'running'
+        : 'paused';
     // display:none recreates CSS animations. Restore their position on the same
     // wall-clock timeline instead of restarting the camera drift on each visit.
     if (visible() && !motion.matches) {
       for (const animation of root.getAnimations({ subtree: true })) {
         if (animation.animationName === 'pulse-cinema')
           animation.currentTime = (performance.now() - animationEpoch) % 40000;
+        if (animation.animationName === 'pulse-radar')
+          animation.currentTime = nextAt ? 20000 - nextAt + performance.now() : 0;
       }
     }
     const interactionPaused =
@@ -258,9 +266,8 @@ export function createHomeSpotlight(ctx) {
   function scheduleDay() {
     clearTimeout(dayTimer);
     if (!root || root.hidden || phone.matches || document.hidden) return;
-    const now = new Date();
-    const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-    dayTimer = setTimeout(refresh, midnight.getTime() - now.getTime() + 50);
+    // Recheck Tirana midnight even when the device timezone or DST changes.
+    dayTimer = setTimeout(refresh, 60000);
   }
   function slide(item, index) {
     const title = item.title;
@@ -359,7 +366,9 @@ export function createHomeSpotlight(ctx) {
       }
       paint();
     }
+    const newDay = shownDay !== undefined && shownDay !== day;
     shownDay = day;
+    if (newDay) void ctx.refreshAnimeUpdates?.();
     schedule();
     scheduleDay();
   }
