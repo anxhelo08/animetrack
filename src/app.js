@@ -1,3 +1,4 @@
+import { migrateSyncLibrary, captureSyncState, recordSyncChanges } from './core/sync-tombstones.js';
 import { watchProgressChanges, libraryWatchTimes } from './core/watch-progress.js';
 import { applyAiringReleases, hasNewUnwatchedEpisode, hasWatchedAllReleased } from './core/airing-library-updates.js';
 import { loadLibraryAiring } from './core/library-airing.js';
@@ -38,6 +39,8 @@ const $=id=>document.getElementById(id);
 let recheckSearchAutofill=()=>{};
 let accountMode='guest',accountUser=null,cloudClient=null,cloudTimer=null,cloudDirty=false,cloudSaving=false,cloudLastSync='',cloudConnected=false,cloudRevision=null,cloudConflict=false,cloudBaseKnown=false,cloudMirrorUnavailable=false,accountBusy=false,cloudRealtimeChannel=null,cloudRealtimeUID='',cloudRealtimePending=false,cloudRealtimeTimer=null,cloudRealtimeRecord=null;
 let state=load(),filter='all',search='',sort='updated',detailId=null,episodePage=0,activeSeasonId=null,toastTimeout,selectedGenre='all';
+let syncBaseline=captureSyncState(state),syncBaselineKey=KEY;
+function acceptSyncState(){syncBaseline=captureSyncState(state);syncBaselineKey=KEY}
 const libraryStore=createStore(()=>state,()=>accountUser?.id||'guest',error=>console.warn('State subscriber failed',error));
 let releaseExperience=null;
 let renderedLibraryOwner='',renderedLibraryMarkup='';
@@ -115,7 +118,7 @@ function setSeasonHidden(id,seasonId,hidden){
 
 /* Keep in-app preferences across refreshes and Supabase cloud pulls. */
 
-function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.anime)){if(Array.isArray(s.tvShows)&&s.tvShows.length){try{const backupKey=KEY+'_before_tv_unify_120';if(!localStorage.getItem(backupKey))localStorage.setItem(backupKey,JSON.stringify(s))}catch(err){console.warn('TV backup unavailable',err)}}const merged=window.ATTVUnified120.migrate(s.anime.map(normalized).filter(Boolean),normalizeTVShows(s.tvShows),normalized);return {anime:merged.anime,tvShows:[],readingLibrary:normalizeReadingLibrary(s.readingLibrary),history:Array.isArray(s.history)?s.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(s.preferences)}}}catch(e){console.warn('Nuk u lexuan të dhënat:',e)}return{anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}}
+function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.anime)){try{s=migrateSyncLibrary(s,localStorage,KEY)}catch(err){console.warn('Sync migration backup unavailable',err)}if(Array.isArray(s.tvShows)&&s.tvShows.length){try{const backupKey=KEY+'_before_tv_unify_120';if(!localStorage.getItem(backupKey))localStorage.setItem(backupKey,JSON.stringify(s))}catch(err){console.warn('TV backup unavailable',err)}}const merged=window.ATTVUnified120.migrate(s.anime.map(normalized).filter(Boolean),normalizeTVShows(s.tvShows),normalized);return {...(s.syncSchema?{syncSchema:s.syncSchema,deleted:s.deleted||{}}:{}),anime:merged.anime,tvShows:[],readingLibrary:normalizeReadingLibrary(s.readingLibrary),history:Array.isArray(s.history)?s.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(s.preferences)}}}catch(e){console.warn('Nuk u lexuan të dhënat:',e)}return{anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}}
 function accountCompact(value){if(value)validateLibrary(value);return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value):value}
 // Keep verified episode metadata on this device; only uploads use accountCompact.
 function accountLocalSnapshot(value=state){return value}
@@ -132,7 +135,7 @@ function persistLibraryRepair(){
  const before=state,priorDetail=detailId,priorSeason=activeSeasonId,priorPage=episodePage;const result=repairLibraryState();if(!result)return false;
  if(!save()){state=before;detailId=priorDetail;activeSeasonId=priorSeason;episodePage=priorPage;return false}return result;
 }
-function save(){const beforeRepair=state,priorDetail=detailId,priorSeason=activeSeasonId,priorPage=episodePage;try{repairLibraryState();const localSnapshot=accountLocalSnapshot(state),result=window.ATStorage1274.save(localStorage,KEY,localSnapshot,cloudRevision,accountMode==='cloud'&&!!accountUser,window.ATSync126);if(!result.ok){state=beforeRepair;detailId=priorDetail;activeSeasonId=priorSeason;episodePage=priorPage;if(accountMode==='cloud'){cloudMirrorUnavailable=true;cloudDirty=true;accountUI()}notify('Kopja lokale e rikuperimit nuk u ruajt. Eksporto kopje rezervë dhe provo përsëri.');return false}if(cloudMirrorUnavailable){cloudMirrorUnavailable=false;accountUI()}if(accountMode==='cloud'&&accountUser)accountQueueSave();return true}catch(e){state=beforeRepair;detailId=priorDetail;activeSeasonId=priorSeason;episodePage=priorPage;notify('Ruajtja dështoi. Eksporto kopje rezervë.');console.error(e);return false}}
+function save(){const beforeRepair=state,priorDetail=detailId,priorSeason=activeSeasonId,priorPage=episodePage;try{state=migrateSyncLibrary(state,localStorage,KEY);if(syncBaselineKey!==KEY)acceptSyncState();recordSyncChanges(syncBaseline,state,now());repairLibraryState();const localSnapshot=accountLocalSnapshot(state),result=window.ATStorage1274.save(localStorage,KEY,localSnapshot,cloudRevision,accountMode==='cloud'&&!!accountUser,window.ATSync126);if(!result.ok){state=beforeRepair;detailId=priorDetail;activeSeasonId=priorSeason;episodePage=priorPage;if(accountMode==='cloud'){cloudMirrorUnavailable=true;cloudDirty=true;accountUI()}notify('Kopja lokale e rikuperimit nuk u ruajt. Eksporto kopje rezervë dhe provo përsëri.');return false}if(cloudMirrorUnavailable){cloudMirrorUnavailable=false;accountUI()}acceptSyncState();if(accountMode==='cloud'&&accountUser)accountQueueSave();return true}catch(e){state=beforeRepair;detailId=priorDetail;activeSeasonId=priorSeason;episodePage=priorPage;notify('Ruajtja dështoi. Eksporto kopje rezervë.');console.error(e);return false}}
 function notify(message){const t=$('toast');t.textContent=message;t.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>t.classList.remove('show'),2800)}
 function cover(a,cls){const url=validPoster(a.cover);return `<div class="${cls}">${url?`<img src="${escapeHTML(url)}" alt="Posteri i ${escapeHTML(a.title)}" width="230" height="345" loading="${cls==='detail-poster'?'eager':'lazy'}" decoding="async" fetchpriority="${cls==='detail-poster'?'auto':'low'}" referrerpolicy="no-referrer" />`:''}</div>`}
 function render(){if(view==='library'&&$('at113-library-search'))search=$('at113-library-search').value.trim().toLocaleLowerCase();const totals={all:state.anime.length};Object.keys(STATUS).forEach(s=>totals[s]=state.anime.filter(a=>a.status===s).length);totals.movies=state.anime.filter(isMovieAnime).length;totals.waiting=state.anime.filter(a=>!!futureSeasonOf(a)).length;totals.genres=genreCounts().length;document.querySelectorAll('[data-count]').forEach(el=>el.textContent=totals[el.dataset.count]||0);$('hero-add').textContent=totals.all?'+ Shto anime':'+ Shto animen e parë';$('stat-total').textContent=totals.all;$('favorite-count').textContent=state.anime.filter(a=>a.favorite).length;$('stat-watching').textContent=totals.watching;$('stat-completed').textContent=totals.completed;$('stat-episodes').textContent=state.anime.reduce((s,a)=>s+(isLiveMovie(a)?0:count(a)),0).toLocaleString('sq-AL');const weekAgo=Date.now()-7*86400000;$('stat-week').textContent='+'+activityEpisodes().filter(e=>e.at>=weekAgo).length+' gjatë 7 ditëve';document.querySelectorAll('[data-filter]').forEach(b=>b.classList.toggle('active',b.dataset.filter===filter));const phone=window.matchMedia('(max-width:760px)').matches,renderOwner=accountUser?.id||'guest';if(renderOwner!==renderedLibraryOwner){renderedLibraryOwner=renderOwner;renderedLibraryMarkup='';if(phone){$('anime-grid').replaceChildren();$('continue-grid').replaceChildren()}}if(phone&&view!=='library')return;const watchTimes=libraryWatchTimes(state.anime,state.history);const looking=state.anime.filter(a=>a.status==='watching').sort((a,b)=>(watchTimes.get(b.id)||0)-(watchTimes.get(a.id)||0)).slice(0,3);$('continue-section').classList.toggle('hidden',looking.length===0||filter!=='all'||!!search);window.ATHTML.renderHTML($('continue-grid'),looking.map(a=>`<article class="continue-card" data-status="${a.status}">${cover(a,'continue-cover')}<div class="continue-info"><strong title="${escapeHTML(a.title)}">${escapeHTML(a.title)}</strong><span class="meta">${count(a)}/${releasedTotal(a)} episode</span><div class="progress"><span class="${window.ATHTML.percentClass(percentage(a),'w')}"></span></div><div class="continue-bottom"><button class="ghost" data-detail="${escapeHTML(a.id)}">Detaje</button><button class="episode-pill" data-next="${escapeHTML(a.id)}" ${nextSeasonEp(a)?'':'disabled'}>+ Episodi ${nextEp(a)??'✓'}</button></div></div></article>`).join(''));const genrePanel=$('genre-controls');genrePanel.classList.toggle('hidden',filter!=='genres');if(filter==='genres'){window.ATHTML.renderHTML($('genre-chips'),`<button type="button" class="genre-chip ${selectedGenre==='all'?'active':''}" data-genre="all">Të gjitha <span>${state.anime.length}</span></button>`+genreCounts().map(g=>`<button type="button" class="genre-chip ${g.name.toLocaleLowerCase()===selectedGenre?'active':''}" data-genre="${escapeHTML(g.name.toLocaleLowerCase())}">${escapeHTML(g.name)} <span>${g.count}</span></button>`).join('')+`<button type="button" class="genre-chip ${selectedGenre==='__unknown'?'active':''}" data-genre="__unknown">Pa zhanër <span>${state.anime.filter(a=>!genresOf(a).length).length}</span></button>`);}let anime=state.anime.filter(a=>((filter==='all'&&a.status!=='planning')||(filter==='favorites'?a.favorite:filter==='movies'?isMovieAnime(a):filter==='waiting'?!!futureSeasonOf(a):filter==='genres'?(selectedGenre==='all'||(selectedGenre==='__unknown'?!genresOf(a).length:genresOf(a).some(g=>g.toLocaleLowerCase()===selectedGenre))):a.status===filter))&&`${a.title} ${a.genre}`.toLocaleLowerCase().includes(search));if(sort==='year-new'||sort==='year-old')anime=window.ATLibraryYear125.sort(anime,sort);
@@ -1291,7 +1294,7 @@ function accountWakeCloud(force=false){
  if(!cloudSaving&&!accountBusy)void accountPullQuiet();
 }
 
-function accountNormalizePayload(data){validateLibrary(data);if(!data||!Array.isArray(data.anime))throw Error('Biblioteka online ka format të pavlefshëm.');const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);return {anime:merged.anime,tvShows:[],readingLibrary:normalizeReadingLibrary(data.readingLibrary),history:Array.isArray(data.history)?data.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(data.preferences)}}
+function accountNormalizePayload(data){validateLibrary(data);if(!data||!Array.isArray(data.anime))throw Error('Biblioteka online ka format të pavlefshëm.');const merged=window.ATTVUnified120.migrate(data.anime.map(normalized).filter(Boolean),normalizeTVShows(data.tvShows),normalized);return {...(data.syncSchema?{syncSchema:data.syncSchema}:{}),...(data.deleted?{deleted:data.deleted}:{}),anime:merged.anime,tvShows:[],readingLibrary:normalizeReadingLibrary(data.readingLibrary),history:Array.isArray(data.history)?data.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(data.preferences)}}
 function accountApplyRemoteRecord(record){
  if(!record?.payload||accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||accountBusy)return false;
  const revision=String(record.updated_at||'');
@@ -1302,7 +1305,7 @@ function accountApplyRemoteRecord(record){
   cloudRevision=revision||cloudRevision;cloudBaseKnown=true;cloudConnected=true;cloudConflict=false;cloudLastPullAt=Date.now();
   if(revision)cloudLastSync=new Date(revision).toLocaleString('sq-AL');
   if(!same){
-   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;acceptSyncState();
    render();renderHome();renderUpcoming();proApp?.renderBackground?.();void proApp?.modules?.notifications?.refresh?.();proApp?.modules?.recommendations?.onLibraryChange?.();
   }
   if(!cloudMirrorUnavailable)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Realtime revision cache unavailable',err)}
@@ -1356,6 +1359,7 @@ async function accountOpenCloud(user){
   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;cloudDirty=false;
   if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,key,cloudRevision,false)}catch(err){console.warn('Cloud revision persistence failed',err)}
  }
+ state=migrateSyncLibrary(state,localStorage,KEY,cached||data?.payload||state);acceptSyncState();
  persistLibraryRepair();accountRefreshViews(view==='reading');accountStartRealtime(uid);
  if(cloudMirrorUnavailable)accountStatus('Biblioteka u hap nga cloud, por recovery copy lokale nuk u ruajt. Provo përsëri; biblioteka online mbetet e sigurt.','error');
  else if(readError)accountStatus('Nuk u arrit cloud: po shfaqet kopja lokale e kësaj llogarie. '+(cloudDirty?'Ndryshimet presin rikthimin e lidhjes.':'Kontrollo cloud kur rikthehet interneti.'),'error');
@@ -1399,7 +1403,7 @@ async function accountPush(showResult=true){
     if(!remoteBase)throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
     state=accountMergeRecovery(remoteBase,state);
     const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
-    cloudRevision=baseline.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudDirty=true;
+    acceptSyncState();cloudRevision=baseline.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudDirty=true;
    }else if(check==='conflict'||(!record&&baseline.data?.updated_at!==window.ATSync126.revision(localStorage,KEY))){
     throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
    }else{
@@ -1438,7 +1442,7 @@ async function accountPullQuiet(){
   const remote=accountNormalizePayload(data.payload);
   if(JSON.stringify(accountCompact(remote))===JSON.stringify(accountCompact(state))){cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConnected=true;if(persistLibraryRepair()){render();renderHome();if(detailId)renderDetail(detailId)}return false;}
   if(cloudDirty||cloudSaving)return false;
-  const next=accountHydrateRemote(remote,state);const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
+  const next=accountHydrateRemote(remote,state);const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;acceptSyncState();cloudRevision=data.updated_at;cloudBaseKnown=true;cloudConflict=false;if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud revision not cached',err)}
   cloudConnected=true;cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');
   persistLibraryRepair();if(detailId)renderDetail(detailId);
   render();renderHome();renderUpcoming();proApp.renderBackground();void proApp.modules.notifications.refresh();
@@ -1457,7 +1461,7 @@ async function accountPull(manual=false){
   if(accountUser?.id!==uid||JSON.stringify(state)!==prior){if(manual)accountStatus('Biblioteka ndryshoi gjatë shkarkimit; nuk e zëvendësuam kopjen lokale.','error');return}
   if(data?.payload){
    const remote=accountNormalizePayload(data.payload),next=accountHydrateRemote(remote,state);
-   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;
+   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(next)));cloudMirrorUnavailable=!mirror.ok;state=next;acceptSyncState();
    cloudDirty=false;cloudConnected=true;cloudBaseKnown=true;cloudRevision=data.updated_at;cloudConflict=false;
    cloudLastSync=new Date(data.updated_at).toLocaleString('sq-AL');cloudLastPullAt=Date.now();
    if(mirror.ok)try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}

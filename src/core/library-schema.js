@@ -9,9 +9,26 @@ const integer = (value, max, path) => {
   if (!Number.isInteger(number) || number < 0 || number > max) fail(path);
 };
 
+function validateTimestamps(value, max, path, episodes = false) {
+  if (value == null) return;
+  if (!object(value) || Object.keys(value).length > max) fail(path);
+  for (const [key, stamp] of Object.entries(value)) {
+    if (
+      !key ||
+      key.length > 180 ||
+      (episodes && (!/^[1-9]\d*$/.test(key) || Number(key) > 10000)) ||
+      typeof stamp !== 'string' ||
+      !/^\d{4}-\d{2}-\d{2}T/.test(stamp) ||
+      !Number.isFinite(Date.parse(stamp))
+    )
+      fail(path);
+  }
+}
+
 /** Validates the entire input before normalization; never mutates or drops user rows. */
 export function validateLibrary(value, { requireHistory = false } = {}) {
   if (!object(value) || !Array.isArray(value.anime) || value.anime.length > 5000) fail('anime');
+  validateTimestamps(value.deleted, 5000, 'deleted');
   if (requireHistory && !Array.isArray(value.history)) fail('history');
   if (value.history != null && (!Array.isArray(value.history) || value.history.length > 250000))
     fail('history');
@@ -119,6 +136,8 @@ export function validateLibrary(value, { requireHistory = false } = {}) {
     integer(anime.total, 10000, path + '.total');
     for (const [j, season] of (anime.seasons || []).entries()) {
       if (!object(season)) fail(path + '.seasons[' + j + ']');
+      validateTimestamps(season.unwatched, 10000, path + '.unwatched', true);
+      validateTimestamps(season.watchedAt, 10000, path + '.watchedAt', true);
       integer(season.total, 10000, path + '.total');
       if (
         season.watched != null &&

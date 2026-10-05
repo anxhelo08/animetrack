@@ -1,3 +1,4 @@
+import { timestampMap } from './sync-tombstones.js';
 import { episodeWatchURL } from './watch-links.js';
 
 export const STATUS = {
@@ -134,6 +135,8 @@ export function createLibraryModel(dependencies = {}) {
       ].slice(0, 12),
       total,
       watched: tidyNums(raw?.watched, total),
+      ...(raw?.unwatched ? { unwatched: timestampMap(raw.unwatched) } : {}),
+      ...(raw?.watchedAt ? { watchedAt: timestampMap(raw.watchedAt) } : {}),
       year: Number(raw?.year) || null,
       source: String(raw?.source || '').slice(0, 20),
       sourceId: String(raw?.sourceId || '').slice(0, 30),
