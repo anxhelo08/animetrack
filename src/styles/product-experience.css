@@ -308,3 +308,111 @@ body.at-ios-enabled .product-tools .nav-label {
     display: none;
   }
 }
+
+.library-focus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 14px 0 18px;
+}
+.library-focus button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  color: var(--muted);
+  background: transparent;
+  font-size: 13px;
+}
+.library-focus button.active {
+  background: var(--surface2);
+  border-color: var(--border);
+  color: var(--text);
+}
+.library-focus button:hover {
+  color: var(--text);
+}
+.title-workspace-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 0;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.title-workspace-summary strong {
+  font-size: 18px;
+}
+.title-workspace-summary p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 6px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.title-workspace-summary nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.title-workspace-summary a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  text-decoration: none;
+}
+.title-workspace-summary a:hover {
+  color: var(--purple);
+}
+.title-workspace-summary a:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  #library-view .library-focus {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .library-focus button {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .title-workspace-summary {
+    flex-direction: column;
+    gap: 10px;
+  }
+  #anime-grid .media-card {
+    border-radius: 14px;
+  }
+  #library-view #anime-grid .media-card-art {
+    aspect-ratio: 3 / 4;
+  }
+  #anime-grid .media-card .media-card-title {
+    display: block;
+    color: var(--text);
+    font-size: 14px;
+    min-height: 38px;
+    height: auto;
+    line-height: 1.4;
+  }
+  #anime-grid .media-card-copy {
+    padding: 12px;
+  }
+  #anime-grid .media-card .card-actions {
+    gap: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reading-card {
+    transition: none;
+  }
+}

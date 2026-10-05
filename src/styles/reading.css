@@ -1429,3 +1429,219 @@
     font-size: 12px;
   }
 }
+
+/* One reading workspace: a clear handoff, compact shelves and calm controls. */
+.reading-view .reading-hero {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 22px;
+  gap: 20px;
+}
+.reading-view .reading-hero h2 {
+  font-size: clamp(22px, 2.2vw, 30px);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.reading-view .reading-hero p {
+  display: block;
+  max-width: 65ch;
+  font-size: 13px;
+}
+.reading-source-directory,
+.reading-source-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--purple);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.reading-source-action svg,
+.reading-source-directory svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.reading-source-directory {
+  flex-shrink: 0;
+}
+.reading-source-action:hover,
+.reading-source-directory:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+.reading-view a:focus-visible {
+  outline: 2px solid var(--purple);
+  outline-offset: 3px;
+}
+.reading-resume {
+  display: grid;
+  grid-template-columns: 66px minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  padding: 20px 0 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.reading-resume-art {
+  width: 66px;
+  height: 88px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface2);
+}
+.reading-resume-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.reading-resume h3 {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 6px;
+  font-weight: 500;
+}
+.reading-resume strong {
+  font-size: clamp(18px, 1.8vw, 24px);
+  line-height: 1.35;
+}
+.reading-resume p {
+  color: var(--muted);
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.reading-resume-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.reading-resume-actions .reading-source-action {
+  color: var(--text);
+  background: var(--surface2);
+}
+.reading-quick-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 8px 0 20px;
+}
+.reading-quick-filters button {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  background: transparent;
+}
+.reading-quick-filters button.active {
+  color: var(--text);
+  background: var(--surface2);
+  border-color: var(--border);
+}
+.reading-result-count {
+  margin: 0 0 22px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.reading-card {
+  border-radius: 14px;
+  transition: border-color 160ms ease-out;
+}
+.reading-view .reading-card:hover {
+  transform: none;
+  border-color: var(--purple);
+}
+.reading-card-body > .reading-source-action {
+  justify-content: flex-start;
+  padding-inline: 0;
+  margin-top: 6px;
+  font-size: 12px;
+}
+.reading-card-body {
+  min-width: 0;
+}
+.reading-card-title {
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.reading-detail-top .reading-source-action {
+  background: var(--surface2);
+  color: var(--text);
+  margin-top: 12px;
+}
+.reading-handoff-note {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 8px 0 12px;
+}
+#reading-copy-status:empty {
+  display: none;
+}
+@media (max-width: 760px) {
+  .reading-view .reading-hero {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .reading-source-directory {
+    justify-self: start;
+    padding-left: 0;
+  }
+  .reading-resume {
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 12px;
+    padding-top: 12px;
+  }
+  .reading-resume-art {
+    width: 52px;
+    height: 74px;
+  }
+  .reading-resume-actions {
+    grid-column: 1 / -1;
+  }
+  .reading-resume-actions > * {
+    flex: 1;
+  }
+  .reading-quick-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .reading-quick-filters button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .reading-view .reading-library-shelves {
+    grid-template-columns: 1fr;
+  }
+  .reading-view .reading-card {
+    display: grid;
+    grid-template-columns: 86px minmax(0, 1fr);
+    padding: 0;
+  }
+  .reading-view .reading-cover {
+    width: 86px;
+    height: 100%;
+    min-height: 170px;
+    border-radius: 0;
+  }
+  .reading-view .reading-cover img {
+    height: 100%;
+    object-fit: cover;
+  }
+  .reading-view .reading-card-body {
+    padding: 14px;
+  }
+  .reading-view .reading-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
