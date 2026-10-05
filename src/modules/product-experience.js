@@ -107,7 +107,7 @@ export function createProductExperience(ctx) {
       moderation: 'Moderimi',
     };
     if ($('page-title')) $('page-title').textContent = titles[page] || 'AnimeTrack';
-    refresh();
+    refresh(false);
     mobile.navigation(next);
   }
   function sync() {
@@ -174,7 +174,7 @@ export function createProductExperience(ctx) {
     drawGuide();
     refresh();
   }
-  function refresh() {
+  function refresh(refreshMobile = true) {
     if (!$('product-home-empty')) return;
     const current = String(ctx.user?.()?.id || '');
     if (owner !== current) {
@@ -220,7 +220,7 @@ export function createProductExperience(ctx) {
     hidden('product-library-empty', !noLibrary);
     $('library-view')?.classList.toggle('product-is-empty', noLibrary);
     sync();
-    mobile.refresh();
+    if (refreshMobile) mobile.refresh();
   }
   function searchFinished(query, { count = 0, failed = false } = {}) {
     searchQuery = query;

@@ -760,3 +760,16 @@ test('12.7.1 late account module results never replace unrelated list forms',()=
 });
 
 test('12.10.2 desktop search captures typed value before asynchronous Home updates',()=>{const f=fs.readFileSync(path.join(root,'src/modules/features.js'),'utf8');assert.match(f,/const value=e\.target\.value,caret=e\.target\.selectionStart/);assert.doesNotMatch(f,/const value=current\.value,caret=current\.selectionStart/)});
+
+test('profile badge analysis is reused and invalidated by progress, replacement and account changes',()=>{
+ const w=load(),c=context();let revision,analyses=0,owner='first',state={anime:[],history:[]};
+ c.state=()=>state;c.user=()=>({id:owner});c.subscribe=fn=>{revision=fn};
+ w.ATWrapped129.analyze=({state})=>{analyses++;return{unlocked:[{id:String(state.history.length)}]}};
+ w.ATWrapped129.mini=report=>report.unlocked[0].id;
+ const calendar=w.ATCalendarWrapped(c);
+ assert.equal(calendar.achievementsMini(),'0');calendar.achievementIds();assert.equal(analyses,1);
+ state.history.push({action:'watched'});revision(state,{reason:'saved'});
+ assert.equal(calendar.achievementsMini(),'1');assert.equal(analyses,2);
+ state={anime:[],history:[]};assert.equal(calendar.achievementsMini(),'0');assert.equal(analyses,3);
+ owner='second';calendar.achievementIds();assert.equal(analyses,4);
+});

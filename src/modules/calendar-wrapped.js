@@ -49,8 +49,19 @@ window.ATCalendarWrapped=function ATCalendarWrapped(ctx){
  let wrappedScope='all',badgeFilter='all';
  function wrappedReport(){return window.ATWrapped129.analyze({state:ctx.state(),events:ctx.activity(),genres:ctx.genres,isMovie:ctx.isMovie,period,scope:wrappedScope,now:new Date()})}
  function wrapped(){return window.ATWrapped129.render(wrappedReport(),{badgeFilter})}
- function achievementsMini(){return window.ATWrapped129.mini(window.ATWrapped129.analyze({state:ctx.state(),events:ctx.activity(),genres:ctx.genres,isMovie:ctx.isMovie,period:'all',scope:'all',now:new Date()}))}
- function achievementIds(){return window.ATWrapped129.analyze({state:ctx.state(),events:ctx.activity(),genres:ctx.genres,isMovie:ctx.isMovie,period:'all',scope:'all',now:new Date()}).unlocked.map(x=>x.id)}
+ // Share the all-time analysis across profile and badge refreshes until library/account data changes.
+ let allReport=null,allReportState=null,allReportDay='',allReportOwner='';
+ ctx.subscribe?.(()=>{allReport=null});
+ function allTimeReport(){
+  const state=ctx.state(),now=new Date(),day=dateKey(now),owner=String(ctx.user?.()?.id||'guest');
+  if(!ctx.subscribe||!allReport||allReportState!==state||allReportDay!==day||allReportOwner!==owner){
+   allReport=window.ATWrapped129.analyze({state,events:ctx.activity(),genres:ctx.genres,isMovie:ctx.isMovie,period:'all',scope:'all',now});
+   allReportState=state;allReportDay=day;allReportOwner=owner;
+  }
+  return allReport;
+ }
+ function achievementsMini(){return window.ATWrapped129.mini(allTimeReport())}
+ function achievementIds(){return allTimeReport().unlocked.map(x=>x.id)}
  function copy(){
   const text=window.ATWrapped129.copyText(wrappedReport());
   if(!navigator.clipboard?.writeText){ctx.toast('Kopjimi nuk mbështetet në këtë shfletues.');return}

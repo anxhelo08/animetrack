@@ -210,6 +210,7 @@ test('rapid mobile navigation preserves styles, cached cards and progress with 1
   await page.locator('#mobile-continue [data-ios-action="advance"][data-id="speed-0"]').tap();
   expect(await page.evaluate(() => window.hiddenGridWrites)).toBe(0);
   expect(await page.evaluate(() => window.legacyHomeWrites)).toBe(0);
+  await page.locator('[data-close="episode-detail-modal"]').tap();
   await page.locator('.at-mobile-nav [data-mobile-nav="library"]').tap();
   await expect(page.locator('#anime-grid .anime-card:has([data-detail="speed-0"])')).toContainText(
     '2/12',
@@ -230,6 +231,12 @@ test('rapid mobile navigation preserves styles, cached cards and progress with 1
         const start = performance.now();
         document.querySelector(`.at-mobile-nav [data-mobile-nav="${target}"]`).click();
         durations.push({ target, iteration: i, ms: performance.now() - start });
+        if (target === 'explore') {
+          const card = document.querySelector('#at117-mobile-discover .at128-mobile-season-link');
+          if (i === 0) window.cachedDiscoveryCard = card;
+          else if (card !== window.cachedDiscoveryCard)
+            throw Error('Unchanged discovery was rebuilt');
+        }
         if (
           getComputedStyle(document.documentElement).getPropertyValue('--at-ui-ready').trim() !==
           '1'
