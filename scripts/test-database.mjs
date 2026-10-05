@@ -1,3 +1,4 @@
+import { verifySyncDatabase } from './verify-sync-database.mjs';
 import { verifyAiringDatabase } from './verify-airing-database.mjs';
 import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
@@ -59,6 +60,16 @@ export async function verifyDatabase(db) {
       'utf8',
     ),
   );
+  await db.query(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261005153419_library_sync_server_ordering.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
+  await verifySyncDatabase(db);
   await verifyAiringDatabase(db);
   const A = '00000000-0000-4000-8000-000000000001',
     B = '00000000-0000-4000-8000-000000000002',

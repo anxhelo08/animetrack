@@ -40,13 +40,9 @@ window.ATSync126=(()=>{
   const remoteRevision=typeof remote?.updated_at==='string'?remote.updated_at:null;
   if(remoteRevision===(journal.baseRevision||null))return 'pending';
 
-  // Supabase updated_at is the server clock; savedAt is the durable local journal clock.
-  // A divergent base is never blindly overwritten. We distinguish which side changed
-  // later so the caller can merge episode progress before a conditional write.
-  const remoteAt=remoteRevision?Date.parse(remoteRevision):NaN;
-  const localAt=Number(journal.savedAt)||0;
-  if(Number.isFinite(remoteAt)&&localAt>0)return remoteAt>localAt?'remote-newer':'local-newer';
-  return 'conflict';
+  // Revisions are opaque server tokens. Divergence always merges; phone time
+  // and the old journal savedAt field never select a winner.
+  return 'diverged';
  }
  return {pendingKey,revisionKey,pending,revision,mark,save,acknowledge,remoteStatus};
 })();

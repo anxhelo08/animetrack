@@ -1,3 +1,4 @@
+import { createSyncClock } from './core/sync-clock.js';
 import { migrateSyncLibrary, captureSyncState, recordSyncChanges } from './core/sync-tombstones.js';
 import { watchProgressChanges, libraryWatchTimes } from './core/watch-progress.js';
 import { applyAiringReleases, hasNewUnwatchedEpisode, hasWatchedAllReleased } from './core/airing-library-updates.js';
@@ -29,7 +30,9 @@ import { normalizeReadingLibrary } from './core/reading-model.js';
 
 export async function startApp(){'use strict';
 const localStorage=libraryStorage;
+const syncClock=createSyncClock();
 const {validPoster,uuid,now,genresOf,mediaFormat,isMovieAnime,isLiveMovie,mediaKind,movieWatched,isConfirmedFutureSeason,visibleSeasons,hiddenSeasons,futureSeasonOf,tidyNums,normSeason,mediaStartIso,releaseFromMedia,releasedCount,releasedTotal,plannedPending,pendingReleaseText,releasedStatusAfterWatch,syncTotals,normalized,count,percentage,nextSeasonEp,nextEp,normalizePreferences,normalizeTVShows,isSeriesFormat,seasonNumberFor,formatLabel}=createLibraryModel({
+ mergeNow:()=>syncClock.iso(),
  releasedTV:(season,at)=>window.ATReleaseGuard1352.tvmazeReleasedCount(season,at),
  normalizeArc:(arc,index)=>window.ATFranchise1212.normalizeArc(arc,index)
 });
@@ -119,11 +122,11 @@ function setSeasonHidden(id,seasonId,hidden){
 /* Keep in-app preferences across refreshes and Supabase cloud pulls. */
 
 function load(){try{let s=JSON.parse(localStorage.getItem(KEY));if(s&&Array.isArray(s.anime)){try{s=migrateSyncLibrary(s,localStorage,KEY)}catch(err){console.warn('Sync migration backup unavailable',err)}if(Array.isArray(s.tvShows)&&s.tvShows.length){try{const backupKey=KEY+'_before_tv_unify_120';if(!localStorage.getItem(backupKey))localStorage.setItem(backupKey,JSON.stringify(s))}catch(err){console.warn('TV backup unavailable',err)}}const merged=window.ATTVUnified120.migrate(s.anime.map(normalized).filter(Boolean),normalizeTVShows(s.tvShows),normalized);return {...(s.syncSchema?{syncSchema:s.syncSchema,deleted:s.deleted||{}}:{}),anime:merged.anime,tvShows:[],readingLibrary:normalizeReadingLibrary(s.readingLibrary),history:Array.isArray(s.history)?s.history.filter(h=>h&&typeof h==='object'):[],preferences:normalizePreferences(s.preferences)}}}catch(e){console.warn('Nuk u lexuan të dhënat:',e)}return{anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}}}
-function accountCompact(value){if(value)validateLibrary(value);return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value):value}
+function accountCompact(value){if(value)validateLibrary(value);return window.ATCloudLocal12123?.compact?window.ATCloudLocal12123.compact(value,syncClock.now()):value}
 // Keep verified episode metadata on this device; only uploads use accountCompact.
 function accountLocalSnapshot(value=state){return value}
-function accountMergeRecovery(remote,local){return window.ATCloudLocal12123?.merge?window.ATCloudLocal12123.merge(remote,local):local}
-function accountHydrateRemote(remote,rich=state){return window.ATCloudLocal12123?.hydrate?window.ATCloudLocal12123.hydrate(remote,rich):remote}
+function accountMergeRecovery(remote,local){return window.ATCloudLocal12123?.merge?window.ATCloudLocal12123.merge(remote,local,syncClock.now()):local}
+function accountHydrateRemote(remote,rich=state){return window.ATCloudLocal12123?.hydrate?window.ATCloudLocal12123.hydrate(remote,rich,syncClock.now()):remote}
 function repairLibraryState(){
  const result=window.ATLibraryIdentity137?.repair(state);if(!result?.changed)return false;
  state=result.payload;for(const a of state.anime)syncTotals(a);
@@ -1290,7 +1293,7 @@ function accountWakeCloud(force=false){
  if(accountMode!=='cloud'||!accountUser||!navigator.onLine)return;
  const now=Date.now();if(!force&&now-cloudLastWakeAt<1500)return;cloudLastWakeAt=now;
  accountStartRealtime(accountUser.id);
- if(cloudDirty){if(!cloudSaving&&!cloudConflict)void accountPush(false);return}
+ if(cloudDirty){if(!cloudSaving)void accountPush(false);return}
  if(!cloudSaving&&!accountBusy)void accountPullQuiet();
 }
 
@@ -1315,9 +1318,15 @@ function accountApplyRemoteRecord(record){
 }
 function accountRefreshViews(preserveReading=false){if(preserveReading&&view==='reading'){render();renderUpcoming();proApp?.renderBackground?.();accountUI();releaseExperience?.ready();return}filter='all';search='';$('search').value='';$('global-search').value='';if(typeof clearCatalog==='function')clearCatalog();render();renderUpcoming();setView('home');accountUI();releaseExperience?.ready()}
 
+async function accountClock(client,key){
+ const start=performance.now();
+ try{const {data,error}=await client.rpc('animetrack_server_time');if(!error&&syncClock.observe(data,start))localStorage.setItem(key+'_server_offset_1426',String(syncClock.offset()))}catch(err){console.warn('Server clock calibration unavailable',err)}
+}
 async function accountOpenCloud(user){
  if(!user?.id)throw Error('Nuk u verifikua llogaria.');
  const client=accountInitClient(),uid=user.id,key='animetrack_user_'+uid;
+ syncClock.restore(localStorage.getItem(key+'_server_offset_1426'));
+ await accountClock(client,key);
  await libraryRepository.refresh(key);
  const journal=window.ATSync126.pending(localStorage,key);
  let cached=null;
@@ -1341,7 +1350,7 @@ async function accountOpenCloud(user){
  if(status==='pending'){
   state=remote?accountMergeRecovery(remote,cached):cached;cloudDirty=!!journal;cloudConflict=false;
   const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
- }else if(status==='remote-newer'||status==='local-newer'){
+ }else if(status==='diverged'){
   // Both copies moved from the same base. Merge progress first, then conditionally
   // push against the exact Supabase updated_at revision that we just read.
   state=accountMergeRecovery(remote,cached);cloudDirty=true;cloudConflict=false;cloudRevision=data?.updated_at||cloudRevision;
@@ -1373,60 +1382,48 @@ function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudD
 
 async function accountPush(showResult=true){
  if(accountMode!=='cloud'||!accountUser||cloudSaving)return;
- const uid=accountUser.id;
- if(!navigator.onLine){cloudConnected=false;accountUI();if(showResult)accountStatus('Pa internet. Progresi është ruajtur lokalisht dhe do të dërgohet kur të rikthehet lidhja.','error');return}
- if(!cloudDirty){if(showResult)accountStatus('Biblioteka është e sinkronizuar ✓','ok');return}
- let overwrite=false;
- if(cloudConflict){
-  if(!showResult)return;
-  overwrite=confirm('Cloud ka një version më të ri të bibliotekës. Të zëvendësosh versionin online me ndryshimet e kësaj pajisjeje? Anulo dhe përdor Rifresko për të zgjedhur kopjen cloud.');
-  if(!overwrite){accountStatus('Konflikt i bibliotekës: ndryshimet lokale mbeten në pajisje. Zgjidh Rifresko ose Ruaj në cloud për të vendosur cilën kopje të mbash.','error');return}
- }
+ const uid=accountUser.id,key=KEY;
+ if(!navigator.onLine){cloudConnected=false;accountUI();return}
+ if(!cloudDirty)return;
  clearTimeout(cloudTimer);cloudSaving=true;accountUI();
  try{
-  const table=accountInitClient().from('anime_libraries');
-  if(!cloudBaseKnown&&!overwrite){
-   // Offline login never authorizes a blind upload; first verify the base version.
-   const baseline=await table.select('payload,updated_at').eq('user_id',uid).maybeSingle();
-   if(baseline.error)throw baseline.error;
+  const client=accountInitClient();
+  await accountClock(client,key);
+  for(let attempt=0;attempt<4;attempt++){
    if(accountUser?.id!==uid||accountMode!=='cloud')return;
-   const local=accountCompact(state),record=window.ATSync126.pending(localStorage,KEY);
-   const check=window.ATSync126.remoteStatus(local,record,baseline.data,payload=>accountCompact(accountNormalizePayload(payload)));
-   if(check==='same'){
-    cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;cloudConnected=true;cloudConflict=false;cloudDirty=false;
-    try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,false)}catch(err){console.warn('Cloud journal cleanup failed',err)}
-    if(showResult)accountStatus('Progresi ishte tashmë i sinkronizuar ✓','ok');
-    return;
+   if(attempt||!cloudBaseKnown||cloudConflict){
+    const baseline=await client.from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();
+    if(baseline.error)throw baseline.error;
+    if(accountUser?.id!==uid||accountMode!=='cloud')return;
+    if(baseline.data?.payload){
+     const remoteBase=accountNormalizePayload(baseline.data.payload);
+     state=accountMergeRecovery(remoteBase,state);
+     const result=window.ATStorage1274.save(localStorage,key,accountLocalSnapshot(state),baseline.data.updated_at,true,window.ATSync126);
+     if(!result.ok){cloudMirrorUnavailable=true;throw Error('Kopja lokale nuk u ruajt. Eksporto kopje rezervë.')}
+     acceptSyncState();render();renderHome();renderUpcoming();
+    }
+    cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;cloudConflict=false;
    }
-   if(check==='remote-newer'||check==='local-newer'){
-    const remoteBase=baseline.data?.payload?accountNormalizePayload(baseline.data.payload):null;
-    if(!remoteBase)throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
-    state=accountMergeRecovery(remoteBase,state);
-    const mirror=window.ATStorage1274.write(localStorage,KEY,JSON.stringify(accountLocalSnapshot(state)));cloudMirrorUnavailable=!mirror.ok;
-    acceptSyncState();cloudRevision=baseline.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudDirty=true;
-   }else if(check==='conflict'||(!record&&baseline.data?.updated_at!==window.ATSync126.revision(localStorage,KEY))){
-    throw Object.assign(Error('Cloud u ndryshua në pajisje tjetër.'),{cloudConflict:true});
-   }else{
-    cloudRevision=baseline.data?.updated_at||null;cloudBaseKnown=true;
-   }
+   const payload=accountCompact(state),table=client.from('anime_libraries');
+   const result=cloudRevision
+    ?await table.update({payload}).eq('user_id',uid).eq('updated_at',cloudRevision).select('updated_at').maybeSingle()
+    :await table.insert({user_id:uid,payload}).select('updated_at').maybeSingle();
+   if(accountUser?.id!==uid||accountMode!=='cloud')return;
+   if(result.error&&result.error.code!=='23505')throw result.error;
+   if(result.error||!result.data?.updated_at)continue;
+   cloudRevision=result.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudConnected=true;
+   cloudLastSync=new Date(cloudRevision).toLocaleString('sq-AL');
+   const changed=JSON.stringify(accountCompact(state))!==JSON.stringify(payload);cloudDirty=changed;
+   window.ATSync126.acknowledge(localStorage,key,cloudRevision,changed);
+   if(changed)cloudTimer=setTimeout(()=>accountPush(false),180);
+   if(showResult)accountStatus('Ruajtur në cloud ✓ · '+cloudLastSync,'ok');
+   return;
   }
-  const payload=accountCompact(state);let result;
-  if(overwrite)result=await table.upsert({user_id:uid,payload},{onConflict:'user_id'}).select('updated_at').maybeSingle();
-  else if(cloudRevision)result=await table.update({payload}).eq('user_id',uid).eq('updated_at',cloudRevision).select('updated_at').maybeSingle();
-  else result=await table.insert({user_id:uid,payload}).select('updated_at').maybeSingle();
-  if(result.error){if(result.error.code==='23505')throw Object.assign(Error('Një pajisje tjetër krijoi bibliotekën e re.'),{cloudConflict:true});throw result.error}
-  if(!result.data?.updated_at)throw Object.assign(Error('Cloud ka një version tjetër të bibliotekës.'),{cloudConflict:true});
-  if(accountUser?.id!==uid)return;
-  cloudRevision=result.data.updated_at;cloudBaseKnown=true;cloudConflict=false;cloudConnected=true;cloudLastSync=new Date().toLocaleString('sq-AL');
-  const changed=JSON.stringify(accountCompact(state))!==JSON.stringify(payload);cloudDirty=changed;
-  try{window.ATSync126.acknowledge(localStorage,KEY,cloudRevision,changed)}catch(err){console.warn('Cloud journal update failed',err)}
-  if(changed)cloudTimer=setTimeout(()=>accountPush(false),180);
-  if(showResult)accountStatus('Ruajtur në cloud ✓ · '+cloudLastSync,'ok');
- }catch(e){if(accountUser?.id===uid){
-  cloudConnected=false;cloudDirty=true;
-  if(e.cloudConflict){cloudConflict=true;accountStatus('Konflikt i sigurt: një pajisje tjetër ka ruajtur një version më të ri. Progresi lokal nuk u fshi. Zgjidh Rifresko ose Ruaj në cloud për ta zgjidhur.','error')}
-  else {accountStatus('Nuk u sinkronizua: '+e.message+' · Ruajtja lokale për llogarinë tënde mbetet.','error');if(showResult)notify('Cloud nuk u lidh. Provo përsëri.');clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>{if(accountMode==='cloud'&&accountUser?.id===uid&&cloudDirty&&!cloudSaving&&!cloudConflict&&navigator.onLine)void accountPush(false)},30000)}
- }}finally{cloudSaving=false;accountUI();if(cloudRealtimePending&&!cloudDirty&&!cloudConflict)accountScheduleRemotePull(40)}
+  cloudConflict=true;accountStatus('Biblioteka po ndryshon në pajisje tjetër. Progresi lokal mbetet; riprovo bashkimin.','error');
+ }catch(error){
+  if(accountUser?.id===uid){cloudConnected=false;cloudDirty=true;accountStatus('Sinkronizimi do të riprovohet. Kopja lokale mbetet e ruajtur. '+error.message,'error');
+   clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>{if(accountUser?.id===uid&&cloudDirty&&navigator.onLine)void accountPush(false)},30000)}
+ }finally{cloudSaving=false;accountUI();if(cloudRealtimePending&&!cloudDirty&&!cloudConflict)accountScheduleRemotePull(40)}
 }
 
 let quietCloudPullBusy=false;
@@ -1434,6 +1431,7 @@ async function accountPullQuiet(){
  if(quietCloudPullBusy||accountMode!=='cloud'||!accountUser||cloudDirty||cloudSaving||accountBusy)return false;
  const uid=accountUser.id;quietCloudPullBusy=true;
  try{
+  await accountClock(accountInitClient(),KEY);
   const {data,error}=await accountInitClient().from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();
   if(error)throw error;
   if(accountUser?.id!==uid||cloudDirty||cloudSaving||accountMode!=='cloud')return false;
@@ -1456,6 +1454,7 @@ async function accountPull(manual=false){
  if(cloudDirty){if(manual&&!confirm('Ke ndryshime lokale që nuk janë sinkronizuar. Të shkarkosh cloud mund t’i zëvendësojë. Vazhdo?'))return;if(!manual)return}
  const uid=accountUser.id,prior=JSON.stringify(state);
  try{
+  await accountClock(accountInitClient(),KEY);
   const {data,error}=await accountInitClient().from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();
   if(error)throw error;
   if(accountUser?.id!==uid||JSON.stringify(state)!==prior){if(manual)accountStatus('Biblioteka ndryshoi gjatë shkarkimit; nuk e zëvendësuam kopjen lokale.','error');return}
@@ -1952,7 +1951,7 @@ const proContext={
  canReload:()=>!cloudSaving&&!(cloudDirty&&cloudMirrorUnavailable),
  watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict,mirrorUnavailable:cloudMirrorUnavailable}),
  openSettings:()=>{setView('profile');proApp.modules.profiles.setTab('settings')},
- retrySync:async()=>{if(cloudConflict){accountToggle(true);return}if(cloudDirty)await accountPush(true);else await accountPullQuiet(true)},
+ retrySync:async()=>{if(cloudDirty)await accountPush(true);else await accountPullQuiet(true)},
  syncReminderJobs:()=>proApp.modules.push.scheduleSync(),
  openDiscussion:key=>{
   const m=/^(mal|al|tv):(\d+):(\d+)$/.exec(String(key||''));if(!m)return false;
@@ -2046,7 +2045,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 
 // AnimeTrack 12.15 — Movies as a third first-class media type.
 function at150FlushCloud(){
- if(accountMode!=='cloud'||!accountUser||!cloudDirty||cloudSaving||cloudConflict||!navigator.onLine)return;
+ if(accountMode!=='cloud'||!accountUser||!cloudDirty||cloudSaving||!navigator.onLine)return;
  clearTimeout(cloudTimer);void accountPush(false);
 }
 

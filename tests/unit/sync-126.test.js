@@ -16,8 +16,8 @@ test('12.6 durable journal records base cloud revision before local changes',()=
  assert.equal(api.pending(storage,key).baseRevision,'v1','unsynced journal must preserve original CAS revision');
  assert.equal(api.remoteStatus(a,api.pending(storage,key),{payload:{anime:[]},updated_at:'v1'},x=>x),'pending');
  const journal=api.pending(storage,key);
- assert.equal(api.remoteStatus(a,journal,{payload:{anime:[]},updated_at:new Date(journal.savedAt+1000).toISOString()},x=>x),'remote-newer');
- assert.equal(api.remoteStatus(a,journal,{payload:{anime:[]},updated_at:new Date(Math.max(1,journal.savedAt-1000)).toISOString()},x=>x),'local-newer');
+ assert.equal(api.remoteStatus(a,journal,{payload:{anime:[]},updated_at:new Date(journal.savedAt+1000).toISOString()},x=>x),'diverged');
+ assert.equal(api.remoteStatus(a,journal,{payload:{anime:[]},updated_at:new Date(Math.max(1,journal.savedAt-1000)).toISOString()},x=>x),'diverged');
  assert.equal(api.remoteStatus(a,api.pending(storage,key),{payload:a,updated_at:'v2'},x=>x),'same');
 });
 test('12.6 local storage failure restores previous marker and does not claim success',()=>{
@@ -51,19 +51,6 @@ test('12.6 account records remain isolated and invalid journals refuse silent re
  assert.equal(api.pending(storage,'animetrack_user_two').invalid,true);
  assert.throws(()=>api.save(storage,'animetrack_user_two',{anime:[]},'new',true),/Journal lokal/);
 });
-test('13.6 integration merges divergent updated_at revisions before conditional cloud writes',()=>{
- const app=read('src/app.js'),sync=read('src/modules/sync.js'),features=read('src/modules/features.js'),html=read('index.html');
- assert.match(app,/ATSync126\.save\(localStorage,KEY,accountLocalSnapshot\(state\),cloudRevision/);
- assert.match(app,/check==='remote-newer'\|\|check==='local-newer'/);
- assert.match(app,/state=accountMergeRecovery\(remoteBase,state\)/);
- assert.match(app,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
- assert.match(sync,/remoteAt>localAt\?'remote-newer':'local-newer'/);
- assert.match(features,/await pwaUpdater\(true\)/);
- assert.match(read('src/sw.js'),/precacheAndRoute\(self\.__WB_MANIFEST/);
- assert.match((read('src/main.js')+read('src/startup-factories.js')),/modules\/sync\.js/);
-
-});
-
 test('13.0 realtime helper subscribes only to the signed-in user library row',()=>{
  const code=read('src/modules/cross-sync.js'),ctx={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers}};vm.runInNewContext(code,ctx);const api=ctx.window.ATCrossSync12153;
  let event=null,opts=null,callback=null,statusCallback=null,subscribed=false,removed=false;

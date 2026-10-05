@@ -27,7 +27,7 @@ export function createLibraryModel(dependencies = {}) {
   }
 
   function now() {
-    return new Date().toISOString();
+    return dependencies.mergeNow?.() || new Date().toISOString();
   }
 
   function genresOf(a) {
