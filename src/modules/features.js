@@ -78,7 +78,8 @@ export function createFeatures(ctx){
   catch(e){console.warn('Live refresh failed',e);return {status:'error'}}
   finally{liveBusy=false;document.body.classList.remove('at-live-checking');if(!['collections','profile','friends','moderation','sync'].includes(active))render();renderHome()}
  }
- function renderHome(){
+ function renderHome(){if(ctx.scheduleHome){ctx.scheduleHome();return}renderHomeNow()}
+ function renderHomeNow(){
   spotlight?.refresh();
   if(product&&window.matchMedia('(max-width: 760px)').matches){product.refresh();return}
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
@@ -292,5 +293,5 @@ export function createFeatures(ctx){
    if(op.startsWith('rewatch-'))return modules.rewatch.action(op,id);
   }catch(err){ctx.toast('Veprimi nuk u krye: '+String(err.message||err).slice(0,120))}
  }
- return{product,details,init,open,hide,syncMobile,onAccount,onStateChange,renderRewatch,renderHome,render,renderBackground,modules};
+ return{product,details,init,open,hide,syncMobile,onAccount,onStateChange,renderRewatch,renderHome,renderHomeNow,render,renderBackground,modules};
 }

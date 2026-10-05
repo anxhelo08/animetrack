@@ -195,6 +195,10 @@ test('rapid mobile navigation preserves styles, cached cards and progress with 1
     .poll(() => page.evaluate(() => document.body.classList.contains('at-live-checking')))
     .toBe(false);
   await page.locator('.at-mobile-nav [data-mobile-nav="library"]').tap();
+  await expect(page.locator('#anime-grid .anime-card')).toHaveCount(30);
+  await page.evaluate(() => {
+    for (let i = 0; i < 3; i++) document.getElementById('library-load-more').click();
+  });
   await expect(page.locator('#anime-grid .anime-card')).toHaveCount(100);
   await page.evaluate(() => {
     window.hiddenGridWrites = 0;

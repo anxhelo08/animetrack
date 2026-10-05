@@ -2476,3 +2476,6 @@
     font-size: 12px;
   }
 }
+
+.library-load-more { display: block; margin: 24px auto; min-height: 44px; }
+.library-load-more[hidden] { display: none; }
