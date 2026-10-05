@@ -115,6 +115,13 @@ export function createProductExperience(ctx) {
       bar = $('product-sync');
     if (!bar) return;
     const signature = JSON.stringify(presentation) + retrying;
+    const mobileStatus = $('mobile-sync-status');
+    if (mobileStatus) {
+      mobileStatus.dataset.state = presentation.kind;
+      if (mobileStatus.textContent !== presentation.label)
+        mobileStatus.textContent = presentation.label;
+      mobileStatus.title = presentation.text;
+    }
     const pill = $('account-sync-pill');
     if (pill) {
       pill.textContent = presentation.label;
@@ -303,7 +310,10 @@ export function createProductExperience(ctx) {
   }
   function mount() {
     ctx.subscribe?.((_state, event) => {
-      if (event.reason === 'account') refresh();
+      if (event.reason === 'account') {
+        if (owner === String(ctx.user?.()?.id || '')) sync();
+        else refresh();
+      }
     });
     const nav = $('side-nav'),
       legacy = document.createElement('div');
@@ -341,6 +351,11 @@ export function createProductExperience(ctx) {
     );
     document.querySelector('.topbar').after(tools);
     const bar = document.createElement('section');
+    const mobileStatus = document.createElement('output');
+    mobileStatus.id = 'mobile-sync-status';
+    mobileStatus.setAttribute('role', 'status');
+    mobileStatus.setAttribute('aria-live', 'polite');
+    document.body.append(mobileStatus);
     bar.id = 'product-sync';
     bar.className = 'product-sync';
     bar.setAttribute('role', 'status');

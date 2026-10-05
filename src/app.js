@@ -1385,7 +1385,7 @@ async function accountOpenCloud(user){
  else accountStatus('Biblioteka u shkarkua nga cloud · '+cloudLastSync,'ok');
 }
 
-function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudDirty=true;cloudConnected=false;accountUI();clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>accountPush(false),120)}
+function accountQueueSave(){if(accountMode!=='cloud'||!accountUser)return;cloudDirty=true;accountUI();clearTimeout(cloudTimer);cloudTimer=setTimeout(()=>accountPush(false),120)}
 
 async function accountPush(showResult=true){
  if(accountMode!=='cloud'||!accountUser||cloudSaving)return;
@@ -1959,7 +1959,7 @@ const proContext={
  liveStatus:()=>({at:upcomingCheckedAt,failed:upcomingFailures,busy:upcomingBusy,cloud:cloudConnected}),
  canReload:()=>!cloudSaving&&!(cloudDirty&&cloudMirrorUnavailable),
  scheduleHome:()=>renderHome(),
- watchSaveStatus:()=>({mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict,mirrorUnavailable:cloudMirrorUnavailable}),
+ watchSaveStatus:()=>({lastSyncedAt:cloudRevision,mode:accountMode,dirty:cloudDirty,saving:cloudSaving,connected:cloudConnected,conflict:cloudConflict,mirrorUnavailable:cloudMirrorUnavailable}),
  openSettings:()=>{setView('profile');proApp.modules.profiles.setTab('settings')},
  retrySync:async()=>{if(cloudDirty)await accountPush(true);else await accountPullQuiet(true)},
  syncReminderJobs:()=>proApp.modules.push.scheduleSync(),

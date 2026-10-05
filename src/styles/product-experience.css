@@ -277,3 +277,34 @@ body.at-ios-enabled .product-tools .nav-label {
 .sync-decision-dialog button {
   min-height: 44px;
 }
+
+#mobile-sync-status {
+  display: none;
+}
+@media (max-width: 760px) {
+  #mobile-sync-status {
+    display: block;
+    position: fixed;
+    right: 12px;
+    bottom: calc(82px + env(safe-area-inset-bottom));
+    z-index: 90;
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 11px;
+    max-width: calc(100vw - 24px);
+    pointer-events: none;
+  }
+  #mobile-sync-status[data-state='synced'] {
+    color: var(--text);
+  }
+  #mobile-sync-status[data-state='conflict'],
+  #mobile-sync-status[data-state='warning'] {
+    color: #f4c879;
+  }
+  body.auth-required #mobile-sync-status {
+    display: none;
+  }
+}

@@ -51,7 +51,7 @@ window.ATCalendarWrapped=function ATCalendarWrapped(ctx){
  function wrapped(){return window.ATWrapped129.render(wrappedReport(),{badgeFilter})}
  // Share the all-time analysis across profile and badge refreshes until library/account data changes.
  let allReport=null,allReportState=null,allReportDay='',allReportOwner='';
- ctx.subscribe?.(()=>{allReport=null});
+ ctx.subscribe?.((_state,event)=>{if(event?.reason!=='account')allReport=null});
  function allTimeReport(){
   const state=ctx.state(),now=new Date(),day=dateKey(now),owner=String(ctx.user?.()?.id||'guest');
   if(!ctx.subscribe||!allReport||allReportState!==state||allReportDay!==day||allReportOwner!==owner){

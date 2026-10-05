@@ -108,3 +108,28 @@ test('a failed connection remains visible while local changes are waiting to syn
   expect(syncPresentation({ ...failed, saving: true }).kind).toBe('saving');
   expect(syncPresentation({ ...failed, connected: true }).kind).toBe('pending');
 });
+
+test('mobile sync state exposes last server time and saving, conflict and offline transitions', () => {
+  const { product, ctx } = fixture();
+  let status = { mode: 'cloud', connected: true, lastSyncedAt: '2026-10-05T12:00:00Z' };
+  ctx.watchSaveStatus = () => status;
+  product.refresh();
+  const node = document.querySelector('#mobile-sync-status');
+  expect(node.dataset.state).toBe('synced');
+  expect(node.textContent).toContain(
+    new Date(status.lastSyncedAt).toLocaleTimeString('sq-AL', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }),
+  );
+  status = { ...status, dirty: true, saving: true };
+  product.refresh();
+  expect(node.dataset.state).toBe('saving');
+  status = { ...status, conflict: true };
+  product.refresh();
+  expect(node.dataset.state).toBe('conflict');
+  vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+  status = { ...status, conflict: false, saving: false };
+  product.refresh();
+  expect(node.dataset.state).toBe('offline');
+});

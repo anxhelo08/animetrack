@@ -46,7 +46,19 @@ export function syncPresentation(info = {}, online = true) {
       text: 'Progresi është në pajisje dhe pret sinkronizimin.',
     };
   if (info.connected)
-    return { kind: 'synced', label: 'E sinkronizuar', text: 'Progresi është ruajtur në llogari.' };
+    return {
+      kind: 'synced',
+      label:
+        'E sinkronizuar' +
+        (Number.isFinite(Date.parse(info.lastSyncedAt))
+          ? ' · ' +
+            new Date(info.lastSyncedAt).toLocaleTimeString('sq-AL', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : ''),
+      text: 'Progresi është ruajtur në llogari.',
+    };
   return {
     kind: 'error',
     label: 'Lidhja nuk u krye',
