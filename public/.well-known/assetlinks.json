@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.animetrack.app",
+      "sha256_cert_fingerprints": [
+        "2F:11:98:8A:49:99:AD:7B:E2:B2:12:3B:E9:7A:CE:FD:2B:51:D4:68:75:12:0C:47:50:67:06:6A:5F:97:83:1A"
+      ]
+    }
+  }
+]

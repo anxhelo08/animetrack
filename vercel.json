@@ -28,6 +28,45 @@
           "value": "max-age=31536000; includeSubDomains"
         }
       ]
+    },
+    {
+      "source": "/downloads/AnimeTrack.apk",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/vnd.android.package-archive"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"AnimeTrack.apk\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/.well-known/assetlinks.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/downloads/android.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
     }
   ],
   "buildCommand": "npm run build",

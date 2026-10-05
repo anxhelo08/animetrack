@@ -1,0 +1,43 @@
+plugins { id 'com.android.application' }
+
+def keyPath = System.getenv('ANDROID_KEYSTORE_PATH')
+def signingPassword = System.getenv('ANDROID_KEYSTORE_PASSWORD')
+def keyAliasValue = System.getenv('ANDROID_KEY_ALIAS') ?: 'animetrack'
+android {
+    namespace 'com.animetrack.app'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.animetrack.app'
+        minSdk 26
+        targetSdk 36
+        versionCode 1
+        versionName '14.24.0'
+    }
+    signingConfigs {
+        release {
+            if (keyPath && signingPassword) {
+                storeFile file(keyPath)
+                storePassword signingPassword
+                keyAlias keyAliasValue
+                keyPassword signingPassword
+            }
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+        }
+    }
+}
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.3'
+}
+tasks.register('requireReleaseSigning') {
+    doLast {
+        if (!keyPath || !signingPassword) throw new GradleException('Configure ANDROID_KEYSTORE_PATH and ANDROID_KEYSTORE_PASSWORD for a signed release.')
+    }
+}
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach {
+    dependsOn tasks.named('requireReleaseSigning')
+}

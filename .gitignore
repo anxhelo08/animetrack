@@ -5,3 +5,11 @@ test-results/
 .DS_Store
 *.log
 .lighthouseci/
+android/.gradle/
+android/**/build/
+android/local.properties
+*.keystore
+*.jks
+*.p12
+*.pfx
+.android-signing/
