@@ -265,3 +265,15 @@ body.at-ios-enabled .product-tools .nav-label {
     min-height: 44px;
   }
 }
+
+.sync-decision-dialog {
+  max-width: min(440px, calc(100vw - 32px));
+  padding: 24px;
+}
+.sync-decision-dialog p {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.sync-decision-dialog button {
+  min-height: 44px;
+}
