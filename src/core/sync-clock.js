@@ -5,6 +5,7 @@ export function createSyncClock({ wall = Date.now, monotonic = () => performance
     anchor = wall(),
     tick = monotonic();
   function restore(value) {
+    observed = false;
     offset = Number.isFinite(Number(value)) ? Number(value) : 0;
     anchor = wall() + offset;
     tick = monotonic();

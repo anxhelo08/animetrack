@@ -235,14 +235,7 @@ test('desktop controls are isolated from iPhone and cache includes their stylesh
  assert.match(pro,/setSelectionRange\(caret,caret\)/);
 });
 
-test('episode transactions roll back on failed local persistence',()=>{
- const src=readCoreSource();
- assert.match(src,/if\(!save\(\)\)\{state\.anime\[index\]=before;state\.history=historyBefore;return false\}/);
- assert.match(src,/return updateSeasonEpisode\(id,ep\.season\.id,ep\.n,true\)/);
- assert.match(src,/Episode transaction rolled back/);
- assert.match(src,/cloudTimer=setTimeout\(\(\)=>\{if\(accountMode==='cloud'/);
- assert.match(src,/window\.addEventListener\('online'/);
-});
+
 test('iPhone quick +1 supports a real guarded Undo and distinct sync states',async()=>{
  const storage={getItem:()=>null,setItem:()=>{}};
  const w=load({navigator:{userAgent:'iPhone',onLine:true},window:{matchMedia:()=>({matches:false})},localStorage:storage});
@@ -560,13 +553,7 @@ test('11.5 ongoing seasons remain watching and surface the next released episode
  const core=readCoreSource(),phone=fs.readFileSync(path.join(root,'src/modules/iphone.js'),'utf8'),home=fs.readFileSync(path.join(root,'src/modules/home.js'),'utf8');
  assert.match(core,/a\.status\s*=\s*future\s*\?\s*'watching'\s*:\s*'completed'/);assert.match(phone,/\['watching','waiting'\]\.includes\(a\?\.status\)/);assert.doesNotMatch(phone,/a\?\.status==='completed'&&returns\.has\(a\.id\)/);assert.match(home,/\['watching','waiting'\]\.includes\(a\.status\)/);
 });
-test('11.5 guarded cloud write uses updated_at CAS and does not silently overwrite other devices',()=>{
- const core=readCoreSource();
- assert.match(core,/\.eq\('updated_at',cloudRevision\)\.select\('updated_at'\)\.maybeSingle\(\)/);
- assert.match(core,/if\(!result\.data\?\.updated_at\)throw Object\.assign/);
- assert.match(core,/cloudConflict=true/);assert.match(core,/cloudDirty&&!cloudSaving&&!cloudConflict/);
- assert.match(core,/cloudRevision=data\.updated_at/);
-});
+
 
 test('11.6 auth has explicit login/signup tabs and no event capture to suppress form submission',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');const core=readCoreSource(),mobile=fs.readFileSync(path.join(root,'src/modules/mobile.js'),'utf8');

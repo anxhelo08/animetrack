@@ -48,7 +48,7 @@ test('12.7.4 retrying a cloud mutation retains its original journal and latest s
  assert.equal(result.ok,true);
  assert.equal(JSON.parse(storage.getItem(key)).anime[0].watched.length,2);
  assert.equal(sync.pending(storage,key).baseRevision,'r1');
- assert.equal(sync.remoteStatus(state,sync.pending(storage,key),{payload:{anime:[]},updated_at:'r2'},x=>x),'conflict');
+ assert.equal(sync.remoteStatus(state,sync.pending(storage,key),{payload:{anime:[]},updated_at:'r2'},x=>x),'diverged');
 });
 test('12.7.4 persistent recovery gate is wired before app, and no site-data reset exists',()=>{
  const html=read('index.html'),sw=read('src/sw.js'),core=read('src/app.js'),css=read('src/styles/tracking-media.css'),pkg=JSON.parse(read('package.json'));

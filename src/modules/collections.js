@@ -28,7 +28,7 @@ window.ATCollections110=function ATCollections110(ctx){
   if(text.length<2){ctx.toast('Shkruaj një emër me të paktën 2 karaktere.');return false}
   if(lists().length>=LIMIT){ctx.toast('Mund të krijosh deri në 12 lista.');return false}
   if(lists().some(x=>x.title.toLocaleLowerCase()===text.toLocaleLowerCase())){ctx.toast('Një listë me këtë emër ekziston.');return false}
-  const id='list-'+ctx.uuid(),now=new Date().toISOString(),created={id,title:text,animeIds:[],createdAt:now,updatedAt:now};
+  const id='list-'+ctx.uuid(),now=(ctx.mergeStamp?.()||new Date().toISOString()),created={id,title:text,animeIds:[],createdAt:now,updatedAt:now};
   if(!saveMutation(rows=>rows.push(created)))return false;
   selected=id;ctx.toast('Lista u krijua ✓');ctx.rerender(true);return true;
  }
@@ -37,7 +37,7 @@ window.ATCollections110=function ATCollections110(ctx){
   if(!a||!list)return false;
   const has=list.animeIds.includes(itemId);
   if(!has&&list.animeIds.length>=ITEM_LIMIT){ctx.toast('Lista ka arritur 150 anime.');return false}
-  if(!saveMutation(rows=>{const target=rows.find(x=>x.id===listId);target.animeIds=has?target.animeIds.filter(id=>id!==itemId):[...target.animeIds,itemId];target.updatedAt=new Date().toISOString()}))return false;
+  if(!saveMutation(rows=>{const target=rows.find(x=>x.id===listId);target.animeIds=has?target.animeIds.filter(id=>id!==itemId):[...target.animeIds,itemId];target.updatedAt=(ctx.mergeStamp?.()||new Date().toISOString())}))return false;
   if(pending===itemId)pending='';
   ctx.toast(has?'Anime u hoq nga lista ✓':'Anime u shtua në listë ✓');
   ctx.rerender(true);return true;
@@ -52,7 +52,7 @@ window.ATCollections110=function ATCollections110(ctx){
   syncOwner();const target=lists().find(x=>x.id===listId),name=String(title||'').replace(/\s+/g,' ').trim().slice(0,50);
   if(!target||name.length<2)return false;
   if(lists().some(x=>x.id!==listId&&x.title.toLocaleLowerCase()===name.toLocaleLowerCase())){ctx.toast('Ky emër përdoret nga një listë tjetër.');return false}
-  if(!saveMutation(rows=>{const item=rows.find(x=>x.id===listId);item.title=name;item.updatedAt=new Date().toISOString()}))return false;
+  if(!saveMutation(rows=>{const item=rows.find(x=>x.id===listId);item.title=name;item.updatedAt=(ctx.mergeStamp?.()||new Date().toISOString())}))return false;
   ctx.toast('Emri u ndryshua ✓');ctx.rerender(true);return true;
  }
  function pickAnime(id){

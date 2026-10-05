@@ -1,0 +1,63 @@
+{
+  "environment": "Chromium iPhone 15 layout, 500 titles, 4x CPU throttle, local Vite preview; first click through first nonempty grid plus an animation frame; long tasks overlapping that interval and 200ms observer delivery",
+  "before": {
+    "firstRenderMs": 2636,
+    "initialCards": 500,
+    "start": 2415,
+    "longTasks": [
+      {
+        "start": 2292.800000000745,
+        "duration": 1966
+      },
+      {
+        "start": 4607.10000000149,
+        "duration": 107
+      },
+      {
+        "start": 4847.699999999255,
+        "duration": 63
+      }
+    ],
+    "longTaskSummary": {
+      "count": 3,
+      "totalMs": 2136,
+      "maxMs": 1966
+    }
+  },
+  "after": {
+    "firstRenderMs": 1024,
+    "initialCards": 30,
+    "start": 2089,
+    "longTasks": [
+      {
+        "start": 1990.6000000014901,
+        "duration": 107
+      },
+      {
+        "start": 2191,
+        "duration": 257
+      },
+      {
+        "start": 2502.400000002235,
+        "duration": 93
+      },
+      {
+        "start": 2596.60000000149,
+        "duration": 129
+      },
+      {
+        "start": 2739,
+        "duration": 97
+      },
+      {
+        "start": 2907.7000000029802,
+        "duration": 63
+      }
+    ],
+    "longTaskSummary": {
+      "count": 6,
+      "totalMs": 746,
+      "maxMs": 257
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { migrateSyncLibrary, captureSyncState, recordSyncChanges } from '../../src/core/sync-tombstones.js';
 import {htmlHelpers,avatarHelpers} from '../helpers/html.js';
 import {test,expect} from 'vitest';
 import fs from 'node:fs';
@@ -79,7 +80,7 @@ test('a failed save rolls back automatic identity repair and keeps the original 
  const transaction=source.slice(source.indexOf('function repairLibraryState()'),source.indexOf('function notify(message)'));
  let queued=0,writes=0;
  window.ATStorage1274={save(){writes++;return{ok:false}}};
- const ctx={window,state:payload,detailId:'tvmaze-demon',activeSeasonId:'tvmaze-41469-s2',episodePage:3,accountMode:'guest',accountUser:null,cloudRevision:null,cloudMirrorUnavailable:false,accountLocalSnapshot:v=>v,syncTotals(){},releasedCount:s=>s.total,localStorage:{},KEY:'test',notify(){},accountUI(){},accountQueueSave(){queued++},console};
+ const ctx={migrateSyncLibrary:v=>v,recordSyncChanges,captureSyncState,acceptSyncState(){},syncBaseline:captureSyncState(payload),syncBaselineKey:'test',now:()=>new Date().toISOString(),window,state:payload,detailId:'tvmaze-demon',activeSeasonId:'tvmaze-41469-s2',episodePage:3,accountMode:'guest',accountUser:null,cloudRevision:null,cloudMirrorUnavailable:false,accountLocalSnapshot:v=>v,syncTotals(){},releasedCount:s=>s.total,localStorage:{},KEY:'test',notify(){},accountUI(){},accountQueueSave(){queued++},console};
  vm.runInNewContext(transaction,ctx);
  expect(ctx.save()).toBe(false);expect(writes).toBe(1);expect(queued).toBe(0);
  expect(JSON.stringify(ctx.state)).toBe(original);expect(ctx.detailId).toBe('tvmaze-demon');expect(ctx.activeSeasonId).toBe('tvmaze-41469-s2');expect(ctx.episodePage).toBe(3);

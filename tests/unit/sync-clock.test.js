@@ -18,3 +18,13 @@ test('server offset corrects a ten-minute clock skew and later wall-clock edits'
   expect(restored.iso()).toBe('2026-10-05T12:01:00.000Z');
   expect(clock.observe('old row, not a current server timestamp')).toBe(false);
 });
+
+test('switching owners recalibrates instead of retaining an earlier future anchor', () => {
+  let wall = Date.parse('2026-10-05T12:00:00Z');
+  const clock = createSyncClock({ wall: () => wall, monotonic: () => 0 });
+  clock.observe('2026-10-05T12:00:00Z');
+  wall += 600000;
+  clock.restore(0);
+  clock.observe('2026-10-05T12:00:00Z');
+  expect(clock.iso()).toBe('2026-10-05T12:00:00.000Z');
+});

@@ -105,3 +105,26 @@ test('tombstones older than 60 days are pruned and malformed timestamps are reje
   value.anime[0].seasons[0].unwatched = { '-1': 'bad' };
   expect(() => validateLibrary(value)).toThrow();
 });
+
+test('legacy date-only and absent dates migrate to valid ISO stamps without inventing fresh watches', () => {
+  const value = old();
+  value.anime[0].updatedAt = '2024-01-01';
+  const migrated = migrate(value);
+  validateLibrary(migrated);
+  expect(migrated.anime[0].seasons[0].watchedAt[4]).toBe('2024-01-01T00:00:00.000Z');
+  delete value.anime[0].updatedAt;
+  const missing = migrate(value);
+  validateLibrary(missing);
+  expect(missing.anime[0].seasons[0].watchedAt[4]).toBe('1970-01-01T00:00:00.000Z');
+});
+
+test('an old-format import retains prior tombstones and records intentional fresh progress separately', () => {
+  const value = migrate(old());
+  value.deleted = { removed: new Date(now).toISOString() };
+  value.anime[0].seasons[0].unwatched = { 6: new Date(now).toISOString() };
+  const before = captureSyncState(value),
+    incoming = old();
+  recordSyncChanges(before, incoming, new Date(now + 1000).toISOString());
+  expect(incoming.deleted.removed).toBe(value.deleted.removed);
+  expect(incoming.anime[0].seasons[0].unwatched[6]).toBe(value.anime[0].seasons[0].unwatched[6]);
+});

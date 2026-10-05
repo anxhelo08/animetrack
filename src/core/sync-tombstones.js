@@ -29,7 +29,11 @@ export function migrateSyncLibrary(value, storage, key, original = value) {
           ...Object.fromEntries(
             (s.watched || []).map((n) => [
               n,
-              a.updatedAt || a.createdAt || '1970-01-01T00:00:00.000Z',
+              new Date(
+                Number.isFinite(Date.parse(a.updatedAt || a.createdAt))
+                  ? Date.parse(a.updatedAt || a.createdAt)
+                  : 0,
+              ).toISOString(),
             ]),
           ),
           ...timestampMap(s.watchedAt),
@@ -38,26 +42,46 @@ export function migrateSyncLibrary(value, storage, key, original = value) {
     })),
   };
 }
-export function captureSyncState(value) {
-  return new Map(
-    (value.anime || []).map((a) => [
-      a.id,
-      new Map((a.seasons || []).map((s) => [s.id, new Set(s.watched || [])])),
+const latestTimes = (a = {}, b = {}) =>
+  Object.fromEntries(
+    [...new Set([...Object.keys(a), ...Object.keys(b)])].map((k) => [
+      k,
+      Date.parse(a[k]) > (Date.parse(b[k]) || 0) ? a[k] : b[k] || a[k],
     ]),
   );
+export function captureSyncState(value) {
+  return {
+    deleted: { ...(value.deleted || {}) },
+    anime: new Map(
+      (value.anime || []).map((a) => [
+        a.id,
+        new Map(
+          (a.seasons || []).map((s) => [
+            s.id,
+            {
+              watched: new Set(s.watched || []),
+              unwatched: { ...(s.unwatched || {}) },
+              watchedAt: { ...(s.watchedAt || {}) },
+            },
+          ]),
+        ),
+      ]),
+    ),
+  };
 }
 /** Capture intentional removals centrally, including editor/bulk/undo mutations. */
 export function recordSyncChanges(previous, value, stamp) {
   const at = Date.parse(stamp);
-  value.deleted = timestampMap(value.deleted, at, true);
+  value.deleted = timestampMap(latestTimes(previous.deleted, value.deleted), at, true);
   const current = new Set(value.anime.map((a) => a.id));
-  for (const id of previous.keys()) if (!current.has(id)) value.deleted[id] = stamp;
+  for (const id of previous.anime.keys()) if (!current.has(id)) value.deleted[id] = stamp;
   for (const a of value.anime) {
     for (const s of a.seasons || []) {
-      const old = previous.get(a.id)?.get(s.id) || new Set();
+      const before = previous.anime.get(a.id)?.get(s.id);
+      const old = before?.watched || new Set();
       const watched = new Set(s.watched || []);
-      s.unwatched = timestampMap(s.unwatched, at, true);
-      s.watchedAt = timestampMap(s.watchedAt);
+      s.unwatched = timestampMap(latestTimes(before?.unwatched, s.unwatched), at, true);
+      s.watchedAt = timestampMap(latestTimes(before?.watchedAt, s.watchedAt));
       for (const n of old) if (!watched.has(n)) s.unwatched[n] = stamp;
       for (const n of watched) if (!old.has(n)) s.watchedAt[n] = stamp;
     }

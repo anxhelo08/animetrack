@@ -1,9 +1,9 @@
 import {
   READING_STATUS,
   normalizeReadingLibrary,
-  markChapter,
+  markChapter as modelMarkChapter,
   nextChapter,
-  applyReadingUpdate,
+  applyReadingUpdate as modelApplyReadingUpdate,
 } from '../core/reading-model.js';
 import {
   searchReadingCatalog,
@@ -25,6 +25,11 @@ import { readingCalendarEntries } from '../core/reading-calendar.js';
 import { createReadingWorkspace } from './reading-workspace.js';
 
 export function createReading(ctx) {
+  const mergeStamp = () => ctx.mergeStamp?.() || new Date().toISOString();
+  const markChapter = (row, chapter, read, stamp = mergeStamp()) =>
+    modelMarkChapter(row, chapter, read, stamp);
+  const applyReadingUpdate = (row, fresh, stamp = mergeStamp()) =>
+    modelApplyReadingUpdate(row, fresh, stamp);
   const esc = ctx.esc,
     phone = window.matchMedia('(max-width:760px)');
   let root,
@@ -377,7 +382,7 @@ export function createReading(ctx) {
                 );
               })
               .join('') || '<p>Nuk u gjet kapitull.</p>'
-          }</div><div class="reading-pagination">${button('previous', '← Mbrapa', '', 'ghost', chapterPage ? '' : 'disabled')}<span>${first}–${last}</span>${button('following', 'Përpara →', '', 'ghost', (chapterPage + 1) * 30 >= ordered.length && row.totalChapters ? 'disabled' : '')}</div><div class="reading-detail-actions">${button('read-all', '✓ I kam lexuar të gjithë', row.id, 'primary', row.totalChapters ? '' : 'disabled')}${button('refresh', refreshing.has(row.id) ? 'Po kontrolloj…' : 'Kontrollo kapituj të rinj', row.id, 'ghost', row.sourceId && !refreshing.has(row.id) ? '' : 'disabled')}</div><p class="reading-volume-note">${row.totalChapters ? `${Math.max(0, row.totalChapters - tracked.chaptersRead.length)} kapituj pa lexuar` : 'Totali aktual nuk dihet; regjistro kapitullin ku ke arritur.'}${row.checkedAt ? ' · Kontrolluar: ' + date(row.checkedAt) : ''}${row.chapterSource ? ' · ' + esc(row.chapterSource) : ''}</p><form id="reading-chapter-note-form" class="reading-chapter-note-form"><label class="reading-field">Detaje / shënim për kapitullin<input name="chapter" type="number" min="1" max="${row.totalChapters || 10000}" value="${Math.max(1, ...tracked.chaptersRead)}" required></label><button type="submit" class="ghost">Hap në ditar</button></form><form id="reading-progress-form"><label class="reading-field">Regjistro kapitujt 1 deri te<input type="number" name="progress" min="0" max="${row.totalChapters || 10000}" required value="${Math.max(0, ...tracked.chaptersRead)}"></label><button type="submit" class="ghost">Ruaj progresin</button><small>Shënon të gjithë kapitujt deri te ky numër si të lexuar; kapitujt pas tij hiqen.</small></form></section><form id="reading-personal-form" class="reading-panel"><h4>Shënimet e mia</h4><div class="reading-form-grid"><label class="reading-field">Statusi<select name="status">${statusOptions(tracked.status)}</select></label><label class="reading-field">Vlerësimi im / 10<input type="number" name="rating" min="0" max="10" step="0.5" value="${tracked.rating ?? ''}"></label><label class="reading-field">Vëllime të lexuara<input type="number" name="volumesRead" min="0" max="${row.totalVolumes || 1000}" value="${tracked.volumesRead}"></label></div><label class="reading-field">Shënim personal<textarea name="notes" maxlength="2500" rows="5" placeholder="Mendimet e tua, citime ose ku e ke lënë…">${esc(tracked.notes)}</textarea></label><button class="primary" type="submit">Ruaj shënimet</button></form></div>${event ? `<form id="reading-journal-form" class="reading-panel"><h4>Kapitulli ${event.chapter} · ${event.action === 'read' ? 'I lexuar' : 'Shënimi u hoq'}</h4><div class="reading-form-grid"><label class="reading-field">Data<input type="date" name="date" required max="${new Date().toISOString().slice(0, 10)}" value="${esc(event.date.slice(0, 10))}"></label><label class="reading-field">Nota e kapitullit / 10<input type="number" name="rating" min="0" max="10" step="0.5" value="${event.rating ?? ''}"></label></div><label class="reading-field">Shënim për kapitullin<textarea name="note" maxlength="1500" rows="3">${esc(event.note)}</textarea></label><button type="submit" class="primary">Ruaj në ditar</button></form>` : ''}`
+          }</div><div class="reading-pagination">${button('previous', '← Mbrapa', '', 'ghost', chapterPage ? '' : 'disabled')}<span>${first}–${last}</span>${button('following', 'Përpara →', '', 'ghost', (chapterPage + 1) * 30 >= ordered.length && row.totalChapters ? 'disabled' : '')}</div><div class="reading-detail-actions">${button('read-all', '✓ I kam lexuar të gjithë', row.id, 'primary', row.totalChapters ? '' : 'disabled')}${button('refresh', refreshing.has(row.id) ? 'Po kontrolloj…' : 'Kontrollo kapituj të rinj', row.id, 'ghost', row.sourceId && !refreshing.has(row.id) ? '' : 'disabled')}</div><p class="reading-volume-note">${row.totalChapters ? `${Math.max(0, row.totalChapters - tracked.chaptersRead.length)} kapituj pa lexuar` : 'Totali aktual nuk dihet; regjistro kapitullin ku ke arritur.'}${row.checkedAt ? ' · Kontrolluar: ' + date(row.checkedAt) : ''}${row.chapterSource ? ' · ' + esc(row.chapterSource) : ''}</p><form id="reading-chapter-note-form" class="reading-chapter-note-form"><label class="reading-field">Detaje / shënim për kapitullin<input name="chapter" type="number" min="1" max="${row.totalChapters || 10000}" value="${Math.max(1, ...tracked.chaptersRead)}" required></label><button type="submit" class="ghost">Hap në ditar</button></form><form id="reading-progress-form"><label class="reading-field">Regjistro kapitujt 1 deri te<input type="number" name="progress" min="0" max="${row.totalChapters || 10000}" required value="${Math.max(0, ...tracked.chaptersRead)}"></label><button type="submit" class="ghost">Ruaj progresin</button><small>Shënon të gjithë kapitujt deri te ky numër si të lexuar; kapitujt pas tij hiqen.</small></form></section><form id="reading-personal-form" class="reading-panel"><h4>Shënimet e mia</h4><div class="reading-form-grid"><label class="reading-field">Statusi<select name="status">${statusOptions(tracked.status)}</select></label><label class="reading-field">Vlerësimi im / 10<input type="number" name="rating" min="0" max="10" step="0.5" value="${tracked.rating ?? ''}"></label><label class="reading-field">Vëllime të lexuara<input type="number" name="volumesRead" min="0" max="${row.totalVolumes || 1000}" value="${tracked.volumesRead}"></label></div><label class="reading-field">Shënim personal<textarea name="notes" maxlength="2500" rows="5" placeholder="Mendimet e tua, citime ose ku e ke lënë…">${esc(tracked.notes)}</textarea></label><button class="primary" type="submit">Ruaj shënimet</button></form></div>${event ? `<form id="reading-journal-form" class="reading-panel"><h4>Kapitulli ${event.chapter} · ${event.action === 'read' ? 'I lexuar' : 'Shënimi u hoq'}</h4><div class="reading-form-grid"><label class="reading-field">Data<input type="date" name="date" required max="${mergeStamp().slice(0, 10)}" value="${esc(event.date.slice(0, 10))}"></label><label class="reading-field">Nota e kapitullit / 10<input type="number" name="rating" min="0" max="10" step="0.5" value="${event.rating ?? ''}"></label></div><label class="reading-field">Shënim për kapitullin<textarea name="note" maxlength="1500" rows="3">${esc(event.note)}</textarea></label><button type="submit" class="primary">Ruaj në ditar</button></form>` : ''}`
         : ''
     }</section>`;
   }
@@ -773,7 +778,7 @@ export function createReading(ctx) {
         !mutate((all) => {
           const current = all.find((item) => item.id === id);
           current.deletedAt = '';
-          current.updatedAt = new Date().toISOString();
+          current.updatedAt = mergeStamp();
         })
       )
         return;
@@ -886,7 +891,7 @@ export function createReading(ctx) {
         ctx.toast('Biblioteka e leximit ka arritur kufirin prej 3000 titujsh.');
         return;
       }
-      const stamp = new Date().toISOString();
+      const stamp = mergeStamp();
       if (
         !mutate((all) => {
           const old = all.findIndex((row) => row.id === id);
@@ -920,7 +925,7 @@ export function createReading(ctx) {
       if (
         !mutate((all) => {
           const current = all.find((item) => item.id === id);
-          const stamp = new Date().toISOString();
+          const stamp = mergeStamp();
           for (const chapter of [...current.chaptersRead])
             markChapter(current, chapter, false, stamp);
           current.volumesRead = 0;
@@ -940,7 +945,7 @@ export function createReading(ctx) {
       if (
         !mutate((all) => {
           const current = all.find((row) => row.id === id);
-          current.deletedAt = new Date().toISOString();
+          current.deletedAt = mergeStamp();
           current.updatedAt = current.deletedAt;
         })
       )
@@ -957,7 +962,7 @@ export function createReading(ctx) {
         mutate((all) => {
           const current = all.find((row) => row.id === id);
           current.favorite = !current.favorite;
-          current.updatedAt = new Date().toISOString();
+          current.updatedAt = mergeStamp();
         })
       )
         render();
@@ -976,7 +981,7 @@ export function createReading(ctx) {
       if (
         mutate((all) => {
           const current = all.find((item) => item.id === id);
-          const stamp = new Date().toISOString();
+          const stamp = mergeStamp();
           for (let n = 1; n <= row.totalChapters; n++) markChapter(current, n, true, stamp);
         })
       ) {
@@ -1036,7 +1041,7 @@ export function createReading(ctx) {
     }
     const data = Object.fromEntries(new FormData(form)),
       row = saved(selected),
-      stamp = new Date().toISOString();
+      stamp = mergeStamp();
     if (form.id === 'reading-editor') {
       if (
         row &&

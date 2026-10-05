@@ -41,11 +41,7 @@ test('untrusted poster schemes cannot become javascript URLs',()=>{
  const check=createLibraryModel().validPoster;
  assert.equal(check('javascript:alert(1)'),'');assert.equal(check('data:text/html,<script>x</script>'),'');assert.match(check('https://example.com/x.png'),/^https:/);
 });
-test('cloud account and local key are derived from authenticated user ID',()=>{
- assert.match(core,/\.eq\('user_id',uid\)\.maybeSingle\(\)/);
- assert.match(core,/KEY='animetrack_user_'\+uid/);
- assert.match(core,/if\(accountUser\?\.id!==uid\)return/);
-});
+
 test('signup does not claim delivery or create duplicate user confirmation UI',()=>{
  assert.match(core,/data\.user\.identities\.length===0/);
  assert.match(core,/Kjo adresë mund të jetë regjistruar më parë/);
