@@ -53,8 +53,56 @@ export function tvEpisodeData(remote) {
   };
 }
 
+/** A single catalogue track may inherit its parent identity, never a different sequel. */
+export function episodeProviderIdentity(anime, season) {
+  const tracks = (anime.seasons || []).filter(
+    (s) => !s.hidden && /^(TV|TV_SHORT|ONA)$/.test(s.format),
+  );
+  if (
+    tracks.length !== 1 ||
+    tracks[0].id !== season.id ||
+    (season.source && season.source !== anime.source) ||
+    (season.sourceId && anime.sourceId && String(season.sourceId) !== String(anime.sourceId)) ||
+    (season.malId && anime.malId && String(season.malId) !== String(anime.malId))
+  )
+    return season;
+  return {
+    ...season,
+    source: season.source || anime.source,
+    sourceId: season.sourceId || anime.sourceId,
+    malId: season.malId || anime.malId,
+    subtitle: season.subtitle || anime.title,
+    year: season.year || anime.year,
+  };
+}
+
+/** Flatten regular TVmaze seasons only for one confirmed continuous anime track. */
+export function continuousAnimeEpisodes(rows) {
+  const ordered = rows
+    .filter((ep) => Number(ep.season) > 0 && Number(ep.number) > 0)
+    .sort((a, b) => a.season - b.season || a.number - b.number);
+  let season = 0,
+    number = 0;
+  for (const ep of ordered) {
+    if (ep.season !== season) {
+      if (ep.season !== season + 1) return null;
+      season = ep.season;
+      number = 0;
+    }
+    if (ep.number !== ++number) return null;
+  }
+  return ordered.map((ep, index) => ({ ...tvEpisodeData(ep), number: index + 1 }));
+}
+
 export async function verifiedTVEpisodes(anime, season) {
+  season = episodeProviderIdentity(anime, season);
   let showId = season.tvmazeShowId;
+  let continuous =
+    !!showId &&
+    Number(season.tvmazeSeasonNumber) === 1 &&
+    !/^tvmaze$/i.test(season.source || anime.source || '') &&
+    (anime.seasons || []).filter((s) => !s.hidden && /^(TV|TV_SHORT|ONA)$/.test(s.format))
+      .length === 1;
   let seasonNumber = season.tvmazeSeasonNumber;
   if (!showId && /^tvmaze$/i.test(season.source || '')) {
     showId = season.sourceId || anime.tvmazeId;
@@ -76,14 +124,17 @@ export async function verifiedTVEpisodes(anime, season) {
     if (!show) return null;
     showId = String(show.id);
     seasonNumber = 1;
+    continuous = true;
   }
   if (!/^\d+$/.test(String(showId)) || !seasonNumber) return null;
   const rows = await catalogJSON('https://api.tvmaze.com/shows/' + showId + '/episodes');
   if (!Array.isArray(rows)) return null;
-  const episodes = rows
-    .filter((ep) => ep.season === seasonNumber && Number(ep.number) > 0)
-    .map(tvEpisodeData);
-  if (!episodes.length) return null;
+  const firstSeason = rows.filter((ep) => ep.season === seasonNumber && Number(ep.number) > 0);
+  const episodes =
+    continuous && Number(season.total) > firstSeason.length
+      ? continuousAnimeEpisodes(rows)
+      : rows.filter((ep) => ep.season === seasonNumber && Number(ep.number) > 0).map(tvEpisodeData);
+  if (!episodes?.length) return null;
   return { showId: String(showId), seasonNumber, episodes };
 }
 
@@ -159,6 +210,7 @@ export async function fetchJikanThumbnail(malId, episode) {
 }
 
 export async function fetchEpisodeFallbacks(anime, season, episode, absolute, prior = {}) {
+  season = episodeProviderIdentity(anime, season);
   const work = [
     verifiedTVEpisodes(anime, season).then((tv) =>
       tv?.episodes.find((ep) => ep.number === episode),

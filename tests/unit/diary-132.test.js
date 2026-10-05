@@ -70,3 +70,12 @@ test('Diary filters notes and ratings and can display the oldest entry first',()
  const rows=d.filterEntries(undefined,{order:'oldest'});
  assert.ok(rows.every((e,i)=>i===0||e.at>=rows[i-1].at));
 });
+
+test('old progress without history is visible without inventing dates or affecting statistics',()=>{
+ const state=fixture();state.anime[0].seasons[0].watched.push(4);const api=diary(state);
+ assert.equal(api.collect().length,5);assert.equal(api.summary().entries,5);
+ const rows=api.undatedProgress();assert.equal(rows.length,1);assert.deepEqual(Array.from(rows[0].episodes),[4]);
+ assert.match(api.render(),/Episode të para pa datë të regjistruar/);assert.match(api.render(),/Episodi 4 · I PARË/);
+ state.history.push({id:'a1',seasonId:'s1',episode:4,action:'watched',date:'2026-09-29T12:00:00Z'});
+ assert.equal(api.undatedProgress().length,0);assert.equal(api.collect().length,6);
+});

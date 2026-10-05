@@ -1,3 +1,4 @@
+import { watchProgressChanges } from '../../src/core/watch-progress.js';
 import {normalizeReadingLibrary} from '../../src/core/reading-model.js';
 import {validateLibrary,parseLibrary} from '../../src/core/library-schema.js';
 import {test} from 'vitest';
@@ -11,8 +12,8 @@ function fn(name){const start=source.indexOf('function '+name+'('),end=source.in
 function realm(ok){
  const fields={'anime-id':'a','anime-title':'Changed','anime-total':'12','anime-current':'1','anime-status':'watching','anime-rating':'','anime-year':'','anime-genre':'','anime-cover':'','anime-notes':''};
  const messages=[],closed=[];
- const c={validateLibrary,parseLibrary,normalizeReadingLibrary,state:{anime:[{id:'a',title:'Original',total:12,status:'watching',seasons:[{watched:[1],total:12}]}],history:[{id:'a',action:'watched'}],preferences:{}},$:(id)=>({value:fields[id]||''}),STATUS:{watching:'Watching'},now:()=>new Date().toISOString(),tidyNums:x=>x,normalized:x=>x,count:()=>1,uuid:()=> 'new',save:()=>ok,notify:m=>messages.push(m),closeModal:m=>closed.push(m),render(){},renderHome(){},renderUpcoming(){},confirm:()=>true,normalizePreferences:x=>x||{},normalizeTVShows:()=>[],window:{ATTVUnified120:{migrate:a=>({anime:a})}},persistCache(){},clearCatalog(){},accountMode:'cloud',accountStatus:m=>messages.push(m),localStorage:{getItem:()=>null}};
- vm.createContext(c);return {c,messages,closed};
+ const c={watchProgressChanges,validateLibrary,parseLibrary,normalizeReadingLibrary,state:{anime:[{id:'a',title:'Original',total:12,status:'watching',seasons:[{watched:[1],total:12}]}],history:[{id:'a',action:'watched'}],preferences:{}},$:(id)=>({value:fields[id]||''}),STATUS:{watching:'Watching'},now:()=>new Date().toISOString(),tidyNums:x=>x,normalized:x=>x,count:()=>1,uuid:()=> 'new',save:()=>ok,notify:m=>messages.push(m),closeModal:m=>closed.push(m),render(){},renderHome(){},renderUpcoming(){},confirm:()=>true,normalizePreferences:x=>x||{},normalizeTVShows:()=>[],window:{ATTVUnified120:{migrate:a=>({anime:a})}},persistCache(){},clearCatalog(){},accountMode:'cloud',accountStatus:m=>messages.push(m),localStorage:{getItem:()=>null}};
+ vm.createContext(c);return {c,messages,closed,fields};
 }
 test('form edit rolls back on rejected storage, retains modal and never reports success',()=>{
  const {c,messages,closed}=realm(false),before=JSON.stringify(c.state);vm.runInContext(fn('saveForm'),c);c.saveForm({preventDefault(){}});
@@ -44,4 +45,13 @@ test('Vite owns the single production CSS bundle and hashed asset cache',()=>{
  assert.equal((html.match(/rel="stylesheet"/g)||[]).length,1);assert.match(html,/rel="stylesheet" href="\/boot\.css"/);assert.match(html,/type="module" src="\/src\/main\.js"/);
  assert.match(main,/import "\.\/styles\/index\.css"/);assert.match(styles,/@import "\.\/foundation\.css"/);
  assert.match(sw,/precacheAndRoute\(self\.__WB_MANIFEST/);assert.doesNotMatch(sw,/pro-[a-z-]+-[0-9]+\.(js|css)/);
+});
+
+test('manual progress records only new watched episodes and rolls back history on storage failure',()=>{
+ for(const ok of [true,false]){
+  const {c,fields}=realm(ok);c.state.anime[0].seasons[0].id='s1';fields['anime-current']='3';
+  const before=JSON.stringify(c.state);vm.runInContext(fn('record')+'\n'+fn('saveForm'),c);c.saveForm({preventDefault(){}});
+  if(!ok){assert.equal(JSON.stringify(c.state),before);continue}
+  const event=c.state.history.at(-1);assert.equal(event.action,'season-watched');assert.equal(event.seasonId,'s1');assert.deepEqual(Array.from(event.episodes),[2,3]);assert.ok(Date.parse(event.date)>0);
+ }
 });

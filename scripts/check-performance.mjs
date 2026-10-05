@@ -8,6 +8,6 @@ const sizes = await Promise.all(
     .map(async (name) => gzipSync(await readFile(new URL(name, assets))).length),
 );
 const total = sizes.reduce((a, b) => a + b, 0);
-// Allow 2 KB for reading details, library management and notification controls.
-if (total > 332000) throw Error(`JavaScript gzip budget exceeded: ${total} > 332000 bytes`);
-console.log(`JavaScript gzip: ${total} / 332000 bytes (${sizes.length} chunks)`);
+// Allow 3 KB for reading controls and verified episode/history repairs.
+if (total > 333000) throw Error(`JavaScript gzip budget exceeded: ${total} > 333000 bytes`);
+console.log(`JavaScript gzip: ${total} / 333000 bytes (${sizes.length} chunks)`);

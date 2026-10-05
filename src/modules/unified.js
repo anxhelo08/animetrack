@@ -23,7 +23,7 @@ window.ATUnified119=(()=>{
   document.querySelectorAll('[data-media-filter]').forEach(b=>{const on=b.dataset.mediaFilter===media;b.classList.toggle('active',on);b.setAttribute('aria-pressed',String(on));b.querySelector('[data-at119-count]')?.replaceChildren(document.createTextNode(String(counts[b.dataset.mediaFilter]||0)))});
   const sub=$('library-subtitle');if(sub)sub.textContent=visible.length+' tituj · '+(media==='all'?'Anime · Seriale TV · Filma':media==='anime'?'Anime':media==='tv'?'Seriale TV':'Filma');
   for(const [id,key] of [['stat-total','all'],['stat-watching','watching'],['stat-completed','completed']])if($(id))$(id).textContent=String(counts[key]);
-  document.querySelectorAll('#library-status-strip [data-filter]').forEach(b=>{const n=b.querySelector('.tiny-count');if(n&&b.dataset.filter in counts)n.textContent=String(counts[b.dataset.filter])});
+  document.querySelectorAll('#library-status-strip [data-filter]').forEach(b=>{const n=b.querySelector('.tiny-count');if(n&&b.dataset.filter in counts)n.textContent=String(b.dataset.filter==='all'?all.filter(a=>a.status!=='planning').length:counts[b.dataset.filter])});
   const title=$('library-title');if(title)title.textContent=opts.filter==='waiting'?'Në pritje të sezonit të ri':opts.filter==='watching'?'Po shikoj':opts.filter==='completed'?'Të përfunduara':opts.filter==='planning'?'Plan to Watch':opts.filter==='paused'?'Në pauzë':opts.filter==='dropped'?'Të lëna':'Biblioteka ime';
   const head=$('at113-library-head');if(head){
    head.querySelector('[data-at113-count="all"]')?.replaceChildren(document.createTextNode(String(counts.all)));
