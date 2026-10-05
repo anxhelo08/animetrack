@@ -67,3 +67,25 @@ test('render requests are coalesced per view into a single animation frame', () 
   frames.shift()();
   expect(calls).toEqual(['library', 'home', 'upcoming']);
 });
+
+test('changing filters with overlapping titles never duplicates the retained cards', () => {
+  const grid = document.createElement('div');
+  document.body.replaceChildren(grid);
+  const list = createLibraryList({
+    grid,
+    html: createHTML(window),
+    Observer: null,
+    cardHTML: (row) => `<article><strong>${row.title}</strong></article>`,
+  });
+  const rows = [
+    { id: 'a', title: 'Watching' },
+    { id: 'b', title: 'Completed' },
+  ];
+  list.render(rows, 'all');
+  list.render([rows[0]], 'unwatched');
+  expect(grid.children).toHaveLength(1);
+  expect(grid.textContent).toBe('Watching');
+  list.render(rows, 'all');
+  expect([...grid.children].map((node) => node.dataset.libraryId)).toEqual(['a', 'b']);
+  list.destroy();
+});

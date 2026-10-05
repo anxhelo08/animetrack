@@ -442,9 +442,12 @@ test('long reading titles and unknown totals use wide compact cards', async ({ p
     for (const width of [1440, 1024]) {
       await page.setViewportSize({ width, height: 1000 });
       await expect(card).toBeVisible();
-      const bounds = await card.boundingBox();
-      expect(bounds.width).toBeGreaterThanOrEqual(300);
-      expect(bounds.height).toBeLessThan(bounds.width);
+      await expect
+        .poll(async () => {
+          const bounds = await card.boundingBox();
+          return Boolean(bounds && bounds.width >= 300 && bounds.height < bounds.width);
+        })
+        .toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );

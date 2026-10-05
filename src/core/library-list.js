@@ -87,6 +87,7 @@ export function createLibraryList({
       if (nextScope !== scope) {
         scope = nextScope;
         limit = batch;
+        grid.replaceChildren();
         cards.clear();
       }
       rows = nextRows;
