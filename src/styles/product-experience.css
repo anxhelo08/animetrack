@@ -253,3 +253,15 @@ body #home-view.at-home-rebuilt > #at-home-main.product-hidden {
 body.at-ios-enabled .product-tools .nav-label {
   display: inline !important;
 }
+
+@media (max-width: 760px) {
+  .at-notice-options .pro-btn {
+    min-height: 44px;
+    font-size: 12px;
+    padding: 10px;
+    white-space: normal;
+  }
+  .at-notice-actions .pro-btn {
+    min-height: 44px;
+  }
+}
