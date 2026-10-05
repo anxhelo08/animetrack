@@ -1209,7 +1209,7 @@ function accountMirrorWarning(){
  if(panel)return;
  panel=document.createElement('section');panel.id='at128-storage-warning';panel.className='at128-storage-overlay';
  panel.setAttribute('role','alertdialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby','at128-storage-title');
- window.ATHTML.renderHTML(panel,'<div class="at128-storage-panel"><span class="at128-storage-kicker">ANIMETRACK · MBROJTJA E TË DHËNAVE</span><h2 id="at128-storage-title">Kopja lokale e rikuperimit nuk u ruajt</h2><p>Biblioteka online mbetet në Supabase dhe progresi nuk fshihet. AnimeTrack tani mban vetëm një recovery copy të vogël në iPhone; provo ruajtjen përsëri ose shkarko kopjen rezervë.</p><div class="at128-storage-actions"><button type="button" data-at128-export>↓ Shkarko kopjen rezervë</button><button type="button" data-at128-retry>↻ Riprovo ruajtjen</button></div><small>Mos përdor “Clear site data” kur ka ndryshime lokale në pritje.</small></div>');
+ window.ATHTML.renderHTML(panel,'<div class="at128-storage-panel"><span class="at128-storage-kicker">ANIMETRACK · MBROJTJA E TË DHËNAVE</span><h2 id="at128-storage-title">Kopja lokale e rikuperimit nuk u ruajt</h2><p>Biblioteka online mbetet në Supabase dhe progresi nuk fshihet. Hapësira lokale mund të jetë plot ose ruajtja mund të jetë bllokuar. Provo ruajtjen përsëri ose shkarko kopjen rezervë.</p><div class="at128-storage-actions"><button type="button" data-at128-export>↓ Shkarko kopjen rezervë</button><button type="button" data-at128-retry>↻ Riprovo ruajtjen</button></div><small>Mos përdor “Clear site data” kur ka ndryshime lokale në pritje.</small></div>');
  document.body.append(panel);
 }
 document.addEventListener('click',event=>{
@@ -1337,14 +1337,14 @@ async function accountOpenCloud(user){
  await libraryRepository.refresh(key);
  const journal=window.ATSync126.pending(localStorage,key);
  let cached=null;
- try{const raw=JSON.parse(localStorage.getItem(key)||'null');if(raw&&Array.isArray(raw.anime))cached=accountNormalizePayload(migrateSyncLibrary(raw,localStorage,key))}
+ try{const raw=JSON.parse(localStorage.getItem(key)||'null');if(raw&&Array.isArray(raw.anime)){if(raw.syncSchema!=='14.26.0')await libraryRepository.backup(key+'_before_sync_1426',JSON.stringify(raw));cached=accountNormalizePayload(migrateSyncLibrary(raw,localStorage,key))}}
  catch(e){console.warn('Local account snapshot unavailable',e)}
  if(journal?.invalid)throw Error('Kopja lokale e sinkronizimit ka problem. Eksporto kopje rezervë; cloud nuk e zëvendëson automatikisht.');
  if(journal&&!cached)throw Error('Ka shënim për ndryshime lokale, por kopja lokale nuk mund të lexohet. Mos i zëvendëso të dhënat pa kopje rezervë.');
  let data=null,readError=null;
  try{const response=await client.from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();if(response.error)throw response.error;data=response.data}
  catch(error){readError=error;if(!cached)throw Error('Leximi nga databaza dështoi dhe nuk ka kopje lokale për këtë llogari: '+error.message)}
- if(data?.payload)try{migrateSyncLibrary(data.payload,localStorage,key)}catch(error){if(!cached)throw error;readError=error;data=null;console.warn('Invalid cloud library retained local copy',error)}
+ if(data?.payload)try{if(data.payload.syncSchema!=='14.26.0')await libraryRepository.backup(key+'_before_sync_1426',JSON.stringify(data.payload));migrateSyncLibrary(data.payload,localStorage,key)}catch(error){if(!cached)throw error;readError=error;data=null;console.warn('Invalid cloud library retained local copy',error)}
  document.body.classList.remove('auth-required');
  $('welcome-page').hidden=true;
  accountUser=user;accountMode='cloud';KEY='animetrack_user_'+uid;cloudMirrorUnavailable=false;

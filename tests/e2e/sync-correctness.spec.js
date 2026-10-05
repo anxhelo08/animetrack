@@ -47,7 +47,8 @@ for (const skew of [0, 600000]) {
     const pcContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     const phone = await phoneContext.newPage(),
       pc = await pcContext.newPage(),
-      server = syncServer(seed()),
+      original = seed(),
+      server = syncServer(original),
       nativeDialogs = [];
     for (const page of [phone, pc])
       page.on('dialog', (dialog) => {
@@ -106,11 +107,26 @@ for (const skew of [0, 600000]) {
       await pc.waitForFunction(() => !document.body.classList.contains('account-booting'));
       expect(await pc.evaluate(() => window.ATMobile113.state().anime)).toEqual([]);
       expect(nativeDialogs).toEqual([]);
-      expect(
-        await phone.evaluate(() =>
-          Object.keys(window.localStorage).some((k) => k.endsWith('_before_sync_1426')),
-        ),
-      ).toBe(true);
+      const originalBackup = await phone.evaluate(
+        () =>
+          new Promise((resolve, reject) => {
+            const req = indexedDB.open('animetrack-library');
+            req.onerror = () => reject(req.error);
+            req.onsuccess = () => {
+              const db = req.result,
+                read = db.transaction('backups').objectStore('backups').getAll();
+              read.onsuccess = () => {
+                db.close();
+                resolve(read.result.find((row) => row.key.endsWith('_before_sync_1426'))?.snapshot);
+              };
+              read.onerror = () => {
+                db.close();
+                reject(read.error);
+              };
+            };
+          }),
+      );
+      expect(JSON.parse(originalBackup)).toEqual(original);
     } finally {
       await phoneContext.close();
       await pcContext.close();

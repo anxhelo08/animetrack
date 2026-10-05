@@ -34,7 +34,7 @@ async function setup() {
 }
 async function row(indexedDB, store, key, change) {
   const db = await new Promise((ok, no) => {
-    const r = indexedDB.open('animetrack-library', 1);
+    const r = indexedDB.open('animetrack-library');
     r.onsuccess = () => ok(r.result);
     r.onerror = () => no(r.error);
   });
@@ -196,5 +196,112 @@ test('snapshot and pending base are recovered together after all legacy owner ke
   expect(JSON.parse(next.storage.getItem(key))).toEqual(payload(2));
   expect(JSON.parse(next.storage.getItem(key + '_pending_126')).baseRevision).toBe('original');
   expect(next.storage.getItem(key + '_revision_126')).toBe('original');
+  next.close();
+});
+
+test('v1 database upgrades with exact original backups before freeing localStorage copies', async () => {
+  const { raw, indexedDB, repo } = await setup();
+  const old = JSON.stringify(payload(2)),
+    historical = JSON.stringify(payload(1));
+  raw.setItem(key, old);
+  raw.setItem(key + '_before_sync_1426', historical);
+  raw.setItem('sb-auth', 'untouched-token');
+  const v1 = await new Promise((ok, no) => {
+    const req = indexedDB.open('animetrack-library', 1);
+    req.onupgradeneeded = () => {
+      for (const name of ['libraries', 'recovery'])
+        req.result.createObjectStore(name, { keyPath: 'key' });
+    };
+    req.onsuccess = () => ok(req.result);
+    req.onerror = () => no(req.error);
+  });
+  v1.close();
+  await repo.prepare();
+  expect(raw.getItem(key + '_before_sync_1426')).toBeNull();
+  expect(repo.storage.getItem(key + '_before_sync_1426')).toBe(historical);
+  expect((await row(indexedDB, 'backups', key + '_before_storage_14261')).snapshot).toBe(old);
+  expect(raw.getItem('sb-auth')).toBe('untouched-token');
+  await repo.backup(key + '_before_sync_1426', JSON.stringify(payload(9)));
+  expect(repo.storage.getItem(key + '_before_sync_1426')).toBe(historical);
+  repo.close();
+  const next = createIndexedLibrary(raw, { indexedDB });
+  await next.prepare();
+  expect(next.storage.getItem(key + '_before_sync_1426')).toBe(historical);
+  next.close();
+});
+
+test('quota-limited write-ahead storage keeps full episode artwork, notes, progress and journal after reload', async () => {
+  const { raw, indexedDB, repo } = await setup();
+  const rich = payload(2);
+  rich.anime[0].notes = 'Shënimi im 日本語 💜';
+  rich.anime[0].seasons[0].episodes = Array.from({ length: 100 }, (_, i) => ({
+    number: i + 1,
+    title: 'Episodi ' + i,
+    synopsis: 'Përshkrimi i episodit dhe historia. '.repeat(45),
+    image: 'https://cdn.example.com/episode-' + i + '.jpg',
+    myNote: 'Shënim personal ' + i,
+  }));
+  const original = JSON.stringify(rich);
+  raw.setItem(key, original);
+  raw.setItem(key + '_before_sync_1426', original);
+  const write = raw.setItem;
+  raw.setItem = (k, v) => {
+    const size =
+      [...raw.values].reduce((n, [name, value]) => n + (name === k ? 0 : value.length), 0) +
+      String(v).length;
+    if (size > 24000) throw new DOMException('iPhone quota', 'QuotaExceededError');
+    write(k, v);
+  };
+  await repo.prepare();
+  expect(repo.status(key).mode).toBe('verified');
+  expect(raw.getItem(key)).toMatch(/^ATLS1:/);
+  expect(raw.getItem(key).length).toBeLessThan(original.length / 4);
+  expect(repo.storage.getItem(key)).toBe(original);
+  rich.anime[0].seasons[0].watched.push(3);
+  repo.storage.setItem(
+    key + '_pending_126',
+    JSON.stringify({ baseRevision: 'server-before', savedAt: 123 }),
+  );
+  repo.storage.setItem(key, JSON.stringify(rich));
+  await repo.flush();
+  repo.close();
+  const next = createIndexedLibrary(raw, { indexedDB });
+  await next.prepare();
+  expect(JSON.parse(next.storage.getItem(key))).toEqual(rich);
+  expect(JSON.parse(next.storage.getItem(key + '_pending_126')).baseRevision).toBe('server-before');
+  expect(next.storage.getItem(key + '_before_storage_14261')).toBe(original);
+  expect(next.storage.getItem(key + '_before_sync_1426')).toBe(original);
+  next.close();
+});
+
+test('unavailable IndexedDB never removes a historical backup to make space', async () => {
+  const raw = legacy(),
+    old = JSON.stringify(payload(2));
+  raw.setItem(key, old);
+  raw.setItem(key + '_before_sync_1426', old);
+  const repo = createIndexedLibrary(raw, { indexedDB: null });
+  await repo.prepare();
+  expect(raw.getItem(key)).toBe(old);
+  expect(raw.getItem(key + '_before_sync_1426')).toBe(old);
+});
+
+test('a damaged archived original blocks conversion and leaves the readable library untouched', async () => {
+  const { raw, indexedDB, repo } = await setup();
+  const original = JSON.stringify(payload(2));
+  raw.setItem(key, original);
+  await repo.prepare();
+  repo.close();
+  await row(indexedDB, 'backups', key + '_before_storage_14261', (value) => ({
+    ...value,
+    snapshot: JSON.stringify(payload(9)),
+  }));
+  const next = createIndexedLibrary(raw, { indexedDB });
+  await next.prepare();
+  expect(next.status().mode).toBe('legacy');
+  expect(raw.getItem(key)).toBe(original);
+  expect(next.storage.getItem(key)).toBe(original);
+  expect((await row(indexedDB, 'backups', key + '_before_storage_14261')).snapshot).toBe(
+    JSON.stringify(payload(9)),
+  );
   next.close();
 });

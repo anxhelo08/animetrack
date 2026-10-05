@@ -1,7 +1,15 @@
 import { validateLibrary } from './library-schema.js';
+import { SYNC_SCHEMA } from './sync-tombstones.js';
+import { encodeLibraryStorage, decodeLibraryStorage } from './storage-codec.js';
 
 const mainKey = (key) =>
   key === 'animetrack_v1' || /^animetrack_user_[A-Za-z0-9-]{1,100}$/.test(key);
+const backupOwner = (key) => {
+  const base = key.replace(/_before_(?:tv_unify_120|sync_1426|storage_14261)$/, '');
+  return base !== key && mainKey(base) ? base : null;
+};
+const quota = (error) =>
+  error?.name === 'QuotaExceededError' || error?.code === 22 || error?.code === 1014;
 const ownerKey = (key) => {
   const base = key.replace(/_(pending|revision)_126$/, '');
   return mainKey(base) ? base : null;
@@ -66,6 +74,8 @@ export function createIndexedLibrary(
     state = 'legacy',
     problem = '';
   const cleared = new Set();
+  const backups = new Map(),
+    decoded = new Map();
   const records = new Map(),
     dirty = new Set(),
     removed = new Set(),
@@ -84,6 +94,7 @@ export function createIndexedLibrary(
   function keys() {
     const found = new Set();
     for (let i = 0; i < legacy.length; i++) found.add(legacy.key(i));
+    for (const key of backups.keys()) found.add(key);
     for (const key of records.keys())
       if (!removed.has(key)) {
         found.add(key);
@@ -94,7 +105,14 @@ export function createIndexedLibrary(
   }
   function getItem(key) {
     const raw = legacy.getItem(key);
-    if (raw !== null) return raw;
+    if (raw !== null) {
+      if (!mainKey(key) && !backupOwner(key)) return raw;
+      if (decoded.get(key)?.raw === raw) return decoded.get(key).value;
+      const value = decodeLibraryStorage(raw);
+      decoded.set(key, { raw, value });
+      return value;
+    }
+    if (backups.has(key)) return backups.get(key).snapshot;
     if (cleared.has(key)) return null;
     const owner = ownerKey(key),
       record = records.get(owner);
@@ -130,14 +148,41 @@ export function createIndexedLibrary(
   const storage = {
     getItem,
     setItem(key, value) {
-      if (mainKey(key)) validateLibrary(JSON.parse(value));
-      legacy.setItem(key, value);
+      if (mainKey(key)) {
+        validateLibrary(JSON.parse(value));
+        if (legacy.getItem(key)?.startsWith('ATLS1:')) value = encodeLibraryStorage(value);
+      }
+      try {
+        legacy.setItem(key, value);
+      } catch (error) {
+        if (!mainKey(key) || !quota(error) || value.startsWith('ATLS1:')) throw error;
+        // prepare/backup retains the previous original before changing its encoding.
+        if (legacy.getItem(key) !== null && !backups.has(key + '_before_storage_14261'))
+          throw error;
+        const compressed = encodeLibraryStorage(value);
+        if (compressed === value) throw error;
+        if (decodeLibraryStorage(compressed) !== value) throw Error('Kompresimi nuk u verifikua.');
+        legacy.setItem(key, compressed);
+      }
       cleared.delete(key);
       if (mainKey(key)) removed.delete(key);
       schedule(key);
     },
     removeItem(key) {
       legacy.removeItem(key);
+      decoded.delete(key);
+      if (backups.has(key)) {
+        backups.delete(key);
+        serial = serial
+          .then(async () => {
+            if (!db) return;
+            const tx = db.transaction('backups', 'readwrite'),
+              complete = done(tx);
+            tx.objectStore('backups').delete(key);
+            await complete;
+          })
+          .catch(report);
+      }
       const owner = ownerKey(key);
       if (mainKey(key)) {
         records.delete(key);
@@ -231,6 +276,37 @@ export function createIndexedLibrary(
       if (problem) break;
     }
   }
+  async function backup(key, snapshot) {
+    if (!backupOwner(key)) throw Error('Kopja rezervë nuk i përket bibliotekës.');
+    validateLibrary(JSON.parse(snapshot));
+    const existing = getItem(key);
+    // Backups are append-only, including when an older cloud payload is encountered.
+    const original = existing ?? snapshot;
+    if (!db) {
+      if (existing === null) legacy.setItem(key, original);
+      return;
+    }
+    const record = { key, snapshot: original, pending: null, revision: null, version: 1 };
+    record.hash = await digest(record);
+    const tx = db.transaction('backups', 'readwrite'),
+      complete = done(tx);
+    const check = tx.objectStore('backups').get(key);
+    check.onsuccess = () => {
+      if (!check.result) tx.objectStore('backups').put(record);
+    };
+    await complete;
+    const verified = await read(key, 'backups');
+    if (
+      !verified ||
+      typeof verified.snapshot !== 'string' ||
+      (await digest(verified)) !== verified.hash
+    )
+      throw Error('Kopja rezervë në IndexedDB nuk u verifikua.');
+    validateLibrary(JSON.parse(verified.snapshot));
+    backups.set(key, verified);
+    const raw = legacy.getItem(key);
+    if (raw !== null && decodeLibraryStorage(raw) === verified.snapshot) legacy.removeItem(key);
+  }
   async function prepare() {
     if (!indexedDB) {
       report(Error('IndexedDB nuk është e disponueshme.'));
@@ -239,14 +315,14 @@ export function createIndexedLibrary(
     try {
       if (!db)
         db = await new Promise((resolve, reject) => {
-          const req = indexedDB.open(name, 1);
+          const req = indexedDB.open(name, 2);
           let expired = false;
           const timer = setTimeout(() => {
             expired = true;
             reject(Error('IndexedDB është bllokuar; kopja ekzistuese ruhet.'));
           }, 1500);
           req.onupgradeneeded = () => {
-            for (const store of ['libraries', 'recovery'])
+            for (const store of ['libraries', 'recovery', 'backups'])
               if (!req.result.objectStoreNames.contains(store))
                 req.result.createObjectStore(store, { keyPath: 'key' });
           };
@@ -292,8 +368,49 @@ export function createIndexedLibrary(
           } else report(Error('Një kopje e IndexedDB nuk kaloi kontrollin e integritetit.'));
         }
       }
-      for (const key of keys()) if (mainKey(key) && legacy.getItem(key) !== null) dirty.add(key);
+      const archived = await request(db.transaction('backups').objectStore('backups').getAll());
+      for (const entry of archived) {
+        if (!backupOwner(entry.key)) continue;
+        try {
+          validateLibrary(JSON.parse(entry.snapshot));
+          if (entry.hash === (await digest(entry))) backups.set(entry.key, entry);
+          else report(Error('Kopja rezervë nuk kaloi verifikimin.'));
+        } catch (error) {
+          report(error);
+        }
+      }
+      // Move historical copies only after an exact, verified durable archive exists.
+      for (const key of keys()) {
+        if (backupOwner(key) && legacy.getItem(key) !== null) await backup(key, getItem(key));
+      }
+      for (const key of keys())
+        if (mainKey(key) && legacy.getItem(key) !== null) {
+          const original = getItem(key);
+          await backup(key + '_before_storage_14261', original);
+          if (JSON.parse(original).syncSchema !== SYNC_SCHEMA)
+            await backup(key + '_before_sync_1426', original);
+          dirty.add(key);
+        }
       await flushDirty();
+      for (const [key, record] of records) {
+        const raw = legacy.getItem(key);
+        if (
+          !raw ||
+          raw.length < 65536 ||
+          raw.startsWith('ATLS1:') ||
+          raw !== record.snapshot ||
+          content(record) !== content(bundle(key))
+        )
+          continue;
+        const compressed = encodeLibraryStorage(raw);
+        if (compressed === raw || decodeLibraryStorage(compressed) !== raw) continue;
+        // Verified original and migration backup exist before replacing this WAL.
+        try {
+          legacy.setItem(key, compressed);
+        } catch (error) {
+          if (!quota(error)) throw error;
+        }
+      }
       if (!problem) state = 'verified';
       notify();
     } catch (error) {
@@ -361,6 +478,7 @@ export function createIndexedLibrary(
     cleanup,
     refresh,
     recovery,
+    backup,
     forget,
     subscribe: (listener) => {
       listeners.add(listener);

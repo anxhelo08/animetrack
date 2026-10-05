@@ -24,7 +24,7 @@ async function readDB(page, key) {
   return page.evaluate(
     (key) =>
       new Promise((ok, no) => {
-        const req = indexedDB.open('animetrack-library', 1);
+        const req = indexedDB.open('animetrack-library');
         req.onerror = () => no(req.error);
         req.onsuccess = () => {
           const db = req.result,
@@ -127,4 +127,83 @@ test('invalid cloud input preserves the verified local owner library', async ({ 
   await settings(page, info);
   await expect(page.locator('#library-storage-status')).toContainText('verifikuar');
   await expect(page.locator('#product-sync')).toContainText('Lidhja nuk u krye');
+});
+
+test('iPhone quota recovery preserves episode photos and offline +1 after reload without a blocking warning', async ({
+  page,
+}, info) => {
+  test.skip(!info.project.name.startsWith('iphone'));
+  const owner = 'iphone-quota',
+    key = 'animetrack_user_' + owner,
+    value = payload(2);
+  Object.assign(value.anime[0], {
+    format: 'TV',
+    hydrated: true,
+    franchiseVersion: '13.1.0',
+    updatedAt: '2026-09-29T20:00:00Z',
+    notes: 'Shënime personale 💜',
+  });
+  Object.assign(value.anime[0].seasons[0], {
+    total: 100,
+    format: 'TV',
+    releaseStatus: 'FINISHED',
+    episodes: Array.from({ length: 100 }, (_, i) => ({
+      number: i + 1,
+      title: 'Episodi ' + (i + 1),
+      synopsis: 'Historia e episodit. '.repeat(100),
+      image: 'https://cdn.example.com/photo-' + (i + 1) + '.jpg',
+      myNote: 'Shënimi ' + i,
+    })),
+  });
+  await page.addInitScript(
+    ({ key, value }) => {
+      const nativeSet = Storage.prototype.setItem;
+      if (!sessionStorage.getItem('quota-seeded')) {
+        nativeSet.call(localStorage, key, JSON.stringify(value));
+        nativeSet.call(localStorage, key + '_before_sync_1426', JSON.stringify(value));
+        nativeSet.call(localStorage, 'quota-auth-sentinel', 'preserved');
+        sessionStorage.setItem('quota-seeded', '1');
+      }
+      Storage.prototype.setItem = function (k, v) {
+        if (this === localStorage) {
+          let size = String(v).length;
+          for (let i = 0; i < this.length; i++) {
+            const name = this.key(i);
+            if (name !== String(k)) size += this.getItem(name).length;
+          }
+          if (size > 24000) throw new DOMException('iPhone quota', 'QuotaExceededError');
+        }
+        return nativeSet.call(this, k, v);
+      };
+      Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => false });
+    },
+    { key, value },
+  );
+  await openFixture(page, { owner, payload: value, persistWrites: true });
+  await expect(page.locator('#at128-storage-warning')).toHaveCount(0);
+  await page.locator('[data-mobile-nav="library"]').click();
+  await page.locator('#anime-grid [data-next="storage-title"]').click();
+  await expect
+    .poll(() => page.evaluate(() => window.ATMobile113.state().anime[0].seasons[0].watched))
+    .toEqual([1, 2, 3]);
+  await expect
+    .poll(
+      async () =>
+        JSON.parse((await readDB(page, key))?.snapshot || '{}').anime?.[0]?.seasons?.[0]?.watched,
+    )
+    .toEqual([1, 2, 3]);
+  expect(await page.evaluate((key) => localStorage.getItem(key).startsWith('ATLS1:'), key)).toBe(
+    true,
+  );
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
+  await expect(page.locator('#at128-storage-warning')).toHaveCount(0);
+  const saved = await page.evaluate(() => window.ATMobile113.state());
+  expect(saved.anime[0].seasons[0].watched).toEqual([1, 2, 3]);
+  expect(saved.anime[0].seasons[0].episodes[0].image).toBe(
+    value.anime[0].seasons[0].episodes[0].image,
+  );
+  expect(saved.anime[0].seasons[0].episodes[0].myNote).toBe('Shënimi 0');
+  expect(saved.anime[0].notes).toBe('Shënime personale 💜');
+  expect(await page.evaluate(() => localStorage.getItem('quota-auth-sentinel'))).toBe('preserved');
 });
