@@ -179,12 +179,16 @@ window.ATiPhone=function ATiPhone(ctx){
   }
   return `<section class="at117-upcoming-hero"><span class="at117-kicker">ANIMETRACK · PREMIERAT</span><h2>Episodet që po vijnë <span>✦</span></h2><p>Vetëm episode me datë transmetimi në të ardhmen. Orari shfaqet sipas zonës kohore të telefonit.</p><div class="at117-upcoming-controls" role="group" aria-label="Periudha e premierave"><button type="button" data-ios-action="horizon" data-id="7" aria-pressed="${upcomingWindow===7}" class="${upcomingWindow===7?'active':''}">7 ditë</button><button type="button" data-ios-action="horizon" data-id="30" aria-pressed="${upcomingWindow===30}" class="${upcomingWindow===30?'active':''}">30 ditë</button><button type="button" data-ios-action="sync" aria-label="Rifresko oraret">↻ Rifresko</button></div></section><section class="at114-list ${viewMode==='grid'?'is-grid':''} at114-upcoming-list at117-upcoming-timeline">${grouped.join('')||`<div class="at-ios-empty"><span>◷</span><h3>Nuk ka premiera në ${upcomingWindow} ditët e ardhshme</h3><p>Shiko 30 ditët e ardhshme ose rifresko orarin. Nuk shfaqen episode të kaluara si “upcoming”.</p><button type="button" data-ios-action="sync">Rifresko ↻</button></div>`}</section>`;
  }
- function render(){
+ function syncOwner(){
   const id=ctx.user()?.id||'guest';
   if(lastUser!==id){
    lastUser=id;lastWatch=null;syncMessage='';viewMode='list';tab='watch';showHistory=true;historyExpanded=false;
    try{dismissed=localStorage.getItem(userKey())==='1'}catch{dismissed=false}
   }
+  return id;
+ }
+ function render(){
+  const id=syncOwner();
   const recent=recentFeed(),watch=splitWatch(recent),soon=upcomingFeed(),unread=ctx.unreadCount?.()||0;
   const name=ctx.accountName().split(/[\s@]/)[0]||'Anime fan';
   const saveInfo=ctx.watchSaveStatus?.()||{};
@@ -200,10 +204,12 @@ window.ATiPhone=function ATiPhone(ctx){
   const el=document.createElement('div');el.id='at-iphone-feed';home.insertBefore(el,home.firstChild);document.body.classList.add('at-ios-enabled');
  }
  function refresh(){
+  if(window.matchMedia?.('(max-width:760px)')?.matches&&ctx.el('mobile-home'))return;
   const node=ctx.el('at-iphone-feed');if(!node)return;
   try{window.ATHTML.renderHTML(node,render())}catch(err){console.warn('iPhone feed failed to render',err);window.ATHTML.renderHTML(node,'<section class="at-ios-empty" role="alert"><span>✦</span><h3>Nuk u ngarkuan episodet</h3><p>Mund të ketë një problem të përkohshëm me të dhënat. Provo përsëri ose hap Bibliotekën; progresi yt ruhet.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>');}
  }
  async function action(op,id,b){
+  syncOwner();
   const a=(state().anime||[]).find(anime=>anime.id===id);
   if(op==='retry'){refresh();return}
   if(op==='tab'){if(['watch','released','upcoming'].includes(id)){tab=id;limit=10;refresh()}return}
