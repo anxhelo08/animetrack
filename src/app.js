@@ -1942,7 +1942,7 @@ async function refreshTrackedTV127(force=false){
 
 /* AnimeTrack 9.9 — composed feature modules. Core user library remains unchanged. */
 const proContext={
- el:$,esc:escapeHTML,state:libraryStore.getState,subscribe:libraryStore.subscribe,user:()=>accountUser,client:()=>accountInitClient(),
+ el:$,esc:escapeHTML,state:libraryStore.getState,revision:libraryStore.getRevision,subscribe:libraryStore.subscribe,user:()=>accountUser,client:()=>accountInitClient(),
  accountService:window.ATAccountService({client:()=>accountInitClient(),user:()=>accountUser}),
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,airingStatus:()=>({busy:upcomingBusy,checkedAt:upcomingCheckedAt,failures:upcomingFailures,coverage:airingCoverage}),
  confirm:message=>window.confirm(message),prompt:(message,value)=>window.prompt(message,value),closeDetail:()=>{if($('detail-modal').classList.contains('show'))closeModal('detail-modal')},

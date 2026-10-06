@@ -18,6 +18,7 @@ export function createStore(read, owner, onError = () => {}) {
   let revision = 0;
   return {
     getState: () => read(),
+    getRevision: () => revision,
     /** @param {(state:T,event:StateEvent<T>)=>void} listener */
     subscribe(listener) {
       listeners.add(listener);

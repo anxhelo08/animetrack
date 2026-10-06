@@ -17,6 +17,18 @@ Përparësia e konfirmuar nga përdoruesi është shpejtësia dhe reagimi. Refer
 
 TV Time u kontrollua si referencë historike. Faqja e tij kryesore aktualisht paraqet një mesazh përfundimi; nuk përdoret si provë e një produkti aktual funksional.
 
-Vendimet e zbatuara: episodi i radhës përpara historikut; 20 tituj fillestarë për grup me “Shfaq më shumë”; renderime të bashkuara në një kuadër; asnjë rindërtim i listës së vjetër të fshehur pas +1; kthim te pozicioni i mëparshëm; kontrolle të etiketuara në shqip; status sinkronizimi që nuk mbulon përmbajtjen. Identiteti ekzistues i errët/vjollcë ruhet.
+Vendimet e zbatuara: historiku i fundit para radhës së episodeve; 20 tituj fillestarë për grup me “Shfaq më shumë”; renderime të bashkuara në një kuadër; rreshtat e pandryshuar ruhen në DOM gjatë rifreskimit; vlerësimi i rekomandimeve shtyhet derisa lista të kërkohet pas ruajtjes së progresit; kthim te pozicioni i mëparshëm; kontrolle të etiketuara në shqip; status sinkronizimi që nuk mbulon përmbajtjen. Identiteti ekzistues i errët/vjollcë ruhet.
 
 Matjet përdorin një bibliotekë të njëjtë me 500 tituj dhe Chromium me ngadalësim CPU 4×. Ato shërbejnë për krahasim laboratorik; nuk janë matje të INP në prodhim apo test fizik i Safari-t. Vlerat përfundimtare dhe kontrollet regjistrohen te përditësimi 14.28.0.
+
+## Analiza e strukturës publike të Trakt
+
+Kontrollova kodin burimor publik, në vend që të nxirrja përfundime vetëm nga pamjet e produktit. Këto janë snapshot-et që u lexuan më 6 tetor 2026:
+
+- [trakt/trakt-web, `6881afa92b576ecd2a23c5a946766d071602a708`](https://github.com/trakt/trakt-web/tree/6881afa92b576ecd2a23c5a946766d071602a708) — veçanërisht [useUpNextList.ts](https://github.com/trakt/trakt-web/blob/6881afa92b576ecd2a23c5a946766d071602a708/projects/client/src/lib/sections/lists/progress/useUpNextList.ts), [UpNextPaginatedList.svelte](https://github.com/trakt/trakt-web/blob/6881afa92b576ecd2a23c5a946766d071602a708/projects/client/src/lib/sections/lists/progress/UpNextPaginatedList.svelte) dhe [upNextNitroQuery.ts](https://github.com/trakt/trakt-web/blob/6881afa92b576ecd2a23c5a946766d071602a708/projects/client/src/lib/requests/queries/sync/upNextNitroQuery.ts).
+- [trakt/trakt-android, `4d0bbd39467ea5a3326179a047c3ed7cfac305f1`](https://github.com/trakt/trakt-android/tree/4d0bbd39467ea5a3326179a047c3ed7cfac305f1) — [HomeUpNextViewModel.kt](https://github.com/trakt/trakt-android/blob/4d0bbd39467ea5a3326179a047c3ed7cfac305f1/app/src/main/java/tv/trakt/trakt/core/home/sections/upnext/HomeUpNextViewModel.kt) dhe [GetUpNextUseCase.kt](https://github.com/trakt/trakt-android/blob/4d0bbd39467ea5a3326179a047c3ed7cfac305f1/app/src/main/java/tv/trakt/trakt/core/home/sections/upnext/GetUpNextUseCase.kt).
+- Kontratat e API-së: [dokumentacioni Trakt](https://trakt.docs.apiary.io/) dhe [repo zyrtare trakt-api](https://github.com/trakt/trakt-api). Kjo punë nuk shton integrim Trakt apo host të ri në CSP.
+
+Në klientin web, “Up Next” është listë më vete, e tipizuar sipas filmit/serialit, e faqosur dhe e lidhur me veprimet e progresit. Përditësimi i saj lidhet me ngjarjet e shikimit dhe të listës. Android e organizon pjesën si ViewModel dhe use case të veçantë; merr fillimisht gjendjen lokale, bashkon dhe heq dublikatat me çelësa të qëndrueshëm, pastaj përditëson cache-in me rezultatet e rrjetit. Këto janë zgjedhje arkitekturore të lexuara në kod; nuk janë pretendim se Trakt është matur më shpejt.
+
+AnimeTrack zbaton pjesët që përshtaten me modelin ekzistues: selector i pastër për feed-in e telefonit, memoizim sipas llogarisë dhe revision-it të bibliotekës, renderim të rreshtave me çelësa të qëndrueshëm, histori të renditur nga e reja te e vjetra dhe llogaritje të rekomandimeve të shtyra deri te kërkesa pas ruajtjes. Biblioteka dhe progresi ekzistues mbeten burimi i së vërtetës; asnjë format i ruajtur nuk ndryshohet.

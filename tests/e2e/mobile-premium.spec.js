@@ -482,7 +482,7 @@ test('a completed airing series surfaces episode seven at its confirmed release 
   );
 });
 
-test('watching leads the home content, history can be unmarked and navigation does not sync the library', async ({
+test('recent episodes lead the home, resume works, history can be unmarked and navigation does not sync the library', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'iphone-chromium', 'Phone-specific presentation.');
@@ -505,9 +505,25 @@ test('watching leads the home content, history can be unmarked and navigation do
   };
   await openFixture(page, { payload: library, owner: 'mobile-fluid-tracking' });
   const watching = page.locator('#mobile-continue');
+  const history = page.locator('#mobile-history');
+  await expect(history).toBeAttached();
+  expect(
+    await history.evaluate((node) =>
+      Boolean(
+        node.compareDocumentPosition(document.getElementById('mobile-continue')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+    ),
+  ).toBe(true);
+  await expect(history.locator('.watch-row').first()).toContainText('Another story');
+  const resume = history.locator('.watch-row-resume').first();
+  await expect(resume).toHaveText(/Vazhdo me S2 EP2/);
+  await resume.click();
+  await expect(page.locator('.episode-card-subtitle')).toContainText('Episodi 2');
+  await page.locator('#episode-detail-modal.show [data-close="episode-detail-modal"]').click();
   await expect
     .poll(() =>
-      watching.evaluate((n) => {
+      history.evaluate((n) => {
         const top = n.getBoundingClientRect().top;
         return top >= 0 && top < innerHeight - 150;
       }),
@@ -532,7 +548,7 @@ test('watching leads the home content, history can be unmarked and navigation do
   expect(await state(page)).toEqual(initial);
   await expect
     .poll(() =>
-      watching.evaluate((n) => {
+      history.evaluate((n) => {
         const top = n.getBoundingClientRect().top;
         return top >= 0 && top < innerHeight - 150;
       }),
@@ -547,7 +563,7 @@ test('watching leads the home content, history can be unmarked and navigation do
   );
   await expect
     .poll(() =>
-      watching.evaluate((n) => {
+      history.evaluate((n) => {
         const top = n.getBoundingClientRect().top;
         return top >= 0 && top < innerHeight - 150;
       }),
@@ -563,7 +579,7 @@ test('watching leads the home content, history can be unmarked and navigation do
     .locator('.release-journal')
     .getByRole('button', { name: 'E pashë tani', exact: true })
     .click();
-  const recent = page.locator('#mobile-history .watch-row').last();
+  const recent = page.locator('#mobile-history .watch-row').first();
   await expect(recent).toHaveAttribute('data-watch-key', 'mobile-story:season-two:2:seen');
   await expect(recent).toHaveClass(/watch-row--seen/);
   expect(
@@ -634,18 +650,18 @@ test('watched episodes enter at the bottom, older episodes rise and rapid naviga
       .locator('.release-journal')
       .getByRole('button', { name: 'E pashë tani', exact: true })
       .click();
-    await expect(page.locator('#mobile-history .watch-row').last()).toHaveAttribute(
+    await expect(page.locator('#mobile-history .watch-row').first()).toHaveAttribute(
       'data-watch-key',
       `mobile-story:episode-order:${n}:seen`,
     );
   }
   expect(await page.locator('#mobile-history .watch-row-episode').allTextContents()).toEqual([
-    'S1 EP3',
-    'S1 EP4',
-    'S1 EP5',
-    'S1 EP6',
-    'S1 EP7',
     'S1 EP8',
+    'S1 EP7',
+    'S1 EP6',
+    'S1 EP5',
+    'S1 EP4',
+    'S1 EP3',
   ]);
   expect(await page.evaluate(() => window.ATMobile113.state().anime[0].seasons[0].watched)).toEqual(
     [1, 2, 3, 4, 5, 6, 7, 8],
@@ -662,13 +678,13 @@ test('watched episodes enter at the bottom, older episodes rise and rapid naviga
     .click();
   await expect(page.locator('#library-view')).toBeVisible();
   await page.locator('[data-mobile-nav="home"]').tap();
-  await expect(page.locator('#mobile-history .watch-row').last()).toHaveAttribute(
+  await expect(page.locator('#mobile-history .watch-row').first()).toHaveAttribute(
     'data-watch-key',
     'mobile-story:episode-order:9:seen',
   );
   await page
     .locator('#mobile-history .watch-row')
-    .last()
+    .first()
     .locator('[data-mobile-action="unwatch"]')
     .tap();
   await expect(page.locator('#mobile-continue')).toContainText('S1 EP9');

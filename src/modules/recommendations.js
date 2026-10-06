@@ -13,7 +13,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  const LENGTHS=[['all','Çdo gjatësi'],['short','Deri 12 ep.'],['normal','13–26 ep.'],['long','27+ ep.'],['movie','Filma']];
  const MEDIAS=[['all','Gjithçka'],['anime','Anime'],['tv','Seriale TV'],['movies','Filma']];
  const TABS=[['personal','✨ Për ty'],['favorites','♥ Si të preferuarat'],['new','◈ Të viteve të fundit'],['gems','💎 Nën radar'],['quick','⚡ Shiko shpejt'],['movies','🎬 Filma'],['surprise','🎲 Më surprizo']];
- let media='all',owner='',candidates=[],items=[],loading=false,error='',mood='all',length='all',tab='personal',limit=12,hidden=new Set(),fetchedAt=0,surpriseIndex=0,profileName='',source='AniList',requestId=0;
+ let media='all',owner='',candidates=[],items=[],loading=false,error='',mood='all',length='all',tab='personal',limit=12,hidden=new Set(),fetchedAt=0,surpriseIndex=0,profileName='',source='AniList',requestId=0,itemsDirty=false;
  const storageKey=()=>`animetrack_recs_v125_${ctx.user()?.id||'guest'}`;
  const preferencesKey=()=>`animetrack_rec_prefs_v10_${ctx.user()?.id||'guest'}`;
  const getStore=key=>{try{return JSON.parse(localStorage.getItem(key)||'null')}catch{return null}};
@@ -141,6 +141,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
   </article>`;
  }
  function render(){
+  ensureRanked();
   const p=profile(),visible=filtered(),count=visible.length;
   return `<section class="pro-hero pro-discovery-hero"><div><span class="pro-eyebrow">ANIMETRACK DISCOVERY · 12.5</span><h2>Gjej historinë tënde të radhës <span>✦</span></h2><p>${p.personal?`Sugjerime nga ${esc(p.best.slice(0,3).map(x=>x[0]).join(' · '))}, notat dhe të preferuarat e tua.`:'Edhe nëse je i ri, mund të zbulosh anime dhe seriale me vlerësime të mira. Shto dhe vlerëso tituj për rekomandime personale.'}</p><div class="pro-discovery-stats"><span>✦ ${items.length} tituj të përzgjedhur</span><span>◷ ${fetchedAt?new Date(fetchedAt).toLocaleDateString('sq-AL'):'Duke u përgatitur'}</span></div></div></section>
   <section class="pro-panel pro-discovery-controls" aria-label="Personalizo rekomandimet"><div class="pro-row"><h3>Çfarë ke qejf sot?</h3><button class="pro-btn" data-pro-action="refresh-recommendations" ${loading?'disabled':''}>↻ ${loading?'Po kërkoj…':'Tituj të rinj'}</button></div>
@@ -154,6 +155,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
   <p class="pro-muted pro-rec-source">Burimi: ${esc(source)}. Mostra e serialeve TV merret nga katalogu i TVMaze dhe nuk përfaqëson të gjitha serialet. Përshkrimet dhe notat janë nga katalogu; lista personale dhe anime të fshehura mbeten të ndara për çdo llogari në këtë shfletues.</p>`;
  }
  function home(){
+ ensureRanked();
  const p=profile(),featured=items.filter(x=>!ctx.inLibrary(x));
  const mixed=featured.filter(x=>x.kind==='tv').slice(0,1).concat(featured.filter(x=>x.kind!=='tv').slice(0,3));
  const picks=mixed.length>=4?mixed:featured.slice(0,4);
@@ -164,12 +166,14 @@ window.ATRecommendations=function ATRecommendations(ctx){
  };
  return `<div class="at-home-rec-header at123-home-rec-header"><div><span class="pro-eyebrow">PERSONAL DISCOVERY / PËR TY</span><h3>Historitë që mund të të pëlqejnë <span>✦</span></h3><p>${p.personal?'Zgjedhje nga zhanret dhe vlerësimet e tua.':'Zbulo diçka të re nga katalogu anime.'}</p></div><button class="pro-btn at-home-rec-discover" data-pro-page="recommendations">Të gjitha rekomandimet ↗</button></div>${picks.length?`<div class="at-home-rec-grid at123-home-rec-grid">${picks.map(tile).join('')}</div>`:'<div class="at-home-rec-empty"><span>✦</span><p>Rekomandimet po përgatiten sipas bibliotekës tënde.</p><button class="pro-btn" data-pro-page="recommendations">Hap zbulimet →</button></div>'}`;
 }
- function trending(){return items.filter(x=>x.kind!=='tv'&&!ctx.inLibrary(x)).slice().sort((a,b)=>b.popularity-a.popularity).slice(0,8).map(x=>{const src=ctx.poster(x.cover);return `<button type="button" class="at117-trending-card" data-pro-action="preview-recommendation" data-key="${esc(x.key)}" aria-label="Hap ${esc(x.title)}">${src?`<img src="${esc(src)}" alt="Posteri i ${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<span>✦</span>'}<strong>${esc(x.title)}</strong><small>${x.score==null?'AniList':`★ ${(Number(x.score)/10).toFixed(1)}`} · ${Number(x.popularity).toLocaleString('sq-AL')} ndjekës në AniList</small></button>`}).join('')}
- function rerank(){items=uniqueRanked(candidates,profile());redraw()}
+ function trending(){ensureRanked();return items.filter(x=>x.kind!=='tv'&&!ctx.inLibrary(x)).slice().sort((a,b)=>b.popularity-a.popularity).slice(0,8).map(x=>{const src=ctx.poster(x.cover);return `<button type="button" class="at117-trending-card" data-pro-action="preview-recommendation" data-key="${esc(x.key)}" aria-label="Hap ${esc(x.title)}">${src?`<img src="${esc(src)}" alt="Posteri i ${esc(x.title)}" loading="lazy" referrerpolicy="no-referrer">`:'<span>✦</span>'}<strong>${esc(x.title)}</strong><small>${x.score==null?'AniList':`★ ${(Number(x.score)/10).toFixed(1)}`} · ${Number(x.popularity).toLocaleString('sq-AL')} ndjekës në AniList</small></button>`}).join('')}
+ function rank(){items=uniqueRanked(candidates,profile());itemsDirty=false;return items}
+ function ensureRanked(){if(itemsDirty)rank();return items}
+ function rerank(){rank();redraw()}
  function switchOwner(){
   const id=String(ctx.user()?.id||'guest');
   if(owner===id)return;
-  owner=id;candidates=[];items=[];loading=false;fetchedAt=0;error='';hidden=new Set();mood='all';length='all';media='all';tab='personal';limit=12;requestId++;
+  owner=id;candidates=[];items=[];itemsDirty=false;loading=false;fetchedAt=0;error='';hidden=new Set();mood='all';length='all';media='all';tab='personal';limit=12;requestId++;
   const prefs=getStore(preferencesKey());
   if(prefs){hidden=new Set((Array.isArray(prefs.hidden)?prefs.hidden:[]).slice(0,250));mood=MOODS.some(m=>m[0]===prefs.mood)?prefs.mood:'all';length=LENGTHS.some(l=>l[0]===prefs.length)?prefs.length:'all';media=MEDIAS.some(l=>l[0]===prefs.media)?prefs.media:'all'}
  }
@@ -227,7 +231,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
  function resetFilters(){mood='all';length='all';media='all';tab='personal';limit=12;savePrefs();redraw()}
  function preview(key){const x=items.find(x=>x.key===key);if(x)ctx.previewItem(x)}
  async function add(key){const x=items.find(x=>x.key===key);if(!x)return;await ctx.addItem(x);rerank()}
- function reset(){requestId++;owner='';candidates=[];items=[];loading=false;error='';redraw()}
- function onLibraryChange(){if(owner===String(ctx.user()?.id||'guest')&&candidates.length)rerank()}
- return {render,home,trending,refresh,add,preview,hide,restore,setMedia,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange,getItems:()=>items.slice(),getUpdates:()=>candidates.filter(x=>x.kind!=='tv').slice().sort((a,b)=>Number(b.popularity)-Number(a.popularity))};
+ function reset(){requestId++;owner='';candidates=[];items=[];itemsDirty=false;loading=false;error='';redraw()}
+ function onLibraryChange(){if(owner===String(ctx.user()?.id||'guest')&&candidates.length)itemsDirty=true}
+ return {render,home,trending,refresh,add,preview,hide,restore,setMedia,setMood,setLength,setTab,more,surprise,resetFilters,reset,onLibraryChange,getItems:()=>ensureRanked().slice(),getUpdates:()=>candidates.filter(x=>x.kind!=='tv').slice().sort((a,b)=>Number(b.popularity)-Number(a.popularity))};
 };

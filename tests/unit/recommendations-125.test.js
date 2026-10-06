@@ -8,7 +8,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const root=path.resolve(__dirname,'../..');
 const source=fs.readFileSync(path.join(root,'src/modules/recommendations.js'),'utf8');
 function fixture(){
- const store=new Map(),calls=[],previews=[];
+ const store=new Map(),calls=[],previews=[],libraryLookups=[];
  const library=[{id:'mine',title:'Drama Favorite',status:'completed',genre:'Drama, Mystery',rating:9,favorite:true,source:'TVMaze',sourceId:'111',seasons:[{sourceId:'111'}]}],owner={id:'test-user'};
  const shows=[{id:777,name:'Dexter',type:'Scripted',genres:['Drama','Mystery'],premiered:'2006-10-01',rating:{average:8.6},image:{medium:'https://example.com/dexter.jpg',original:'https://example.com/dexter-original.jpg'},summary:'<p>A mystery series</p>'},{id:111,name:'Drama Favorite',type:'Scripted',genres:['Drama'],premiered:'2005-01-01',rating:{average:9},image:{medium:'https://example.com/favorite.jpg'}}];
  const media=[{id:21,idMal:121,title:{romaji:'Fantasy Journey'},genres:['Drama','Fantasy'],averageScore:86,popularity:25000,episodes:12,format:'TV',seasonYear:2025,coverImage:{large:'https://example.com/anime.jpg',extraLarge:'https://example.com/anime-original.jpg'},description:'Anime about a journey',relations:{edges:[]}}];
@@ -18,8 +18,8 @@ function fixture(){
   return {ok:true,json:async()=>({data:{Page:{media}}})};
  };
  const sandbox={window:{ATHTML:htmlHelpers,ATAvatar:avatarHelpers},localStorage:{getItem:key=>store.get(key)||null,setItem:(key,v)=>store.set(key,v)},fetch,Date,Map,Set,Promise,setTimeout,clearTimeout,AbortController};vm.runInNewContext(source,sandbox);
- const ctx={esc:x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;'),user:()=>owner,state:()=>({anime:library}),poster:x=>x,genres:a=>String(a.genre||'').split(',').map(x=>x.trim()),seriesRoot:x=>String(x||'').toLowerCase(),mapAniList:m=>({key:'al-'+m.id,source:'AniList',sourceId:String(m.id),malId:String(m.idMal),title:m.title.romaji,genre:m.genres.join(', '),cover:m.coverImage.large,score:m.averageScore,format:m.format,year:m.seasonYear,total:m.episodes,synopsis:m.description}),inLibrary:x=>library.find(a=>a.title.toLowerCase()===String(x.title||'').toLowerCase()||x.kind==='tv'&&a.sourceId===String(x.sourceId)),rerender:()=>{},toast:()=>{},previewItem:x=>previews.push(x),addItem:async()=>{}};
- return {rec:sandbox.window.ATRecommendations(ctx),store,calls,previews,library,owner};
+ const ctx={esc:x=>String(x??'').replace(/&/g,'&amp;').replace(/</g,'&lt;'),user:()=>owner,state:()=>({anime:library}),poster:x=>x,genres:a=>String(a.genre||'').split(',').map(x=>x.trim()),seriesRoot:x=>String(x||'').toLowerCase(),mapAniList:m=>({key:'al-'+m.id,source:'AniList',sourceId:String(m.id),malId:String(m.idMal),title:m.title.romaji,genre:m.genres.join(', '),cover:m.coverImage.large,score:m.averageScore,format:m.format,year:m.seasonYear,total:m.episodes,synopsis:m.description}),inLibrary:x=>{libraryLookups.push(x.key);return library.find(a=>a.title.toLowerCase()===String(x.title||'').toLowerCase()||x.kind==='tv'&&a.sourceId===String(x.sourceId))},rerender:()=>{},toast:()=>{},previewItem:x=>previews.push(x),addItem:async()=>{}};
+ return {rec:sandbox.window.ATRecommendations(ctx),store,calls,previews,library,owner,libraryLookups};
 }
 test('12.5 mixed discovery: TV shows and anime in one list, duplicates excluded',async()=>{
  const fx=fixture(),snapshot=JSON.stringify(fx.library);await fx.rec.refresh(true);
@@ -32,6 +32,14 @@ test('12.5 mixed discovery: TV shows and anime in one list, duplicates excluded'
  assert.match(html,/Gjithçka/);assert.match(html,/Seriale TV/);
  assert.equal(fx.calls.filter(x=>x.includes('tvmaze.com/shows?page=')).length,2);
  assert.equal(JSON.stringify(fx.library),snapshot,'discovery must not change user library');
+});
+test('library progress defers discovery ranking until results are requested',async()=>{
+ const fx=fixture();await fx.rec.refresh(true);fx.libraryLookups.length=0;
+ fx.library.push({id:'anime',title:'Fantasy Journey',status:'watching'});
+ fx.rec.onLibraryChange();
+ assert.equal(fx.libraryLookups.length,0,'saving progress should not scan remote candidates synchronously');
+ assert.ok(fx.rec.getItems().every(item=>item.title!=='Fantasy Journey'),'the next discovery read reflects the saved library');
+ assert.ok(fx.libraryLookups.length>0,'ranking runs when discovery results are consumed');
 });
 test('12.5 media filters: TV, anime and movie categories and safe TV preview',async()=>{
  const fx=fixture();await fx.rec.refresh(true);

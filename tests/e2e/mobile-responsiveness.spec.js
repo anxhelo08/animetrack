@@ -183,8 +183,8 @@ test('500-title mobile workload measures home, navigation and episode reaction a
       await page.evaluate(() =>
         Boolean(
           document
-            .getElementById('mobile-continue')
-            .compareDocumentPosition(document.getElementById('mobile-history')) &
+            .getElementById('mobile-history')
+            .compareDocumentPosition(document.getElementById('mobile-continue')) &
           Node.DOCUMENT_POSITION_FOLLOWING,
         ),
       ),
@@ -295,7 +295,7 @@ test('mobile routes restore each scroll position and all next episodes remain re
   for (const group of ['active', 'stale']) {
     const more = page.locator(`[data-mobile-action="load-home"][data-mobile-group="${group}"]`);
     for (let i = 0; i < 12; i++) await more.dispatchEvent('click');
-    await expect(more).toHaveCount(0);
+    await expect(more).not.toBeVisible();
   }
   const queueKeys = await page
     .locator('#mobile-continue .watch-row,#mobile-stale .watch-row')

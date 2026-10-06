@@ -2207,6 +2207,31 @@
     color: #e3ffeb;
     background: #216d3c;
   }
+  #mobile-home .watch-home-content > [hidden],
+  #mobile-home [hidden] {
+    display: none !important;
+  }
+  .watch-row-resume {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 44px;
+    max-width: 100%;
+    margin-top: 4px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--surface2);
+    color: var(--purple);
+    font-size: 13px;
+    font-weight: 650;
+    text-align: left;
+  }
+  .watch-row-resume svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
+  }
   .watch-row-pending {
     color: var(--muted);
     background: var(--surface2);
@@ -2216,7 +2241,7 @@
 /* Dock navigation to the screen edge and use safe areas once per page. */
 @media (max-width: 760px) {
   body.at-ios-enabled .main {
-    padding: calc(12px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    padding: calc(8px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
       calc(76px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)) !important;
     min-height: 100dvh;
     box-sizing: border-box;
@@ -2244,7 +2269,7 @@
     flex-wrap: wrap;
     overflow: visible;
     gap: 6px;
-    margin: 0 0 10px;
+    margin: 0;
   }
   body.at-ios-enabled #product-tools[hidden],
   body.at-ios-enabled #product-tools button[hidden] {
@@ -2281,7 +2306,7 @@
     font-size: 16px;
   }
   body.at-ios-enabled #mobile-browse {
-    margin-top: 16px;
+    margin-top: 4px;
   }
   body.at-ios-enabled #mobile-browse > h2 {
     font-size: 23px;
@@ -2401,8 +2426,9 @@
     color: var(--text);
   }
   .mobile-home-shortcuts {
-    display: flex;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
     margin-bottom: 24px;
     overflow-x: auto;
   }
@@ -2410,15 +2436,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 1 0 auto;
-    gap: 6px;
+    min-width: 0;
+    gap: 4px;
     min-height: 44px;
-    padding: 10px 9px;
+    padding: 8px 4px;
     border: 0;
     border-radius: 12px;
     background: var(--surface);
     color: var(--text);
-    font-size: 13px;
+    font-size: 11px;
+    white-space: nowrap;
   }
   .mobile-home-shortcuts svg,
   .watch-home-toolbar svg {
