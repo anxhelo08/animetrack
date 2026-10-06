@@ -17,7 +17,14 @@ test('pending and conflicting changes can never be presented as synced', () => {
   expect(syncPresentation({ ...status, dirty: false }).kind).toBe('synced');
   expect(status.dirty).toBe(true);
 });
-function fixture() {
+test('sync status belongs to the application when the welcome page has its own main', () => {
+  fixture({ welcome: true });
+  const status = document.getElementById('mobile-sync-status');
+  expect(document.querySelector('main.main').contains(status)).toBe(true);
+  expect(document.getElementById('welcome-page').contains(status)).toBe(false);
+  expect(status.dataset.state).toBe('synced');
+});
+function fixture({ welcome = false } = {}) {
   document.body.innerHTML =
     '<nav id="side-nav">' +
     [
@@ -40,7 +47,16 @@ function fixture() {
     ]
       .map((id) => `<button id="${id}" class="nav-btn">Page</button>`)
       .join('') +
-    '</nav><main><header class="topbar"><h1 id="page-title"></h1></header><section id="home-view"><div id="at-home-main"></div><div id="at-iphone-feed"></div></section><section id="library-view"></section><section id="pro-view"></section></main><input id="global-search"><input id="import-file" type="file">';
+    '</nav><main class="main"><header class="topbar"><h1 id="page-title"></h1></header><section id="home-view"><div id="at-home-main"></div><div id="at-iphone-feed"></div></section><section id="library-view"></section><section id="pro-view"></section></main><input id="global-search"><input id="import-file" type="file">';
+  if (welcome) {
+    const section = document.createElement('section');
+    section.id = 'welcome-page';
+    section.hidden = true;
+    const hero = document.createElement('main');
+    hero.className = 'welcome-hero';
+    section.append(hero);
+    document.body.prepend(section);
+  }
   window.ATHTML = createHTML(window);
   let user = { id: 'first' };
   const state = { anime: [], preferences: {} };

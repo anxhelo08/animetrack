@@ -180,6 +180,8 @@ test('reading and watching workspaces keep source handoffs separate from progres
   await expect(page.locator('#anime-grid .anime-card')).toHaveCount(1);
   await page.locator('#anime-grid [data-detail="workspace-anime"]').first().click();
   await expect(page.locator('.title-workspace-summary')).toContainText('2 nga 12');
+  if (info.project.name.startsWith('iphone'))
+    await page.locator('[data-mobile-detail-tab="overview"]').click();
   await expect(page.locator('.title-workspace-summary [data-title-copy]')).toBeVisible();
   await page.locator('.title-workspace-summary [data-title-copy]').click();
   await expect.poll(() => page.evaluate(() => window.copiedTitle)).toBe('Demon Slayer');

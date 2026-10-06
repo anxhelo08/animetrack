@@ -284,21 +284,16 @@ body.at-ios-enabled .product-tools .nav-label {
 @media (max-width: 760px) {
   #mobile-sync-status {
     display: block;
-    position: fixed;
-    right: 12px;
-    bottom: calc(82px + env(safe-area-inset-bottom));
-    z-index: 90;
-    padding: 6px 10px;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--surface);
+    position: static;
+    margin: 0 0 12px;
+    padding: 0;
+    text-align: right;
     color: var(--muted);
-    font-size: 11px;
-    max-width: calc(100vw - 24px);
-    pointer-events: none;
+    font-size: 12px;
+    min-height: 18px;
   }
   #mobile-sync-status[data-state='synced'] {
-    color: var(--text);
+    color: var(--muted);
   }
   #mobile-sync-status[data-state='conflict'],
   #mobile-sync-status[data-state='warning'] {

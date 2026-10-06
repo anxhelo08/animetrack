@@ -469,7 +469,7 @@ test('a completed airing series surfaces episode seven at its confirmed release 
   await page.clock.setSystemTime(new Date('2026-09-30T12:00:00Z'));
   await page.clock.runFor(11000);
   await expect(page.locator('#mobile-continue')).toContainText('S1 EP7');
-  await expect(page.locator('#mobile-continue .watch-row-new')).toHaveText('Episod i ri');
+  await expect(page.locator('#mobile-continue .watch-row-new')).toHaveText('NEW · EP');
   await expect(page.locator('#mobile-stale .watch-row')).toHaveCount(0);
   expect(await page.evaluate(() => window.ATMobile113.state().anime[0].seasons[0].watched)).toEqual(
     [1, 2, 3, 4, 5, 6],
@@ -482,7 +482,7 @@ test('a completed airing series surfaces episode seven at its confirmed release 
   );
 });
 
-test('watching opens first, history can be unmarked and navigation does not sync the library', async ({
+test('watching leads the home content, history can be unmarked and navigation does not sync the library', async ({
   page,
 }, info) => {
   test.skip(info.project.name !== 'iphone-chromium', 'Phone-specific presentation.');
@@ -509,7 +509,7 @@ test('watching opens first, history can be unmarked and navigation does not sync
     .poll(() =>
       watching.evaluate((n) => {
         const top = n.getBoundingClientRect().top;
-        return top >= 0 && top <= 16;
+        return top >= 0 && top < innerHeight - 150;
       }),
     )
     .toBe(true);
@@ -534,7 +534,7 @@ test('watching opens first, history can be unmarked and navigation does not sync
     .poll(() =>
       watching.evaluate((n) => {
         const top = n.getBoundingClientRect().top;
-        return top >= 0 && top <= 16;
+        return top >= 0 && top < innerHeight - 150;
       }),
     )
     .toBe(true);
@@ -549,7 +549,7 @@ test('watching opens first, history can be unmarked and navigation does not sync
     .poll(() =>
       watching.evaluate((n) => {
         const top = n.getBoundingClientRect().top;
-        return top >= 0 && top <= 16;
+        return top >= 0 && top < innerHeight - 150;
       }),
     )
     .toBe(true);
@@ -591,7 +591,7 @@ test('watching opens first, history can be unmarked and navigation does not sync
     .poll(() =>
       watching.evaluate((n) => {
         const top = n.getBoundingClientRect().top;
-        return top >= 0 && top <= 16;
+        return top >= 0 && top < innerHeight - 150;
       }),
     )
     .toBe(true);

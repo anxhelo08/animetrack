@@ -355,7 +355,9 @@ export function createProductExperience(ctx) {
     mobileStatus.id = 'mobile-sync-status';
     mobileStatus.setAttribute('role', 'status');
     mobileStatus.setAttribute('aria-live', 'polite');
-    document.body.append(mobileStatus);
+    (document.querySelector('.main') || document.querySelector('main') || document.body).prepend(
+      mobileStatus,
+    );
     bar.id = 'product-sync';
     bar.className = 'product-sync';
     bar.setAttribute('role', 'status');

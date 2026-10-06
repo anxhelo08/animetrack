@@ -2370,6 +2370,127 @@
     transform: scale(0.97);
   }
 }
+
+/* Phone tasks: short first screen, compact queue, controls reachable with one hand. */
+@media (max-width: 760px) {
+  .mobile-home-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .mobile-home-heading h1 {
+    margin: 0 0 5px;
+    font-size: 28px;
+    letter-spacing: -0.025em;
+  }
+  .mobile-home-heading p {
+    color: var(--muted);
+    margin: 0;
+    font-size: 14px;
+  }
+  .mobile-home-heading button {
+    flex: none;
+    width: 48px;
+    min-height: 48px;
+    padding: 12px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--surface2);
+    color: var(--text);
+  }
+  .mobile-home-shortcuts {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+  .mobile-home-shortcuts button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 0 auto;
+    gap: 6px;
+    min-height: 44px;
+    padding: 10px 9px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+  }
+  .mobile-home-shortcuts svg,
+  .watch-home-toolbar svg {
+    width: 18px;
+    height: 18px;
+  }
+  body.at-ios-enabled #mobile-home .watch-home-tabs button {
+    min-height: 48px;
+    text-transform: none;
+    font-weight: 650;
+  }
+  body.at-ios-enabled #mobile-home .watch-group-label {
+    margin: 24px 0 12px;
+    text-align: left;
+    text-transform: none;
+    color: var(--text);
+    font-size: 19px;
+    font-weight: 700;
+  }
+  body.at-ios-enabled #mobile-home .watch-group-label span {
+    background: none;
+    padding: 0;
+  }
+  body.at-ios-enabled #mobile-home .watch-row-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    text-align: left;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    min-height: 44px;
+    font-size: 15px;
+    line-height: 1.35;
+    color: var(--text);
+    text-transform: none;
+    white-space: normal;
+  }
+  body.at-ios-enabled #mobile-home .watch-row-title span {
+    display: none;
+  }
+  body.at-ios-enabled #mobile-home .watch-row-episode {
+    min-height: 44px;
+    font-size: 16px;
+    color: var(--purple);
+  }
+  body.at-ios-enabled #mobile-home .watch-row {
+    border-radius: 14px;
+    margin-bottom: 10px;
+  }
+  .mobile-home-more {
+    grid-column: 1 / -1;
+    min-height: 44px;
+    width: 100%;
+    margin: 4px 0 12px;
+    font-size: 14px;
+  }
+  body.at-ios-enabled #mobile-home .watch-row-seen svg,
+  body.at-ios-enabled #mobile-home .watch-row-pending svg {
+    width: 18px;
+    height: 18px;
+  }
+  .mobile-detail-tabs button {
+    min-height: 44px;
+  }
+  body.at-ios-enabled #detail-modal .mobile-detail-tabs {
+    gap: 20px;
+  }
+  body.at-ios-enabled #detail-modal .mobile-detail-tabs button {
+    flex: 0 0 auto;
+  }
+}
 @keyframes mobile-view-enter {
   from {
     opacity: 0.75;
@@ -2477,5 +2598,11 @@
   }
 }
 
-.library-load-more { display: block; margin: 24px auto; min-height: 44px; }
-.library-load-more[hidden] { display: none; }
+.library-load-more {
+  display: block;
+  margin: 24px auto;
+  min-height: 44px;
+}
+.library-load-more[hidden] {
+  display: none;
+}
