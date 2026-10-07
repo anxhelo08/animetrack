@@ -28,7 +28,7 @@
     "fake-indexeddb": "6.2.4",
     "globals": "17.12.0",
     "jsdom": "30.1.1",
-    "pg": "8.23.0",
+    "pg": "8.23.1",
     "prettier": "3.9.9",
     "supabase": "2.118.0",
     "typescript": "7.0.2",
