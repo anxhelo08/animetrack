@@ -91,3 +91,6 @@ body.auth-required #account-guest-user>.account-note{display:none!important}
 }
 @media(max-height:700px) and (max-width:760px){.welcome-hero{padding-top:180px}}
 .welcome-artwork-unavailable{visibility:hidden}.welcome-mosaic{background:linear-gradient(135deg,#332544,#171021)}
+
+.welcome-public-links{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:16px 28px}
+.welcome-public-links a{color:#d8c8ff;text-underline-offset:4px;padding:12px 0}

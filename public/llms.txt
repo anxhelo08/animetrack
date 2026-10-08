@@ -1,0 +1,11 @@
+# AnimeTrack
+
+> AnimeTrack është një aplikacion në shqip për të organizuar anime, filma, seriale, manga dhe manhwa, me progres shikimi dhe leximi në çdo pajisje.
+
+## Faqe publike
+
+- [AnimeTrack](https://animetrack-flax.vercel.app/): Prezantimi dhe hapja e aplikacionit.
+- [Instalo AnimeTrack](https://animetrack-flax.vercel.app/install.html): Instalimi falas në iPhone dhe Android.
+- [Lidh player-in](https://animetrack-flax.vercel.app/integrations/player-guide.html): Lidhja e shtesës, gjurmimi automatik dhe kufijtë e përdorimit.
+
+Ky udhëzues përshkruan faqet publike. Titujt, progresi dhe shënimet personale menaxhohen brenda bibliotekës së përdoruesit.

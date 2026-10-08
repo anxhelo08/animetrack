@@ -1,1 +1,78 @@
-<!doctype html><html lang="sq"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AnimeTrack — Player</title><style>body{font:17px/1.7 system-ui;max-width:760px;margin:50px auto;padding:24px;background:#151420;color:#f4f3ff}a{color:#bba7ff}li{margin:16px 0}</style><h1>Lidh player-in me AnimeTrack</h1><ol><li>Shkarko <a href="animetrack-player.zip">shtesën</a> dhe nxirre nga ZIP.</li><li>Hap <b>chrome://extensions</b> ose <b>edge://extensions</b>, aktivizo Developer mode dhe zgjidh <b>Load unpacked</b>. Zgjidh dosjen që nxore nga ZIP.</li><li>Hap AnimeTrack → MAL / AniList Sync → Gjurmim automatik nga player-i. Aktivizo gjurmimin dhe lidh URL e videos me titullin, pjesën dhe episodin e publikuar.</li><li>Mbaje AnimeTrack të hapur. Shiko videon në Crunchyroll, Netflix, Disney+ ose Prime Video; pas 90% të kohës së luajtur, episodi shënohet një herë.</li></ol><p>Shtesa nuk merr token dhe nuk ruan historikun tënd. Dërgon vetëm URL e videos dhe raportin e kohës së luajtur te tab-i yt AnimeTrack. Për ta ndalur, çaktivizo gjurmimin ose hiq shtesën.</p><p>Player-at në iframe nga një domain tjetër dhe videot nën një minutë nuk mbështeten. Shënimi bëhet përmes sesionit tënd aktiv në AnimeTrack; kur tab-i është i mbyllur ose llogaria ka dalë, shënimi nuk kryhet.</p><a href="/">Kthehu në AnimeTrack</a></html>
+<!doctype html>
+<html lang="sq">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lidh player-in dhe gjurmo episodet — AnimeTrack</title>
+    <meta
+      name="description"
+      content="Mëso si ta lidhësh shtesën e player-it me AnimeTrack për gjurmimin automatik të episodeve, çfarë të dhënash dërgon dhe kufijtë e përdorimit."
+    />
+    <link
+      rel="canonical"
+      href="https://animetrack-flax.vercel.app/integrations/player-guide.html"
+    />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AnimeTrack" />
+    <meta property="og:locale" content="sq_AL" />
+    <meta property="og:title" content="Lidh player-in dhe gjurmo episodet — AnimeTrack" />
+    <meta
+      property="og:description"
+      content="Mëso si ta lidhësh shtesën e player-it me AnimeTrack për gjurmimin automatik të episodeve, çfarë të dhënash dërgon dhe kufijtë e përdorimit."
+    />
+    <meta
+      property="og:url"
+      content="https://animetrack-flax.vercel.app/integrations/player-guide.html"
+    />
+    <meta property="og:image" content="https://animetrack-flax.vercel.app/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="Ikona e AnimeTrack" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Lidh player-in dhe gjurmo episodet — AnimeTrack" />
+    <meta
+      name="twitter:description"
+      content="Mëso si ta lidhësh shtesën e player-it me AnimeTrack për gjurmimin automatik të episodeve, çfarë të dhënash dërgon dhe kufijtë e përdorimit."
+    />
+    <meta name="twitter:image" content="https://animetrack-flax.vercel.app/icon-512.png" />
+    <meta name="twitter:image:alt" content="Ikona e AnimeTrack" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/integrations/player-guide.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Lidh player-in me AnimeTrack</h1>
+      <h2>Instalimi dhe lidhja</h2>
+      <ol>
+        <li>Shkarko <a href="animetrack-player.zip">shtesën</a> dhe nxirre nga ZIP.</li>
+        <li>
+          Hap <b>chrome://extensions</b> ose <b>edge://extensions</b>, aktivizo Developer mode dhe
+          zgjidh <b>Load unpacked</b>. Zgjidh dosjen që nxore nga ZIP.
+        </li>
+        <li>
+          Hap AnimeTrack → MAL / AniList Sync → Gjurmim automatik nga player-i. Aktivizo gjurmimin
+          dhe lidh URL e videos me titullin, pjesën dhe episodin e publikuar.
+        </li>
+        <li>
+          Mbaje AnimeTrack të hapur. Shiko videon në Crunchyroll, Netflix, Disney+ ose Prime Video;
+          pas 90% të kohës së luajtur, episodi shënohet një herë.
+        </li>
+      </ol>
+      <h2>Çfarë dërgon shtesa</h2>
+      <p>
+        Shtesa nuk merr token dhe nuk ruan historikun tënd. Dërgon vetëm URL e videos dhe raportin e
+        kohës së luajtur te tab-i yt AnimeTrack. Për ta ndalur, çaktivizo gjurmimin ose hiq shtesën.
+      </p>
+      <h2>Kufijtë e gjurmimit</h2>
+      <p>
+        Player-at në iframe nga një domain tjetër dhe videot nën një minutë nuk mbështeten. Shënimi
+        bëhet përmes sesionit tënd aktiv në AnimeTrack; kur tab-i është i mbyllur ose llogaria ka
+        dalë, shënimi nuk kryhet.
+      </p>
+      <nav aria-label="Faqet publike">
+        <a href="/">Kthehu në AnimeTrack</a> · <a href="/install.html">Instalo në telefon</a>
+      </nav>
+    </main>
+  </body>
+</html>

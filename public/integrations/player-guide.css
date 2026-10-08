@@ -1,0 +1,14 @@
+body {
+  font: 17px/1.7 system-ui;
+  max-width: 760px;
+  margin: 50px auto;
+  padding: 24px;
+  background: #151420;
+  color: #f4f3ff;
+}
+a {
+  color: #bba7ff;
+}
+li {
+  margin: 16px 0;
+}
