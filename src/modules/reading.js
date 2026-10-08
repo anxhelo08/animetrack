@@ -1332,8 +1332,8 @@ export function createReading(ctx) {
       query = event.target.value;
       clearTimeout(debounce);
       if (['discover', 'latest', 'recommendations'].includes(tab)) {
-        controller?.abort();
-        debounce = setTimeout(() => void search(), 350);
+        cancel();
+        debounce = setTimeout(() => void search(), 250);
       } else render();
     });
     root.addEventListener('change', (event) => {

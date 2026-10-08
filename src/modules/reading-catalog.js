@@ -177,13 +177,13 @@ export async function searchReadingCatalog(
   page = 1,
   signal,
   filters = {},
-  { onUpdate } = {},
+  { onUpdate, timeoutMs = 6500 } = {},
 ) {
   if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
   query = query.normalize('NFKC').replace(/[’‘]/g, "'").replace(/\s+/g, ' ').trim();
-  signal = signal
-    ? AbortSignal.any([signal, AbortSignal.timeout(6500)])
-    : AbortSignal.timeout(6500);
+  const callerSignal = signal;
+  const deadline = AbortSignal.timeout(timeoutMs);
+  signal = callerSignal ? AbortSignal.any([callerSignal, deadline]) : deadline;
   const primary = () =>
     weebCentralCatalog(
       'search',
@@ -211,8 +211,11 @@ export async function searchReadingCatalog(
       }
     }),
   );
-  if (signal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
-  if (!completed.length) throw failures[0] || Error('Katalogu nuk u përgjigj.');
+  if (callerSignal?.aborted) throw new DOMException('Request cancelled', 'AbortError');
+  if (!completed.length) {
+    if (deadline.aborted) throw Error('Kërkimi zgjati shumë. Provo përsëri.');
+    throw failures[0] || Error('Katalogu nuk u përgjigj.');
+  }
   const result = combineCatalogs(completed);
   return { ...result, partial: failures.length > 0 };
 }

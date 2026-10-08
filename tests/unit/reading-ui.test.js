@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { beforeEach, expect, it, vi } from 'vitest';
 import { createHTML } from '../../src/modules/safe-html.js';
+vi.mock('../../src/modules/reading-catalog.js', async (original) => ({
+  ...(await original()),
+  searchReadingCatalog: vi.fn(),
+}));
+import { searchReadingCatalog } from '../../src/modules/reading-catalog.js';
 import { createReading } from '../../src/modules/reading.js';
 import { normalizeReadingLibrary } from '../../src/core/reading-model.js';
 
@@ -193,4 +198,33 @@ it('background metadata renders retain an open management menu', () => {
   document.querySelector('.reading-manage').open = true;
   reading.render();
   expect(document.querySelector('.reading-manage').open).toBe(true);
+});
+
+it('an obsolete search cannot repaint while the next query is being typed', async () => {
+  vi.useFakeTimers();
+  let resolve;
+  searchReadingCatalog.mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = done;
+      }),
+  );
+  const { reading } = fixture();
+  try {
+    document.querySelector('[data-reading-action="tab"][data-id="discover"]').click();
+    const input = document.querySelector('#reading-query');
+    input.focus();
+    input.value = 'New query';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    const grid = document.querySelector('.reading-grid');
+    resolve({ items: [], hasNext: false });
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(document.querySelector('.reading-grid')).toBe(grid);
+    expect(document.querySelector('#reading-query')).toBe(input);
+    expect(input.value).toBe('New query');
+  } finally {
+    reading.hide();
+    vi.useRealTimers();
+  }
 });

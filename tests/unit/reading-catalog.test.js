@@ -233,3 +233,53 @@ it('a blocked WeebCentral chapter check falls back only through confirmed tracke
   expect(weebCentralCatalog).toHaveBeenCalledTimes(1);
   expect(row).toEqual(before);
 });
+
+it('keeps usable matches and pagination when the shared deadline expires', async () => {
+  const { weebCentralCatalog } = await import('../../src/modules/weebcentral-catalog.js');
+  weebCentralCatalog.mockImplementationOnce(
+    (_action, _params, signal) =>
+      new Promise((_, reject) =>
+        signal.addEventListener('abort', () => reject(signal.reason), { once: true }),
+      ),
+  );
+  catalogJSON.mockImplementation(async (url) =>
+    url.includes('anilist')
+      ? {
+          data: {
+            Page: {
+              media: [{ id: 22, type: 'MANGA', title: { english: 'Fast Match' } }],
+              pageInfo: { hasNextPage: true },
+            },
+          },
+        }
+      : { data: [], pagination: {} },
+  );
+  const result = await searchReadingCatalog('Match', 'all', 1, undefined, {}, { timeoutMs: 20 });
+  expect(result.items[0].title).toBe('Fast Match');
+  expect(result.hasNext).toBe(true);
+  expect(result.partial).toBe(true);
+});
+it('caller cancellation still rejects after a provider has returned matches', async () => {
+  const { weebCentralCatalog } = await import('../../src/modules/weebcentral-catalog.js');
+  weebCentralCatalog.mockImplementationOnce(
+    (_action, _params, signal) =>
+      new Promise((_, reject) =>
+        signal.addEventListener('abort', () => reject(signal.reason), { once: true }),
+      ),
+  );
+  catalogJSON.mockImplementation(async (url) =>
+    url.includes('anilist')
+      ? { data: { Page: { media: [{ id: 22, type: 'MANGA', title: { english: 'Fast Match' } }] } } }
+      : { data: [], pagination: {} },
+  );
+  const controller = new AbortController();
+  const pending = searchReadingCatalog(
+    'Match',
+    'all',
+    1,
+    controller.signal,
+    {},
+    { onUpdate: () => controller.abort() },
+  );
+  await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+});
