@@ -46,7 +46,7 @@ jobs:
           ZIP="AnimeTrack-${LABEL}.zip"
           zip -r "$ZIP" . -x ".git/*" "node_modules/*" "playwright-report/*" "test-results/*" "$ZIP"
           echo "zip=$ZIP" >> "$GITHUB_OUTPUT"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: animetrack-release
           path: ${{ steps.package.outputs.zip }}
@@ -113,7 +113,7 @@ jobs:
         run: npx playwright install --with-deps ${{ matrix.browser }}
       - name: Run Playwright Test
         run: npx playwright test --project=${{ matrix.project }}
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: playwright-${{ matrix.project }}
@@ -138,7 +138,7 @@ jobs:
           npx --yes --package=@lhci/cli@0.15.1 lhci collect
           node scripts/summarize-lighthouse.mjs
           npx --yes --package=@lhci/cli@0.15.1 lhci assert
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: always()
         with:
           name: lighthouse-reports
