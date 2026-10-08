@@ -1,0 +1,28 @@
+/* Loaded only when JavaScript is disabled. Keep the private shell hidden. */
+body.account-booting .account-boot-screen,
+body > .skip-link,
+.welcome-page [data-welcome-auth],
+.welcome-carousel-controls {
+  display: none !important;
+}
+#welcome-page[hidden] {
+  display: block;
+}
+.public-nojs-note a {
+  color: #d8c8ff;
+  text-underline-offset: 4px;
+}
+.welcome-page *,
+.welcome-page *::before,
+.welcome-page *::after {
+  box-sizing: border-box;
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-page * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+.welcome-deck .welcome-poster:not([data-slot='0']) {
+  display: none;
+}

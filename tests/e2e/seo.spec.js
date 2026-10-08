@@ -7,6 +7,7 @@ const pages = [
   ['/', 'AnimeTrack — Ndiq anime, filma, seriale, manga dhe manhwa'],
   ['/install.html', 'Instalo AnimeTrack falas në iPhone dhe Android'],
   ['/integrations/player-guide.html', 'Lidh player-in dhe gjurmo episodet — AnimeTrack'],
+  ['/help.html', 'Si përdoret AnimeTrack — Biblioteka, episodet dhe leximet'],
 ];
 
 for (const [path, title] of pages) {
@@ -108,7 +109,7 @@ test('guest welcome links connect the public guides', async ({ page }) => {
   await openFixture(page, { signedIn: false });
   const nav = page.locator('.welcome-public-links');
   await expect(nav).toBeVisible();
-  await expect(nav.locator('a')).toHaveCount(2);
+  await expect(nav.locator('a')).toHaveCount(3);
   await nav.locator('a[href="/install.html"]').click();
   await expect(page).toHaveTitle(pages[1][1]);
 });
@@ -152,4 +153,50 @@ test('the public AI guide links only to the same public pages', async ({ request
   expect(text).toContain('# AnimeTrack');
   const links = [...text.matchAll(/\]\((https:\/\/[^)]+)\)/g)].map((match) => match[1]);
   expect(links).toEqual(pages.map(([path]) => origin + path));
+});
+
+test('public presentation and help remain usable with JavaScript disabled', async ({ browser }) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: test.info().project.use.viewport,
+  });
+  const page = await context.newPage();
+  try {
+    await page.goto('http://127.0.0.1:8765/');
+    await expect(page.locator('#welcome-title')).toBeVisible();
+    await expect(page.locator('#account-boot-screen')).toBeHidden();
+    await expect(page.locator('.app')).toBeHidden();
+    await expect(page.locator('[data-welcome-auth="signup"]')).toBeHidden();
+    await page.locator('.public-nojs-note a').click();
+    await expect(page.locator('h1')).toHaveText('Historitë e tua, në një vend');
+    await page.locator('a[href="#reading"]').click();
+    await expect(page).toHaveURL(/help\.html#reading$/);
+    await expect(page.locator('#reading h2')).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
+    expect(overflow).toBe(false);
+  } finally {
+    await context.close();
+  }
+});
+
+test('structured application data is public, truthful and inert under the CSP', async ({
+  page,
+}) => {
+  const violations = [];
+  await page.addInitScript(() => {
+    window.__publicCspViolations = [];
+    document.addEventListener('securitypolicyviolation', (event) => {
+      window.__publicCspViolations.push(event.violatedDirective);
+    });
+  });
+  await openFixture(page, { signedIn: false });
+  const data = JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
+  expect(data['@type']).toBe('WebApplication');
+  expect(data.url).toBe(origin + '/');
+  expect(data.inLanguage).toBe('sq');
+  expect(data.offers.price).toBe('0');
+  expect(data.aggregateRating).toBeUndefined();
+  violations.push(...(await page.evaluate(() => window.__publicCspViolations)));
+  expect(violations).not.toContain('script-src-elem');
+  expect(violations).not.toContain('script-src');
 });
