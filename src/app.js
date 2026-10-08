@@ -1,7 +1,7 @@
 import { matchesLibraryQuery, titleCatalogLinks } from './core/library-discovery.js';
 import { createDecisionDialog } from './modules/decision-dialog.js';
 import { createLibraryList } from './core/library-list.js';
-import { createRenderPass } from './core/render-pass.js';
+import { createRenderPass, createScopedRender } from './core/render-pass.js';
 import { createSyncClock } from './core/sync-clock.js';
 import { migrateSyncLibrary, captureSyncState, recordSyncChanges } from './core/sync-tombstones.js';
 import { watchProgressChanges, libraryWatchTimes } from './core/watch-progress.js';
@@ -1120,8 +1120,9 @@ function v81EnhanceEpisodeRows(){
 const v81PriorRenderDetail=renderDetail;
 renderDetail=function(id){v81PriorRenderDetail(id);v81EnhanceEpisodeRows()};
 const v81PriorUpdate=updateSeasonEpisode;
-updateSeasonEpisode=function(...args){const changed=v81PriorUpdate(...args);if(changed&&$('episode-detail-modal').classList.contains('show'))v81RenderEpisode();return changed};
+updateSeasonEpisode=function(...args){const changed=v81PriorUpdate(...args);if(changed&&$('episode-detail-modal').classList.contains('show'))requestEpisodeRender();return changed};
 let v81EpisodeRef=null,v81EpisodeBusy=false;
+let requestEpisodeRender=(...args)=>v81RenderEpisode(...args);
 function v81EpisodeParts(){const r=v81EpisodeRef,a=state.anime.find(x=>x.id===r?.id),s=a?.seasons.find(x=>x.id===r?.seasonId),n=r?.n,ep=s?.episodes.find(x=>x.number===n);return {a,s,n,ep}}
 function v81RenderEpisode(message=''){
  const {a,s,n,ep}=v81EpisodeParts();if(!a||!s){closeModal('episode-detail-modal');return}
@@ -1143,7 +1144,7 @@ async function v81FetchEpisode(force=false){
  const owner=accountUser?.id||null,storageKey=KEY,ref=v81EpisodeRef;
  const current=()=>owner===(accountUser?.id||null)&&storageKey===KEY;
  if(!force&&((ep?.detailsCheckedAt&&Date.now()-Date.parse(ep.detailsCheckedAt)<(ep.summary&&ep.image?86400000:30*60000)&&(!window.ATFiller1210.validId(s.malId)||ep?.fillerChecked))))return;
- v81EpisodeBusy=true;v81RenderEpisode();let changed=false,errors=[],prior=ep||{number:n};const {episodeProviderIdentity}=await import('./core/episode-details.js');const identity=episodeProviderIdentity(a,s);
+ v81EpisodeBusy=true;requestEpisodeRender();let changed=false,errors=[],prior=ep||{number:n};const {episodeProviderIdentity}=await import('./core/episode-details.js');const identity=episodeProviderIdentity(a,s);
  try{
   let remote=null;
   if(/^\d+$/.test(String(prior.tvmazeEpisodeId||''))){remote=await catalogJSON('https://api.tvmaze.com/episodes/'+prior.tvmazeEpisodeId);}
@@ -1164,7 +1165,7 @@ async function v81FetchEpisode(force=false){
  if(!current()){v81EpisodeBusy=false;return}
  const latest=state.anime.find(x=>x.id===a.id),track=latest?.seasons.find(x=>x.id===s.id);if(!track){v81EpisodeBusy=false;return}const nextIdentity=episodeProviderIdentity(latest,track);if(['source','sourceId','malId'].some(k=>identity[k]&&String(identity[k])!==String(nextIdentity[k]||''))){v81EpisodeBusy=false;return}a=latest;s=track;
  {const old=new Map(s.episodes.map(e=>[e.number,e]));old.set(n,{...old.get(n),...prior,detailsCheckedAt:now()});s.episodes=[...old.values()].sort((x,y)=>x.number-y.number);save();if(detailId===a.id)renderDetail(a.id);}
- v81EpisodeBusy=false;if(v81EpisodeRef!==ref){v81FetchEpisode(false);return}v81RenderEpisode(changed?'Detajet u kontrolluan në katalog.':errors.length?'Burimi nuk u lidh. Provo përsëri kur të kesh internet.':'Nuk u gjetën detaje të tjera të konfirmuara për këtë episod.');
+ v81EpisodeBusy=false;if(v81EpisodeRef!==ref){v81FetchEpisode(false);return}requestEpisodeRender(changed?'Detajet u kontrolluan në katalog.':errors.length?'Burimi nuk u lidh. Provo përsëri kur të kesh internet.':'Nuk u gjetën detaje të tjera të konfirmuara për këtë episod.');
 }
 /* Personal fallback: changes only classification, never watch status or history. */
 document.addEventListener('change',e=>{
@@ -1758,6 +1759,7 @@ accountOpenCloud=async function(user){
  const owner=user.id,tv=state.anime.filter(a=>a.source==='TVMaze'&&a.franchiseVersion!==FRANCHISE_SCHEMA).map(a=>a.id);if(tv.length)setTimeout(async()=>{for(const id of tv){if(accountUser?.id!==owner)break;await syncTVFranchise(id,true,true)}},500);
 };
 
+let episodeDiscussionOwner=null;
 let episodeDiscussion={key:'',rows:[],loading:false,error:'',draft:'',isSpoiler:true,sort:'newest',sending:false},episodeRevealed=new Set(),episodeSynopsisRevealed=new Set(),episodeLastPost=0;
 function episodePublicKey(a,s,n,ep){
  const num=Number(s.globalStart)?Number(s.globalStart)+Number(n)-1:Number(n);
@@ -1796,17 +1798,18 @@ function v98RenderEpisodeExtras(){
 }
 async function v98LoadComments(){
  const {a,s,n,ep}=v81EpisodeParts();if(!a||!s)return;
- const key=episodePublicKey(a,s,n,ep);
- if(key!==episodeDiscussion.key){episodeDiscussion={key,rows:[],loading:false,error:'',draft:'',isSpoiler:true,sort:'newest',sending:false}}
- if(!key||accountMode!=='cloud'||!accountUser){episodeDiscussion.rows=[];episodeDiscussion.error=!key?'ID e episodit nuk është verifikuar ende.':'Hyr në llogari për të komentuar.';v81RenderEpisode();return}
+ const key=episodePublicKey(a,s,n,ep),requestOwner=accountUser?.id||null,requestStorageKey=KEY;
+ const current=()=>episodeDiscussion.key===key&&requestOwner===(accountUser?.id||null)&&requestStorageKey===KEY;
+ if(key!==episodeDiscussion.key||requestOwner!==episodeDiscussionOwner){episodeDiscussion={key,rows:[],loading:false,error:'',draft:'',isSpoiler:true,sort:'newest',sending:false};episodeDiscussionOwner=requestOwner}
+ if(!key||accountMode!=='cloud'||!accountUser){episodeDiscussion.rows=[];episodeDiscussion.error=!key?'ID e episodit nuk është verifikuar ende.':'Hyr në llogari për të komentuar.';requestEpisodeRender();return}
  if(episodeDiscussion.loading)return;
- episodeDiscussion.loading=true;episodeDiscussion.error='';v81RenderEpisode();
+ episodeDiscussion.loading=true;episodeDiscussion.error='';requestEpisodeRender();
  try{
   const {data,error}=await accountInitClient().from('episode_comments').select('id,user_id,author_name,body,is_spoiler,parent_id,created_at').eq('episode_key',key).order('created_at',{ascending:false}).limit(80);
-  if(error)throw error;if(episodeDiscussion.key!==key)return;
+  if(error)throw error;if(!current())return;
   episodeDiscussion.rows=data||[];
- }catch(e){if(episodeDiscussion.key===key)episodeDiscussion.error='Komentet nuk u ngarkuan: '+String(e.message||e).slice(0,130)}
- finally{if(episodeDiscussion.key===key){episodeDiscussion.loading=false;v81RenderEpisode()}}
+ }catch(e){if(current())episodeDiscussion.error='Komentet nuk u ngarkuan: '+String(e.message||e).slice(0,130)}
+ finally{if(current()){episodeDiscussion.loading=false;requestEpisodeRender()}}
 }
 async function v98PublishComment(){
  if(episodeDiscussion.sending||accountMode!=='cloud'||!accountUser)return;
@@ -1857,7 +1860,7 @@ function v98EpisodeActionHandlers(){
  const baseOpen=v81OpenEpisode;
  v81OpenEpisode=function(id,seasonId,n){
   const a=state.anime.find(x=>x.id===id),s=a?.seasons.find(x=>x.id===seasonId),ep=s?.episodes.find(x=>x.number===Number(n)),key=a&&s?episodePublicKey(a,s,Number(n),ep):'';
-  if(key!==episodeDiscussion.key)episodeDiscussion={key,rows:[],loading:false,error:'',draft:'',isSpoiler:true,sort:'newest',sending:false};
+  if(key!==episodeDiscussion.key||(accountUser?.id||null)!==episodeDiscussionOwner){episodeDiscussion={key,rows:[],loading:false,error:'',draft:'',isSpoiler:true,sort:'newest',sending:false};episodeDiscussionOwner=accountUser?.id||null}
   baseOpen(id,seasonId,n);void v98LoadComments();
  };
  document.addEventListener('input',e=>{if(e.target.id==='v98-comment-body'){episodeDiscussion.draft=e.target.value;$('v98-char-count').textContent=e.target.value.length+'/1200'}});
@@ -2186,7 +2189,8 @@ const productPriorCatalog=searchCatalog;searchCatalog=async function(q,page=1){
  try{return await work}finally{if(request===catalogRequest)finishCatalogSearch(q)}
 };
 
-const cardPriorEpisode=v81RenderEpisode;v81RenderEpisode=function(...args){const root=$('ep-detail-body'),parts=v81EpisodeParts(),key=[parts.a?.id,parts.s?.id,parts.n].join(':'),expanded=root?.dataset.episodeCardKey===key&&root.querySelector('.episode-card-more')?.open;cardPriorEpisode(...args);presentEpisode({el:$,esc:escapeHTML,parts:v81EpisodeParts,poster:validPoster,expanded,history:()=>state.history,seasonNumber:seasonNumberFor,released:releasedCount});releaseExperience?.attach($('ep-detail-body')?.querySelector('.episode-card'),v81EpisodeParts())};
+const cardPriorEpisode=v81RenderEpisode;v81RenderEpisode=function(...args){requestEpisodeRender.cancel?.();const root=$('ep-detail-body'),parts=v81EpisodeParts(),key=[parts.a?.id,parts.s?.id,parts.n].join(':'),expanded=root?.dataset.episodeCardKey===key&&root.querySelector('.episode-card-more')?.open;cardPriorEpisode(...args);presentEpisode({el:$,esc:escapeHTML,parts:v81EpisodeParts,poster:validPoster,expanded,history:()=>state.history,seasonNumber:seasonNumberFor,released:releasedCount});releaseExperience?.attach($('ep-detail-body')?.querySelector('.episode-card'),v81EpisodeParts())};
+requestEpisodeRender=createScopedRender({scope:()=>v81EpisodeRef,owner:()=>KEY,visible:()=>$('episode-detail-modal').classList.contains('show'),render:(...args)=>v81RenderEpisode(...args)});
 mountEpisodeControls({root:$('ep-detail-body'),parts:v81EpisodeParts,state:()=>state,restore:value=>{state=value},episodeRow:episodePersonalRow,save,render:()=>v81RenderEpisode(),renderDetail:id=>{if(detailId===id)renderDetail(id)},journal:entry=>releaseExperience?.episodeSaved(entry),toast:notify,stamp:now});
 
 document.addEventListener('click',async event=>{const button=event.target.closest('[data-title-copy]'),item=button&&state.anime.find(a=>a.id===button.dataset.titleCopy);if(!item)return;try{await navigator.clipboard.writeText(item.title);if(detailId===item.id)notify('Titulli u kopjua')}catch{if(detailId===item.id)notify('Titulli: '+item.title)}});

@@ -35,7 +35,7 @@ async function digest(record) {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(content(record)));
   return [...new Uint8Array(bytes)].map((n) => n.toString(16).padStart(2, '0')).join('');
 }
-async function valid(record) {
+function validShape(record) {
   if (
     !record ||
     record.version !== 1 ||
@@ -57,6 +57,14 @@ async function valid(record) {
         return false;
     }
     if (!(record.revision === null || typeof record.revision === 'string')) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function valid(record) {
+  if (!validShape(record)) return false;
+  try {
     return record.hash === (await digest(record));
   } catch {
     return false;
@@ -214,10 +222,9 @@ export function createIndexedLibrary(
     }
     const record = bundle(key);
     if (record.snapshot === null) return;
-    validateLibrary(JSON.parse(record.snapshot));
+    if (!validShape(record)) throw Error('Kopja lokale nuk kaloi verifikimin.');
     record.hash = await digest(record);
     record.savedAt = Date.now();
-    if (!(await valid(record))) throw Error('Kopja lokale nuk kaloi verifikimin.');
     // Capture all three fields in one transaction, never snapshot and journal separately.
     const prior = await read(key);
     if (prior && prior.hash === record.hash && (await valid(prior))) {

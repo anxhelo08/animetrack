@@ -305,3 +305,17 @@ test('a damaged archived original blocks conversion and leaves the readable libr
   );
   next.close();
 });
+
+test('a malformed pending journal cannot replace the verified snapshot during a flush', async () => {
+  const { raw, indexedDB, repo } = await setup();
+  raw.setItem(key, JSON.stringify(payload(2)));
+  await repo.prepare();
+  const prior = await row(indexedDB, 'libraries', key);
+  repo.storage.setItem(key + '_pending_126', JSON.stringify({ savedAt: 123 }));
+  repo.storage.setItem(key, JSON.stringify(payload(3)));
+  const result = await repo.flush();
+  expect(result.problem).toContain('verifikimin');
+  expect(await row(indexedDB, 'libraries', key)).toEqual(prior);
+  expect(JSON.parse(raw.getItem(key))).toEqual(payload(3));
+  expect(raw.getItem(key + '_pending_126')).not.toBeNull();
+});

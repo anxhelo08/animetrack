@@ -18,3 +18,28 @@ export function createRenderPass(renderers, frame = requestAnimationFrame) {
     });
   };
 }
+
+/** Coalesce background panel updates without painting another owner or selection. */
+export function createScopedRender(
+  { scope, owner, visible, render },
+  frame = requestAnimationFrame,
+) {
+  let pending = null;
+  let scheduled = false;
+  function request(...args) {
+    pending = { scope: scope(), owner: owner(), args };
+    if (scheduled) return;
+    scheduled = true;
+    frame(() => {
+      scheduled = false;
+      const next = pending;
+      pending = null;
+      if (next && next.scope === scope() && next.owner === owner() && visible())
+        render(...next.args);
+    });
+  }
+  request.cancel = () => {
+    pending = null;
+  };
+  return request;
+}
