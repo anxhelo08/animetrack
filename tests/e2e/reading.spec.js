@@ -532,3 +532,35 @@ test('mobile reading preserves chapters and notes with responsive library, detai
     .analyze();
   expect(audit.violations).toEqual([]);
 });
+
+test('reopening reading retains the library cards and loaded covers', async ({ page }, info) => {
+  await setup(page);
+  const phone = info.project.name.startsWith('iphone');
+  async function openReading() {
+    if (phone) {
+      await page.locator('[data-mobile-nav="library"]').click();
+      await page.locator('#library-view [data-pro-page="reading"]').click();
+    } else await page.locator('#pro-nav-reading').click();
+    await expect(page.locator('#reading-view')).toBeVisible();
+  }
+  await openReading();
+  await page.evaluate(() => {
+    window.retainedReadingCard = document.querySelector('[data-reading-title="reading-al-30013"]');
+    window.retainedReadingCover = window.retainedReadingCard.querySelector('img');
+  });
+  if (phone) await page.locator('[data-mobile-nav="home"]').click();
+  else await page.locator('#home-nav').click();
+  await openReading();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const card = document.querySelector('[data-reading-title="reading-al-30013"]');
+        return (
+          card === window.retainedReadingCard &&
+          card.querySelector('img') === window.retainedReadingCover
+        );
+      }),
+    )
+    .toBe(true);
+  expect((await state(page)).readingLibrary).toEqual(titles);
+});

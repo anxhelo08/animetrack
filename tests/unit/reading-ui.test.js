@@ -15,7 +15,7 @@ beforeEach(() => {
   window.matchMedia = () => ({ matches: false, addEventListener() {} });
   window.scrollTo = vi.fn();
 });
-function fixture(ok = true) {
+function fixture(ok = true, poster = () => '') {
   const state = {
     anime: [],
     history: [],
@@ -34,7 +34,7 @@ function fixture(ok = true) {
     save = vi.fn(() => ok);
   const reading = createReading({
     esc: window.ATHTML.escapeHTML,
-    poster: () => '',
+    poster,
     user: () => ({ id: 'a' }),
     state: () => state,
     save,
@@ -227,4 +227,36 @@ it('an obsolete search cannot repaint while the next query is being typed', asyn
     reading.hide();
     vi.useRealTimers();
   }
+});
+
+it('reopening and unchanged background checks retain reading cards and cover images', () => {
+  const { reading } = fixture(true, () => '/icon.svg');
+  const card = document.querySelector('[data-reading-title]');
+  const cover = card.querySelector('img');
+  const content = document.getElementById('reading-content');
+  reading.hide();
+  reading.open('reading');
+  reading.render(false);
+  expect(document.getElementById('reading-content')).toBe(content);
+  expect(document.querySelector('[data-reading-title]')).toBe(card);
+  expect(card.querySelector('img')).toBe(cover);
+  reading.hide();
+});
+
+it('a changed chapter total replaces only its reading card and retains other titles', () => {
+  const { reading, state } = fixture();
+  state.readingLibrary.push({
+    ...structuredClone(state.readingLibrary[0]),
+    id: 'second-reading',
+    title: 'Second manga',
+  });
+  reading.render();
+  const first = document.querySelector('[data-reading-title="reading-demo"]');
+  const second = document.querySelector('[data-reading-title="second-reading"]');
+  state.readingLibrary[0].totalChapters = 12;
+  reading.render(false);
+  expect(document.querySelector('[data-reading-title="reading-demo"]')).not.toBe(first);
+  expect(document.querySelector('[data-reading-title="reading-demo"]').textContent).toContain('12');
+  expect(document.querySelector('[data-reading-title="second-reading"]')).toBe(second);
+  reading.hide();
 });

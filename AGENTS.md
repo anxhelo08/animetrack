@@ -7,3 +7,5 @@
 - Prefer small, reviewable commits. Do not rewrite or reformat unrelated code. Do not rename public window.* globals in this task.
 - Add behaviour tests, not tests that read source text with readFileSync.
 - If a requirement is ambiguous, state your assumption in the final report instead of guessing silently.
+
+- Preserve existing behavior when adding features. Mobile home opens at the next episode section; watched episode history grows from oldest above to newest below. Reopening reading must retain unchanged cards and images. Cover changes to these flows with behavior regression tests; do not change them as an incidental effect of unrelated updates.

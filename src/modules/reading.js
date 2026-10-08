@@ -55,6 +55,7 @@ export function createReading(ctx) {
     chapterQuery = '',
     volume = 'all',
     renderedView = '',
+    lastMarkup = '',
     eventId = '',
     results = [],
     busy = false,
@@ -95,6 +96,7 @@ export function createReading(ctx) {
     const next = ctx.user()?.id || 'guest';
     if (next === owner) return;
     owner = next;
+    lastMarkup = '';
     clearTimeout(autoTimer);
     autoController?.abort();
     refreshing.clear();
@@ -504,10 +506,30 @@ export function createReading(ctx) {
     const chapterFocused = chapterInput === document.activeElement;
     const chapterCaret = chapterInput?.selectionStart;
     const container = document.createElement('div');
-    window.ATHTML.renderHTML(
-      container,
-      `<div class="reading-hero ${tab === 'library' || selected ? 'reading-hero-compact' : ''}"><div><h2>Historitë e tua, kapitull pas kapitulli</h2><p>Vazhdo leximin, zbulo tituj dhe mbaj çdo kapitull në vendin e vet.</p></div><a class="reading-source-directory" href="https://weebcentral.com/" target="_blank" rel="noopener noreferrer">WeebCentral ${navIcon('explore')}</a></div>${navigation()}<div id="reading-content">${removedId ? `<div class="reading-removed" role="status"><span>Titulli u hoq nga biblioteka.</span>${button('restore', 'Rikthe', removedId)}</div>` : ''}${editing ? editor(saved(selected)) : selected ? detail(find(selected)) : tab === 'library' ? library() : ['discover', 'latest', 'recommendations'].includes(tab) ? discover() : tab === 'calendar' ? calendar() : tab === 'collections' ? workspace.collections() : tab === 'statistics' ? workspace.statistics() : tab === 'integration' ? workspace.integration() : tab === 'releases' ? releases() : activity()}</div>`,
+    const markup = `<div class="reading-hero ${tab === 'library' || selected ? 'reading-hero-compact' : ''}"><div><h2>Historitë e tua, kapitull pas kapitulli</h2><p>Vazhdo leximin, zbulo tituj dhe mbaj çdo kapitull në vendin e vet.</p></div><a class="reading-source-directory" href="https://weebcentral.com/" target="_blank" rel="noopener noreferrer">WeebCentral ${navIcon('explore')}</a></div>${navigation()}<div id="reading-content">${removedId ? `<div class="reading-removed" role="status"><span>Titulli u hoq nga biblioteka.</span>${button('restore', 'Rikthe', removedId)}</div>` : ''}${editing ? editor(saved(selected)) : selected ? detail(find(selected)) : tab === 'library' ? library() : ['discover', 'latest', 'recommendations'].includes(tab) ? discover() : tab === 'calendar' ? calendar() : tab === 'collections' ? workspace.collections() : tab === 'statistics' ? workspace.statistics() : tab === 'integration' ? workspace.integration() : tab === 'releases' ? releases() : activity()}</div>`;
+    root.classList.toggle(
+      'reading-density-compact',
+      ctx.state().preferences?.readingDensity === 'compact',
     );
+    if (!force && stable && markup === lastMarkup) return;
+    lastMarkup = markup;
+    window.ATHTML.renderHTML(container, markup);
+    container
+      .querySelectorAll('.reading-source-action, .reading-source-directory')
+      .forEach((link) => {
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+      });
+    const cards = new Map(
+      [...root.querySelectorAll('[data-reading-title]')].map((node) => [
+        node.dataset.readingTitle,
+        node,
+      ]),
+    );
+    for (const node of container.querySelectorAll('[data-reading-title]')) {
+      const previous = cards.get(node.dataset.readingTitle);
+      if (previous?.outerHTML === node.outerHTML) node.replaceWith(previous);
+    }
     container.querySelectorAll('.reading-manage, .reading-synopsis').forEach((node, index) => {
       if (index < disclosureStates.length) node.open = disclosureStates[index];
     });
@@ -531,14 +553,6 @@ export function createReading(ctx) {
       hero.className = freshHero.className;
       hero.replaceChildren(...freshHero.childNodes);
     }
-    root.classList.toggle(
-      'reading-density-compact',
-      ctx.state().preferences?.readingDensity === 'compact',
-    );
-    root.querySelectorAll('.reading-source-action, .reading-source-directory').forEach((link) => {
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-    });
     paintDetailTabs();
     renderedView = view;
     root.classList.toggle('reading-detail-active', !!selected || editing);
@@ -1408,7 +1422,7 @@ export function createReading(ctx) {
       'pro-view',
     ])
       ctx.el(id)?.classList.add('hidden');
-    render();
+    render(false);
     clearTimeout(autoTimer);
     autoTimer = setTimeout(() => void autoCheck(), 1200);
     window.scrollTo({ top: 0, behavior: 'smooth' });

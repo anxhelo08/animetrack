@@ -111,13 +111,10 @@ export function createMobilePresentation(ctx) {
     root.querySelector('.watch-fill-list').hidden = homeTab !== 'watch';
     root.querySelector('#mobile-upcoming').hidden = homeTab !== 'upcoming';
 
-    const recentRows = recent
-      .slice()
-      .reverse()
-      .map(({ a, season, n }) => ({
-        key: `${a.id}:${season.id}:${n}:seen`,
-        markup: row(a, { season, n }, { seen: true, resume: ctx.nextEpisode(a) }),
-      }));
+    const recentRows = recent.map(({ a, season, n }) => ({
+      key: `${a.id}:${season.id}:${n}:seen`,
+      markup: row(a, { season, n }, { seen: true, resume: ctx.nextEpisode(a) }),
+    }));
     const activeRows = active.slice(0, homeLimits.active).map(({ a, next, fresh }) => ({
       key: `${a.id}:${next.season.id}:${next.n}:next`,
       markup: row(a, next, { fresh }),
@@ -683,7 +680,7 @@ export function createMobilePresentation(ctx) {
       owner = current;
       filter = 'all';
       homeTab = 'watch';
-      focusHome = false;
+      focusHome = page === 'home';
       pendingMove = null;
       homeLayout = 'list';
       detailId = '';
@@ -717,7 +714,7 @@ export function createMobilePresentation(ctx) {
   function navigation(next) {
     const changed = next !== page;
     if (next === 'home' && next !== page) {
-      focusHome = false;
+      focusHome = !scrollPositions.has('home');
     }
     page = next;
     if (page !== 'home') {
@@ -728,7 +725,7 @@ export function createMobilePresentation(ctx) {
     }
     document.body.dataset.mobilePage = page;
     refresh();
-    if (phone.matches && changed) {
+    if (phone.matches && changed && !(next === 'home' && focusHome)) {
       restoringScroll = true;
       cancelAnimationFrame(focusFrame);
       focusFrame = requestAnimationFrame(() => {
@@ -782,8 +779,8 @@ export function createMobilePresentation(ctx) {
             homeTab = 'watch';
             home();
           }
-          window.scrollTo({ top: 0, behavior: 'instant' });
-          scrollPositions.set('home', 0);
+          $('mobile-continue')?.scrollIntoView({ block: 'start', behavior: 'instant' });
+          scrollPositions.set('home', window.scrollY);
         }
         if (b.dataset.iosAction === 'advance' || b.dataset.mobileAction === 'unwatch') {
           const a = ctx.state().anime.find((a) => a.id === b.dataset.id);
