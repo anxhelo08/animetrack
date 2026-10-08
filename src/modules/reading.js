@@ -1,3 +1,4 @@
+import '../styles/reading.css';
 import { matchesLibraryQuery, weebCentralLink } from '../core/library-discovery.js';
 import {
   READING_STATUS,
@@ -1253,14 +1254,14 @@ export function createReading(ctx) {
   }
   function mount(host) {
     if (root) return;
-    root = document.createElement('section');
+    root = document.getElementById('reading-view') || document.createElement('section');
     root.id = 'reading-view';
     root.className = 'reading-view hidden';
     root.setAttribute('aria-label', 'Manga dhe Manhwa');
-    host.append(root);
+    if (!root.isConnected) host.append(root);
     const nav = document.getElementById('pro-nav-reading');
     if (nav) {
-      const submenu = document.createElement('nav');
+      const submenu = document.getElementById('reading-subnav') || document.createElement('nav');
       submenu.id = 'reading-subnav';
       submenu.setAttribute('aria-label', 'Nëndarjet e leximit');
       window.ATHTML.renderHTML(

@@ -1,3 +1,4 @@
+import '../styles/news.css';
 import { escapeHTML } from './safe-html.js';
 import { navIcon } from './nav-icons.js';
 

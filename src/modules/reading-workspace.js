@@ -1,6 +1,7 @@
+import { refreshReadingChecks } from './reading-background.js';
 import { readingWeeklyStats } from '../core/reading-discovery.js';
 import { shareList } from './shared-lists.js';
-import { normalizeReadingLibrary, nextChapter, applyReadingUpdate } from '../core/reading-model.js';
+import { normalizeReadingLibrary, nextChapter } from '../core/reading-model.js';
 
 export function createReadingWorkspace(ctx, render) {
   const esc = ctx.esc;
@@ -294,38 +295,7 @@ export function createReadingWorkspace(ctx, render) {
       }
     }
   }
-  async function refreshBackground() {
-    const user = ctx.user()?.id,
-      client = ctx.client?.();
-    if (!user || !client?.from) return;
-    try {
-      const result = await client
-        .from('anime_reading_checks')
-        .select('reading_id,metadata,checked_at')
-        .eq('user_id', user)
-        .limit(3000);
-      if (result.error || ctx.user()?.id !== user) return;
-      const state = ctx.state(),
-        before = structuredClone(state.readingLibrary || []);
-      let changed = false;
-      for (const checked of result.data || []) {
-        const row = state.readingLibrary?.find(
-          (row) => row.id === checked.reading_id && !row.deletedAt,
-        );
-        if (row && Date.parse(checked.checked_at) > (Date.parse(row.checkedAt) || 0)) {
-          applyReadingUpdate(row, checked.metadata, checked.checked_at);
-          changed = true;
-        }
-      }
-      if (changed) {
-        state.readingLibrary = normalizeReadingLibrary(state.readingLibrary);
-        if (!ctx.save()) state.readingLibrary = before;
-        render(false);
-      }
-    } catch {
-      /* Existing personal state remains available during a network outage. */
-    }
-  }
+  const refreshBackground = () => refreshReadingChecks(ctx, render);
   function mount(root) {
     root.addEventListener('submit', (event) => {
       const form = event.target;

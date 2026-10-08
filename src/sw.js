@@ -27,7 +27,13 @@ registerRoute(
       const response=await (await caches.open(name)).match(request);
       if(response)return response;
     }
-    return fetch(request);
+    const response=await fetch(request);
+    // On-demand feature chunks become available offline after their first use.
+    if(response.ok){
+      const cache=await caches.open(cacheName);
+      try{await cache.put(request,response.clone())}catch{/* Storage pressure must not block the feature. */}
+    }
+    return response;
   }
 );
 self.addEventListener('activate',event=>event.waitUntil((async()=>{

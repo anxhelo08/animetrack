@@ -34,6 +34,7 @@ async function setup(page) {
     payload: { anime: [], history: [], readingLibrary: rows, preferences: {} },
   });
   await page.locator('#pro-nav-reading').click();
+  await expect(page.locator('#reading-query')).toBeVisible();
 }
 const tab = (page, name) => ({
   click: () =>
@@ -64,10 +65,14 @@ test('reading collections, weekly goal, density, scoped keyboard and shared URLs
   await expect(page.locator('#at124-command-results')).not.toContainText('anime dhe seriale');
   await page.keyboard.press('Enter');
   await expect(page.locator('#reading-detail-title')).toHaveText('My Fantasy');
-  await page.locator('[data-reading-action="detail-tab"][data-id="notes"]').click();
+  await page
+    .locator('.reading-detail-tabs [data-reading-action="detail-tab"][data-id="notes"]')
+    .click();
   await page.locator('[name="notes"]').fill('Unfinished note');
   await page.locator('[data-reading-action="detail-tab"][data-id="chapters"]').click();
-  await page.locator('[data-reading-action="detail-tab"][data-id="notes"]').click();
+  await page
+    .locator('.reading-detail-tabs [data-reading-action="detail-tab"][data-id="notes"]')
+    .click();
   await expect(page.locator('[name="notes"]')).toHaveValue('Unfinished note');
   await page.evaluate(
     (hash) => {
@@ -135,18 +140,28 @@ test('advanced filters reach catalog, preserve controls, recommend taste and res
 test('compact reading library and filters have usable desktop layout', async ({ page }, info) => {
   test.skip(info.project.name.startsWith('iphone'), 'Reading remains desktop only');
   await setup(page);
+  await page.locator('.reading-library-more summary').click();
+  await page.locator('#reading-density').selectOption('compact');
+  await page.locator('.reading-library-more summary').click();
+  await expect(page.locator('#reading-view')).toHaveClass(/reading-density-compact/);
   for (const width of [1440, 1024]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(page.locator('#reading-view')).toBeVisible();
     expect(
       await page.locator('.reading-hero').evaluate((el) => el.getBoundingClientRect().height),
     ).toBeLessThan(100);
-    expect(
-      await page
-        .locator('.reading-card')
-        .first()
-        .evaluate((el) => el.getBoundingClientRect().bottom),
-    ).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
+    await page
+      .locator('.reading-card')
+      .first()
+      .evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+    await expect
+      .poll(() =>
+        page
+          .locator('.reading-card')
+          .first()
+          .evaluate((el) => el.getBoundingClientRect().bottom),
+      )
+      .toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );

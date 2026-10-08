@@ -5,16 +5,39 @@ import { createVisibleScheduler } from '../core/visible-scheduler.js';
 import {navIcon} from './nav-icons.js';
 import {createProductExperience} from './product-experience.js';
 import { createHomeSpotlight, dayNumber } from './home-spotlight.js';
-import { renderNewsSection } from './news.js';
-import { createReading } from './reading.js';
+import { createDeferredModule } from '../core/deferred-module.js';
+import { createLazyReading } from './lazy-reading.js';
+import { retryFeature, restoreFeatureRetry } from './feature-retry.js';
 /* Modular extension for AnimeTrack; loaded after all feature modules. */
 export function createFeatures(ctx){
  const $=ctx.el,esc=ctx.esc;
  let active='',installPrompt=null,liveBusy=false,liveLastCheck=0,liveTimer=null,noticeTimer=null,pwaRegistration=null,pwaUpdater=null,updateRequested=false;
  let achievementsOwner='',achievementsKnown=null;const homeMarkup=new WeakMap();
  let spotlight=null,newsController=null,newsHost=null;
+ const loadNews=createDeferredModule(()=>import('./news.js'));
+ let newsPending=false;
+ function renderNews(){
+  const content=$('pro-content');
+  if(newsController){
+   if(!content.contains(newsHost)){content.replaceChildren(newsHost);homeMarkup.delete(content)}
+   newsController.setActive(true);return;
+  }
+  if(newsPending)return;
+  newsPending=true;
+  window.ATHTML.renderHTML(content,'<p role="status">Po ngarkohen lajmet…</p>');
+  void loadNews().then(({renderNewsSection})=>{
+   if(active!=='news')return;
+   if(!newsHost)newsHost=document.createElement('div');
+   newsController=renderNewsSection(newsHost);
+   content.replaceChildren(newsHost);homeMarkup.delete(content);
+   newsController.setActive(true);
+  }).catch(()=>{
+   if(active==='news')window.ATHTML.renderHTML(content,'<p role="alert">Lajmet nuk u ngarkuan.</p><button type="button" class="ghost" data-feature-retry="news">Rifresko dhe riprovo</button>');
+  }).finally(()=>{newsPending=false});
+ }
+
  const product=createProductExperience(ctx);
- const reading=createReading(ctx);
+ const reading=createLazyReading(ctx);
  const details=createDetailNavigation(ctx);
  const player=createPlayerTracking(ctx);
  player.mount();
@@ -61,7 +84,7 @@ export function createFeatures(ctx){
  function renderBackground(){if(!['collections','profile','friends','moderation','sync'].includes(active))render()}
  function render(force=false){if(!active)return;
   if(active==='reading'){reading.render(false);return}
-  if(active==='news'){const content=$('pro-content');if(!newsHost){newsHost=document.createElement('div');newsController=renderNewsSection(newsHost)}if(!content.contains(newsHost)){content.replaceChildren(newsHost);homeMarkup.delete(content)}newsController.setActive(true);return}
+  if(active==='news'){renderNews();return}
   newsController?.setActive(false);if(active==='diary'&&!modules.diary)return;
   // Background refreshes must never replace a typed, unsubmitted collection name.
   // Explicit collection mutations still use ctx.rerender() and force a fresh view.
@@ -230,6 +253,7 @@ export function createFeatures(ctx){
    void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');
    if(handle&&ctx.user()){open('friends');await modules.friends.load();await modules.friends.openHandle(handle)}
+   restoreFeatureRetry(ctx);
   }catch(e){console.warn('Pro account setup',e);ctx.toast('Disa veçori sociale nuk u ngarkuan: '+String(e.message||e).slice(0,90))}
  }
  function trackAchievements(announce=false){
@@ -248,6 +272,7 @@ export function createFeatures(ctx){
  function renderRewatch(id){const root=$('detail-body');if(!root)return;root.querySelector('#pro-rewatch')?.remove();const element=document.createElement('div');element.id='pro-rewatch';window.ATHTML.renderHTML(element,modules.rewatch.render(id));root.append(element)}
  async function handleClick(e){
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.featureRetry){retryFeature(ctx,b.dataset.featureRetry);return}
   if(b.dataset.mobileNav){const page=b.dataset.mobileNav;if(document.body.dataset.mobilePage===page)return;setMobileActive(page);ctx.navigate(page);return}
   if(b.hasAttribute('data-at128-open-seasons')){ctx.navigate('seasons');return}
   if(b.dataset.tvSearchPreview){window.dispatchEvent(new CustomEvent('at120-unified-tv-open',{detail:b.dataset.tvSearchPreview}));return}

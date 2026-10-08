@@ -20,12 +20,13 @@ export default defineConfig({
       manifest:false,
       injectManifest:{
         globPatterns:['**/*.{js,css,html,svg,png,ico,webmanifest}'],
-        globIgnores:['**/screenshot-*.png'],
+        globIgnores:['**/screenshot-*.png','assets/reading.*.{js,css}','assets/news.*.{js,css}'],
         maximumFileSizeToCacheInBytes:4*1024*1024
       }
     })
   ],
   build:{
+    manifest:true,
     outDir:'dist',
     cssTarget:['chrome123','safari17.5','firefox120'],
     emptyOutDir:true,
