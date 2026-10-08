@@ -13,3 +13,6 @@ android/local.properties
 *.p12
 *.pfx
 .android-signing/
+
+public-visibility-report.json
+public-visibility-report.md

@@ -1,7 +1,7 @@
 {
   "name": "animetrack",
-  "version": "14.32.0",
-  "releaseLabel": "14.32.0",
+  "version": "14.33.0",
+  "releaseLabel": "14.33.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,6 +17,7 @@
     "audit": "npm audit --audit-level=high",
     "test:db": "node scripts/test-database.mjs",
     "typecheck": "tsc -p jsconfig.json",
+    "check:public": "node scripts/check-public-visibility.mjs",
     "test:performance": "node scripts/check-performance.mjs",
     "android:build": "node scripts/build-android.mjs"
   },

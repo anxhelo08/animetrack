@@ -200,3 +200,26 @@ test('structured application data is public, truthful and inert under the CSP', 
   expect(violations).not.toContain('script-src-elem');
   expect(violations).not.toContain('script-src');
 });
+
+for (const mode of ['guest', 'stored session', 'auth callback']) {
+  test(`early public presentation waits for verified accounts: ${mode}`, async ({ page }) => {
+    if (mode === 'stored session') {
+      await page.addInitScript(() => localStorage.setItem('sb-preview-auth-token', 'stored'));
+    }
+    await page.route('**/assets/index.*.js', (route) =>
+      route.fulfill({ contentType: 'application/javascript', body: '' }),
+    );
+    await page.goto(mode === 'auth callback' ? '/?code=fixture-callback' : '/', {
+      waitUntil: 'domcontentloaded',
+    });
+    await expect(page.locator('.app')).toBeHidden();
+    if (mode === 'guest') {
+      await expect(page.locator('#welcome-title')).toBeVisible();
+      await expect(page.locator('#welcome-page')).toHaveJSProperty('inert', true);
+      await expect(page.locator('#account-boot-screen')).toBeHidden();
+    } else {
+      await expect(page.locator('#welcome-page')).toBeHidden();
+      await expect(page.locator('#account-boot-screen')).toBeVisible();
+    }
+  });
+}

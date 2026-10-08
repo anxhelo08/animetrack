@@ -1,8 +1,8 @@
 # AnimeTrack
 
-AnimeTrack 14.18.0 ndjek anime, seriale dhe filma, me bibliotekë personale dhe progres të sinkronizuar.
+AnimeTrack ndjek anime, seriale, filma, manga dhe manhwa, me bibliotekë personale dhe progres të sinkronizuar.
 
-**[Hap aplikacionin](https://animetrack-flax.vercel.app/)** · [Ndryshimet](CHANGELOG.md) · [Siguria](SECURITY.md)
+**[Hap aplikacionin](https://animetrack-flax.vercel.app/)** · [Udhëzuesi](https://animetrack-flax.vercel.app/help.html) · [Instalo](https://animetrack-flax.vercel.app/install.html) · [Ndryshimet](CHANGELOG.md) · [Siguria](SECURITY.md)
 
 ## Nisja lokale
 
@@ -26,6 +26,8 @@ Instalo aplikacionin nga Chrome/Edge ose Safari → Share → Add to Home Screen
 `.env.example` dokumenton vetëm sekretet e serverit dhe databazën lokale të provës. Mos i vendos sekretet në variabla `VITE_*`. Konfigurimi publik i klientit është te `src/config.js`; udhëzimet për serverin, databazën, IndexedDB, OAuth dhe push janë te [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 Vercel krijon preview për branch/PR. Publikimi në `main` bëhet pas CI dhe verifikohet READY. CI kontrollon databazën, tre shfletues, buxhetin e JavaScript-it dhe medianën Lighthouse; raportet ruhen si artifacts.
+
+Matjet mobile, kontrolli ditor publik dhe Google Search Console: [Matje dhe dukshmëri](docs/MEASUREMENT-AND-DISCOVERY.md).
 
 [Prova me 3–5 përdorues realë](docs/USER-TESTING.md) është përgatitur por ende nuk është kryer. Testet automatike përdorin të dhëna sintetike dhe nuk zëvendësojnë këto prova.
 

@@ -78,7 +78,7 @@ Modulet e pavarura, kontrolluesi dhe hapja e IndexedDB ngarkohen paralelisht; `s
 
 Planifikuesit ndalojnë timer-at kur skeda fshihet, nuk mbivendosin punën dhe rikontrollojnë kur ajo hapet. PWA përdor HTML, JS dhe CSS të të njëjtit version nga precache, pa pritur rrjetin gjatë navigimit; përditësimi aktivizohet nga veprimi i mbrojtur “Përditëso tani”. Cache mban tre versione të skedarëve publikë për skedat ende të hapura; API-të e llogarisë nuk ruhen në runtime cache. Posterët kryesorë kanë dimensione të deklaruara; posteri në detaje ngarkohet menjëherë.
 
-CI kontrollon madhësinë e JavaScript (330 KB gzip gjithsej), ndërsa Lighthouse kontrollon LCP ≤4.5 sekonda, TBT ≤300 ms dhe JS ≤400 KB në tre hapje të faqes publike. Raportet ruhen si artefakte CI; këto janë matje laboratorike të hapjes pa session dhe jo garanci për çdo pajisje apo bibliotekë.
+CI kontrollon madhësinë e JavaScript (346000 B gzip gjithsej; 310000 B në nisje), ndërsa Lighthouse kontrollon LCP ≤4.5 sekonda, TBT ≤300 ms dhe JS ≤400 KB në tre hapje mobile të secilës prej katër faqeve publike. Raportet ruhen si artefakte CI; këto janë matje laboratorike të hapjes pa session dhe jo garanci për çdo pajisje apo bibliotekë.
 
 ## Sistemi vizual — 14.4
 
@@ -112,3 +112,5 @@ Home requests AniList banner artwork and validated YouTube trailer IDs. No cover
 Reading checks up to eight stale ongoing titles sequentially while the reading view is visible. AniList/Jikan metadata is supplemented by MangaDex only after one exact title/alternate-title and original-language match, or a previously matched ID. The displayed ongoing count is the highest verified integer chapter; fractional/special chapters are not currently tracked. Volume boundaries come from aggregate metadata and never replace manually entered intervals. No match or provider failures retain existing data; an unknown count remains unknown.
 
 Chapter release dates persist in `chapterReleases` (max 300). A known count increase without source dates uses a labelled discovery date, while an initial unknown count establishes a baseline. NEW expires strictly after seven days and does not extend on refresh or cross-device merge. Public chapter lookup is metadata only and does not host pages or scanlations.
+
+Matjet, kontrolli ditor dhe konfigurimi i Search Console: [Matje dhe dukshmëri](MEASUREMENT-AND-DISCOVERY.md).
