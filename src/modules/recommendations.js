@@ -203,6 +203,7 @@ window.ATRecommendations=function ATRecommendations(ctx){
   switchOwner();if(loading)return;
   const id=requestId,stored=getStore(storageKey());
   if(!force&&stored&&ctx.catalogueDay?.(stored.at)===ctx.catalogueDay?.(Date.now())&&Array.isArray(stored.candidates)){
+   if(fetchedAt===stored.at&&!itemsDirty)return;
    candidates=stored.candidates;fetchedAt=stored.at;source=(candidates.some(x=>x.kind==='tv')?'AniList + TVMaze':'AniList')+' · cache';error='';rerank();return;
   }
   loading=true;error='';redraw();
