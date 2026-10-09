@@ -260,3 +260,58 @@ it('a changed chapter total replaces only its reading card and retains other tit
   expect(document.querySelector('[data-reading-title="second-reading"]')).toBe(second);
   reading.hide();
 });
+
+it('returning from details and filters reuses library cards and covers', () => {
+  const { reading } = fixture(true, () => '/icon.svg');
+  const card = document.querySelector('[data-reading-title]');
+  const cover = card.querySelector('img');
+  card.querySelector('[data-reading-action="detail"]').click();
+  reading.switchTab('library');
+  expect(document.querySelector('[data-reading-title]')).toBe(card);
+  expect(card.querySelector('img')).toBe(cover);
+  const filter = document.querySelector('#reading-status');
+  filter.value = 'completed';
+  filter.dispatchEvent(new Event('change', { bubbles: true }));
+  expect(document.querySelector('[data-reading-title]')).toBeNull();
+  const reset = document.querySelector('#reading-status');
+  reset.value = 'all';
+  reset.dispatchEvent(new Event('change', { bubbles: true }));
+  expect(document.querySelector('[data-reading-title]')).toBe(card);
+  reading.hide();
+});
+
+it('chapter total updates retain the existing cover', () => {
+  const { reading, state } = fixture(true, () => '/icon.svg');
+  const cover = document.querySelector('.reading-cover img');
+  state.readingLibrary[0].totalChapters = 12;
+  reading.render(false);
+  expect(document.querySelector('.reading-cover img')).toBe(cover);
+  expect(document.querySelector('.reading-card-progress').textContent).toContain('12');
+  reading.hide();
+});
+
+it('sorts unread chapters descending with unknown totals last and keeps the order on reopen', () => {
+  const { reading, state } = fixture();
+  state.readingLibrary = normalizeReadingLibrary([
+    { id: 'reading-few', title: 'Few', totalChapters: 5, chaptersRead: [1, 2, 3] },
+    { id: 'reading-many', title: 'Many', totalChapters: 100, chaptersRead: [1, 2] },
+    { id: 'reading-unknown', title: 'Unknown', totalChapters: 0 },
+    {
+      id: 'reading-done',
+      title: 'Done',
+      totalChapters: 10,
+      chaptersRead: Array.from({ length: 10 }, (_, i) => i + 1),
+    },
+  ]);
+  reading.render();
+  const sort = document.querySelector('#reading-sort');
+  sort.value = 'remaining';
+  sort.dispatchEvent(new Event('change', { bubbles: true }));
+  const order = () =>
+    [...document.querySelectorAll('[data-reading-title]')].map((node) => node.dataset.readingTitle);
+  expect(order()).toEqual(['reading-many', 'reading-few', 'reading-done', 'reading-unknown']);
+  reading.hide();
+  reading.open('reading');
+  expect(order()).toEqual(['reading-many', 'reading-few', 'reading-done', 'reading-unknown']);
+  reading.hide();
+});

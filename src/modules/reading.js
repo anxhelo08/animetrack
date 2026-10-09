@@ -56,6 +56,7 @@ export function createReading(ctx) {
     volume = 'all',
     renderedView = '',
     lastMarkup = '',
+    libraryCards = new Map(),
     eventId = '',
     results = [],
     busy = false,
@@ -97,6 +98,7 @@ export function createReading(ctx) {
     if (next === owner) return;
     owner = next;
     lastMarkup = '';
+    libraryCards.clear();
     clearTimeout(autoTimer);
     autoController?.abort();
     refreshing.clear();
@@ -160,6 +162,13 @@ export function createReading(ctx) {
       chapters = all.reduce((n, row) => n + row.chaptersRead.length, 0);
     return `<div class="reading-stats"><div><strong>${all.length}</strong><span>Tituj në bibliotekë</span></div><div><strong>${reading}</strong><span>Po lexoj tani</span></div><div><strong>${chapters.toLocaleString('sq-AL')}</strong><span>Kapituj të lexuar</span></div></div>`;
   }
+  function remainingChapters(row) {
+    if (!row.totalChapters) return -1;
+    return Math.max(
+      0,
+      row.totalChapters - row.chaptersRead.filter((chapter) => chapter <= row.totalChapters).length,
+    );
+  }
   function library() {
     const list = rows().filter(
       (row) =>
@@ -193,9 +202,11 @@ export function createReading(ctx) {
           ? a.title.localeCompare(b.title)
           : sort === 'rating'
             ? (b.rating ?? -1) - (a.rating ?? -1)
-            : sort === 'progress'
-              ? b.chaptersRead.length - a.chaptersRead.length
-              : String(b.updatedAt).localeCompare(String(a.updatedAt)),
+            : sort === 'remaining'
+              ? remainingChapters(b) - remainingChapters(a) || a.title.localeCompare(b.title)
+              : sort === 'progress'
+                ? b.chaptersRead.length - a.chaptersRead.length
+                : String(b.updatedAt).localeCompare(String(a.updatedAt)),
     );
     return `${readingQueue()}<div class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko në leximet e tua…" aria-label="Kërko në leximet e tua" maxlength="100" value="${esc(query)}"></label><label class="reading-field">Statusi<select id="reading-status"><option value="all">Të gjitha</option>${statusOptions(status)}<option value="favorites" ${status === 'favorites' ? 'selected' : ''}>Të preferuarat</option></select></label><details class="reading-library-more"><summary>Më shumë filtra</summary><div><label class="reading-field">Publikimi<select id="reading-publication">${[
       ['all', 'Çdo botim'],
@@ -213,6 +224,7 @@ export function createReading(ctx) {
       ['title', 'Titulli'],
       ['rating', 'Vlerësimi im'],
       ['progress', 'Kapitujt e lexuar'],
+      ['remaining', 'Pa lexuar: më shumë → më pak'],
     ]
       .map(
         ([id, text]) => `<option value="${id}" ${sort === id ? 'selected' : ''}>${text}</option>`,
@@ -520,6 +532,8 @@ export function createReading(ctx) {
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
       });
+    const visibleIds = new Set(rows().map((row) => row.id));
+    for (const id of libraryCards.keys()) if (!visibleIds.has(id)) libraryCards.delete(id);
     const cards = new Map(
       [...root.querySelectorAll('[data-reading-title]')].map((node) => [
         node.dataset.readingTitle,
@@ -527,8 +541,18 @@ export function createReading(ctx) {
       ]),
     );
     for (const node of container.querySelectorAll('[data-reading-title]')) {
-      const previous = cards.get(node.dataset.readingTitle);
-      if (previous?.outerHTML === node.outerHTML) node.replaceWith(previous);
+      const id = node.dataset.readingTitle;
+      const previous = cards.get(id) || libraryCards.get(id);
+      if (previous?.outerHTML === node.outerHTML) {
+        node.replaceWith(previous);
+        if (visibleIds.has(id)) libraryCards.set(id, previous);
+      } else {
+        const oldImage = previous?.querySelector('.reading-cover img');
+        const newImage = node.querySelector('.reading-cover img');
+        if (oldImage && newImage && oldImage.outerHTML === newImage.outerHTML)
+          newImage.replaceWith(oldImage);
+        if (visibleIds.has(id)) libraryCards.set(id, node);
+      }
     }
     container.querySelectorAll('.reading-manage, .reading-synopsis').forEach((node, index) => {
       if (index < disclosureStates.length) node.open = disclosureStates[index];

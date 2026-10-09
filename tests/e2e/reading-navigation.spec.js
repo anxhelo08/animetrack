@@ -135,3 +135,42 @@ test('fast search results remain usable while another catalog is delayed or bloc
   await page.getByRole('button', { name: 'Omniscient Reader', exact: true }).click();
   await expect(page.locator('#reading-detail-title')).toHaveText('Omniscient Reader');
 });
+
+test('reading library keeps covers across details and sorts by remaining chapters', async ({
+  page,
+}, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Reading remains desktop only');
+  await openFixture(page, {
+    payload: { anime: [], history: [], readingLibrary: rows, preferences: {} },
+  });
+  await page.locator('#pro-nav-reading').click();
+  await expect(page.locator('.reading-card')).toHaveCount(2);
+  await page.evaluate(() => {
+    window.__readingCard = document.querySelector('[data-reading-title="reading-al-1"]');
+    window.__readingCover = window.__readingCard.querySelector('.reading-cover');
+  });
+  await page
+    .locator('[data-reading-title="reading-al-1"] [data-reading-action="detail"]')
+    .first()
+    .click();
+  await page.locator('.reading-tabs [data-id="library"]').click();
+  expect(
+    await page.evaluate(
+      () => document.querySelector('[data-reading-title="reading-al-1"]') === window.__readingCard,
+    ),
+  ).toBe(true);
+  expect(
+    await page.evaluate(
+      () =>
+        document.querySelector('[data-reading-title="reading-al-1"] .reading-cover') ===
+        window.__readingCover,
+    ),
+  ).toBe(true);
+  await page.locator('.reading-library-more summary').click();
+  await page.locator('#reading-sort').selectOption('remaining');
+  await expect(page.locator('.reading-card').first()).toContainText('Manhwa Story');
+  await page.locator('#home-nav').click();
+  await page.locator('#pro-nav-reading').click();
+  await expect(page.locator('#reading-sort')).toHaveValue('remaining');
+  await expect(page.locator('.reading-card').first()).toContainText('Manhwa Story');
+});

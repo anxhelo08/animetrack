@@ -1,7 +1,7 @@
 {
   "name": "animetrack",
-  "version": "14.33.2",
-  "releaseLabel": "14.33.2",
+  "version": "14.33.3",
+  "releaseLabel": "14.33.3",
   "private": true,
   "type": "module",
   "scripts": {
