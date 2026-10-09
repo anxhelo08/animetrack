@@ -69,6 +69,15 @@ export async function verifyDatabase(db) {
       'utf8',
     ),
   );
+  await db.query(
+    await readFile(
+      new URL(
+        '../supabase/migrations/20261009222036_all_library_airing_calendar.sql',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  );
   await verifySyncDatabase(db);
   await verifyAiringDatabase(db);
   const A = '00000000-0000-4000-8000-000000000001',

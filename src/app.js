@@ -635,7 +635,7 @@ async function addCatalogItem(key,status){
    if(status==='completed')markCatalogComplete(keeper);
    repairProviderDuplicates(true);
    if(!save()){state=transactionBefore;return null}render();renderHome();renderCatalog();if(typeof v8RenderSeasonal==='function')v8RenderSeasonal();
-   notify('“'+item.title+'” është pjesë e “'+keeper.title+'”. Sezonet u bashkuan ✓');
+   notify('“'+item.title+'” është pjesë e “'+keeper.title+'”. Sezonet u bashkuan ✓');upcomingCheckedAt=0;void refreshUpcoming();
    return libraryEntry137(keeper.id)?.id||keeper.id;
   }
   const anime=normalized({id:uuid(),title:item.title,aliases:item.aliases||[],total:item.total,watched:[],status,year:item.year,genre:item.genre,cover:item.cover,backdrop:item.backdrop,trailer:item.trailer,source:item.source,communityScore:item.score,communitySource:item.source,sourceId:item.sourceId,malId:item.malId,format:item.format,releaseStart:item.releaseStart,releaseStatus:item.releaseStatus,nextAiringEpisode:item.nextAiringEpisode,nextAiringAt:item.nextAiringAt,sourceUrl:item.sourceUrl,synopsis:item.synopsis,createdAt:now(),updatedAt:now()});
@@ -644,7 +644,7 @@ async function addCatalogItem(key,status){
   if(status==='completed')markCatalogComplete(added);
   repairProviderDuplicates(true);
   upcomingCheckedAt=0;catalogSyncAt=0;persistCache();if(!save()){state=transactionBefore;return null}render();renderHome();renderCatalog();if(typeof v8RenderSeasonal==='function')v8RenderSeasonal();
-  const stored=libraryEntry137(added.id)||added;notify('“'+stored.title+'” u shtua me '+stored.seasons.length+' pjesë ✓');
+  const stored=libraryEntry137(added.id)||added;notify('“'+stored.title+'” u shtua me '+stored.seasons.length+' pjesë ✓');void refreshUpcoming();
   return stored.id;
  }finally{addingCatalogKeys.delete(key)}
 }
@@ -774,16 +774,16 @@ async function refreshUpcoming(force=false){
  if(upcomingBusy)return;
  if(!force&&upcomingCheckedAt&&Date.now()-upcomingCheckedAt<5*60000){renderUpcoming();return}
  upcomingBusy=true;$('refresh-upcoming').disabled=true;renderHome();proApp?.renderBackground?.();
- const owner=accountUser?.id||null,storageKey=KEY,targets=state.anime;
+ const owner=accountUser?.id||null,storageKey=KEY,targets=state.anime,signature=targets.flatMap(airingIdentities).map(x=>x.provider+':'+x.id).join('|');
  const current=()=>owner===(accountUser?.id||null)&&storageKey===KEY;
  try{
   const result=await loadLibraryAiring(targets,{force,isCurrent:current,
-   readCache:async(keys)=>{if(!accountUser)return [];const cached=[];for(let offset=0;offset<keys.length;offset+=100){if(!current())return [];const response=await accountInitClient().from('anime_airing_cache').select('lookup_key,result,checked_at').in('lookup_key',keys.slice(offset,offset+100));cached.push(...(response.data||[]))}return cached},
+   readCache:async(keys)=>{if(!accountUser)return [];const cached=[];for(let offset=0;offset<keys.length;offset+=100){if(!current())return [];const response=await accountDeadline(accountInitClient().from('anime_airing_cache').select('lookup_key,result,checked_at').in('lookup_key',keys.slice(offset,offset+100)));cached.push(...(response.data||[]))}return cached},
    onUpdate:({events,coverage,failures})=>{if(!current())return;upcomingEntries=mergeAiringEvents([...upcomingEntries,...events]);airingCoverage=coverage;upcomingFailures=failures;if(reconcileAiringLibrary()){render();if(detailId)renderDetail(detailId)}renderUpcoming();renderHome();proApp?.renderBackground?.()}
   });
   if(!current())return;
   if(result)upcomingCheckedAt=Date.now();persistCache();
- }finally{upcomingBusy=false;$('refresh-upcoming').disabled=false;renderUpcoming();renderHome();proApp?.renderBackground?.()}
+ }finally{upcomingBusy=false;$('refresh-upcoming').disabled=false;renderUpcoming();renderHome();proApp?.renderBackground?.();if(current()&&signature!==state.anime.flatMap(airingIdentities).map(x=>x.provider+':'+x.id).join('|')){upcomingCheckedAt=0;void refreshUpcoming()}}
 }
 
 function airDate(ms){return new Intl.DateTimeFormat('sq-AL',{timeZone:'Europe/Tirane',weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(ms))}
@@ -1639,7 +1639,7 @@ refreshCatalogDaily=async function(force=false){const before=new Map(state.anime
 const v93BaseOpenCloud=accountOpenCloud;
 accountOpenCloud=async function(user){await v93BaseOpenCloud(user);if(state.anime.length){const key='animetrack_release_sync_1461_'+user.id,prior=Number(localStorage.getItem(key)||0);if(!prior||Date.now()-prior>=DAY){catalogSyncAt=0;upcomingCheckedAt=0;setTimeout(async()=>{if(accountUser?.id!==user.id)return;await dailySync(false);if(!catalogSyncFailed){try{localStorage.setItem(key,String(Date.now()))}catch{}}},800)}}};
 // Refresh the released-episode clock while the tab remains open.
-createVisibleScheduler(()=>{if(accountMode!=='cloud')return;if(!catalogSyncBusy&&Date.now()-catalogSyncAt>DAY)return dailySync(false);render();renderHome();if(detailId)renderDetail(detailId)},{interval:5*60*1000});
+createVisibleScheduler(()=>{if(accountMode!=='cloud')return;if(!catalogSyncBusy&&(Date.now()-catalogSyncAt>DAY||Date.now()-upcomingCheckedAt>DAY))return dailySync(false);render();renderHome();if(detailId)renderDetail(detailId)},{interval:5*60*1000});
 
 function activityEpisodes(){
  const current=new Set();

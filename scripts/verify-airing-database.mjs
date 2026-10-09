@@ -19,6 +19,9 @@ export async function verifyAiringDatabase(db) {
         providerIds: ['tvmaze:9'],
       },
       { status: 'dropped', source: 'AniList', sourceId: '8' },
+      { status: 'planning', source: 'AniList', sourceId: '10' },
+      { status: 'paused', source: 'AniList', sourceId: '11' },
+      { status: 'planning', source: 'AniList', sourceId: '12', deletedAt: '2026-10-10' },
     ],
   };
   await db.query('INSERT INTO public.anime_libraries(user_id,payload) VALUES($1,$2)', [
@@ -29,11 +32,22 @@ export async function verifyAiringDatabase(db) {
   const jobs = (await db.query('SELECT * FROM public.anime_claim_airing_checks()')).rows;
   assert.equal(jobs.length, 2);
   assert.equal(JSON.stringify(jobs).includes('PRIVATE'), false);
-  assert.deepEqual(jobs.map((j) => j.lookup_key).sort(), ['anilist:7', 'tvmaze:9']);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const batch = (await db.query('SELECT * FROM public.anime_claim_airing_checks()')).rows;
+    if (!batch.length) break;
+    jobs.push(...batch);
+  }
+  assert.deepEqual(jobs.map((j) => j.lookup_key).sort(), [
+    'anilist:10',
+    'anilist:11',
+    'anilist:7',
+    'anilist:8',
+    'tvmaze:9',
+  ]);
   assert.equal((await db.query('SELECT * FROM public.anime_claim_airing_checks()')).rows.length, 0);
   const first = jobs[0],
     result = {
-      events: [{ providerKey: 'anilist:7', episode: 1, when: Date.now() + 1000 }],
+      events: [{ providerKey: first.lookup_key, episode: 1, when: Date.now() + 1000 }],
       checks: [{ source: 'AniList', status: 'ok' }],
     };
   assert.equal(

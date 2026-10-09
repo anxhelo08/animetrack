@@ -47,7 +47,9 @@ export async function loadLibraryAiring(
   } = {},
 ) {
   const targets = [...anime].sort(
-    (a, b) => Number(b.status === 'watching') - Number(a.status === 'watching'),
+    (a, b) =>
+      (Date.parse(b.createdAt || '') || 0) - (Date.parse(a.createdAt || '') || 0) ||
+      Number(b.status === 'watching') - Number(a.status === 'watching'),
   );
   const identities = new Map(
     targets.flatMap(airingIdentities).map((id) => [id.provider + ':' + id.id, id]),

@@ -140,3 +140,28 @@ test('an old cache with an aired untyped sequel is refreshed before its daily TT
   });
   expect(fetchSchedule).toHaveBeenCalledTimes(1);
 });
+
+test('newly added planned titles are checked before older watching titles', async () => {
+  const fetchSchedule = vi.fn(async () => ({
+    events: [],
+    checks: [{ source: 'AniList', status: 'ok' }],
+  }));
+  await loadLibraryAiring(
+    [
+      { ...title, status: 'watching', createdAt: '2025-01-01T00:00:00Z' },
+      {
+        ...title,
+        id: 'new',
+        sourceId: '99',
+        malId: '',
+        providerIds: [],
+        seasons: [],
+        status: 'planning',
+        createdAt: new Date(now).toISOString(),
+      },
+    ],
+    { now, fetchSchedule },
+  );
+  expect(fetchSchedule.mock.calls[0][0].id).toBe('99');
+  expect(fetchSchedule.mock.calls[1][0].id).toBe('7');
+});

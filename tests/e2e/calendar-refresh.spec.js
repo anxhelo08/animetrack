@@ -131,9 +131,10 @@ test('completed titles, confirmed sequels, source coverage and calendar controls
   await expect(page.locator('.at-cal-stage')).toHaveAttribute('aria-busy', 'false');
   await page.locator('[data-pro-action="calendar-view"][data-id="agenda"]').click();
   await expect(page.locator('.at-cal-agenda')).toContainText('Black Clover');
-  await expect(
-    page.locator('[data-pro-action="calendar-filter"][data-id="following"]'),
-  ).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-pro-action="calendar-filter"][data-id="all"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await expect(page.locator('.at-cal-untracked').first()).toBeVisible();
   await page.locator('#calendar-release').selectOption('upcoming');
   await expect(page.locator('.at-cal-agenda [data-pro-action="calendar-mark"]')).toHaveCount(0);
@@ -152,6 +153,10 @@ test('completed titles, confirmed sequels, source coverage and calendar controls
   expect(original).toEqual([1]);
   for (const width of info.project.name.startsWith('iphone') ? [320, 390] : [1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
+    await page.evaluate(() => {
+      document.activeElement?.blur();
+      window.scrollTo(0, 0);
+    });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2)).toBe(
       true,
     );
@@ -182,4 +187,130 @@ test('all main search fields carry search-only autofill semantics', async ({ pag
     await expect(input).toHaveAttribute('data-lpignore', 'true');
   }
   await expect(page.locator('#account-email')).toHaveAttribute('type', 'email');
+});
+
+test('new airing anime enter the calendar immediately without a manual refresh', async ({
+  page,
+}, info) => {
+  await openFixture(page, { payload, owner: 'calendar-new-title', persistWrites: true });
+  const now = await page.evaluate(() => Date.now());
+  const ongoing = {
+    id: 269802,
+    idMal: 269802,
+    type: 'ANIME',
+    title: { english: 'Airing Calendar Fixture', romaji: 'Airing Calendar Fixture' },
+    format: 'TV',
+    episodes: 12,
+    status: 'RELEASING',
+    startDate: { year: 2026, month: 9, day: 1 },
+    seasonYear: 2026,
+    genres: ['Action'],
+    coverImage: {},
+    relations: { edges: [] },
+    nextAiringEpisode: { episode: 3, airingAt: (now + 3600000) / 1000 },
+  };
+  let scheduleChecks = 0;
+  await page.route('https://graphql.anilist.co', (route) => {
+    const { query, variables } = route.request().postDataJSON();
+    if (variables?.search)
+      return route.fulfill({
+        json: { data: { Page: { media: [ongoing], pageInfo: { hasNextPage: false } } } },
+      });
+    if (
+      variables?.id === ongoing.id &&
+      query.includes('nextAiringEpisode') &&
+      !query.includes('description')
+    )
+      scheduleChecks++;
+    if (query.includes('airingSchedules(mediaId_in:'))
+      return route.fulfill({
+        json: {
+          data: {
+            Page: {
+              pageInfo: { hasNextPage: false },
+              airingSchedules: [
+                { mediaId: ongoing.id, episode: 3, airingAt: (now + 3600000) / 1000 },
+              ],
+            },
+          },
+        },
+      });
+    return route.fulfill({
+      json: {
+        data: {
+          Media: variables?.id === ongoing.id ? ongoing : null,
+          a: { media: [] },
+          b: { media: [] },
+          Page: { media: [], pageInfo: { hasNextPage: false } },
+        },
+      },
+    });
+  });
+  await page
+    .locator(
+      info.project.name.startsWith('iphone') ? '[data-mobile-nav="explore"]' : '#explore-nav',
+    )
+    .click();
+  await page.locator('#global-search').fill('Airing Calendar Fixture');
+  await page.locator('#global-search').dispatchEvent('input');
+  await page.locator('#catalog-grid [data-preview="al-269802"]').first().click();
+  await page.locator('[data-preview-add="al-269802"][data-preview-status="planning"]').click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => window.ATMobile113.state().anime.some((a) => a.sourceId === '269802')),
+    )
+    .toBe(true);
+  await expect.poll(() => scheduleChecks).toBeGreaterThan(0);
+  await page.locator('#detail-modal [data-close="detail-modal"]').first().click();
+  await page.evaluate(() => document.querySelector('#pro-nav-calendar').click());
+  await expect(page.locator('[data-pro-action="calendar-filter"][data-id="all"]')).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.locator('[data-pro-action="calendar-view"][data-id="agenda"]').click();
+  await expect(page.locator('.at-cal-agenda')).toContainText('Airing Calendar Fixture');
+  await expect(page.locator('.at-cal-agenda')).toContainText('EP 3');
+  const added = await page.evaluate(() =>
+    window.ATMobile113.state().anime.find((a) => a.sourceId === '269802'),
+  );
+  expect(added.status).toBe('planning');
+  expect(added.seasons[0].watched).toEqual([]);
+});
+
+test('the default calendar includes planned, paused and dropped titles with confirmed dates', async ({
+  page,
+}) => {
+  const now = Date.parse('2026-09-30T12:00:00Z');
+  const rows = ['planning', 'paused', 'dropped'].map((status, index) => ({
+    ...structuredClone(payload.anime[0]),
+    id: 'calendar-' + status,
+    title: 'Calendar ' + status,
+    status,
+    sourceId: String(300001 + index),
+    malId: '',
+    seasons: [
+      {
+        id: 'part-' + status,
+        title: 'Sezoni 1',
+        source: 'AniList',
+        sourceId: String(300001 + index),
+        total: 12,
+        watched: [],
+        nextAiringEpisode: 2,
+        nextAiringAt: (now + 3600000) / 1000,
+      },
+    ],
+  }));
+  await openFixture(page, { payload: { ...payload, anime: rows }, owner: 'calendar-all-statuses' });
+  await page.evaluate(() => document.querySelector('#pro-nav-calendar').click());
+  await page.locator('[data-pro-action="calendar-view"][data-id="agenda"]').click();
+  for (const status of ['planning', 'paused', 'dropped'])
+    await expect(page.locator('.at-cal-agenda')).toContainText('Calendar ' + status);
+  await page.locator('[data-pro-action="calendar-filter"][data-id="watching"]').click();
+  await expect(page.locator('.at-cal-empty')).toBeVisible();
+  expect(await page.evaluate(() => window.ATMobile113.state().anime.map((a) => a.status))).toEqual([
+    'planning',
+    'paused',
+    'dropped',
+  ]);
 });
