@@ -619,7 +619,8 @@ async function addCatalogItem(key,status){
   const already=inLibrary(item);
   if(already){const id=isFranchiseFormat(item.format)?(await hydrateSeasons(already.id,true)||already.id):already.id;if(!current())return null;return status==='completed'?completeCatalogEntry(id):id}
   let remote=[];
-  if(item.source&&isFranchiseFormat(item.format)){
+  const plannedStandalone=status==='planning'&&item.source==='AniList'&&item.releaseStatus==='NOT_YET_RELEASED'&&Array.isArray(item.catalogRelations)&&!item.catalogRelations.some(edge=>['PREQUEL','SEQUEL'].includes(edge.relationType));
+  if(item.source&&isFranchiseFormat(item.format)&&!plannedStandalone){
    try{remote=item.source==='AniList'?await anilistSeasons(item.sourceId,item.format):await jikanSeasons(item.sourceId,item.format)}
    catch(err){console.warn('Could not safely verify this series',err);notify('S’u verifikuan sezonet online. Provo përsëri që të shmangim një kopje të dyfishtë.');return null}
   }

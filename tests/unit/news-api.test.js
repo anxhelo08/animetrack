@@ -11,6 +11,10 @@ const xml = (items) =>
 const entry = (id, extra = '') =>
   `<item><title>Anime ${id} &amp; Friends premiere</title><link>https://www.animenewsnetwork.com/news/${id}</link><pubDate>Fri, 02 Oct 2026 09:00:00 GMT</pubDate><description><![CDATA[<p>A <b>new</b> story.</p>]]></description>${extra}</item>`;
 const feed = xml(entry(1));
+const primaryFeed = feed.replaceAll(
+  'https://www.animenewsnetwork.com/news/',
+  'https://www.crunchyroll.com/news/',
+);
 function response() {
   return {
     headers: {},
@@ -91,12 +95,13 @@ describe('RSS news parsing', () => {
 });
 describe('cached news proxy', () => {
   it('collapses concurrent requests and reuses fresh articles with the requested CDN caching headers', async () => {
-    const fetchImpl = vi.fn(async () => new Response(feed));
+    const fetchImpl = vi.fn(async () => new Response(primaryFeed));
     const handler = createHandler({ fetchImpl, limit: () => true });
     const responses = [response(), response(), response()];
     await Promise.all(responses.map((res) => handler(request, res)));
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(fetchImpl.mock.calls[0][0]).toBe(NEWS_FEEDS[0].url);
+    expect(fetchImpl.mock.calls[0][0]).toBe('https://www.crunchyroll.com/news/rss');
+    expect(responses[0].body[0].source).toBe('Crunchyroll News');
     expect(fetchImpl.mock.calls[0][1]).toMatchObject({
       redirect: 'manual',
       signal: expect.any(AbortSignal),
@@ -111,14 +116,7 @@ describe('cached news proxy', () => {
   });
   it('tries the second publisher on failure and never forwards a client-supplied URL', async () => {
     const fetchImpl = vi.fn(async (url) =>
-      url === NEWS_FEEDS[0].url
-        ? new Response('Denied', { status: 403 })
-        : new Response(
-            feed.replaceAll(
-              'https://www.animenewsnetwork.com/news/',
-              'https://www.crunchyroll.com/news/',
-            ),
-          ),
+      url === NEWS_FEEDS[0].url ? new Response('Denied', { status: 403 }) : new Response(feed),
     );
     const res = response();
     await createHandler({ fetchImpl, limit: () => true })(
@@ -127,7 +125,7 @@ describe('cached news proxy', () => {
     );
     expect(fetchImpl.mock.calls.map(([url]) => url)).toEqual(NEWS_FEEDS.map((x) => x.url));
     expect(res.code).toBe(200);
-    expect(res.body[0].source).toBe('Crunchyroll News');
+    expect(res.body[0].source).toBe('Anime News Network');
   });
   it('returns recently cached data on publisher failure, then refuses expired news', async () => {
     let now = 0,
@@ -135,7 +133,8 @@ describe('cached news proxy', () => {
     const handler = createHandler({
       clock: () => now,
       limit: () => true,
-      fetchImpl: async () => new Response(fail ? 'Denied' : feed, { status: fail ? 403 : 200 }),
+      fetchImpl: async () =>
+        new Response(fail ? 'Denied' : primaryFeed, { status: fail ? 403 : 200 }),
     });
     await handler(request, response());
     fail = true;
@@ -169,12 +168,12 @@ it('follows a publisher RSS redirect and blocks cross-host, insecure, or looping
   const same = vi.fn(async (target) =>
     target === NEWS_FEEDS[0].url
       ? new Response('', { status: 302, headers: { location: '/news/rss.xml?edition=us' } })
-      : new Response(feed),
+      : new Response(primaryFeed),
   );
   const ok = response();
   await createHandler({ fetchImpl: same, feeds: [NEWS_FEEDS[0]], limit: () => true })(request, ok);
   expect(ok.code).toBe(200);
-  expect(same.mock.calls[1][0]).toBe('https://www.animenewsnetwork.com/news/rss.xml?edition=us');
+  expect(same.mock.calls[1][0]).toBe('https://www.crunchyroll.com/news/rss.xml?edition=us');
   expect(same.mock.calls[0][1].signal).toBe(same.mock.calls[1][1].signal);
   for (const location of [
     'http://www.animenewsnetwork.com/news/rss.xml',

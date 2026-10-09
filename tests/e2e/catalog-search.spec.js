@@ -330,3 +330,56 @@ test('catalogue families show missing parts when a season is already in the libr
   await expect(page.locator(`[data-preview-add="al-${film.id}"]`).first()).toBeVisible();
   expect(await page.evaluate(() => window.ATMobile113.state().anime)).toEqual(before);
 });
+
+test('a standalone anime announced for 2027 can be planned without waiting for episode metadata', async ({
+  page,
+}, info) => {
+  await ready(page);
+  const upcoming = {
+    ...media(269801, 'Vampire Juuji Kai', 2027),
+    status: 'NOT_YET_RELEASED',
+    episodes: null,
+  };
+  let detailRequests = 0,
+    savedBeforeMetadata = false;
+  await page.route('https://graphql.anilist.co', async (route) => {
+    const body = route.request().postDataJSON();
+    if (body.variables?.search)
+      return route.fulfill({
+        json: { data: { Page: { media: [upcoming], pageInfo: { hasNextPage: false } } } },
+      });
+    if (body.variables?.id === upcoming.id) {
+      detailRequests++;
+      savedBeforeMetadata = await page.evaluate(() =>
+        window.ATMobile113.state().anime.some(
+          (row) => row.sourceId === '269801' && row.status === 'planning',
+        ),
+      );
+      return route.fulfill({
+        status: 503,
+        json: { errors: [{ message: 'metadata unavailable' }] },
+      });
+    }
+    return route.fulfill({
+      json: { data: { Page: { media: [], pageInfo: { hasNextPage: false } }, Media: null } },
+    });
+  });
+  await browse(page, info);
+  await page.locator('#global-search').fill('Vampire Juuji Kai');
+  await page.locator('#global-search').dispatchEvent('input');
+  await page.locator('#catalog-grid [data-preview="al-269801"]').first().click();
+  await page.locator('[data-preview-add="al-269801"][data-preview-status="planning"]').click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.ATMobile113.state().anime.find((row) => row.sourceId === '269801')?.status,
+      ),
+    )
+    .toBe('planning');
+  const added = await page.evaluate(() =>
+    window.ATMobile113.state().anime.find((row) => row.sourceId === '269801'),
+  );
+  expect(added.seasons[0].watched).toEqual([]);
+  expect(added.seasons[0].releaseStatus).toBe('NOT_YET_RELEASED');
+  expect(detailRequests === 0 || savedBeforeMetadata).toBe(true);
+});

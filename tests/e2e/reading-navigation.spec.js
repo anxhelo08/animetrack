@@ -174,3 +174,26 @@ test('reading library keeps covers across details and sorts by remaining chapter
   await expect(page.locator('#reading-sort')).toHaveValue('remaining');
   await expect(page.locator('.reading-card').first()).toContainText('Manhwa Story');
 });
+
+test('reading cards are prepared while home is still visible', async ({ page }, info) => {
+  test.skip(info.project.name.startsWith('iphone'), 'Reading remains desktop only');
+  await openFixture(page, {
+    payload: { anime: [], history: [], readingLibrary: rows, preferences: {} },
+  });
+  await expect(page.locator('#reading-view .reading-card')).toHaveCount(2);
+  await expect(page.locator('#reading-view')).toBeHidden();
+  await expect(page.locator('#home-view')).toBeVisible();
+  await page.evaluate(() => {
+    window.__preparedReadingCards = [...document.querySelectorAll('#reading-view .reading-card')];
+  });
+  await page.locator('#pro-nav-reading').click();
+  await expect(page.locator('#reading-view')).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      [...document.querySelectorAll('#reading-view .reading-card')].every(
+        (node, i) => node === window.__preparedReadingCards[i],
+      ),
+    ),
+  ).toBe(true);
+  await expect(page.locator('#reading-view')).not.toContainText('Po ngarkohet');
+});

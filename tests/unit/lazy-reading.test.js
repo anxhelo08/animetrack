@@ -19,12 +19,13 @@ afterEach(() => {
   for (const args of events) window.removeEventListener(...args);
   vi.restoreAllMocks();
 });
-function fixture(importer) {
+function fixture(importer, library = []) {
   const instance = {
     mount: vi.fn(),
     open: vi.fn(() => true),
     hide: vi.fn(),
     render: vi.fn(),
+    prepare: vi.fn(),
     switchTab: vi.fn(),
     refreshBackground: vi.fn(),
   };
@@ -32,7 +33,7 @@ function fixture(importer) {
     el: (id) => document.getElementById(id),
     navigate: (name) => reading.open(name),
     user: () => null,
-    state: () => ({ readingLibrary: [] }),
+    state: () => ({ readingLibrary: library }),
   };
   const importModule = importer || vi.fn(async () => ({ createReading: () => instance }));
   const retry = vi.fn();
@@ -94,4 +95,17 @@ it('preserves a sidebar destination selected before its module finishes loading'
   document.querySelector('#reading-subnav [data-id="calendar"]').click();
   await settle();
   expect(instance.switchTab).toHaveBeenCalledWith('calendar');
+});
+
+it('prepares an existing desktop reading library before navigation without opening it', async () => {
+  window.matchMedia = () => ({ matches: false });
+  const { reading, instance, importModule } = fixture(undefined, [{ id: 'reading-demo' }]);
+  await reading.refreshBackground();
+  expect(importModule).toHaveBeenCalledOnce();
+  expect(instance.prepare).toHaveBeenCalledTimes(2);
+  expect(instance.open).not.toHaveBeenCalled();
+  expect(document.querySelector('#reading-view').classList.contains('hidden')).toBe(true);
+  reading.open('reading');
+  expect(instance.open).toHaveBeenCalledWith('reading');
+  expect(importModule).toHaveBeenCalledOnce();
 });

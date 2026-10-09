@@ -96,11 +96,11 @@ test('a watched episode opens a centered card with artwork and saves stars witho
   await expect(page.locator('.episode-card-subtitle')).toContainText('Episodi 2');
   await expect(page.locator('.release-feedback')).toBeHidden();
   await expect(page.locator('.episode-card-badge')).toContainText('PËR T’U PARË');
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     'https://cinehd.vc/home',
   );
-  await expect(page.locator('.episode-card-providers img')).toBeVisible();
+  await expect(page.locator('.episode-card-providers > a img')).toBeVisible();
   await page.locator('.episode-card [data-episode-mark]').click();
   const journal = page.locator('.episode-card .release-journal');
   await expect(journal).toBeVisible();
@@ -129,11 +129,11 @@ test('anime episode links open Anisuge directly and unknown release dates stay d
     await page.locator('#anime-grid [data-detail="episode-show"]').first().click();
     await page.locator('#detail-body .ep-info-btn[data-episode-number="1"]').click();
   }
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     'https://anisuge.org/',
   );
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('target', '_blank');
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute('target', '_blank');
   await page.evaluate(() =>
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -151,10 +151,10 @@ test('anime episode links open Anisuge directly and unknown release dates stay d
   await page.locator('.episode-provider-link summary').click();
   await page.locator('[data-episode-watch-url]').fill(animeLink);
   await page.locator('[data-episode-watch-save]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', animeLink);
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute('href', animeLink);
 
   await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     animeLink.replace('/ep-1', '/ep-2'),
   );
@@ -163,12 +163,12 @@ test('anime episode links open Anisuge directly and unknown release dates stay d
     .locator('[data-episode-watch-url]')
     .fill('https://anisuge.org/watch/fixture-season/ep-1170');
   await page.locator('[data-episode-watch-save]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     'https://anisuge.org/watch/fixture-season/ep-1170',
   );
   await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     'https://anisuge.org/watch/fixture-season/ep-1171',
   );
@@ -216,13 +216,13 @@ test('a saved episode link survives reload and does not leak into the next episo
   const url = 'https://cinehd.vc/watch/fixture?episode=1';
   await input.fill(url);
   await page.locator('[data-episode-watch-save]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', url);
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute('href', url);
   await page.reload();
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
   await openEpisode();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', url);
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute('href', url);
   await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     'https://cinehd.vc/home',
   );
@@ -230,9 +230,9 @@ test('a saved episode link survives reload and does not leak into the next episo
   await page.locator('[data-episode-watch-url]').fill('https://cinehd.vc/tv/5920');
   await page.locator('[data-episode-watch-save]').click();
   await page.locator('.episode-card-navigation [data-v98-move="-1"]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute('href', url);
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute('href', url);
   await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     'https://cinehd.vc/tv/5920',
   );
@@ -244,7 +244,7 @@ test('a saved episode link survives reload and does not leak into the next episo
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
   await openEpisode();
   await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
-  await expect(page.locator('.episode-card-providers a')).toHaveAttribute(
+  await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
     'href',
     'https://cinehd.vc/tv/5920',
   );
@@ -318,5 +318,65 @@ for (const kind of ['anime', 'tv']) {
     );
     expect(restored.anime[0].seasons[0].watched).toEqual([1]);
     expect(restored.anime[0].seasons[0].episodes[0].personalRating).toBe(8);
+  });
+}
+
+for (const [source, format, name, url, mapped] of [
+  ['AniList', 'TV', 'Way2Movies', 'https://beta.way2movies.live/watch/example?episode=1'],
+  ['TVMaze', 'TV_SERIES', 'Atlantic', 'https://atlantic.st/watch/example?episode=1'],
+  [
+    'AniList',
+    'TV',
+    'Way2Movies',
+    'https://beta.way2movies.live/watch/tv/fixture-title/1/1?server=53',
+    true,
+  ],
+]) {
+  test(`${name} ${mapped ? 'season mapping' : 'episode links'} are scoped, searchable and persist without changing progress`, async ({
+    page,
+  }, info) => {
+    const data = structuredClone(payload);
+    Object.assign(data.anime[0], { source, format, hydrated: true });
+    await openFixture(page, { payload: data, persistWrites: true, owner: 'watch-source-' + name });
+    async function openEpisode() {
+      if (info.project.name.startsWith('iphone'))
+        await page.locator('#mobile-history [data-mobile-action="episode"]').first().click();
+      else {
+        await page.locator('#library-nav').click();
+        await page.locator('#anime-grid [data-detail="episode-show"]').first().click();
+        await page.locator('#detail-body .ep-info-btn[data-episode-number="1"]').click();
+      }
+    }
+    const before = await page.evaluate(() => window.ATMobile113.state());
+    await openEpisode();
+    await expect(page.locator('.episode-extra-sources')).toContainText(name);
+    const search = new URL(
+      await page
+        .locator('.episode-extra-sources a[href^="https://www.google.com/search?"]')
+        .getAttribute('href'),
+    );
+    expect(search.searchParams.get('q')).toContain('episode 1');
+    expect(search.searchParams.get('q')).toContain(new URL(url).hostname);
+    await page.locator('.episode-provider-link summary').click();
+    await page.locator('[data-episode-watch-url]').fill(url);
+    await page.locator('[data-episode-watch-save]').click();
+    await expect(page.locator('.episode-card-providers > a')).toHaveAttribute('href', url);
+    await expect(page.locator('.episode-card-providers > a')).toContainText(name);
+    await expect
+      .poll(() => page.evaluate(() => window.__ATFixtureLibraryCalls.write))
+      .toBeGreaterThan(0);
+    const state = await page.evaluate(() => window.ATMobile113.state());
+    expect(state.anime[0].seasons[0].watched).toEqual([1]);
+    expect(state.history).toEqual(before.history);
+    await page.locator('.episode-card-navigation [data-v98-move="1"]').click();
+    if (mapped)
+      await expect(page.locator('.episode-card-providers > a')).toHaveAttribute(
+        'href',
+        url.replace('/1/1?', '/1/2?'),
+      );
+    else await expect(page.locator('.episode-card-providers > a')).not.toHaveAttribute('href', url);
+    await page.reload();
+    await openEpisode();
+    await expect(page.locator('.episode-card-providers > a')).toHaveAttribute('href', url);
   });
 }

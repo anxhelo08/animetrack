@@ -59,6 +59,9 @@ test('news loads on demand with skeletons, filters stable cards, loads more and 
   });
   expect(calls).toBe(0);
   await openNews(page, info);
+  await expect(
+    page.locator('.news-hero a[href="https://www.crunchyroll.com/news"]'),
+  ).toHaveAttribute('target', '_blank');
   await expect(page.locator('.news-skeleton')).toHaveCount(8);
   await expect(page.locator('.news-grid')).toHaveAttribute('aria-busy', 'true');
   await pending.fulfill({ json: stories });

@@ -1,3 +1,4 @@
+import { watchProviders } from '../core/watch-links.js';
 import { createDetailNavigation } from './detail-navigation.js';
 import { createPlayerTracking } from './player-tracking.js';
 import { mountSharedList } from './shared-lists.js';
@@ -49,7 +50,7 @@ export function createFeatures(ctx){
   recommendations:window.ATRecommendations(ctx),
   calendar:window.ATCalendarWrapped(ctx),
   diary:null,
-  watch:window.ATWatch133(ctx),
+  watch:window.ATWatch133({...ctx,watchProviders}),
   rich:window.ATRich134(ctx),
   providerSync:window.ATProviderSync135(ctx),
   smart:window.ATSmartAiring(ctx),

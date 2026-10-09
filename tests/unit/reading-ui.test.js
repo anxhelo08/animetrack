@@ -315,3 +315,20 @@ it('sorts unread chapters descending with unknown totals last and keeps the orde
   expect(order()).toEqual(['reading-many', 'reading-few', 'reading-done', 'reading-unknown']);
   reading.hide();
 });
+
+it('prepares hidden library cards and eagerly requests their covers before reopening', () => {
+  const { reading, state } = fixture(true, () => '/icon.svg');
+  reading.hide();
+  state.readingLibrary[0].totalChapters = 12;
+  reading.prepare();
+  const card = document.querySelector('[data-reading-title]');
+  const cover = card.querySelector('img');
+  expect(cover.loading || cover.getAttribute('loading')).toBe('eager');
+  expect(document.getElementById('reading-view').classList.contains('hidden')).toBe(true);
+  expect(document.body.classList.contains('reading-active')).toBe(false);
+  reading.open('reading');
+  expect(document.querySelector('[data-reading-title]')).toBe(card);
+  expect(card.querySelector('img')).toBe(cover);
+  expect(card.textContent).toContain('12');
+  reading.hide();
+});

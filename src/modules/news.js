@@ -101,7 +101,7 @@ export function renderNewsSection(containerElement) {
   window.ATHTML.renderHTML(
     root,
     `
-    <header class="news-hero"><h2 class="sr-only" id="${titleId}">Lajme anime</h2><div class="news-hero-fallback"><span class="news-kicker">${navIcon('news')} LAJME ANIME</span><h3>Historitë që <span>lëvizin botën anime.</span></h3><p>Premiera, industria dhe lajmet e fundit — nga burimet origjinale.</p><span class="news-source-note">Anime News Network · Crunchyroll News</span></div><div class="news-feature-stage" hidden></div><div class="news-feature-footer" aria-hidden="true" hidden><span>NË FOKUS</span><div class="news-feature-indicators"></div><span class="news-feature-count"></span></div></header>
+    <header class="news-hero"><h2 class="sr-only" id="${titleId}">Lajme anime</h2><div class="news-hero-fallback"><span class="news-kicker">${navIcon('news')} LAJME ANIME</span><h3>Historitë që <span>lëvizin botën anime.</span></h3><p>Premiera, industria dhe lajmet e fundit — nga burimet origjinale.</p><span class="news-source-note">Crunchyroll News · Anime News Network</span><a href="https://www.crunchyroll.com/news" target="_blank" rel="noopener noreferrer">Hap Crunchyroll News ↗</a></div><div class="news-feature-stage" hidden></div><div class="news-feature-footer" aria-hidden="true" hidden><span>NË FOKUS</span><div class="news-feature-indicators"></div><span class="news-feature-count"></span></div></header>
     <div class="news-controls"><div class="news-tabs" role="group" aria-label="Kategoritë e lajmeve">${Object.entries(
       labels,
     )
@@ -116,6 +116,10 @@ export function renderNewsSection(containerElement) {
     <div class="news-grid" aria-busy="true"></div><div class="news-state" hidden></div>
     <div class="news-more"><button type="button" data-news-action="more" hidden>Shfaq më shumë <span aria-hidden="true">${down}</span></button></div>`,
   );
+  root.querySelectorAll('a').forEach((link) => {
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+  });
   containerElement.replaceChildren(root);
   const grid = root.querySelector('.news-grid'),
     statusBox = root.querySelector('.news-state');

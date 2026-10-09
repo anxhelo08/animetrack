@@ -21,6 +21,16 @@ export function createLazyReading(
     instance = reading;
     return reading;
   });
+  async function prepare() {
+    if (!host || window.matchMedia?.('(max-width:760px)').matches) return;
+    if (!(ctx.state().readingLibrary || []).some((row) => !row.deletedAt)) return;
+    try {
+      const reading = await load();
+      reading.prepare?.();
+    } catch {
+      // Opening the section can retry a failed background download.
+    }
+  }
   function showPending(error = false) {
     if (!root) return;
     window.ATHTML.renderHTML(
@@ -140,6 +150,11 @@ export function createLazyReading(
     open,
     hide,
     render: (...args) => instance?.render(...args),
-    refreshBackground: () => (instance ? instance.refreshBackground() : refreshReadingChecks(ctx)),
+    refreshBackground: async () => {
+      await prepare();
+      await (instance ? instance.refreshBackground() : refreshReadingChecks(ctx));
+      await prepare();
+    },
+    prepare,
   };
 }

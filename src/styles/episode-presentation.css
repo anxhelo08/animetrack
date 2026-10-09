@@ -364,3 +364,8 @@ body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-body,
 .anime-new-episode ~ .favorite-badge {
   top: 49px;
 }
+
+.episode-extra-sources {
+  display: grid;
+  gap: 8px;
+}

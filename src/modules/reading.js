@@ -82,9 +82,9 @@ export function createReading(ctx) {
     Number.isFinite(Date.parse(stamp)) ? new Date(stamp).toLocaleDateString('sq-AL') : '';
   const button = (action, text, id = '', className = 'ghost', extra = '') =>
     `<button type="button" class="${className}" data-reading-action="${action}" data-id="${esc(id)}" ${extra}>${text}</button>`;
-  const image = (row) =>
+  const image = (row, eager = false) =>
     ctx.poster(row.cover)
-      ? `<img src="${esc(ctx.poster(row.cover))}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">`
+      ? `<img src="${esc(ctx.poster(row.cover))}" alt="" loading="${eager ? 'eager' : 'lazy'}" decoding="async" referrerpolicy="no-referrer">`
       : `<span class="reading-cover-empty" aria-hidden="true">${navIcon('reading')}</span>`;
   const statusOptions = (current) =>
     Object.entries(READING_STATUS)
@@ -154,7 +154,7 @@ export function createReading(ctx) {
     const tracked = saved(row.id),
       progress = tracked?.chaptersRead.length || 0,
       recent = (tracked?.chapterReleases || []).filter((entry) => isNewRelease(entry.date));
-    return `<article class="reading-card" data-reading-title="${esc(row.id)}"><button type="button" class="reading-cover" data-reading-action="detail" data-id="${esc(row.id)}" aria-label="Hap ${esc(row.title)}">${image(row)}<span class="reading-kind">${label(row)}</span>${recent.length ? `<span class="reading-new-badge">NEW · ${new Set(recent.map((entry) => entry.chapter)).size} kapituj</span>` : ''}</button><div class="reading-card-body"><small>${row.year || 'Viti i panjohur'}${row.communityScore ? ' · ★ ' + row.communityScore.toFixed(1) : ''}</small><button type="button" class="reading-card-title" data-reading-action="detail" data-id="${esc(row.id)}">${esc(row.title)}</button>${tracked ? `<p>${READING_STATUS[tracked.status]}${tracked.favorite ? ' · ♥' : ''}</p><div class="reading-card-progress"><strong>${progress}</strong> <span>${row.totalChapters ? 'nga ' + row.totalChapters + (row.publicationStatus === 'RELEASING' ? ' publikuar' : ' kapituj') : 'kapituj të lexuar'}</span></div>${row.totalChapters ? '' : '<p class="reading-total-pending">Totali ende i pakonfirmuar</p>'}<div class="reading-card-actions">${button('detail', 'Detaje', row.id)}${button('next', 'Vazhdo', row.id, 'primary', nextChapter(tracked) ? '' : 'disabled')}</div>` : `<p>${esc(row.recommendationReason || row.genres || 'Zbulo historinë')}</p><p class="reading-catalog-chapters">${row.totalChapters ? row.totalChapters + ' kapituj · ' + esc(row.chapterSource || 'Katalogu') : 'Kapitujt kontrollohen te Detajet'}</p>${button('add', '+ Në listën time', row.id, 'primary')}`}${sourceAction(row)}</div></article>`;
+    return `<article class="reading-card" data-reading-title="${esc(row.id)}"><button type="button" class="reading-cover" data-reading-action="detail" data-id="${esc(row.id)}" aria-label="Hap ${esc(row.title)}">${image(row, !!tracked)}<span class="reading-kind">${label(row)}</span>${recent.length ? `<span class="reading-new-badge">NEW · ${new Set(recent.map((entry) => entry.chapter)).size} kapituj</span>` : ''}</button><div class="reading-card-body"><small>${row.year || 'Viti i panjohur'}${row.communityScore ? ' · ★ ' + row.communityScore.toFixed(1) : ''}</small><button type="button" class="reading-card-title" data-reading-action="detail" data-id="${esc(row.id)}">${esc(row.title)}</button>${tracked ? `<p>${READING_STATUS[tracked.status]}${tracked.favorite ? ' · ♥' : ''}</p><div class="reading-card-progress"><strong>${progress}</strong> <span>${row.totalChapters ? 'nga ' + row.totalChapters + (row.publicationStatus === 'RELEASING' ? ' publikuar' : ' kapituj') : 'kapituj të lexuar'}</span></div>${row.totalChapters ? '' : '<p class="reading-total-pending">Totali ende i pakonfirmuar</p>'}<div class="reading-card-actions">${button('detail', 'Detaje', row.id)}${button('next', 'Vazhdo', row.id, 'primary', nextChapter(tracked) ? '' : 'disabled')}</div>` : `<p>${esc(row.recommendationReason || row.genres || 'Zbulo historinë')}</p><p class="reading-catalog-chapters">${row.totalChapters ? row.totalChapters + ' kapituj · ' + esc(row.chapterSource || 'Katalogu') : 'Kapitujt kontrollohen te Detajet'}</p>${button('add', '+ Në listën time', row.id, 'primary')}`}${sourceAction(row)}</div></article>`;
   }
   function stats() {
     const all = scopedRows(),
@@ -479,9 +479,9 @@ export function createReading(ctx) {
         '',
       )}</select></label><label class="reading-field">Viti<input type="number" name="year" min="1900" max="2200" value="${row?.year || ''}"></label><label class="reading-field reading-wide">Kopertina (HTTPS)<input type="url" name="cover" pattern="https://.*" maxlength="2000" value="${esc(row?.cover || '')}"></label><label class="reading-field reading-wide">Ndarja e vëllimeve<input name="volumeRanges" maxlength="10000" placeholder="1:1-10, 2:11-20" value="${esc((row?.volumeRanges || []).map((v) => `${v.volume}:${v.start}-${v.end}`).join(', '))}"><small>Vëllimi:kapitulli i parë-kapitulli i fundit. P.sh. 1:1-10, 2:11-20.</small></label><label class="reading-field reading-wide">Zhanret<input name="genres" maxlength="180" value="${esc(row?.genres || '')}"></label></div><div class="reading-detail-actions"><button type="submit" class="primary">Ruaj titullin</button>${row ? button('delete', 'Hiq nga leximet e mia', row.id, 'reading-delete') : ''}</div></form>`;
   }
-  function render(force = true) {
+  function render(force = true, prepare = false) {
     resetOwner();
-    if (!root || !active) return;
+    if (!root || (!active && !prepare)) return;
     if (
       !force &&
       root.contains(document.activeElement) &&
@@ -1460,5 +1460,13 @@ export function createReading(ctx) {
     root?.classList.add('hidden');
     document.body.classList.remove('reading-active');
   }
-  return { mount, open, hide, render, switchTab, refreshBackground: workspace.refreshBackground };
+  return {
+    mount,
+    open,
+    hide,
+    render,
+    prepare: () => render(false, true),
+    switchTab,
+    refreshBackground: workspace.refreshBackground,
+  };
 }

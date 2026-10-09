@@ -1,6 +1,8 @@
 import { expect, test } from 'vitest';
 import {
   watchProvider,
+  watchProviders,
+  watchSearchURL,
   episodeWatchURL,
   watchEpisodeTarget,
   watchLinkPlan,
@@ -136,4 +138,116 @@ test('CineHD can reuse one supplied series URL across seasons while an episode l
   expect(
     watchLinkPlan(anime, { format: 'TV' }, 1, 'https://anisuge.org/watch/fixture/ep-1').error,
   ).toContain('CineHD');
+});
+
+test('new providers are scoped to anime or live movies and series without changing existing defaults', () => {
+  expect(watchProviders({ source: 'AniList' }).map((p) => p.name)).toEqual([
+    'Anisuge',
+    'Way2Movies',
+  ]);
+  expect(watchProviders({ source: 'Cinemeta', format: 'MOVIE' }).map((p) => p.name)).toEqual([
+    'CineHD',
+    'Atlantic',
+  ]);
+  expect(watchProviders({ source: 'TVMaze' }).map((p) => p.name)).toEqual(['CineHD', 'Atlantic']);
+});
+
+test('new provider episode links survive export and reload without guessed episode paths', () => {
+  const a = { source: 'AniList', title: 'Example' },
+    s = { format: 'TV' };
+  const value = 'https://beta.way2movies.live/watch/example?episode=5#player';
+  expect(watchLinkPlan(a, s, 5, value)).toEqual({ scope: 'episode', url: value });
+  const model = createLibraryModel();
+  const restored = model.normalized(
+    JSON.parse(
+      JSON.stringify(
+        model.normalized({
+          id: 'example',
+          ...a,
+          seasons: [{ id: 's', total: 6, episodes: [{ number: 5, watchUrl: value }] }],
+        }),
+      ),
+    ),
+  );
+  expect(watchEpisodeTarget(a, s, 5, restored.seasons[0].episodes[0])).toBe(value);
+  expect(watchEpisodeTarget(a, s, 6, {})).toBe('');
+  expect(
+    watchLinkPlan({ source: 'Cinemeta' }, { format: 'MOVIE' }, 1, 'https://atlantic.st/watch/film'),
+  ).toEqual({ scope: 'episode', url: 'https://atlantic.st/watch/film' });
+  expect(watchLinkPlan({ source: 'TVMaze' }, s, 5, value)).toHaveProperty('error');
+});
+
+test('new providers reject lookalikes and credentials and searches identify their target episode', () => {
+  for (const value of [
+    'https://atlantic.st.evil.test/watch',
+    'https://beta.way2movies.live.evil.test/watch',
+    'https://user:pass@atlantic.st/watch',
+    'https://atlantic.st:444/watch',
+    'javascript:alert(1)',
+  ])
+    expect(episodeWatchURL(value)).toBe('');
+  const provider = watchProviders({ source: 'AniList' })[1];
+  const url = new URL(
+    watchSearchURL(provider, { title: 'Black Clover & Friends' }, { title: 'Season 2' }, 3),
+  );
+  expect(url.origin).toBe('https://www.google.com');
+  expect(url.searchParams.get('q')).toBe(
+    'site:beta.way2movies.live Black Clover & Friends Season 2 episode 3',
+  );
+  expect(
+    new URL(
+      watchSearchURL(
+        watchProviders({ source: 'Cinemeta' })[1],
+        { title: 'Film' },
+        { format: 'MOVIE' },
+        1,
+      ),
+    ).searchParams.get('q'),
+  ).not.toContain('episode');
+});
+
+test('a supplied Way2Movies episode maps its season and episode offset while preserving the title identifier and server', () => {
+  const anime = { source: 'AniList' },
+    season = { format: 'TV' };
+  const url = 'https://beta.way2movies.live/watch/tv/fixture_640-token/1/1?server=53';
+  const plan = watchLinkPlan(anime, season, 1, url);
+  expect(plan).toEqual({ scope: 'season', url, offset: 0 });
+  expect(
+    watchEpisodeTarget(anime, { ...season, watchUrl: url, watchEpisodeOffset: plan.offset }, 2, {}),
+  ).toBe(url.replace('/1/1?', '/1/2?'));
+  const offset = watchLinkPlan(anime, season, 4, url.replace('/1/1?', '/1/1170?'));
+  expect(offset.offset).toBe(1166);
+  expect(
+    watchEpisodeTarget(
+      anime,
+      { ...season, watchUrl: offset.url, watchEpisodeOffset: offset.offset },
+      5,
+      {},
+    ),
+  ).toBe(url.replace('/1/1?', '/1/1171?'));
+  const model = createLibraryModel();
+  const stored = model.normalized(
+    JSON.parse(
+      JSON.stringify(
+        model.normalized({
+          id: 'a',
+          title: 'Anime',
+          ...anime,
+          seasons: [{ id: 's', total: 12, ...season, watchUrl: url, watchEpisodeOffset: 0 }],
+        }),
+      ),
+    ),
+  );
+  expect(watchEpisodeTarget(stored, stored.seasons[0], 3, {})).toBe(url.replace('/1/1?', '/1/3?'));
+  expect(
+    watchEpisodeTarget(
+      anime,
+      { ...season, watchUrl: 'https://atlantic.st/watch/tv/fixture/1/1' },
+      2,
+      {},
+    ),
+  ).toBe('');
+  expect(
+    watchLinkPlan(anime, season, 1, 'https://beta.way2movies.live/watch/tv/fixture/1/0').scope,
+  ).toBe('episode');
 });

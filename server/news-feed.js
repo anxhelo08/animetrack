@@ -3,8 +3,8 @@ import { XMLParser, XMLValidator } from 'fast-xml-parser';
 import { newsImageEndpoint } from './news-photo.js';
 
 export const NEWS_FEEDS = [
-  { url: 'https://www.animenewsnetwork.com/news/rss.xml', source: 'Anime News Network' },
   { url: 'https://www.crunchyroll.com/news/rss', source: 'Crunchyroll News' },
+  { url: 'https://www.animenewsnetwork.com/news/rss.xml', source: 'Anime News Network' },
 ];
 export const NEWS_PLACEHOLDER = '/news-placeholder.svg';
 const publisherHosts = new Set(
@@ -59,7 +59,10 @@ function category(item, title) {
     return 'Releases';
   return 'General';
 }
-export function parseNewsFeed(xml, feed = NEWS_FEEDS[0]) {
+export function parseNewsFeed(
+  xml,
+  feed = NEWS_FEEDS.find((feed) => feed.source === 'Anime News Network'),
+) {
   if (
     typeof xml !== 'string' ||
     /<!DOCTYPE|<!ENTITY/i.test(xml) ||
