@@ -1,3 +1,4 @@
+import { accountDeadline, accountSession } from './core/account-startup.js';
 import { matchesLibraryQuery, titleCatalogLinks } from './core/library-discovery.js';
 import { createDecisionDialog } from './modules/decision-dialog.js';
 import { createLibraryList } from './core/library-list.js';
@@ -1330,7 +1331,7 @@ function accountRefreshViews(preserveReading=false){if(preserveReading&&view==='
 
 async function accountClock(client,key){
  const start=performance.now();
- try{const {data,error}=await client.rpc('animetrack_server_time');if(!error&&syncClock.observe(data,start))localStorage.setItem(key+'_server_offset_1426',String(syncClock.offset()))}catch(err){console.warn('Server clock calibration unavailable',err)}
+ try{const {data,error}=await accountDeadline(client.rpc('animetrack_server_time'));if(!error&&syncClock.observe(data,start))localStorage.setItem(key+'_server_offset_1426',String(syncClock.offset()))}catch(err){console.warn('Server clock calibration unavailable',err)}
 }
 async function accountOpenCloud(user){
  if(!user?.id)throw Error('Nuk u verifikua llogaria.');
@@ -1345,7 +1346,7 @@ async function accountOpenCloud(user){
  if(journal?.invalid)throw Error('Kopja lokale e sinkronizimit ka problem. Eksporto kopje rezervë; cloud nuk e zëvendëson automatikisht.');
  if(journal&&!cached)throw Error('Ka shënim për ndryshime lokale, por kopja lokale nuk mund të lexohet. Mos i zëvendëso të dhënat pa kopje rezervë.');
  let data=null,readError=null;
- try{const response=await client.from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle();if(response.error)throw response.error;data=response.data}
+ try{const response=await accountDeadline(client.from('anime_libraries').select('payload,updated_at').eq('user_id',uid).maybeSingle());if(response.error)throw response.error;data=response.data}
  catch(error){readError=error;if(!cached)throw Error('Leximi nga databaza dështoi dhe nuk ka kopje lokale për këtë llogari: '+error.message)}
  if(data?.payload)try{if(data.payload.syncSchema!=='14.26.0')await libraryRepository.backup(key+'_before_sync_1426',JSON.stringify(data.payload));migrateSyncLibrary(data.payload,localStorage,key)}catch(error){if(!cached)throw error;readError=error;data=null;console.warn('Invalid cloud library retained local copy',error)}
  document.body.classList.remove('auth-required');
@@ -1604,7 +1605,7 @@ async function accountDelete(){
  }catch(e){accountStatus('Fshirja nuk u përfundua: '+e.message,'error');if(accountUser?.id===owner)accountStartRealtime(owner)}finally{accountBusy=false;$('account-delete-password').value=''}
 }
 
-async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=recovery\b/.test(location.hash)||/\btype=recovery\b/.test(location.search);try{const c=accountGetConfig();if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await client.auth.getSession();if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user);authReturn=accountAuthReturnNotice()}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.body.classList.remove('account-booting','welcome-preview');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};if(authReturn||recoveryReturn){render();renderHome();accountToggle(true)}else $('welcome-page').hidden=false;}accountUI();releaseExperience?.ready();if(recoveryReturn&&accountMode==='cloud'){$('at1162-recovery-panel').hidden=false;accountToggle(true);accountStatus('Vendos një fjalëkalim të ri për llogarinë tënde.','ok')}else if(authReturn){if(accountMode==='cloud')notify(authReturn.kind==='error'?'Llogaria është aktive. Mund të vazhdosh; linku i vjetër nuk është më i nevojshëm.':authReturn.message);else accountStatus(authReturn.message,authReturn.kind)}}}
+async function accountBoot(){let authReturn=null;const recoveryReturn=/\btype=recovery\b/.test(location.hash)||/\btype=recovery\b/.test(location.search);try{const c=accountGetConfig();if(c.url&&c.key&&window.supabase?.createClient){const client=accountInitClient();const {data,error}=await accountSession(client);if(error)throw error;if(data?.session?.user)await accountOpenCloud(data.session.user);authReturn=accountAuthReturnNotice()}}catch(e){KEY=GUEST_KEY;accountMode='guest';accountUser=null;state=load();render();renderHome();accountStatus('Llogaria online nuk u hap: '+e.message+' · Biblioteka lokale mbetet e sigurt.','error')}finally{document.dispatchEvent(new Event('at-account-ready'));document.body.classList.remove('account-booting','welcome-preview');if(accountMode!=='cloud'){document.body.classList.add('auth-required');state={anime:[],tvShows:[],history:[],preferences:{weeklyGoal:10,notificationRead:[]}};if(authReturn||recoveryReturn){render();renderHome();accountToggle(true)}else $('welcome-page').hidden=false;}accountUI();releaseExperience?.ready();if(recoveryReturn&&accountMode==='cloud'){$('at1162-recovery-panel').hidden=false;accountToggle(true);accountStatus('Vendos një fjalëkalim të ri për llogarinë tënde.','ok')}else if(authReturn){if(accountMode==='cloud')notify(authReturn.kind==='error'?'Llogaria është aktive. Mund të vazhdosh; linku i vjetër nuk është më i nevojshëm.':authReturn.message);else accountStatus(authReturn.message,authReturn.kind)}}}
 $('at1162-save-password').addEventListener('click',accountSaveRecoveredPassword);
 mountWelcomeCarousel($('welcome-page'));
 mountWelcomeArtwork($('welcome-page'));

@@ -6,11 +6,16 @@
     if (!document.body.classList.contains('account-booting')) return;
     document.body.classList.remove('welcome-preview');
     document.getElementById('welcome-page').hidden = true;
-    message.textContent = 'Pamja nuk u ngarkua. Kontrollo lidhjen dhe provo përsëri.';
+    message.textContent = document.querySelector('.app')?.hidden
+      ? 'Pamja nuk u ngarkua. Kontrollo lidhjen dhe provo përsëri.'
+      : 'Llogaria po vonohet. Kontrollo lidhjen dhe provo përsëri. Të dhënat e ruajtura mbeten të sigurta.';
     retry.hidden = false;
   };
-  const watchdog = setTimeout(() => { if (document.querySelector('.app')?.hidden) failed(); }, 10000);
-  document.addEventListener('at-startup-ready', () => clearTimeout(watchdog), {once: true});
+  const watchdog = setTimeout(failed, 10000);
+  document.addEventListener('at-account-ready', () => clearTimeout(watchdog), {once: true});
+  document.addEventListener('at-startup-ready', () => {
+    if (!document.body.classList.contains('account-booting')) clearTimeout(watchdog);
+  }, {once: true});
   retry.addEventListener('click', () => location.reload());
   document.addEventListener('at-startup-error', failed);
   window.addEventListener('error', event => {
