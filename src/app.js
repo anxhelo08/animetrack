@@ -619,11 +619,17 @@ async function addCatalogItem(key,status){
  try{
   const already=inLibrary(item);
   if(already){const id=isFranchiseFormat(item.format)?(await hydrateSeasons(already.id,true)||already.id):already.id;if(!current())return null;return status==='completed'?completeCatalogEntry(id):id}
-  let remote=[];
+  let remote=[],seasonCheckFailed=false;
   const plannedStandalone=status==='planning'&&item.source==='AniList'&&item.releaseStatus==='NOT_YET_RELEASED'&&Array.isArray(item.catalogRelations)&&!item.catalogRelations.some(edge=>['PREQUEL','SEQUEL'].includes(edge.relationType));
   if(item.source&&isFranchiseFormat(item.format)&&!plannedStandalone){
    try{remote=item.source==='AniList'?await anilistSeasons(item.sourceId,item.format):await jikanSeasons(item.sourceId,item.format)}
-   catch(err){console.warn('Could not safely verify this series',err);notify('S’u verifikuan sezonet online. Provo përsëri që të shmangim një kopje të dyfishtë.');return null}
+   catch(err){console.warn('Season verification unavailable; using catalog metadata',err);seasonCheckFailed=true;
+    const family=catalogGrouped(catalogItems).find(group=>group.catalogParts?.some(part=>part.key===key));
+    remote=(family?.catalogParts||[item]).map(part=>normSeason({...part,id:part.key,subtitle:part.title,communityScore:part.score,communitySource:part.source}));
+    // Official relation IDs can identify a saved part even when it is absent from search results.
+    const relations=(item.catalogRelations||[]).filter(edge=>['PREQUEL','SEQUEL'].includes(edge.relationType)&&edge.type==='ANIME');
+    for(const a of state.anime)for(const season of a.seasons||[])if(relations.some(edge=>(season.source==='AniList'&&String(edge.id||'')===season.sourceId)||(edge.idMal&&String(edge.idMal)===season.malId)))remote.push(season);
+   }
   }
   // The source could have loaded into the library while the network request was in flight.
   if(!current())return null;
@@ -632,6 +638,7 @@ async function addCatalogItem(key,status){
   const transactionBefore=JSON.parse(JSON.stringify(state));
   if(existing){
    const keeper=reconcileSeriesLibrary(existing,remote);
+   if(seasonCheckFailed){keeper.hydrated=false;keeper.franchiseVersion=0}
    if(status==='completed')markCatalogComplete(keeper);
    repairProviderDuplicates(true);
    if(!save()){state=transactionBefore;return null}render();renderHome();renderCatalog();if(typeof v8RenderSeasonal==='function')v8RenderSeasonal();
@@ -641,10 +648,11 @@ async function addCatalogItem(key,status){
   const anime=normalized({id:uuid(),title:item.title,aliases:item.aliases||[],total:item.total,watched:[],status,year:item.year,genre:item.genre,cover:item.cover,backdrop:item.backdrop,trailer:item.trailer,source:item.source,communityScore:item.score,communitySource:item.source,sourceId:item.sourceId,malId:item.malId,format:item.format,releaseStart:item.releaseStart,releaseStatus:item.releaseStatus,nextAiringEpisode:item.nextAiringEpisode,nextAiringAt:item.nextAiringAt,sourceUrl:item.sourceUrl,synopsis:item.synopsis,createdAt:now(),updatedAt:now()});
   state.anime.unshift(anime);
   const added=remote.length?reconcileSeriesLibrary(anime,remote):anime;
+  if(seasonCheckFailed){added.hydrated=false;added.franchiseVersion=0}
   if(status==='completed')markCatalogComplete(added);
   repairProviderDuplicates(true);
   upcomingCheckedAt=0;catalogSyncAt=0;persistCache();if(!save()){state=transactionBefore;return null}render();renderHome();renderCatalog();if(typeof v8RenderSeasonal==='function')v8RenderSeasonal();
-  const stored=libraryEntry137(added.id)||added;notify('“'+stored.title+'” u shtua me '+stored.seasons.length+' pjesë ✓');void refreshUpcoming();
+  const stored=libraryEntry137(added.id)||added;notify('“'+stored.title+'” u shtua me '+stored.seasons.length+' pjesë ✓'+(seasonCheckFailed?' · Kontrolli online i sezoneve do të provohet përsëri.':''));void refreshUpcoming();
   return stored.id;
  }finally{addingCatalogKeys.delete(key)}
 }

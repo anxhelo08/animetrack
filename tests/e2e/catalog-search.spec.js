@@ -383,3 +383,146 @@ test('a standalone anime announced for 2027 can be planned without waiting for e
   expect(added.seasons[0].releaseStatus).toBe('NOT_YET_RELEASED');
   expect(detailRequests === 0 || savedBeforeMetadata).toBe(true);
 });
+
+test('adds Platinum End when season verification fails and preserves saved progress on retry', async ({
+  page,
+}, info) => {
+  await ready(page);
+  const before = await page.evaluate(() => structuredClone(window.ATMobile113.state().anime));
+  const platinum = { ...media(127401, 'Platinum End', 2021), idMal: 44961, episodes: 24 };
+  await page.route('https://graphql.anilist.co', (route) => {
+    const body = route.request().postDataJSON();
+    return body.variables?.search
+      ? route.fulfill({
+          json: { data: { Page: { media: [platinum], pageInfo: { hasNextPage: false } } } },
+        })
+      : route.fulfill({ status: 503, json: { errors: [{ message: 'Unavailable' }] } });
+  });
+  await page.route('**/api.jikan.moe/**', (route) => route.fulfill({ status: 503, json: {} }));
+  await browse(page, info);
+  await page.locator('#global-search').fill('Platinum End');
+  const add = page.locator(
+    '#catalog-grid [data-catalog-add="al-127401"][data-catalog-status="watching"]',
+  );
+  await expect(add).toBeVisible();
+  await add.click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.ATMobile113.state().anime.filter((a) => a.malId === '44961').length,
+      ),
+    )
+    .toBe(1);
+  const saved = await page.evaluate(() =>
+    window.ATMobile113.state().anime.find((a) => a.malId === '44961'),
+  );
+  expect(saved.seasons[0].total).toBe(24);
+  expect(saved.hydrated).toBe(false);
+  expect(saved.seasons[0].watched).toEqual([]);
+  expect(
+    await page.evaluate(() => window.ATMobile113.state().anime.filter((a) => a.malId !== '44961')),
+  ).toEqual(before);
+  if (!(await page.locator('#detail-modal').isVisible()))
+    await page.locator('#catalog-grid [data-detail]').click();
+  await page
+    .locator(
+      info.project.name.startsWith('iphone')
+        ? '[data-mobile-detail-tab="episodes"]'
+        : '[data-detail-section="episodes"]',
+    )
+    .click();
+  await page.locator('[data-season-ep][data-ep="1"]').click();
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.ATMobile113.state().anime.find((a) => a.malId === '44961').seasons[0].watched,
+      ),
+    )
+    .toEqual([1]);
+  await page.keyboard.press('Escape');
+  await page.locator('#global-search').fill('Platinum');
+  await expect(page.locator('#catalog-grid [data-detail]')).toBeVisible();
+  expect(await page.locator('#catalog-grid [data-catalog-add]').count()).toBe(0);
+  expect(
+    await page.evaluate(
+      () => window.ATMobile113.state().anime.filter((a) => a.malId === '44961').length,
+    ),
+  ).toBe(1);
+});
+
+test('offline season fallback uses official relation IDs to preserve an existing library card', async ({
+  page,
+}, info) => {
+  await ready(page);
+  const before = await page.evaluate(() => structuredClone(window.ATMobile113.state().anime));
+  const savedPart = before.find((a) => a.source === 'AniList');
+  expect(savedPart).toBeTruthy();
+  const sequel = media(127402, 'A different sequel title', 2025);
+  sequel.relations.edges = [
+    {
+      relationType: 'PREQUEL',
+      node: {
+        id: Number(savedPart.sourceId),
+        idMal: Number(savedPart.malId),
+        type: 'ANIME',
+        format: 'TV',
+      },
+    },
+  ];
+  await page.route('https://graphql.anilist.co', (route) =>
+    route.request().postDataJSON().variables?.search
+      ? route.fulfill({
+          json: { data: { Page: { media: [sequel], pageInfo: { hasNextPage: false } } } },
+        })
+      : route.fulfill({ status: 503, json: {} }),
+  );
+  await browse(page, info);
+  await page.locator('#global-search').fill(sequel.title.romaji);
+  await page.locator('#catalog-grid [data-preview="al-127402"]').first().click();
+  await page.locator('[data-preview-add="al-127402"][data-preview-status="watching"]').click();
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        window.ATMobile113.state().anime.some((a) =>
+          a.seasons.some((s) => s.sourceId === '127402'),
+        ),
+      ),
+    )
+    .toBe(true);
+  const after = await page.evaluate(() => structuredClone(window.ATMobile113.state().anime));
+  expect(after).toHaveLength(before.length);
+  const keeper = after.find((a) => a.id === savedPart.id);
+  for (const old of savedPart.seasons) {
+    const part = keeper.seasons.find((s) => s.id === old.id);
+    expect(part.watched).toEqual(old.watched);
+    expect(part.watchedAt).toEqual(old.watchedAt);
+  }
+  expect(keeper.notes).toBe(savedPart.notes);
+  expect(keeper.hydrated).toBe(false);
+});
+
+test('offline add rolls back when the local recovery copy cannot be saved', async ({
+  page,
+}, info) => {
+  await ready(page);
+  const before = await page.evaluate(() => structuredClone(window.ATMobile113.state().anime));
+  const platinum = media(127401, 'Platinum End', 2021);
+  await page.route('https://graphql.anilist.co', (route) =>
+    route.request().postDataJSON().variables?.search
+      ? route.fulfill({
+          json: { data: { Page: { media: [platinum], pageInfo: { hasNextPage: false } } } },
+        })
+      : route.fulfill({ status: 503, json: {} }),
+  );
+  await browse(page, info);
+  await page.locator('#global-search').fill('Platinum End');
+  await expect(page.locator('#catalog-grid [data-catalog-add="al-127401"]').first()).toBeVisible();
+  await page.evaluate(() => {
+    window.ATStorage1274.save = () => ({ ok: false });
+  });
+  await page
+    .locator('#catalog-grid [data-catalog-add="al-127401"][data-catalog-status="watching"]')
+    .click();
+  await expect(page.locator('#toast')).toContainText('nuk u ruajt');
+  expect(await page.evaluate(() => window.ATMobile113.state().anime)).toEqual(before);
+});
