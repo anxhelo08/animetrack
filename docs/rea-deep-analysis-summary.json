@@ -1,0 +1,252 @@
+{
+  "engine": "rea-agents 6.7.0 static analysis library",
+  "mode": "in-process fallback after CLI worker startup failure",
+  "canonicalEvidence": false,
+  "execution": "inert text only",
+  "files": [
+    {
+      "file": "src/main.js",
+      "bytes": 1929,
+      "lines": 43,
+      "sha256": "e864af6b54216eb9fac597fe69a4b8fb37daffa429abc3a0fa0c88f8d68596ea",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 250,
+      "references": 12,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/app.js",
+      "bytes": 312087,
+      "lines": 2221,
+      "sha256": "8d495caf07ce7586a11fa179c21bc385dd0ab1a48f4dbc772fe96d5e20ae0537",
+      "parse_status": "partial",
+      "parse_errors": 0,
+      "visited_ast_nodes": 58437,
+      "references": 39,
+      "network_observations": 15,
+      "storage_observations": 25,
+      "limitations": [
+        "One or more static keys, expressions, or Electron boundary values were dynamic and remain unknown.",
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/modules/features.js",
+      "bytes": 32876,
+      "lines": 327,
+      "sha256": "08447e90fd318560af9f02128ad2bc5b38025de2b7cd4136e2c93da1f5e45b8e",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 5337,
+      "references": 14,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/modules/connected-features.js",
+      "bytes": 29748,
+      "lines": 836,
+      "sha256": "e8bcc0fa4bb3d38d75e1c02d935a52972369baca9aac734f4d93956961ce48dc",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 3512,
+      "references": 2,
+      "network_observations": 1,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/core/connected-library.js",
+      "bytes": 7296,
+      "lines": 193,
+      "sha256": "f21471f15a9930084b48702bab624d9a120c8db3f81268ea3fcc4f55dd35bc7e",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 1449,
+      "references": 1,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/core/indexed-library.js",
+      "bytes": 16594,
+      "lines": 500,
+      "sha256": "e6987baf63287a6fa83f714d3089467be6252bb91d633dda01b00513459f8e64",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 2630,
+      "references": 3,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/modules/reading.js",
+      "bytes": 73292,
+      "lines": 1473,
+      "sha256": "d2354fb164144fa43c48b9b1335e569f6ccf13a81955ada3ff1e61c4fd8910d3",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 9472,
+      "references": 11,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/modules/reading-workspace.js",
+      "bytes": 17895,
+      "lines": 399,
+      "sha256": "ad50df0ee01285418077ab5378c987ddee18643f9d57f96c0d2991b1643bc1b5",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 2535,
+      "references": 4,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/modules/watch.js",
+      "bytes": 19198,
+      "lines": 167,
+      "sha256": "0938d70be4065276e71368a05fb58cb6df435d4a07d57ff060762e8fe133247b",
+      "parse_status": "partial",
+      "parse_errors": 0,
+      "visited_ast_nodes": 3623,
+      "references": 0,
+      "network_observations": 2,
+      "storage_observations": 4,
+      "limitations": [
+        "One or more static keys, expressions, or Electron boundary values were dynamic and remain unknown.",
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/modules/safe-html.js",
+      "bytes": 3496,
+      "lines": 104,
+      "sha256": "f070ed3d15fcee3af45d519133dfadc65e4ee279a868eb13d36763c01517a1ee",
+      "parse_status": "partial",
+      "parse_errors": 0,
+      "visited_ast_nodes": 534,
+      "references": 1,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "One or more static keys, expressions, or Electron boundary values were dynamic and remain unknown.",
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/core/library-schema.js",
+      "bytes": 6954,
+      "lines": 172,
+      "sha256": "0ad3d88177dd2dfc7f55b250fe09debff56a7e9938fa5779fcdc6a04350d8b04",
+      "parse_status": "partial",
+      "parse_errors": 0,
+      "visited_ast_nodes": 1332,
+      "references": 0,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "One or more static keys, expressions, or Electron boundary values were dynamic and remain unknown.",
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/core/sync-tombstones.js",
+      "bytes": 3144,
+      "lines": 90,
+      "sha256": "a3865d52ace32da320bd38624de94c1d559cbe26cb498add6f2b246118411852",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 572,
+      "references": 1,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "supabase/functions/anime-connected/handler.js",
+      "bytes": 16812,
+      "lines": 445,
+      "sha256": "c0187117b31d72aa50b6647ba7eaa15ee8b74b4ffc3670d0f712f03297efb754",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 2346,
+      "references": 2,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "supabase/functions/anime-account/handler.js",
+      "bytes": 13273,
+      "lines": 305,
+      "sha256": "f6584648b474dbfbf07fef1391fa18c28dfd78ca6b8e262989791d10dfb04db5",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 1722,
+      "references": 1,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "supabase/functions/anime-connected/trakt.js",
+      "bytes": 14664,
+      "lines": 374,
+      "sha256": "44d752b40187f99157c0d2cd44f97ed64a51fbc101a119375d017e7b11f12075",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 2341,
+      "references": 1,
+      "network_observations": 3,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    },
+    {
+      "file": "src/core/library-model.js",
+      "bytes": 30675,
+      "lines": 803,
+      "sha256": "77e571b30d2304b4e6209a067fdd9300070a22e97777502edd413dd26a6c695c",
+      "parse_status": "complete",
+      "parse_errors": 0,
+      "visited_ast_nodes": 5740,
+      "references": 2,
+      "network_observations": 0,
+      "storage_observations": 0,
+      "limitations": [
+        "JavaScript syntax was parsed as data and was never evaluated."
+      ]
+    }
+  ]
+}

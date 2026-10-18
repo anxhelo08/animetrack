@@ -75,6 +75,11 @@ export function parseTrakt(input) {
         imdbId: /^tt\d+$/.test(ids.imdb || '') ? ids.imdb : '',
         tmdbId: ids.tmdb ? String(ids.tmdb) : '',
         movie: !!r.movie,
+        traktId: Number.isSafeInteger(ids.trakt) && ids.trakt > 0 ? ids.trakt : null,
+        traktEpisodeId:
+          Number.isSafeInteger(r.episode?.ids?.trakt) && r.episode.ids.trakt > 0
+            ? r.episode.ids.trakt
+            : null,
         episode: Number.isInteger(r.episode?.number) && r.episode.number > 0 ? r.episode.number : 0,
         season: Number.isInteger(r.episode?.season) && r.episode.season >= 0 ? r.episode.season : 0,
         at: Number.isFinite(Date.parse(stamp)) ? new Date(stamp).toISOString() : '',
@@ -137,6 +142,16 @@ export function applyTraktRows(state, entries, selections, stamp) {
           diaryRating: row.rating,
         });
       }
+    }
+    if (row.traktId && !anime.traktId) anime.traktId = row.traktId;
+    if (row.traktEpisodeId && n && !row.movie) {
+      part.episodes ||= [];
+      let ep = part.episodes.find((e) => e.number === n);
+      if (!ep) {
+        ep = { number: n };
+        part.episodes.push(ep);
+      }
+      if (!ep.traktId) ep.traktId = row.traktEpisodeId;
     }
     if (row.rating && n && !row.movie) {
       part.episodes ||= [];

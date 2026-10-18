@@ -5,6 +5,9 @@ const uid = '11111111-1111-4111-8111-111111111111',
   listId = '33333333-3333-4333-8333-333333333333';
 function fixture() {
   const tables = {
+    anime_list_votes: [],
+    anime_trakt_connections: [],
+    anime_trakt_plans: [],
     anime_shared_lists: [{ id: listId, owner_id: uid, title: 'List', items: [], revision: 1 }],
     anime_list_members: [],
     anime_feature_records: [],
@@ -58,8 +61,9 @@ function fixture() {
           payload = v;
           return q;
         },
-        upsert(v) {
-          op = 'insert';
+        upsert(v, options) {
+          op = 'upsert';
+          q.conflict = options?.onConflict;
           payload = v;
           return q;
         },
@@ -74,6 +78,17 @@ function fixture() {
         },
         then(resolve) {
           let rows = tables[name].filter((r) => filters.every((f) => f(r)));
+          if (op === 'upsert') {
+            const keys = (q.conflict || 'id').split(',');
+            const existing = tables[name].find((r) => keys.every((k) => r[k] === payload[k]));
+            if (existing) {
+              Object.assign(existing, payload);
+              rows = [existing];
+            } else {
+              tables[name].push(payload);
+              rows = [payload];
+            }
+          }
           if (op === 'insert') {
             const row = { id: crypto.randomUUID(), revision: 1, ...payload };
             tables[name].push(row);
@@ -189,4 +204,37 @@ it('calendar subscription stores only a hash and revocation makes the link unava
   expect((await f.handler(new Request(created.url))).status).toBe(200);
   await f.send({ action: 'feed-delete', id: created.id });
   expect((await f.handler(new Request(created.url))).status).toBe(404);
+});
+
+it('one vote per member changes choice without duplication and revoked editors cannot vote', async () => {
+  const f = fixture();
+  const first = { key: 'AniList:1', title: 'First', source: 'AniList', sourceId: '1' },
+    second = { key: 'AniList:2', title: 'Second', source: 'AniList', sourceId: '2' };
+  f.tables.anime_shared_lists[0].items = [first, second];
+  f.tables.anime_list_members.push({ list_id: listId, user_id: other, handle: 'friend' });
+  f.user(other);
+  expect((await f.send({ action: 'list-vote', id: listId, itemKey: first.key })).status).toBe(200);
+  expect((await f.send({ action: 'list-vote', id: listId, itemKey: second.key })).status).toBe(200);
+  expect(f.tables.anime_list_votes).toHaveLength(1);
+  const state = await (await f.send({ action: 'state' })).json();
+  expect(state.lists[0].votes).toEqual({ 'AniList:1': 0, 'AniList:2': 1 });
+  expect(state.lists[0].myVote).toBe(second.key);
+  expect((await f.send({ action: 'list-vote', id: listId, itemKey: 'other:999' })).status).toBe(
+    400,
+  );
+  f.user(uid);
+  expect((await f.send({ action: 'list-remove-member', id: listId, userId: other })).status).toBe(
+    200,
+  );
+  expect(f.tables.anime_list_votes).toHaveLength(0);
+  f.user(other);
+  expect((await f.send({ action: 'list-vote', id: listId, itemKey: first.key })).status).toBe(403);
+});
+
+it('stale votes from removed members never affect displayed results', async () => {
+  const f = fixture();
+  f.tables.anime_shared_lists[0].items = [{ key: 'AniList:1', title: 'First' }];
+  f.tables.anime_list_votes.push({ list_id: listId, user_id: other, item_key: 'AniList:1' });
+  const state = await (await f.send({ action: 'state' })).json();
+  expect(state.lists[0].votes['AniList:1']).toBe(0);
 });

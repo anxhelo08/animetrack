@@ -1,4 +1,6 @@
-# Release validation — 2026-10-18
+# Initial release validation — 2026-10-18
+
+Historical validation of commit `44a5323`. For the subsequent voting/Trakt release and deeper analysis, see `analize-e-thelluar-2026-10-18.md`.
 
 - Required typecheck, ESLint, format check, `npm test` and production build passed. Vitest: 95 files, 652 tests.
 - Backend behavior covers bearer/session enforcement, cross-account denial, owner/editor permissions, stale revisions, sanitized list items, hashed calendar capabilities and revocation.

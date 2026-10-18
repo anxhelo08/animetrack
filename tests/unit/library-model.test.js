@@ -179,3 +179,19 @@ test('a saved incorrect watched total cannot unlock a confirmed future episode',
   expect(model.releasedCount(season)).toBe(2);
   expect(season.watched).toHaveLength(12);
 });
+
+test('optional Trakt identities survive repeated normalization without adding fields to old libraries', () => {
+  const raw = series();
+  const original = model.normalized(raw);
+  expect(original).not.toHaveProperty('traktId');
+  raw.traktId = 123;
+  raw.seasons[0].episodes = [{ number: 1, traktId: 77, myNote: 'keep' }];
+  const value = model.normalized(model.normalized(raw));
+  expect(value.traktId).toBe(123);
+  expect(value.seasons[0].episodes[0]).toMatchObject({ traktId: 77, myNote: 'keep' });
+  raw.traktId = -1;
+  raw.seasons[0].episodes[0].traktId = 'unsafe';
+  const invalid = model.normalized(raw);
+  expect(invalid).not.toHaveProperty('traktId');
+  expect(invalid.seasons[0].episodes[0]).not.toHaveProperty('traktId');
+});

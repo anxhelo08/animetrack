@@ -520,3 +520,19 @@ body.at-ios-enabled .product-tools .nav-label {
   margin: 0;
   min-width: 0;
 }
+
+.connected-section {
+  border-bottom: 1px solid var(--border);
+  padding-block: 12px;
+}
+.connected-section > summary {
+  min-height: 44px;
+  display: list-item;
+  align-content: center;
+  cursor: pointer;
+  font-weight: 650;
+}
+.connected-section > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}

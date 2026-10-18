@@ -1,3 +1,4 @@
+import { createTraktService } from './trakt.js';
 import {
   calendarICS,
   feedEvents,
@@ -20,6 +21,7 @@ export function createConnectedHandler({
     if (r.error) throw Error('Ruajtja nuk u krye.');
     return r.data;
   };
+  const trakt = createTraktService({ admin, storage, fetchImpl, env, now });
   return async (request) => {
     const origin = request.headers.get('origin'),
       allowed =
@@ -95,6 +97,8 @@ export function createConnectedHandler({
       if (!input || typeof input !== 'object' || Array.isArray(input))
         return reply({ error: 'Invalid input' }, 400);
       const action = input.action;
+      if (action.startsWith('trakt-') && action !== 'trakt-page')
+        return reply(await trakt.action(uid, input));
       if (action === 'state') {
         const records = await storage(
           admin
@@ -126,11 +130,48 @@ export function createConnectedHandler({
         const feeds = await storage(
           admin.from('anime_calendar_feeds').select('id,options').eq('owner_id', uid),
         );
+        const lists = [...owned, ...shared];
+        const votes = lists.length
+          ? await storage(
+              admin
+                .from('anime_list_votes')
+                .select('list_id,user_id,item_key')
+                .in(
+                  'list_id',
+                  lists.map((l) => l.id),
+                ),
+            )
+          : [];
+        const editors = lists.length
+          ? await storage(
+              admin
+                .from('anime_list_members')
+                .select('list_id,user_id')
+                .in(
+                  'list_id',
+                  lists.map((l) => l.id),
+                ),
+            )
+          : [];
+        for (const list of lists) {
+          const valid = votes.filter(
+            (v) =>
+              v.list_id === list.id &&
+              (v.user_id === list.owner_id ||
+                editors.some((m) => m.list_id === list.id && m.user_id === v.user_id)) &&
+              list.items.some((i) => i.key === v.item_key),
+          );
+          list.votes = Object.fromEntries(
+            list.items.map((i) => [i.key, valid.filter((v) => v.item_key === i.key).length]),
+          );
+          list.myVote = valid.find((v) => v.user_id === uid)?.item_key || '';
+        }
         return reply({
           records,
-          lists: [...owned, ...shared],
+          lists,
           feeds,
           traktConfigured: !!env('TRAKT_CLIENT_ID'),
+          trakt: await trakt.status(uid),
         });
       }
       if (action === 'rule-create') {
@@ -209,9 +250,14 @@ export function createConnectedHandler({
         return reply({ list });
       }
       if (
-        ['list-item', 'list-member', 'list-delete', 'list-members', 'list-remove-member'].includes(
-          action,
-        )
+        [
+          'list-item',
+          'list-member',
+          'list-delete',
+          'list-members',
+          'list-vote',
+          'list-remove-member',
+        ].includes(action)
       ) {
         if (!UUID.test(input.id || '')) return reply({ error: 'Invalid ID' }, 400);
         const list = await storage(
@@ -233,8 +279,26 @@ export function createConnectedHandler({
               .eq('user_id', uid)
               .maybeSingle(),
           ));
-        if (!member || (!isOwner && action !== 'list-item'))
+        if (!member || (!isOwner && !['list-item', 'list-vote'].includes(action)))
           return reply({ error: 'Nuk ke leje për këtë veprim.' }, 403);
+        if (action === 'list-vote') {
+          if (input.itemKey && !list.items.some((i) => i.key === input.itemKey))
+            return reply({ error: 'Titulli nuk gjendet në listë.' }, 400);
+          if (input.itemKey)
+            await storage(
+              admin
+                .from('anime_list_votes')
+                .upsert(
+                  { list_id: list.id, user_id: uid, item_key: input.itemKey },
+                  { onConflict: 'list_id,user_id' },
+                ),
+            );
+          else
+            await storage(
+              admin.from('anime_list_votes').delete().eq('list_id', list.id).eq('user_id', uid),
+            );
+          return reply({ ok: true });
+        }
         if (action === 'list-members')
           return reply({
             members: await storage(
@@ -248,6 +312,13 @@ export function createConnectedHandler({
           return reply({ ok: true });
         }
         if (action === 'list-remove-member') {
+          await storage(
+            admin
+              .from('anime_list_votes')
+              .delete()
+              .eq('list_id', list.id)
+              .eq('user_id', input.userId),
+          );
           if (!UUID.test(input.userId || '')) return reply({ error: 'Invalid ID' }, 400);
           await storage(
             admin

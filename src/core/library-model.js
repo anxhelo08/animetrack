@@ -148,6 +148,7 @@ export function createLibraryModel(dependencies = {}) {
         .slice(0, 10000)
         .map((e) => ({
           number: Number(e.number),
+          ...(Number.isSafeInteger(e.traktId) && e.traktId > 0 ? { traktId: e.traktId } : {}),
           absolute: Number(e.absolute) || 0,
           title: String(e.title || '').slice(0, 220),
           aired: String(e.aired || '').slice(0, 40),
@@ -514,6 +515,7 @@ export function createLibraryModel(dependencies = {}) {
       imdbVotes: Math.max(0, Number(a.imdbVotes) || 0),
       imdbCheckedAt: String(a.imdbCheckedAt || '').slice(0, 40),
       tmdbId: String(a.tmdbId || '').slice(0, 30),
+      ...(Number.isSafeInteger(a.traktId) && a.traktId > 0 ? { traktId: a.traktId } : {}),
       ...(a.watchUrl === '' || episodeWatchURL(a.watchUrl)
         ? { watchUrl: episodeWatchURL(a.watchUrl) }
         : {}),

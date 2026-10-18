@@ -25,7 +25,11 @@ export function createConnectedFeatures(ctx) {
     page = '',
     requestId = 0,
     members = [],
-    draftRules = null;
+    draftRules = null,
+    formDrafts = {},
+    sections = {},
+    device = null,
+    exportPlan = null;
   const currentOwner = () => String(ctx.user()?.id || '');
   function syncOwner() {
     const id = currentOwner();
@@ -41,6 +45,10 @@ export function createConnectedFeatures(ctx) {
       importPreview = null;
       members = [];
       draftRules = null;
+      formDrafts = {};
+      sections = {};
+      device = null;
+      exportPlan = null;
       requestId++;
       return true;
     }
@@ -177,7 +185,7 @@ export function createConnectedFeatures(ctx) {
             .map(([v, t]) => option(v, t))
             .join(''),
       ) +
-      '<label>Zhanri<input name="genre" maxlength="60" placeholder="P.sh. Action"></label><label>Kërkimi<input name="query" maxlength="100" placeholder="Titulli ose emri alternativ"></label><label>Maksimumi i episodeve<input name="maxTotal" type="number" min="1" max="10000"></label><label>Episode të mbetura, maksimumi<input name="maxRemaining" type="number" min="1" max="10000"></label><label><input name="favorite" type="checkbox"> Vetëm të preferuarat</label><button class="primary" ' +
+      '<label>Zhanri<input name="genre" maxlength="60" placeholder="P.sh. Action"></label><label>Kërkimi<input name="query" maxlength="100" placeholder="Titulli ose emri alternativ"></label><label>Maksimumi i episodeve<input name="maxTotal" type="number" min="1" max="10000"></label><label>Episode të mbetura, maksimumi<input name="maxRemaining" type="number" min="1" max="10000"></label><label><input name="favorite" type="checkbox"> Vetëm të preferuarat</label><label><input name="movie" type="checkbox"> Vetëm filma</label><label><input name="excludeCompleted" type="checkbox"> Përjashto të përfunduarat</label><button class="primary" ' +
       (busy ? 'disabled' : '') +
       '>Ruaj pamjen</button></form>'
     );
@@ -215,7 +223,9 @@ export function createConnectedFeatures(ctx) {
         ? (ctx.state().anime || []).filter((a) => matchRules(a, chosen.rules, ctx.released))
         : [];
     return (
-      '<h3>Lista inteligjente dhe filtra të ruajtur</h3><p>Listat inteligjente përditësohen nga biblioteka jote. Filtrat e ruajtur mbajnë zgjedhjet e tua; asnjëri nuk ndryshon progresin.</p><details><summary>Krijo listë ose filtër</summary>' +
+      '<h3>Lista inteligjente dhe filtra të ruajtur</h3><p>Listat inteligjente përditësohen nga biblioteka jote. Filtrat e ruajtur mbajnë zgjedhjet e tua; asnjëri nuk ndryshon progresin.</p><details data-connected-section="rule" ' +
+      (draftRules || sections.rule ? 'open' : '') +
+      '><summary>Krijo listë ose filtër</summary>' +
       ruleForm() +
       '</details><div class="connected-actions">' +
       data.records
@@ -259,6 +269,13 @@ export function createConnectedFeatures(ctx) {
                 '<li>' +
                 esc(item.title) +
                 ' ' +
+                esc(String(list.votes?.[item.key] || 0)) +
+                ' vota ' +
+                btn(
+                  'vote',
+                  list.myVote === item.key ? 'Hiq votën time' : 'Voto për sonte',
+                  String(i),
+                ) +
                 btn('item-remove', 'Hiq nga lista', String(i)) +
                 '</li>',
             )
@@ -325,9 +342,72 @@ export function createConnectedFeatures(ctx) {
       '</ul>'
     );
   }
+  function traktHTML() {
+    const linked = data.trakt?.connected;
+    return (
+      '<section aria-label="Llogaria Trakt"><h3>Lidhja me Trakt</h3>' +
+      (!data.trakt?.configured
+        ? '<p>Për aktivizim duhet aplikacioni Trakt i administratorit. Importi JSON është gati.</p>'
+        : linked
+          ? '<p>Llogaria Trakt është lidhur. Importi dhe eksporti nisen vetëm nga ti.</p>' +
+            btn('trakt-disconnect', 'Shkëput dhe revoko lidhjen') +
+            '<form data-connected-form="private" class="connected-form">' +
+            field(
+              'kind',
+              'Importo nga llogaria ime',
+              option('history', 'Historiku') +
+                option('ratings', 'Vlerësimet') +
+                option('watchlist', 'Në plan'),
+            ) +
+            '<label>Faqja<input name="page" type="number" min="1" max="100" value="1"></label><button class="primary">Merr të dhënat për parapamje</button></form>' +
+            '<form data-connected-form="export-preview" class="connected-form">' +
+            field(
+              'kind',
+              'Dërgo në Trakt',
+              option('history', 'Historiku') +
+                option('ratings', 'Vlerësimet') +
+                option('watchlist', 'Në plan'),
+            ) +
+            '<p>Vetëm tituj me ID të sakta, deri në 100 regjistrime. Episodet kërkojnë ID Trakt të verifikuar nga një import. Regjistrimet ekzistuese nuk ndryshohen.</p><button class="primary">Përgatit eksportin</button></form>'
+          : btn('trakt-connect', 'Lidh llogarinë time Trakt')) +
+      (device
+        ? '<p>Hap <a href="https://trakt.tv/activate" target="_blank" rel="noopener noreferrer">Trakt Activate</a> dhe shkruaj kodin <strong>' +
+          esc(device.userCode) +
+          '</strong>. Kodi skadon në ' +
+          esc(new Date(device.expiresAt).toLocaleTimeString('sq-AL')) +
+          '.</p>' +
+          btn('trakt-poll', 'E autorizova — kontrollo lidhjen')
+        : '') +
+      (exportPlan
+        ? '<form data-connected-form="export"><h4>Parapamja e eksportit</h4><p>' +
+          exportPlan.rows.length +
+          ' regjistrime të reja; ' +
+          exportPlan.skipped +
+          ' ekzistuese u anashkaluan. Zgjidh çfarë lejon të dërgohet.</p>' +
+          exportPlan.rows
+            .map(
+              (r, i) =>
+                '<label><input type="checkbox" name="export-' +
+                i +
+                '"> ' +
+                esc(r.title) +
+                ' ' +
+                esc(r.watched_at || (r.rating ? '★ ' + r.rating : 'Në plan')) +
+                '</label>',
+            )
+            .join('') +
+          (exportPlan.rows.length
+            ? '<button class="primary">Dërgo vetëm të zgjedhurat në Trakt</button>'
+            : '') +
+          '</form>'
+        : '') +
+      '</section>'
+    );
+  }
   function importHTML() {
     const library = ctx.state().anime || [];
     return (
+      traktHTML() +
       '<h3>Importo nga Trakt</h3><p>Zgjidh eksportin JSON të historikut, vlerësimeve ose listës së planifikuar. Përputh çdo regjistrim me titullin dhe pjesën e saktë në bibliotekën tënde. Titujt e papërputhur anashkalohen; notat ekzistuese ruhen.</p><label>Skedari JSON<input type="file" id="connected-trakt-file" accept=".json,application/json"></label>' +
       (data.traktConfigured
         ? '<form data-connected-form="trakt" class="connected-form"><label>Profili publik Trakt<input name="username" required maxlength="60"></label>' +
@@ -339,7 +419,7 @@ export function createConnectedFeatures(ctx) {
               option('ratings', 'Vlerësimet'),
           ) +
           '<label>Faqja<input name="page" type="number" min="1" max="100" value="1"></label><button class="primary">Merr faqe nga profili publik</button></form>'
-        : '<p>Lidhja direkte do të aktivizohet pasi të regjistrohet aplikacioni Trakt. Importi JSON punon pa të.</p>') +
+        : '<p>Importi JSON punon pa llogari Trakt të lidhur.</p>') +
       (imports.length
         ? '<form data-connected-form="import"><p>' +
           imports.length +
@@ -391,13 +471,31 @@ export function createConnectedFeatures(ctx) {
         : '')
     );
   }
+  function rememberForms() {
+    if (!host?.isConnected || host.querySelector('fieldset[disabled]')) return;
+    for (const detail of host.querySelectorAll('[data-connected-section]'))
+      sections[detail.dataset.connectedSection] = detail.open;
+    for (const form of host.querySelectorAll('[data-connected-form]')) {
+      if (['import', 'export'].includes(form.dataset.connectedForm)) continue;
+      formDrafts[form.dataset.connectedForm] = Object.fromEntries([...new FormData(form)]);
+    }
+  }
   function draw() {
     if (!host?.isConnected) return;
+    if (owner === currentOwner()) rememberForms();
     syncOwner();
     const body = !owner
       ? '<p>Hyr në llogari për të ruajtur pamje, abonime dhe lista të përbashkëta.</p>'
       : page === 'collections'
-        ? rulesHTML() + sharedHTML()
+        ? '<details class="connected-section" data-connected-section="smart" ' +
+          (draftRules || sections.smart ? 'open' : '') +
+          '><summary>Lista inteligjente dhe filtra</summary>' +
+          rulesHTML() +
+          '</details><details class="connected-section" data-connected-section="shared" ' +
+          (sections.shared ? 'open' : '') +
+          '><summary>Lista me miqtë dhe votim</summary>' +
+          sharedHTML() +
+          '</details>'
         : page === 'calendar'
           ? feedHTML()
           : importHTML();
@@ -413,6 +511,14 @@ export function createConnectedFeatures(ctx) {
         body.replace(/name="/g, 'name="cf-') +
         '</fieldset></section>',
     );
+    for (const form of host.querySelectorAll('[data-connected-form]')) {
+      const values = formDrafts[form.dataset.connectedForm] || {};
+      for (const field of form.elements)
+        if (field.name) {
+          if (field.type === 'checkbox') field.checked = Object.hasOwn(values, field.name);
+          else if (values[field.name] !== undefined) field.value = values[field.name];
+        }
+    }
     if (draftRules && page === 'collections') {
       const rules = draftRules;
       const form = host.querySelector('[data-connected-form=rule]');
@@ -425,6 +531,7 @@ export function createConnectedFeatures(ctx) {
           }
         }
         form.closest('details').open = true;
+        draftRules = null;
       }
     }
   }
@@ -440,12 +547,35 @@ export function createConnectedFeatures(ctx) {
     if (!host) {
       host = document.createElement('div');
       host.dataset.connectedRoot = '';
-      root.append(host);
+      root.prepend(host);
       draw();
     } else if (ownerChanged) draw();
     if (!loaded && !busy && owner) void refresh();
   }
   document.addEventListener('change', async (e) => {
+    if (e.target?.matches('[data-connected-form="rule"] [name="cf-preset"]')) {
+      const form = e.target.form,
+        rules = rulePresets[e.target.value];
+      if (rules)
+        for (const name of [
+          'status',
+          'progress',
+          'genre',
+          'query',
+          'maxTotal',
+          'maxRemaining',
+          'favorite',
+          'movie',
+          'excludeCompleted',
+        ]) {
+          const field = form.elements.namedItem('cf-' + name);
+          if (field) {
+            if (field.type === 'checkbox') field.checked = !!rules[name];
+            else field.value = rules[name] ?? '';
+          }
+        }
+      return;
+    }
     if (e.target?.id !== 'connected-trakt-file') return;
     const file = e.target.files?.[0];
     if (!file) return;
@@ -473,16 +603,64 @@ export function createConnectedFeatures(ctx) {
       list = data.lists.find((l) => l.id === selected);
     if (op === 'rule') {
       draftRules = null;
-      const rules =
-        values.preset === 'custom'
-          ? cleanRules({
-              ...values,
-              maxTotal: Number(values.maxTotal),
-              maxRemaining: Number(values.maxRemaining),
-              favorite: values.favorite === 'on',
-            })
-          : rulePresets[values.preset];
+      const rules = cleanRules({
+        ...values,
+        maxTotal: Number(values.maxTotal),
+        maxRemaining: Number(values.maxRemaining),
+        favorite: values.favorite === 'on',
+        movie: values.movie === 'on',
+        excludeCompleted: values.excludeCompleted === 'on',
+      });
       await mutate({ action: 'rule-create', title: values.title, kind: values.kind, rules });
+    }
+    if (op === 'private' || op === 'export-preview') {
+      busy = true;
+      error = '';
+      draw();
+      try {
+        const result = await call({
+          action: op === 'private' ? 'trakt-private-page' : 'trakt-export-preview',
+          ...values,
+          page: Number(values.page) || 1,
+        });
+        if (op === 'private') {
+          imports = parseTrakt(result.rows);
+          importPreview = null;
+          error =
+            'Faqja ' +
+            result.page +
+            ' nga ' +
+            result.pages +
+            '. Zgjidh përputhjet përpara importit.';
+        } else exportPlan = result;
+      } catch (err) {
+        error = err.message;
+      } finally {
+        busy = false;
+        draw();
+      }
+    }
+    if (op === 'export' && exportPlan) {
+      const keys = exportPlan.rows
+        .filter((r, i) => values['export-' + i] === 'on')
+        .map((r) => r.key);
+      busy = true;
+      error = '';
+      draw();
+      try {
+        const result = await call({
+          action: 'trakt-export-apply',
+          planId: exportPlan.planId,
+          keys,
+        });
+        error = `Trakt: ${result.added} u shtuan, ${result.existing} ekzistonin, ${result.missing} nuk u gjetën.`;
+      } catch (err) {
+        error = err.message + ' Krijo një parapamje të re para se të provosh përsëri.';
+      } finally {
+        exportPlan = null;
+        busy = false;
+        draw();
+      }
     }
     if (op === 'list') await mutate({ action: 'list-create', title: values.title });
     if (op === 'item' && list) {
@@ -542,6 +720,33 @@ export function createConnectedFeatures(ctx) {
     const op = b.dataset.connected,
       id = b.dataset.id,
       list = data.lists.find((l) => l.id === selected);
+    if (['trakt-connect', 'trakt-poll', 'trakt-disconnect'].includes(op)) {
+      if (
+        op === 'trakt-disconnect' &&
+        !(await ctx.confirm('Ta revokojmë lidhjen me Trakt? Të dhënat e tua mbeten.'))
+      )
+        return;
+      busy = true;
+      error = '';
+      draw();
+      try {
+        const result = await call({ action: op });
+        if (result.userCode) device = result;
+        if (result.connected || op === 'trakt-disconnect') {
+          device = null;
+          exportPlan = null;
+          await refresh();
+        }
+        if (result.pending)
+          error = 'Autorizimi është në pritje. Provo pas ' + result.retryAfter + ' sekondash.';
+      } catch (err) {
+        error = err.message;
+      } finally {
+        busy = false;
+        draw();
+      }
+      return;
+    }
     if (op === 'refresh') return refresh();
     if (op === 'export') {
       const blob = new Blob(
@@ -584,6 +789,12 @@ export function createConnectedFeatures(ctx) {
       }
       return;
     }
+    if (op === 'vote' && list)
+      return mutate({
+        action: 'list-vote',
+        id: list.id,
+        itemKey: list.myVote === list.items[Number(id)]?.key ? '' : list.items[Number(id)]?.key,
+      });
     if (op === 'item-remove' && list)
       return mutate({
         action: 'list-item',

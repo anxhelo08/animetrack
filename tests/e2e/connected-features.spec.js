@@ -97,8 +97,8 @@ test('Trakt JSON requires a preview and keeps repeated imports free of duplicate
   await expect(page.locator('#connected-trakt-file')).toBeVisible();
   const rows = [
     {
-      show: { title: 'Series', ids: {} },
-      episode: { season: 1, number: 2 },
+      show: { title: 'Series', ids: { trakt: 123 } },
+      episode: { season: 1, number: 2, ids: { trakt: 77 } },
       watched_at: '2026-09-29T12:00:00Z',
     },
   ];
@@ -121,6 +121,14 @@ test('Trakt JSON requires a preview and keeps repeated imports free of duplicate
     expect(await page.evaluate(() => window.ATMobile113.state().anime[0].notes)).toBe(
       'keep private',
     );
+    expect(await page.evaluate(() => window.ATMobile113.state().anime[0].traktId)).toBe(123);
+    expect(
+      await page.evaluate(
+        () =>
+          window.ATMobile113.state().anime[0].seasons[0].episodes.find((e) => e.number === 2)
+            .traktId,
+      ),
+    ).toBe(77);
   }
   rows[0].episode.number = 3;
   await page.locator('#connected-trakt-file').setInputFiles({
@@ -139,4 +147,134 @@ test('Trakt JSON requires a preview and keeps repeated imports free of duplicate
     'Importi nuk u ruajt',
   );
   expect(await page.evaluate(() => JSON.stringify(window.ATMobile113.state()))).toBe(beforeFailure);
+});
+
+test('shared list votes toggle and failed rule saves retain edited preset fields', async ({
+  page,
+}, info) => {
+  await openFixture(page, { accessToken: 'fixture-token' });
+  const list = {
+    id: 'shared',
+    title: 'Sonte',
+    owner_id: 'accessibility-test',
+    items: [{ key: 'AniList:1', title: 'Movie night', source: 'AniList', sourceId: '1' }],
+    votes: { 'AniList:1': 0 },
+    myVote: '',
+  };
+  await page.route('**/functions/v1/anime-connected', async (route) => {
+    const input = route.request().postDataJSON();
+    if (input.action === 'rule-create')
+      return route.fulfill({ status: 503, json: { error: 'Ruajtja përkohësisht dështoi' } });
+    if (input.action === 'list-vote') {
+      list.myVote = input.itemKey;
+      list.votes['AniList:1'] = input.itemKey ? 1 : 0;
+    }
+    return route.fulfill({
+      json:
+        input.action === 'state'
+          ? { records: [], lists: [list], feeds: [], traktConfigured: false }
+          : { ok: true },
+    });
+  });
+  await page
+    .locator(
+      info.project.name.startsWith('iphone') ? '[data-mobile-nav="library"]' : '#library-nav',
+    )
+    .click();
+  await page.locator('[data-save-library-filter]').click();
+  const form = page.locator('[data-connected-form="rule"]');
+  await expect(form.locator('button')).toBeEnabled();
+  await form.locator('[name=cf-preset]').selectOption('short');
+  await expect(form.locator('[name=cf-maxTotal]')).toHaveValue('12');
+  await form.locator('[name=cf-maxTotal]').fill('24');
+  await form.locator('[name=cf-title]').fill('Rregullat e mia');
+  await page.locator('[data-connected="refresh"]').click();
+  await expect(form).toBeVisible();
+  await expect(form.locator('button')).toBeEnabled();
+  await expect(form.locator('[name=cf-title]')).toHaveValue('Rregullat e mia');
+  await expect(form.locator('[name=cf-maxTotal]')).toHaveValue('24');
+  await form.locator('button').click();
+  await expect(page.locator('[data-connected-root] [role=alert]')).toContainText('dështoi');
+  await expect(form.locator('[name=cf-title]')).toHaveValue('Rregullat e mia');
+  await expect(form.locator('[name=cf-maxTotal]')).toHaveValue('24');
+  await page.locator('[data-connected-section="shared"] > summary').click();
+  await page.locator('[data-connected="list-select"]').click();
+  await page.locator('[data-connected="vote"]').click();
+  await expect(page.locator('[data-connected="vote"]')).toHaveText('Hiq votën time');
+  await expect(page.locator('[data-connected-root]')).toContainText('1 vota');
+  await page.locator('[data-connected="vote"]').click();
+  await expect(page.locator('[data-connected="vote"]')).toHaveText('Voto për sonte');
+  await page.screenshot({ path: info.outputPath('votes-and-views.png'), fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test('Trakt authorization and export require explicit user actions and selection', async ({
+  page,
+}) => {
+  await openFixture(page, { accessToken: 'fixture-token' });
+  let connected = false,
+    writes = 0;
+  await page.route('**/functions/v1/anime-connected', async (route) => {
+    const input = route.request().postDataJSON();
+    if (input.action === 'state')
+      return route.fulfill({
+        json: {
+          records: [],
+          lists: [],
+          feeds: [],
+          traktConfigured: false,
+          trakt: { configured: true, connected },
+        },
+      });
+    if (input.action === 'trakt-connect')
+      return route.fulfill({
+        json: {
+          userCode: 'ABCD1234',
+          verificationURL: 'https://trakt.tv/activate',
+          expiresAt: Date.parse('2026-09-30T12:10:00Z'),
+          interval: 5,
+        },
+      });
+    if (input.action === 'trakt-poll') {
+      connected = true;
+      return route.fulfill({ json: { connected: true } });
+    }
+    if (input.action === 'trakt-export-preview')
+      return route.fulfill({
+        json: {
+          planId: 'plan',
+          kind: 'history',
+          skipped: 2,
+          rows: [
+            {
+              key: 'new',
+              title: 'One exact episode',
+              type: 'episodes',
+              ids: { trakt: 77 },
+              watched_at: '2026-09-29T12:00:00Z',
+            },
+          ],
+        },
+      });
+    if (input.action === 'trakt-export-apply') {
+      expect(input.keys).toEqual(['new']);
+      writes++;
+      return route.fulfill({ json: { added: 1, existing: 0, missing: 0 } });
+    }
+    return route.fulfill({ json: { ok: true } });
+  });
+  await page.locator('#pro-nav-sync').evaluate((el) => el.click());
+  await expect(page.locator('[data-connected="trakt-connect"]')).toBeEnabled();
+  await page.locator('[data-connected="trakt-connect"]').click();
+  await expect(page.locator('[data-connected-root]')).toContainText('ABCD1234');
+  await page.locator('[data-connected="trakt-poll"]').click();
+  await expect(page.locator('[data-connected-form="export-preview"]')).toBeVisible();
+  await page.locator('[data-connected-form="export-preview"] button').click();
+  const form = page.locator('[data-connected-form="export"]');
+  await expect(form).toContainText('One exact episode');
+  expect(writes).toBe(0);
+  await form.locator('input[type=checkbox]').check();
+  await form.locator('button').click();
+  await expect(page.locator('[data-connected-root] [role=alert]')).toContainText('1 u shtuan');
+  expect(writes).toBe(1);
 });
