@@ -411,3 +411,37 @@ body.at-ios-enabled .product-tools .nav-label {
     transition: none;
   }
 }
+
+.library-progress-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  margin-bottom: 18px;
+}
+.library-progress-controls label {
+  display: grid;
+  gap: 6px;
+  color: var(--text);
+  font-size: 13px;
+}
+.library-progress-controls select {
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  background: var(--surface2);
+  font: inherit;
+}
+.library-progress-controls p,
+.series-progress-note {
+  max-width: 65ch;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.series-progress-note {
+  margin: 10px 0;
+}
