@@ -5,7 +5,7 @@ import { encodeLibraryStorage, decodeLibraryStorage } from './storage-codec.js';
 const mainKey = (key) =>
   key === 'animetrack_v1' || /^animetrack_user_[A-Za-z0-9-]{1,100}$/.test(key);
 const backupOwner = (key) => {
-  const base = key.replace(/_before_(?:tv_unify_120|sync_1426|storage_14261)$/, '');
+  const base = key.replace(/_before_(?:tv_unify_120|sync_1426|storage_14261|trakt_\d{13})$/, '');
   return base !== key && mainKey(base) ? base : null;
 };
 const quota = (error) =>

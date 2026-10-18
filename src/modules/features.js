@@ -16,6 +16,9 @@ export function createFeatures(ctx){
  let achievementsOwner='',achievementsKnown=null;const homeMarkup=new WeakMap();
  let spotlight=null,newsController=null,newsHost=null;
  const loadNews=createDeferredModule(()=>import('./news.js'));
+ const loadConnected=createDeferredModule(()=>import('./connected-features.js'));let connected=null,connectedLoading=false;
+ function attachConnected(){if(!['collections','calendar','sync'].includes(active))return;if(connected){connected.attach(active,$('pro-content'));return}if(connectedLoading)return;connectedLoading=true;void loadConnected().then(m=>{connected=m.createConnectedFeatures(ctx);connected.attach(active,$('pro-content'))}).catch(()=>ctx.toast('Rihap seksionin.')).finally(()=>{connectedLoading=false})}
+ document.addEventListener('click',e=>{if(e.target.closest('[data-save-library-filter]')){ctx.pendingLibraryRules=ctx.currentLibraryRules?.();ctx.navigate('collections')}});
  let newsPending=false;
  function renderNews(){
   const content=$('pro-content');
@@ -91,7 +94,7 @@ export function createFeatures(ctx){
   // Explicit collection mutations still use ctx.rerender() and force a fresh view.
   if(!force&&active==='collections'&&$('at110-new-list')?.value.trim())return;
   if(!force&&['profile','friends','sync','diary'].includes(active)&&$('pro-content')?.contains(document.activeElement)&&['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;
-  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:()=>modules.diary?.render()||'',watch:modules.watch.render,sync:modules.providerSync.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini()+modules.providerSync.profileCard(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};const content=$('pro-content'),markup=renderers[active]?.()||'';if(force||homeMarkup.get(content)!==markup){window.ATHTML.renderHTML(content,markup);homeMarkup.set(content,markup)}product?.refresh()}
+  const renderers={notifications:modules.notifications.render,recommendations:modules.recommendations.render,calendar:()=>modules.smart.full(modules.calendar.calendar(),modules.push.banner()),diary:()=>modules.diary?.render()||'',watch:modules.watch.render,sync:modules.providerSync.render,wrapped:modules.calendar.wrapped,profile:()=>modules.profiles.render()+modules.calendar.achievementsMini()+modules.providerSync.profileCard(),friends:modules.friends.render,moderation:modules.moderation.render,collections:modules.collections.render,tv:modules.tv.render};const content=$('pro-content'),markup=renderers[active]?.()||'';if(force||homeMarkup.get(content)!==markup){window.ATHTML.renderHTML(content,markup);homeMarkup.set(content,markup)}product?.refresh();attachConnected()}
  async function refreshLive(force=false){
   if(liveBusy)return {status:'busy'};
   if(document.visibilityState==='hidden')return {status:'hidden'};

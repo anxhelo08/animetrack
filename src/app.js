@@ -1958,6 +1958,9 @@ async function refreshTrackedTV127(force=false){
 const proContext={
  el:$,esc:escapeHTML,state:libraryStore.getState,revision:libraryStore.getRevision,subscribe:libraryStore.subscribe,user:()=>accountUser,client:()=>accountInitClient(),
  accountService:window.ATAccountService({client:()=>accountInitClient(),user:()=>accountUser}),
+ currentLibraryRules:()=>({...(['watching','planning','completed','paused','dropped'].includes(filter)?{status:filter}:{}),...(libraryProgress!=='all'?{progress:libraryProgress}:{}),...(filter==='favorites'?{favorite:true}:{}),...(filter==='movies'?{movie:true}:{}),query:search,genre:selectedGenre==='all'?'':selectedGenre}),
+ applyTrakt:async(_rows,preview)=>{const owner=accountUser?.id,key=KEY;if(!owner||preview.base!==JSON.stringify(state))throw Error('Biblioteka ndryshoi. Krijo parapamjen përsëri.');await libraryRepository.backup(key+'_before_trakt_'+Date.now(),JSON.stringify(state));if(owner!==accountUser?.id||key!==KEY||preview.base!==JSON.stringify(state))throw Error('Llogaria ose biblioteka ndryshoi. Krijo parapamjen përsëri.');const before=state;state=preview.draft;for(const a of state.anime)syncTotals(a);if(!save()){state=before;throw Error('Importi nuk u ruajt. Biblioteka mbeti e pandryshuar.')}render();renderHome();renderUpcoming()},
+
  poster:validPoster,count,activity:activityEpisodes,upcoming:()=>upcomingEntries,airingStatus:()=>({busy:upcomingBusy,checkedAt:upcomingCheckedAt,failures:upcomingFailures,coverage:airingCoverage}),
  confirm:message=>window.confirm(message),prompt:(message,value)=>window.prompt(message,value),closeDetail:()=>{if($('detail-modal').classList.contains('show'))closeModal('detail-modal')},
  genres:genresOf,seriesRoot:seriesRootTitle,mapAniList,inLibrary,released:releasedCount,isMovie:isMovieAnime,uuid,

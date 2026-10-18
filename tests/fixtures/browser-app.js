@@ -7,12 +7,13 @@ export async function openFixture(
     payload: suppliedPayload,
     owner = 'accessibility-test',
     persistWrites = false,
+    accessToken = null,
   } = {},
 ) {
   test.setTimeout(30000);
 
   const payload = suppliedPayload || demonFixture().payload;
-  let stub = `const payload=${JSON.stringify(payload)};window.__ATFixtureLibraryCalls={read:0,write:0};const chain=table=>{const q={};let write=false;for(const key of ['select','eq','order','limit','in','not','or','insert','upsert','update','delete','range','neq','gte','lte','contains'])q[key]=()=>{if(['insert','upsert','update','delete'].includes(key))write=true;return q};q.maybeSingle=async()=>{if(table==='anime_libraries')window.__ATFixtureLibraryCalls[write?'write':'read']++;return {data:table==='anime_libraries'?{payload,updated_at:'2026-09-29T20:00:00Z'}:null,error:null}};q.single=q.maybeSingle;q.then=(ok,fail)=>Promise.resolve({data:[],error:null}).then(ok,fail);return q};export default ()=>({auth:{getSession:async()=>({data:{session:${signedIn ? JSON.stringify({ user: { id: owner, email: 'fixture@example.com' } }) : 'null'}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain('rpc')});`;
+  let stub = `const payload=${JSON.stringify(payload)};window.__ATFixtureLibraryCalls={read:0,write:0};const chain=table=>{const q={};let write=false;for(const key of ['select','eq','order','limit','in','not','or','insert','upsert','update','delete','range','neq','gte','lte','contains'])q[key]=()=>{if(['insert','upsert','update','delete'].includes(key))write=true;return q};q.maybeSingle=async()=>{if(table==='anime_libraries')window.__ATFixtureLibraryCalls[write?'write':'read']++;return {data:table==='anime_libraries'?{payload,updated_at:'2026-09-29T20:00:00Z'}:null,error:null}};q.single=q.maybeSingle;q.then=(ok,fail)=>Promise.resolve({data:[],error:null}).then(ok,fail);return q};export default ()=>({auth:{getSession:async()=>({data:{session:${signedIn ? JSON.stringify({ user: { id: owner, email: 'fixture@example.com' }, ...(accessToken ? { access_token: accessToken } : {}) }) : 'null'}},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})},from:chain,rpc:()=>chain('rpc')});`;
   if (persistWrites) {
     const key = JSON.stringify('fixture-server-' + owner);
     stub = stub

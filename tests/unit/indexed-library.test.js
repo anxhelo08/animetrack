@@ -319,3 +319,19 @@ test('a malformed pending journal cannot replace the verified snapshot during a 
   expect(JSON.parse(raw.getItem(key))).toEqual(payload(3));
   expect(raw.getItem(key + '_pending_126')).not.toBeNull();
 });
+
+test('Trakt import backups survive reload and cannot overwrite an earlier snapshot', async () => {
+  const { raw, indexedDB, repo } = await setup();
+  await repo.prepare();
+  const backupKey = key + '_before_trakt_1792333200000',
+    snapshot = JSON.stringify(payload(1));
+  await repo.backup(backupKey, snapshot);
+  await repo.backup(backupKey, JSON.stringify(payload(9)));
+  expect(repo.storage.getItem(backupKey)).toBe(snapshot);
+  await expect(repo.backup('unrelated_before_trakt_1792333200000', snapshot)).rejects.toThrow();
+  repo.close();
+  const next = createIndexedLibrary(raw, { indexedDB });
+  await next.prepare();
+  expect(next.storage.getItem(backupKey)).toBe(snapshot);
+  next.close();
+});

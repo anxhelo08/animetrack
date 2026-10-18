@@ -445,3 +445,78 @@ body.at-ios-enabled .product-tools .nav-label {
 .series-progress-note {
   margin: 10px 0;
 }
+
+.connected-panel {
+  padding: 24px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+  color: var(--text);
+}
+.connected-panel h3 {
+  margin: 28px 0 12px;
+}
+.connected-panel p {
+  max-width: 70ch;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.connected-panel label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  font-size: 13px;
+}
+.connected-panel input:not([type='checkbox']),
+.connected-panel select,
+.connected-panel textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+}
+.connected-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  align-items: end;
+  margin: 18px 0;
+}
+.connected-panel button {
+  min-height: 44px;
+}
+.connected-panel ul {
+  padding-inline-start: 20px;
+}
+.connected-panel li {
+  padding: 6px 0;
+  overflow-wrap: anywhere;
+}
+.connected-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0;
+}
+.connected-import-rows {
+  display: grid;
+  gap: 14px;
+  max-height: 480px;
+  overflow-y: auto;
+  margin: 18px 0;
+}
+.connected-panel [role='alert'] {
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px;
+}
+.connected-panel fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
