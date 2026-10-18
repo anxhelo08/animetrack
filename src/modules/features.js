@@ -1,3 +1,4 @@
+import { createDeferredDetail } from './deferred-detail.js';
 import { watchProviders } from '../core/watch-links.js';
 import { createDetailNavigation } from './detail-navigation.js';
 import { createPlayerTracking } from './player-tracking.js';
@@ -53,8 +54,8 @@ export function createFeatures(ctx){
   recommendations:window.ATRecommendations(ctx),
   calendar:window.ATCalendarWrapped(ctx),
   diary:null,
-  watch:window.ATWatch133({...ctx,watchProviders}),
-  rich:window.ATRich134(ctx),
+  watch:window.ATWatch133?window.ATWatch133({...ctx,watchProviders}):createDeferredDetail({ctx,load:()=>import('./watch.js'),create:()=>window.ATWatch133({...ctx,watchProviders}),onReady:()=>{if(active==='watch')render()}}),
+  rich:window.ATRich134?window.ATRich134(ctx):createDeferredDetail({ctx,load:()=>import('./rich-details.js'),create:()=>window.ATRich134(ctx)}),
   providerSync:window.ATProviderSync135(ctx),
   smart:window.ATSmartAiring(ctx),
   push:window.ATPush109(ctx),

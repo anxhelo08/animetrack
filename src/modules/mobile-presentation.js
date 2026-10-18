@@ -597,36 +597,7 @@ export function createMobilePresentation(ctx) {
     }
   }
   function library() {
-    if (!phone.matches) return;
-    const header = $('at113-library-head');
-    if (!header || $('mobile-library-controls')) return;
-    const tools = document.createElement('details');
-    tools.id = 'mobile-library-controls';
-    tools.className = 'mobile-library-controls';
-    window.ATHTML.renderHTML(
-      tools,
-      `<summary>Filtro dhe rendit <span aria-hidden="true">${navIcon('filters')}</span></summary><div class="mobile-library-controls-body"></div>`,
-    );
-    const body = tools.querySelector('div');
-    window.ATHTML.insertHTML(
-      body,
-      'beforeend',
-      '<div class="mobile-extra-filters" role="group" aria-label="Filtra të tjerë"><button type="button" class="ghost" data-filter="favorites">Të preferuarat</button><button type="button" class="ghost" data-filter="movies">Filma</button><button type="button" class="ghost" data-filter="waiting">Në pritje</button><button type="button" class="ghost" data-filter="genres">Zhanret</button></div>',
-    );
-    for (const node of [
-      $('library-view').querySelector('.at119-media-filter'),
-      header.querySelector('.at117-library-tools'),
-    ])
-      if (node) body.append(node);
-    // Preserve additional filters and repair tools without crowding the poster grid.
-    for (const node of [
-      $('genre-controls'),
-      $('library-view').querySelector('.series-repair-panel'),
-      $('library-view').querySelector('.toolrow'),
-      $('at116-import'),
-    ])
-      if (node) body.append(node);
-    header.append(tools);
+    // The shared library filter controller composes controls on both screen sizes.
   }
   function profile() {
     if (!phone.matches) return;
@@ -896,7 +867,6 @@ export function createMobilePresentation(ctx) {
     phone.addEventListener('change', () => {
       if (detailId && $('detail-modal').classList.contains('show')) ctx.refreshDetail(detailId);
       if (!phone.matches) {
-        if ($('mobile-library-controls')) $('mobile-library-controls').open = true;
         const legacy = $('at-iphone-feed');
         if (legacy) $('home-view').append(legacy);
       }

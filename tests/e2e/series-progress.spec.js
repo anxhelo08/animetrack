@@ -51,6 +51,7 @@ test('derived progress filters separate caught-up, finished and unknown without 
   const phone = info.project.name.startsWith('iphone');
   await page.locator(phone ? '[data-mobile-nav="library"]' : '#library-nav').click();
   const before = await page.evaluate(() => JSON.stringify(window.ATMobile113.state()));
+  await page.locator('#mobile-library-controls > summary').click();
   const filter = page.locator('#library-progress-filter');
   await expect(filter).toBeVisible();
   for (const [key, title] of [

@@ -17,3 +17,5 @@ Regional availability reuses the existing TMDB/JustWatch panel and region select
 Migration: `20261018141055_connected_library_features.sql`. RLS without client policies is intentional deny-all; access is server-authorized. No existing library rows are migrated or overwritten.
 
 Additional migration: `20261018143617_connected_votes_trakt.sql`. Connection and export-plan tables are also service-role-only with RLS.
+
+Grouped import: exact provider identity plus season, 10 groups per page and optional per-episode overrides (20 per page). Selections survive pagination; preview reports actual additions and skip reasons. See `library-and-import-improvements.md`.

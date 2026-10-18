@@ -72,6 +72,7 @@ export function parseTrakt(input) {
       return {
         key: 'trakt-' + index + '-' + (r.id || ''),
         title: String(media.title).slice(0, 180),
+        year: Number.isInteger(media.year) ? media.year : 0,
         imdbId: /^tt\d+$/.test(ids.imdb || '') ? ids.imdb : '',
         tmdbId: ids.tmdb ? String(ids.tmdb) : '',
         movie: !!r.movie,
@@ -100,10 +101,12 @@ export function matchTrakt(row, library) {
 /** Draft only: the caller backs up and saves once, with rollback on any failure. */
 export function applyTraktRows(state, entries, selections, stamp) {
   const draft = structuredClone(state),
-    counts = { applied: 0, skipped: 0 };
+    counts = { applied: 0, skipped: 0 },
+    reasons = { unmapped: 0, missing: 0, format: 0, limit: 0 };
   for (const row of entries) {
     const selection = selections[row.key];
     if (!selection) {
+      reasons.unmapped++;
       counts.skipped++;
       continue;
     }
@@ -111,11 +114,13 @@ export function applyTraktRows(state, entries, selections, stamp) {
       anime = draft.anime.find((a) => a.id === id),
       part = anime?.seasons?.find((s) => s.id === partId);
     if (!anime || !part || (row.episode && (!part.total || row.episode > part.total))) {
+      reasons.missing++;
       counts.skipped++;
       continue;
     }
     const n = row.movie ? 1 : row.episode;
     if ((row.movie && part.format !== 'MOVIE') || (!row.movie && n && part.format === 'MOVIE')) {
+      reasons.format++;
       counts.skipped++;
       continue;
     }
@@ -178,6 +183,7 @@ export function applyTraktRows(state, entries, selections, stamp) {
       }
       if (!list.animeIds.includes(id)) {
         if (list.animeIds.length >= 150) {
+          reasons.limit++;
           counts.skipped++;
           continue;
         }
@@ -188,5 +194,28 @@ export function applyTraktRows(state, entries, selections, stamp) {
     anime.updatedAt = stamp;
     counts.applied++;
   }
-  return { draft, ...counts };
+  const ratings = (s) =>
+    s.anime.reduce(
+      (sum, a) =>
+        sum +
+        (a.rating != null ? 1 : 0) +
+        (a.seasons || []).reduce(
+          (n, p) => n + (p.episodes || []).filter((e) => e.personalRating != null).length,
+          0,
+        ),
+      0,
+    );
+  const planned = (s) =>
+    (s.preferences?.customLists || []).find((l) => l.id === 'list-trakt-watchlist')?.animeIds
+      .length || 0;
+  return {
+    draft,
+    ...counts,
+    reasons,
+    changes: {
+      history: draft.history.length - state.history.length,
+      ratings: ratings(draft) - ratings(state),
+      watchlist: planned(draft) - planned(state),
+    },
+  };
 }

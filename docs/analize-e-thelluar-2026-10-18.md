@@ -1,5 +1,7 @@
 # AnimeTrack: analizë e dizajnit, programit dhe funksioneve
 
+**Përditësim i zbatimit:** filtrat e përbashkët, importi sipas sezonit, nxjerrja e renderimit nga `app.js` dhe ulja e ngarkimit fillestar janë zbatuar në [përditësimin pasues](library-and-import-improvements.md). Matjet më poshtë janë fotografia historike e analizës.
+
 Analiza u krye më 18 tetor 2026. Baza e publikimit ishte commit-i `44a5323`; gjetjet më poshtë dallojnë gjendjen fillestare, korrigjimet në këtë përditësim dhe punën që mbetet. Ky është vlerësim i aplikacionit tonë, jo kopjim i dizajnit apo kodit Trakt.
 
 ## Përfundimi

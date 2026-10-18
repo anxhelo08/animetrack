@@ -1,10 +1,11 @@
+import { resolveTraktGroups, groupTraktRows } from '../core/trakt-import-groups.js';
+import { renderTraktMapping } from './trakt-import-view.js';
 import { cloudConfig } from '../config.js';
 import {
   rulePresets,
   cleanRules,
   matchRules,
   parseTrakt,
-  matchTrakt,
   applyTraktRows,
 } from '../core/connected-library.js';
 
@@ -20,6 +21,9 @@ export function createConnectedFeatures(ctx) {
     feedURL = '',
     selected = '',
     imports = [],
+    importSelections = {},
+    importPage = 0,
+    importExceptions = { key: '', page: 0 },
     importPreview = null,
     host = null,
     page = '',
@@ -42,6 +46,9 @@ export function createConnectedFeatures(ctx) {
       feedURL = '';
       selected = '';
       imports = [];
+      importSelections = {};
+      importPage = 0;
+      importExceptions = { key: '', page: 0 };
       importPreview = null;
       members = [];
       draftRules = null;
@@ -421,52 +428,36 @@ export function createConnectedFeatures(ctx) {
           '<label>Faqja<input name="page" type="number" min="1" max="100" value="1"></label><button class="primary">Merr faqe nga profili publik</button></form>'
         : '<p>Importi JSON punon pa llogari Trakt të lidhur.</p>') +
       (imports.length
-        ? '<form data-connected-form="import"><p>' +
-          imports.length +
-          ' regjistrime. Data pa konfirmim nuk shtohet në historik. Ndryshimet zbatohen vetëm pas parapamjes.</p><div class="connected-import-rows">' +
-          imports
-            .map((row) => {
-              const match = matchTrakt(row, library);
-              return (
-                '<label>' +
-                esc(row.title) +
-                (row.episode ? ' · S' + row.season + ' E' + row.episode : '') +
-                '<select name="' +
-                esc(row.key) +
-                '">' +
-                option('', 'Anashkalo') +
-                library
-                  .flatMap((a) =>
-                    (a.seasons || [])
-                      .filter((s) => !s.hidden)
-                      .map(
-                        (s) =>
-                          '<option value="' +
-                          esc(a.id + '|' + s.id) +
-                          '" ' +
-                          (match?.id === a.id &&
-                          ((row.movie && s.format === 'MOVIE') ||
-                            (a.seasons.length === 1 && !row.season))
-                            ? 'selected'
-                            : '') +
-                          '>' +
-                          esc(a.title + ' · ' + (s.subtitle || s.title)) +
-                          '</option>',
-                      ),
-                  )
-                  .join('') +
-                '</select></label>'
-              );
-            })
-            .join('') +
-          '</div><button class="primary">Shfaq parapamjen</button></form>'
+        ? renderTraktMapping({
+            rows: imports,
+            library,
+            selections: importSelections,
+            page: importPage,
+            exceptions: importExceptions,
+            esc,
+            btn,
+          })
         : '') +
       (importPreview
         ? '<p role="status">' +
           importPreview.applied +
           ' regjistrime të zgjedhura · ' +
           importPreview.skipped +
-          ' të anashkaluara. Kopja rezervë ruhet para zbatimit.</p>' +
+          ' të anashkaluara. Kopja rezervë ruhet para zbatimit.</p><ul><li>' +
+          importPreview.changes.history +
+          ' shikime të reja</li><li>' +
+          importPreview.changes.ratings +
+          ' vlerësime të shtuara</li><li>' +
+          importPreview.changes.watchlist +
+          ' tituj në listën Trakt</li></ul><p>' +
+          importPreview.reasons.unmapped +
+          ' pa përputhje · ' +
+          importPreview.reasons.missing +
+          ' titull/pjesë ose numër episodi i pavlefshëm · ' +
+          importPreview.reasons.format +
+          ' format i papërputhur · ' +
+          importPreview.reasons.limit +
+          ' mbi kufirin e listës.</p>' +
           btn('import-apply', 'Zbato importin e parapamjes')
         : '')
     );
@@ -553,6 +544,11 @@ export function createConnectedFeatures(ctx) {
     if (!loaded && !busy && owner) void refresh();
   }
   document.addEventListener('change', async (e) => {
+    if (e.target?.matches('[data-import-map]')) {
+      importSelections[e.target.dataset.importMap] = e.target.value;
+      importPreview = null;
+      return;
+    }
     if (e.target?.matches('[data-connected-form="rule"] [name="cf-preset"]')) {
       const form = e.target.form,
         rules = rulePresets[e.target.value];
@@ -583,6 +579,9 @@ export function createConnectedFeatures(ctx) {
       if (file.size > 4000000)
         throw Error('Skedari është tepër i madh. Ndaje në skedarë më të vegjël.');
       imports = parseTrakt(await file.text());
+      importSelections = {};
+      importPage = 0;
+      importExceptions = { key: '', page: 0 };
       importPreview = null;
       error = '';
       draw();
@@ -625,6 +624,9 @@ export function createConnectedFeatures(ctx) {
         });
         if (op === 'private') {
           imports = parseTrakt(result.rows);
+          importSelections = {};
+          importPage = 0;
+          importExceptions = { key: '', page: 0 };
           importPreview = null;
           error =
             'Faqja ' +
@@ -692,6 +694,9 @@ export function createConnectedFeatures(ctx) {
         busy = true;
         const result = await call({ action: 'trakt-page', ...values, page: Number(values.page) });
         imports = parseTrakt(result.rows);
+        importSelections = {};
+        importPage = 0;
+        importExceptions = { key: '', page: 0 };
         importPreview = null;
         error =
           'Faqja ' +
@@ -708,7 +713,12 @@ export function createConnectedFeatures(ctx) {
     }
     if (op === 'import') {
       importPreview = {
-        ...applyTraktRows(ctx.state(), imports, values, new Date().toISOString()),
+        ...applyTraktRows(
+          ctx.state(),
+          imports,
+          resolveTraktGroups(imports, ctx.state().anime, importSelections),
+          new Date().toISOString(),
+        ),
         base: JSON.stringify(ctx.state()),
       };
       draw();
@@ -745,6 +755,28 @@ export function createConnectedFeatures(ctx) {
         busy = false;
         draw();
       }
+      return;
+    }
+    if (op === 'import-prev' || op === 'import-next') {
+      importPage += op === 'import-next' ? 1 : -1;
+      importPage = Math.max(
+        0,
+        Math.min(Math.ceil(groupTraktRows(imports).length / 10) - 1, importPage),
+      );
+      draw();
+      return;
+    }
+    if (op === 'import-exceptions') {
+      importExceptions = { key: id, page: 0 };
+      draw();
+      return;
+    }
+    if (op === 'import-exception-prev' || op === 'import-exception-next') {
+      importExceptions.page = Math.max(
+        0,
+        importExceptions.page + (op === 'import-exception-next' ? 1 : -1),
+      );
+      draw();
       return;
     }
     if (op === 'refresh') return refresh();
@@ -823,6 +855,9 @@ export function createConnectedFeatures(ctx) {
       try {
         await ctx.applyTrakt(imports, importPreview);
         imports = [];
+        importSelections = {};
+        importPage = 0;
+        importExceptions = { key: '', page: 0 };
         importPreview = null;
         error = 'Importi u ruajt.';
       } catch (err) {

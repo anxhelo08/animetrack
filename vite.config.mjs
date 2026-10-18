@@ -20,7 +20,7 @@ export default defineConfig({
       manifest:false,
       injectManifest:{
         globPatterns:['**/*.{js,css,html,svg,png,ico,webmanifest}'],
-        globIgnores:['**/screenshot-*.png','assets/reading.*.{js,css}','assets/news.*.{js,css}'],
+        globIgnores:['**/screenshot-*.png','assets/reading.*.{js,css}','assets/news.*.{js,css}','assets/watch.*.js','assets/rich-details.*.js'],
         maximumFileSizeToCacheInBytes:4*1024*1024
       }
     })

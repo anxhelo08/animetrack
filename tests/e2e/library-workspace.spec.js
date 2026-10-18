@@ -172,6 +172,7 @@ test('reading and watching workspaces keep source handoffs separate from progres
       phone ? '#reading-view .reading-mobile-switch [data-pro-page="library"]' : '#library-nav',
     )
     .click();
+  await page.locator('#mobile-library-controls > summary').click();
   await page.locator('[data-library-focus="unwatched"]').click();
   await expect(page.locator('#anime-grid .anime-card')).toHaveCount(1);
   await expect(page.locator('#anime-grid .card-title')).toBeVisible();

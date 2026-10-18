@@ -34,5 +34,5 @@ window.ATUnified119=(()=>{
   }
  }
  function mount(){if(installed)return;installed=true;document.addEventListener('click',e=>{const b=e.target.closest('[data-media-filter]');if(!b)return;media=b.dataset.mediaFilter;if(last)window.dispatchEvent(new CustomEvent('at119-library-filter',{detail:media}))})}
- return {render,mount,selection:()=>media,seen,total,percent};
+ return {render,mount,setSelection:value=>{if(['all','anime','tv','movie'].includes(value))media=value},selection:()=>media,seen,total,percent};
 })();

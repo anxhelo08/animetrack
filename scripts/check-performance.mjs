@@ -11,9 +11,9 @@ const sizes = await Promise.all(
 const total = sizes.reduce((a, b) => a + b, 0);
 // Separate initial loading from optional features; splitting reduces startup traffic
 // while each independently compressed chunk adds a little total compression overhead.
-// Connected library tools load on demand and receive 9 KB of total feature budget.
-// The startup budget stays unchanged.
-if (total > 357000) throw Error(`JavaScript gzip budget exceeded: ${total} > 357000 bytes`);
+// Grouped imports and split detail chunks increase optional feature/compression overhead.
+// Tighten startup by 5 KB while allowing 7.5 KB more total optional feature budget.
+if (total > 364500) throw Error(`JavaScript gzip budget exceeded: ${total} > 364500 bytes`);
 const manifest = JSON.parse(
   await readFile(new URL('../dist/.vite/manifest.json', import.meta.url), 'utf8'),
 );
@@ -25,7 +25,7 @@ const startup = (
     ),
   )
 ).reduce((a, b) => a + b, 0);
-if (startup > 310000)
-  throw Error(`Startup JavaScript gzip budget exceeded: ${startup} > 310000 bytes`);
-console.log(`Startup JavaScript gzip: ${startup} / 310000 bytes (${initial.length} chunks)`);
-console.log(`Total JavaScript gzip: ${total} / 357000 bytes (${sizes.length} chunks)`);
+if (startup > 305000)
+  throw Error(`Startup JavaScript gzip budget exceeded: ${startup} > 305000 bytes`);
+console.log(`Startup JavaScript gzip: ${startup} / 305000 bytes (${initial.length} chunks)`);
+console.log(`Total JavaScript gzip: ${total} / 364500 bytes (${sizes.length} chunks)`);

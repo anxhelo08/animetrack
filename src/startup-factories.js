@@ -2,8 +2,6 @@
 import "./modules/recommendations.js";
 import "./modules/wrapped.js";
 import "./modules/calendar-wrapped.js";
-import "./modules/watch.js";
-import "./modules/rich-details.js";
 import "./modules/account-service.js";
 import "./modules/provider-sync.js";
 import "./modules/profiles.js";

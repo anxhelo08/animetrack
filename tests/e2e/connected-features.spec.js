@@ -30,6 +30,7 @@ test('saved views and calendar subscriptions preserve the private library', asyn
     )
     .click();
   const before = await page.evaluate(() => JSON.stringify(window.ATMobile113.state()));
+  await page.locator('#mobile-library-controls > summary').click();
   await page.locator('[data-save-library-filter]').click();
   const form = page.locator('[data-connected-form="rule"]');
   await expect(form).toBeVisible();
@@ -181,6 +182,7 @@ test('shared list votes toggle and failed rule saves retain edited preset fields
       info.project.name.startsWith('iphone') ? '[data-mobile-nav="library"]' : '#library-nav',
     )
     .click();
+  await page.locator('#mobile-library-controls > summary').click();
   await page.locator('[data-save-library-filter]').click();
   const form = page.locator('[data-connected-form="rule"]');
   await expect(form.locator('button')).toBeEnabled();
