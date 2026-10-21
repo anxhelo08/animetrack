@@ -150,3 +150,19 @@ saved notes. Drafts are in memory for the current title; only a successful save
 persists them. Notes precede ratings in their tab, while rewatch belongs with
 episodes. Existing film notes and watch actions keep their handlers and their
 respective Notes and Episodes sections.
+
+## Library rendering and performance
+
+`core/library-selection.js` owns read-only filtering and ordering; it compiles the
+search query once per selection and computes progress sort keys once per row.
+`modules/library-card.js` owns the shared phone/desktop card presentation through
+injected model functions. `modules/library-renderer.js` owns DOM composition and
+owner scope; `core/library-list.js` retains progressive keyed card/poster nodes.
+No persistent model cache depends on mutable row identity.
+
+Open `?profile-library=1` to record the latest `summary`, `selection` and `commit`
+measures in the browser performance timeline. Normal sessions do not record them.
+These local measurements contain no account or title data and are never uploaded.
+The performance check now budgets both startup/total JavaScript and CSS, walking
+eager stylesheet dependencies without counting unopened reading/news/diary CSS
+as startup traffic.

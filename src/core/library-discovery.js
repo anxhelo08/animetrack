@@ -5,19 +5,24 @@ const words = (value) =>
     .toLocaleLowerCase()
     .match(/[\p{L}\p{N}]+/gu) || [];
 /** Personal-library search also recognizes aliases, accents and season titles. */
-export function matchesLibraryQuery(item, query) {
+export function createLibraryQuery(query) {
   const terms = words(query);
-  if (!terms.length) return true;
-  const haystack = words(
-    [
-      item.title,
-      item.genre,
-      item.genres,
-      ...(item.aliases || []),
-      ...(item.seasons || []).map((s) => s.title),
-    ].join(' '),
-  ).join(' ');
-  return terms.every((term) => haystack.includes(term));
+  if (!terms.length) return () => true;
+  return (item) => {
+    const haystack = words(
+      [
+        item.title,
+        item.genre,
+        item.genres,
+        ...(item.aliases || []),
+        ...(item.seasons || []).map((s) => s.title),
+      ].join(' '),
+    ).join(' ');
+    return terms.every((term) => haystack.includes(term));
+  };
+}
+export function matchesLibraryQuery(item, query) {
+  return createLibraryQuery(query)(item);
 }
 export function weebCentralLink(item) {
   const id = item.weebCentralId || (item.source === 'weebcentral' ? item.sourceId : '');

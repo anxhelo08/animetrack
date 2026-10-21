@@ -7,15 +7,6 @@
   display: none;
 }
 @media (min-width: 761px) and (min-height: 501px), (min-width: 961px) {
-  .mobile-library-controls {
-    display: contents;
-  }
-  .mobile-library-controls > summary {
-    display: none;
-  }
-  .mobile-library-controls-body {
-    display: contents;
-  }
   .mobile-result-hidden {
     display: block;
   }
@@ -1120,41 +1111,6 @@
     border: 0;
     border-radius: 12px;
   }
-  .mobile-library-controls {
-    margin-top: 14px;
-    background: none;
-  }
-  .mobile-library-controls > summary {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 14px;
-    background: var(--surface);
-    border-radius: 10px;
-    font-size: 12px;
-    min-height: 44px;
-    cursor: pointer;
-  }
-  .mobile-library-controls-body {
-    padding: 14px 0;
-    display: grid;
-    gap: 14px;
-  }
-  .mobile-library-controls .at119-media-filter,
-  .mobile-library-controls .at117-library-tools {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .mobile-library-controls .at119-media-filter button,
-  .mobile-library-controls .at117-library-tools button {
-    font-size: 10px;
-    min-height: 44px;
-  }
-  .mobile-library-controls .series-repair-panel {
-    flex-wrap: wrap;
-    font-size: 11px;
-  }
   #library-status-strip {
     position: sticky;
     top: 0;
@@ -1525,9 +1481,6 @@
   }
 }
 @media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
-  body.at-ios-enabled #pro-content > .at1161-profile {
-    display: none;
-  }
   body.at-ios-enabled #pro-content > .at-profile-header {
     display: block;
     background: none;

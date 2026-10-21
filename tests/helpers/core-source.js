@@ -8,6 +8,8 @@ export function readCoreSource() {
     'core/library-model.js',
     'core/catalog-client.js',
     'modules/library-renderer.js',
+    'modules/library-card.js',
+    'core/library-selection.js',
   ]
     .map((file) =>
       fs

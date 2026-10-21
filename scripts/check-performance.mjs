@@ -1,6 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
-import { startupAssets } from './startup-assets.mjs';
+import { startupAssets, startupStyles } from './startup-assets.mjs';
 const assets = new URL('../dist/assets/', import.meta.url);
 const files = await readdir(assets);
 const sizes = await Promise.all(
@@ -29,3 +29,22 @@ if (startup > 305000)
   throw Error(`Startup JavaScript gzip budget exceeded: ${startup} > 305000 bytes`);
 console.log(`Startup JavaScript gzip: ${startup} / 305000 bytes (${initial.length} chunks)`);
 console.log(`Total JavaScript gzip: ${total} / 364500 bytes (${sizes.length} chunks)`);
+
+const cssFiles = files.filter((name) => name.endsWith('.css'));
+const cssSizes = await Promise.all(
+  cssFiles.map(async (name) => gzipSync(await readFile(new URL(name, assets))).length),
+);
+const cssTotal = cssSizes.reduce((a, b) => a + b, 0);
+const initialCSS = startupStyles(manifest);
+const cssStartup = (
+  await Promise.all(
+    initialCSS.map(
+      async (file) => gzipSync(await readFile(new URL('../dist/' + file, import.meta.url))).length,
+    ),
+  )
+).reduce((a, b) => a + b, 0);
+if (cssStartup > 102000)
+  throw Error(`Startup CSS gzip budget exceeded: ${cssStartup} > 102000 bytes`);
+if (cssTotal > 113000) throw Error(`Total CSS gzip budget exceeded: ${cssTotal} > 113000 bytes`);
+console.log(`Startup CSS gzip: ${cssStartup} / 102000 bytes (${initialCSS.length} stylesheets)`);
+console.log(`Total CSS gzip: ${cssTotal} / 113000 bytes (${cssFiles.length} stylesheets)`);

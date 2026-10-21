@@ -222,10 +222,7 @@
 #pro-content .at-profile-tabs button.active{background:#c5b4ff;border-color:#c5b4ff;color:#201b32}
 #pro-content .at-h2-profile-metrics>div{background:#1d1f2c;border:1px solid var(--studio-line);border-radius:14px;padding:20px}
 #pro-content .at-profile-columns{gap:20px}
-#pro-content .at1161-collection{background:#1b1d28;border:1px solid var(--studio-line);border-radius:16px;padding:18px;margin-block:18px}
-#pro-content .at1161-metrics{gap:10px}
-#pro-content .at1161-metrics>div{background:#20222f;border:1px solid #383b4c;border-radius:12px}
-@media(max-width:760px),(max-width:960px) and (max-height:500px){#pro-content .at-profile-tabs button{flex:1 1 130px;font-size:12px}#pro-content .at-profile-columns{grid-template-columns:minmax(0,1fr)}#pro-content .at-h2-profile-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#pro-content .at-h2-profile-metrics>div{padding:16px}#pro-content .at1161-collection{padding:16px}}
+@media(max-width:760px),(max-width:960px) and (max-height:500px){#pro-content .at-profile-tabs button{flex:1 1 130px;font-size:12px}#pro-content .at-profile-columns{grid-template-columns:minmax(0,1fr)}#pro-content .at-h2-profile-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}#pro-content .at-h2-profile-metrics>div{padding:16px}}
 
 /* ===== auth-compact.css ===== */
 /* Compact sign-in; hidden recovery controls must not become grid items. */

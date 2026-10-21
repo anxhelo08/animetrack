@@ -23,3 +23,20 @@ export function startupAssets(manifest, entries = startupEntries) {
   for (const entry of entries) visit(entry);
   return [...files];
 }
+
+// CSS attached to eager chunks is required before the app is revealed too.
+export function startupStyles(manifest, entries = startupEntries) {
+  const visited = new Set(),
+    files = new Set();
+  function visit(key) {
+    if (visited.has(key)) return;
+    const chunk = manifest[key];
+    if (!chunk) throw Error(`Startup manifest entry missing: ${key}`);
+    visited.add(key);
+    if (chunk.file.endsWith('.css')) files.add(chunk.file);
+    for (const file of chunk.css || []) files.add(file);
+    for (const imported of chunk.imports || []) visit(imported);
+  }
+  for (const entry of entries) visit(entry);
+  return [...files];
+}

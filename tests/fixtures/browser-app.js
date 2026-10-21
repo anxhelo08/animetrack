@@ -8,6 +8,7 @@ export async function openFixture(
     owner = 'accessibility-test',
     persistWrites = false,
     accessToken = null,
+    freezeTime = true,
   } = {},
 ) {
   test.setTimeout(30000);
@@ -48,7 +49,7 @@ export async function openFixture(
       ),
     });
   });
-  await page.clock.setFixedTime(new Date('2026-09-30T12:00:00Z'));
+  if (freezeTime) await page.clock.setFixedTime(new Date('2026-09-30T12:00:00Z'));
   await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 15000 });
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
 }

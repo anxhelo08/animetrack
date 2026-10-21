@@ -1,5 +1,5 @@
-import { seriesProgress } from '../core/series-progress.js';
-import { matchesLibraryQuery } from '../core/library-discovery.js';
+import { libraryTick, libraryMeasure } from '../core/library-timing.js';
+import { createLibrarySelection } from '../core/library-selection.js';
 import { libraryWatchTimes } from '../core/watch-progress.js';
 export function createLibraryRenderer(ctx) {
   const {
@@ -24,6 +24,10 @@ export function createLibraryRenderer(ctx) {
     openForm,
     releasedCount,
   } = ctx;
+  const selectLibrary = createLibrarySelection({
+    ...ctx,
+    sortYears: (anime, sort) => window.ATLibraryYear125.sort(anime, sort),
+  });
   let renderedLibraryOwner = '',
     renderedLibraryMarkup = '';
   return function render() {
@@ -42,6 +46,7 @@ export function createLibraryRenderer(ctx) {
       search = $('at113-library-search').value.trim().toLocaleLowerCase();
       ctx.setSearch(search);
     }
+    const summaryStart = libraryTick();
     const totals = { all: state.anime.length };
     Object.keys(STATUS).forEach(
       (s) => (totals[s] = state.anime.filter((a) => a.status === s).length),
@@ -82,7 +87,12 @@ export function createLibraryRenderer(ctx) {
       }
     }
     if (phone && view !== 'library') return;
-    const watchTimes = libraryWatchTimes(state.anime, state.history);
+    libraryMeasure('summary', summaryStart);
+    const selectionStart = libraryTick();
+    const watchTimes =
+      !phone || !['title', 'progress', 'rating', 'year-new', 'year-old'].includes(sort)
+        ? libraryWatchTimes(state.anime, state.history)
+        : null;
     if (!phone) {
       const looking = state.anime
         .filter((a) => a.status === 'watching')
@@ -117,42 +127,17 @@ export function createLibraryRenderer(ctx) {
           `<button type="button" class="genre-chip ${selectedGenre === '__unknown' ? 'active' : ''}" data-genre="__unknown">Pa zhanër <span>${state.anime.filter((a) => !genresOf(a).length).length}</span></button>`,
       );
     }
-    let anime = state.anime.filter(
-      (a) =>
-        ((filter === 'all' && a.status !== 'planning') ||
-          (filter === 'favorites'
-            ? a.favorite
-            : filter === 'movies'
-              ? isMovieAnime(a)
-              : filter === 'waiting'
-                ? !!futureSeasonOf(a)
-                : filter === 'genres'
-                  ? selectedGenre === 'all' ||
-                    (selectedGenre === '__unknown'
-                      ? !genresOf(a).length
-                      : genresOf(a).some((g) => g.toLocaleLowerCase() === selectedGenre))
-                  : a.status === filter)) &&
-        matchesLibraryQuery(a, search) &&
-        (libraryFocus === 'all' ||
-          (libraryFocus === 'unwatched' &&
-            (seriesProgress(a, releasedCount)?.remaining ?? releasedTotal(a) - count(a)) > 0) ||
-          (libraryFocus === 'new' && hasNewUnwatchedEpisode(a))) &&
-        (libraryProgress === 'all' || seriesProgress(a, releasedCount)?.key === libraryProgress),
-    );
-    if (sort === 'year-new' || sort === 'year-old')
-      anime = window.ATLibraryYear125.sort(anime, sort);
-    else
-      anime.sort((a, b) =>
-        sort === 'title'
-          ? a.title.localeCompare(b.title)
-          : sort === 'progress'
-            ? percentage(b) - percentage(a)
-            : sort === 'rating'
-              ? (b.rating ?? -1) - (a.rating ?? -1)
-              : (watchTimes.get(b.id) || 0) - (watchTimes.get(a.id) || 0),
-      );
-    const selection = window.ATUnified119?.selection?.() || 'all';
-    if (selection !== 'all') anime = anime.filter((a) => mediaKind(a) === selection);
+    const anime = selectLibrary({
+      state,
+      filter,
+      search,
+      sort,
+      selectedGenre,
+      libraryFocus,
+      libraryProgress,
+      watchTimes,
+      selection: window.ATUnified119?.selection?.() || 'all',
+    });
     $('at125-sort-hint').hidden = sort !== 'year-new' && sort !== 'year-old';
     $('library-title').textContent =
       filter === 'all'
@@ -174,6 +159,8 @@ export function createLibraryRenderer(ctx) {
           : filter === 'genres'
             ? `${anime.length} anime · ${selectedGenre === 'all' ? 'të gjitha zhanret' : selectedGenre === '__unknown' ? 'pa zhanër' : selectedGenre}`
             : `${anime.length} anime në këtë seksion`;
+    libraryMeasure('selection', selectionStart);
+    const commitStart = libraryTick();
     const gridMarkup = anime.length
       ? ''
       : `<div class="empty"><div class="symbol">✦</div><h3>${state.anime.length ? 'Nuk u gjet asnjë anime' : 'Biblioteka jote është bosh'}</h3><p>${state.anime.length ? 'Ndrysho filtrin ose kërkimin.' : 'Shto animen tënde të parë dhe fillo të regjistrosh episodet.'}</p><button class="primary" id="empty-add">+ Shto anime</button></div>`;
@@ -223,5 +210,6 @@ export function createLibraryRenderer(ctx) {
       owner: owner,
       total: anime.length,
     });
+    libraryMeasure('commit', commitStart);
   };
 }

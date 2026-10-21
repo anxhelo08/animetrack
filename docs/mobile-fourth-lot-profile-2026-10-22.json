@@ -1,0 +1,68 @@
+{
+  "scenario": "Synthetic Chromium phone, native performance clock, CPU 4x, two warmups, two animation frames per sample",
+  "results": [
+    {
+      "size": 50,
+      "cpu": 4,
+      "samples": 20,
+      "median": 78.6,
+      "p95": 99.3,
+      "phases": {
+        "summary": {
+          "median": 4.7,
+          "p95": 9.2
+        },
+        "selection": {
+          "median": 1.1,
+          "p95": 2.3
+        },
+        "commit": {
+          "median": 24.1,
+          "p95": 31.8
+        }
+      }
+    },
+    {
+      "size": 500,
+      "cpu": 4,
+      "samples": 20,
+      "median": 77.7,
+      "p95": 91.4,
+      "phases": {
+        "summary": {
+          "median": 16.1,
+          "p95": 19.8
+        },
+        "selection": {
+          "median": 6.8,
+          "p95": 8.6
+        },
+        "commit": {
+          "median": 18.0,
+          "p95": 21
+        }
+      }
+    },
+    {
+      "size": 2000,
+      "cpu": 4,
+      "samples": 20,
+      "median": 123.6,
+      "p95": 156.4,
+      "phases": {
+        "summary": {
+          "median": 47.7,
+          "p95": 55.1
+        },
+        "selection": {
+          "median": 24.1,
+          "p95": 38.2
+        },
+        "commit": {
+          "median": 18.6,
+          "p95": 27.3
+        }
+      }
+    }
+  ]
+}
