@@ -1,0 +1,1787 @@
+{
+  "commit": "01ae22a",
+  "engine": "rea-agents 6.7.0 static analysis library",
+  "canonicalEvidence": false,
+  "mode": "in-process fallback direct static library; see separate CLI attempt",
+  "cli": "execution_failure: worker startup",
+  "files": 128,
+  "status": {
+    "partial": 12,
+    "complete": 116
+  },
+  "parseErrors": 0,
+  "visitedASTNodes": 224489,
+  "sourceBytes": 1291366,
+  "details": [
+    {
+      "file": "src/app.js",
+      "bytes": 306944,
+      "lines": 2223,
+      "sha256": "27bc45d3567f7e203a669351fc09e508eea04bad104b21491e1a80ae323dc0bc",
+      "parseStatus": "partial",
+      "astNodes": 57552,
+      "references": 41,
+      "networkObservations": 15,
+      "storageObservations": 25
+    },
+    {
+      "file": "src/config.js",
+      "bytes": 359,
+      "lines": 7,
+      "sha256": "fac7eb9e18d19d67504c5051e8bd44901a04a41bf19eb1cc5b6b0064750c3f52",
+      "parseStatus": "complete",
+      "astNodes": 34,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/main.js",
+      "bytes": 1929,
+      "lines": 43,
+      "sha256": "e864af6b54216eb9fac597fe69a4b8fb37daffa429abc3a0fa0c88f8d68596ea",
+      "parseStatus": "complete",
+      "astNodes": 250,
+      "references": 12,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/startup-factories.js",
+      "bytes": 1484,
+      "lines": 44,
+      "sha256": "b74345aa870c5ecd27a4c2b2767bfc0328fa14680f16259cb44f2d5a9cd9745a",
+      "parseStatus": "complete",
+      "astNodes": 86,
+      "references": 42,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/sw.js",
+      "bytes": 3452,
+      "lines": 78,
+      "sha256": "1633ea0f6c1c9294710313bf8a47e4aec4137764d454b3dba497d6b1cbb4607a",
+      "parseStatus": "complete",
+      "astNodes": 613,
+      "references": 2,
+      "networkObservations": 3,
+      "storageObservations": 2
+    },
+    {
+      "file": "src/modules/account-service.js",
+      "bytes": 1196,
+      "lines": 30,
+      "sha256": "361014f7e7d1168f5ffda820809273d92fb66666d8b1ddee566a511b1be85ca1",
+      "parseStatus": "complete",
+      "astNodes": 177,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/avatar.js",
+      "bytes": 475,
+      "lines": 15,
+      "sha256": "e5aa336e06eb1eb1499a24ffedb6dbacd484e955d84758f49cf4ba8352223f82",
+      "parseStatus": "complete",
+      "astNodes": 67,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/calendar-wrapped.js",
+      "bytes": 19695,
+      "lines": 127,
+      "sha256": "c17d94c773bb37ce0fd6bc8c30d7c9308343c45631984adf81429b7f0993b370",
+      "parseStatus": "complete",
+      "astNodes": 3405,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/catalog-results.js",
+      "bytes": 2747,
+      "lines": 83,
+      "sha256": "ece6548e8f00d43d3d27284e517b4993288de0170534c50a4f9665739af0cbb0",
+      "parseStatus": "complete",
+      "astNodes": 557,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/catalog-search-input.js",
+      "bytes": 4599,
+      "lines": 114,
+      "sha256": "6e6c06eaee371fe60ffd60191a0b41b39c0beab0d9c49e7f534b3fbe20bdabb9",
+      "parseStatus": "complete",
+      "astNodes": 698,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/cloud-local.js",
+      "bytes": 11779,
+      "lines": 180,
+      "sha256": "3956b5bed6649d81287ae0dfa9acd2e800869ccff21b316145aed8252ed3640f",
+      "parseStatus": "complete",
+      "astNodes": 2649,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/collections.js",
+      "bytes": 10412,
+      "lines": 99,
+      "sha256": "00c79b093268b8802cd8cf9a81796207b94551d02aa321c80e57c843b7ed2087",
+      "parseStatus": "complete",
+      "astNodes": 1680,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/command.js",
+      "bytes": 8193,
+      "lines": 71,
+      "sha256": "b4b85698fd338a5f39f1af5f42f820a4f806c3b9f333c53ce95f37be1d7d24e1",
+      "parseStatus": "complete",
+      "astNodes": 1587,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/connected-features.js",
+      "bytes": 30649,
+      "lines": 871,
+      "sha256": "fc337bb26a98c6a62ed0b6ecd96b8c2dfd997d917c385907cb7f81f5f5568ef8",
+      "parseStatus": "complete",
+      "astNodes": 3679,
+      "references": 4,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/cross-sync.js",
+      "bytes": 1049,
+      "lines": 22,
+      "sha256": "1b87ded0b4ea570fd04296232c995a715ec695f9a0772869db5579a6886b956c",
+      "parseStatus": "complete",
+      "astNodes": 195,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/daily.js",
+      "bytes": 6963,
+      "lines": 48,
+      "sha256": "5317cbe6b911067b35c09b9607ab1db43e0db2b3efe05613b0b85e84e487c349",
+      "parseStatus": "complete",
+      "astNodes": 1130,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/decision-dialog.js",
+      "bytes": 1542,
+      "lines": 40,
+      "sha256": "a8502bb1e3d78ae90d55a4782e43e8b48057eb70b8c4d79578690f9d1ac6e05e",
+      "parseStatus": "complete",
+      "astNodes": 159,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/deferred-detail.js",
+      "bytes": 1542,
+      "lines": 55,
+      "sha256": "85dbf0b24e2b24de975801ebfb6951b72139d74b67487ead5f704f38535f93bc",
+      "parseStatus": "complete",
+      "astNodes": 223,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/detail-navigation.js",
+      "bytes": 4717,
+      "lines": 113,
+      "sha256": "7843bb78026cc3df5b2fa75ff53bed2b0ae51746d48350b279e19c99cfb726f2",
+      "parseStatus": "complete",
+      "astNodes": 669,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/diary-page.js",
+      "bytes": 51,
+      "lines": 3,
+      "sha256": "aee6deebef14d39e6f0b82ce4aba844f5124de048da25bdade632ad38a044c76",
+      "parseStatus": "complete",
+      "astNodes": 6,
+      "references": 2,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/diary.js",
+      "bytes": 19908,
+      "lines": 141,
+      "sha256": "f2b53a2b458a50ffe1422680af4f0f9c45343291cb43cd08b8d6b32f007d7066",
+      "parseStatus": "complete",
+      "astNodes": 4110,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/episode-controls.js",
+      "bytes": 3650,
+      "lines": 110,
+      "sha256": "e56fe0320776df8ddecb69f3dd878a9f2134fc45cf1f261aa0bb1f16f904cb9e",
+      "parseStatus": "complete",
+      "astNodes": 664,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/episode-hub.js",
+      "bytes": 1921,
+      "lines": 31,
+      "sha256": "ff59ec52c8d03e41b022194dc26615dbc94cddd042409635c8f5be1176061e4d",
+      "parseStatus": "complete",
+      "astNodes": 438,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/episode-presentation.js",
+      "bytes": 4552,
+      "lines": 80,
+      "sha256": "5af20e157761e5dfe23efaf87a34ff494ab5fe539d5f6aa0b807bd0a78eeef4d",
+      "parseStatus": "complete",
+      "astNodes": 731,
+      "references": 3,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/episode-watch.js",
+      "bytes": 3021,
+      "lines": 43,
+      "sha256": "c270a7b5ec1ebe57492feebb2f66ae7bd7cfd5a5496e48d0e2f4f1ee49814160",
+      "parseStatus": "complete",
+      "astNodes": 320,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/experience.js",
+      "bytes": 2980,
+      "lines": 36,
+      "sha256": "f8371374886834ec7599fe62f4d2f158b89a5e22237568ae7e9396c9f32dc8bc",
+      "parseStatus": "complete",
+      "astNodes": 449,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/feature-retry.js",
+      "bytes": 1026,
+      "lines": 30,
+      "sha256": "da7beb5bd5ee6fa1345e3a1a11e83c2be6d825e6338608cfa8092b1443e3a9fd",
+      "parseStatus": "complete",
+      "astNodes": 155,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 3
+    },
+    {
+      "file": "src/modules/features.js",
+      "bytes": 33225,
+      "lines": 328,
+      "sha256": "5b48072f74d32c6abb78aad3060eb7e95835de0d19a0134fd65a5022f6c5aee5",
+      "parseStatus": "complete",
+      "astNodes": 5404,
+      "references": 17,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/filler.js",
+      "bytes": 3453,
+      "lines": 62,
+      "sha256": "0c839146b0f866e4068d5af7f61ddad4fd68e97ab6b429055e741816b7c1c454",
+      "parseStatus": "complete",
+      "astNodes": 806,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/franchise-engine.js",
+      "bytes": 9963,
+      "lines": 36,
+      "sha256": "e058c0829a7fa3871db6c1ec100b4c492e0f9f2e7c78ae2a14653d13c3eff0d5",
+      "parseStatus": "complete",
+      "astNodes": 2360,
+      "references": 0,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/franchise.js",
+      "bytes": 4627,
+      "lines": 30,
+      "sha256": "8c875e4def6929192ccdd9b0609dafc148b5065f2b41472d1d8215bc5d6c2738",
+      "parseStatus": "complete",
+      "astNodes": 1194,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/friends.js",
+      "bytes": 15557,
+      "lines": 129,
+      "sha256": "1c893bd10d5e0954b477a578f4818e56b1c895d768cbf15f7ccbc4cf6cac9a6e",
+      "parseStatus": "complete",
+      "astNodes": 2481,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/home-spotlight.js",
+      "bytes": 19016,
+      "lines": 446,
+      "sha256": "dc63d80b4bbec6786d607a399fe91d75d73bf7776afa2d04a4a73c88aece561a",
+      "parseStatus": "complete",
+      "astNodes": 2618,
+      "references": 2,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/home.js",
+      "bytes": 18218,
+      "lines": 124,
+      "sha256": "665f76b36ce931a33058d1b065e3f8ed9f1e32736a3c4d86b4240b32d73a5a5b",
+      "parseStatus": "complete",
+      "astNodes": 2864,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/import-library.js",
+      "bytes": 7380,
+      "lines": 91,
+      "sha256": "e3c94b1a1eb9832c1a48da1163cb7d2950340ff6d3aee44c436e3f857fabc5c7",
+      "parseStatus": "complete",
+      "astNodes": 1371,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/iphone.js",
+      "bytes": 27172,
+      "lines": 264,
+      "sha256": "4d1b62d7ccbd10581a0edadb81f7fbc5abed320fe6c3f4ccbd0a9afacd200edb",
+      "parseStatus": "complete",
+      "astNodes": 4258,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 2
+    },
+    {
+      "file": "src/modules/journey.js",
+      "bytes": 3833,
+      "lines": 51,
+      "sha256": "939b946aa474703caa4fb648934530eac009789dc34a0bfbdd674b121048e1b9",
+      "parseStatus": "complete",
+      "astNodes": 728,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/lazy-reading.js",
+      "bytes": 4986,
+      "lines": 161,
+      "sha256": "accb5b11e2f4eec27acfb3749a9c5ebfb474970f23e8dfb219bd67859d3b5b45",
+      "parseStatus": "complete",
+      "astNodes": 692,
+      "references": 4,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/library-filters.js",
+      "bytes": 4876,
+      "lines": 116,
+      "sha256": "43fc73e8d78a90f9a455bb6d3683f10c3987ae4fb4da2f3494c22aa013ba0679",
+      "parseStatus": "complete",
+      "astNodes": 595,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/library-identity.js",
+      "bytes": 7984,
+      "lines": 111,
+      "sha256": "79b2051fd2aabbd62bbd11f7082ebed1fbaadd106ca0a19dd66901ee43038e14",
+      "parseStatus": "complete",
+      "astNodes": 1993,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/library-renderer.js",
+      "bytes": 9087,
+      "lines": 222,
+      "sha256": "752a252389e073047b796cb07f15b511cbbb06d975cb375ead43a9f618c1bbaf",
+      "parseStatus": "complete",
+      "astNodes": 1312,
+      "references": 3,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/mangadex-catalog.js",
+      "bytes": 2741,
+      "lines": 75,
+      "sha256": "59fc7a3e225d7be246f2a5a1414e017271a6a3902bce87682859eb50578ad8de",
+      "parseStatus": "complete",
+      "astNodes": 497,
+      "references": 3,
+      "networkObservations": 2,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/mangaupdates-catalog.js",
+      "bytes": 3334,
+      "lines": 85,
+      "sha256": "4281fdf0ca0894fba013375218c540aaf2739462972bb98fd02f2da0cbef2a75",
+      "parseStatus": "complete",
+      "astNodes": 543,
+      "references": 2,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/media-card.js",
+      "bytes": 4143,
+      "lines": 61,
+      "sha256": "b1ffb2668ac52d758e0ef2fe4b828da95ff2f6b5acabfd044ac728e8573895e9",
+      "parseStatus": "complete",
+      "astNodes": 508,
+      "references": 2,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/mobile-home-model.js",
+      "bytes": 4156,
+      "lines": 127,
+      "sha256": "6ff2fac1e763182e1e5a298de5782a4fde43fe61dfd5b4a56654913e9383c21e",
+      "parseStatus": "complete",
+      "astNodes": 774,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/mobile-presentation.js",
+      "bytes": 40891,
+      "lines": 883,
+      "sha256": "fe6e8882237dbc48ba8ee15c63e1a4da603f6a550240e4432c640046ec8e2319",
+      "parseStatus": "complete",
+      "astNodes": 5602,
+      "references": 4,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/mobile.js",
+      "bytes": 7444,
+      "lines": 76,
+      "sha256": "d24575cb59ff7794f425338f7a695942693cb9c15674955b3a14d2813f689ddf",
+      "parseStatus": "complete",
+      "astNodes": 1163,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/moderation.js",
+      "bytes": 3125,
+      "lines": 35,
+      "sha256": "134e6b678fda87e29618016856cbb27ac82944cf321a1b68438a797733351c87",
+      "parseStatus": "complete",
+      "astNodes": 496,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/movies.js",
+      "bytes": 14023,
+      "lines": 108,
+      "sha256": "bd8cf9e3f5d833bd3f35f257ae6894fefbacaf80cc0a3280d8d562ac04b4e331",
+      "parseStatus": "complete",
+      "astNodes": 3344,
+      "references": 0,
+      "networkObservations": 9,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/nav-icons.js",
+      "bytes": 1948,
+      "lines": 37,
+      "sha256": "9ca9c43916b413a5a0aafba831ac5b2347114e284a49214002446c5478b98a0b",
+      "parseStatus": "complete",
+      "astNodes": 103,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/news.js",
+      "bytes": 22043,
+      "lines": 547,
+      "sha256": "4ddbae2f48de5d4ed46ab0ec2ad70d457be722193b887e082036f07be56c795f",
+      "parseStatus": "partial",
+      "astNodes": 3017,
+      "references": 3,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/notifications.js",
+      "bytes": 14691,
+      "lines": 101,
+      "sha256": "b8c7539a80802085ac252a75e94c757677f517b31194c7144fc959ec19158b88",
+      "parseStatus": "complete",
+      "astNodes": 2714,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/player-tracking.js",
+      "bytes": 5486,
+      "lines": 106,
+      "sha256": "0074df8cb1c2b458bd78b3b89a51f20e6e90b7f9399442fbdc7af56083b6407b",
+      "parseStatus": "complete",
+      "astNodes": 762,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/product-experience.js",
+      "bytes": 18761,
+      "lines": 461,
+      "sha256": "1b5bf982242859ecbfb778c2251da0ca387a0c104604f188c9245be843a12ed5",
+      "parseStatus": "complete",
+      "astNodes": 2435,
+      "references": 3,
+      "networkObservations": 0,
+      "storageObservations": 2
+    },
+    {
+      "file": "src/modules/profiles.js",
+      "bytes": 25637,
+      "lines": 138,
+      "sha256": "fbc4799ac117d8286d437b99e264b783979267a21d23d4de4e2b004b3f89044c",
+      "parseStatus": "complete",
+      "astNodes": 3986,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 2
+    },
+    {
+      "file": "src/modules/provider-bridge.js",
+      "bytes": 12754,
+      "lines": 108,
+      "sha256": "84da1ba4281f3305d657051e4d7468f9d7ec49bd65dd09652cfe5ba06565a2ac",
+      "parseStatus": "partial",
+      "astNodes": 3317,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/provider-sync.js",
+      "bytes": 28599,
+      "lines": 257,
+      "sha256": "14e872d0463e6b4620e14c0f45e483c775035303461e41f4195937b92ecdba86",
+      "parseStatus": "complete",
+      "astNodes": 5606,
+      "references": 0,
+      "networkObservations": 3,
+      "storageObservations": 8
+    },
+    {
+      "file": "src/modules/push.js",
+      "bytes": 7981,
+      "lines": 108,
+      "sha256": "d236c4bec400b8f77ad4b340b2df3a8206934f45cd4fd999942c5d6114746b34",
+      "parseStatus": "complete",
+      "astNodes": 1534,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/pwa.js",
+      "bytes": 599,
+      "lines": 22,
+      "sha256": "2a9c6f969eab7b9b52d3a3e6560a067240acf1a550ec11919afe6c7b08e57d39",
+      "parseStatus": "complete",
+      "astNodes": 96,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/reading-background.js",
+      "bytes": 1405,
+      "lines": 37,
+      "sha256": "4f68a092adea3fca5369b06e66126d73a9544d59a9a4c72422552fdadec4eadf",
+      "parseStatus": "complete",
+      "astNodes": 221,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/reading-catalog.js",
+      "bytes": 18948,
+      "lines": 498,
+      "sha256": "3290ad019c3bec1f43dfb5a14e5e7e36056b575f5ae0dbbc7b5e20eed285da2e",
+      "parseStatus": "partial",
+      "astNodes": 3003,
+      "references": 6,
+      "networkObservations": 4,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/reading-workspace.js",
+      "bytes": 17895,
+      "lines": 399,
+      "sha256": "ad50df0ee01285418077ab5378c987ddee18643f9d57f96c0d2991b1643bc1b5",
+      "parseStatus": "complete",
+      "astNodes": 2535,
+      "references": 4,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/reading.js",
+      "bytes": 73292,
+      "lines": 1473,
+      "sha256": "d2354fb164144fa43c48b9b1335e569f6ccf13a81955ada3ff1e61c4fd8910d3",
+      "parseStatus": "complete",
+      "astNodes": 9472,
+      "references": 11,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/recommendations.js",
+      "bytes": 23432,
+      "lines": 239,
+      "sha256": "b4725c89d1e2761024b658a3b0d8bfcc17d200edafea1a4b31d10144cc054140",
+      "parseStatus": "complete",
+      "astNodes": 4595,
+      "references": 0,
+      "networkObservations": 2,
+      "storageObservations": 2
+    },
+    {
+      "file": "src/modules/release-experience.js",
+      "bytes": 7967,
+      "lines": 221,
+      "sha256": "b57c3cc7a7de9cf962d3edd7a323efca175abfbaf4602736ef46e317e4596100",
+      "parseStatus": "complete",
+      "astNodes": 1385,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/release-guard.js",
+      "bytes": 2663,
+      "lines": 61,
+      "sha256": "978d40ec3089c99ed3fd827cecc2e339af5cdd6061254d5b55821a83c61bccf7",
+      "parseStatus": "complete",
+      "astNodes": 561,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/resume.js",
+      "bytes": 1419,
+      "lines": 26,
+      "sha256": "bb1e4c725cae24a1337a43c33b29b2526ed99aa01cae34406c4954b7025da01b",
+      "parseStatus": "complete",
+      "astNodes": 394,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/rewatch.js",
+      "bytes": 2666,
+      "lines": 29,
+      "sha256": "89d79bc6d240e25aaeb64387f55129d4e04842fe5fcb8ccc2649a089a3b7c14e",
+      "parseStatus": "complete",
+      "astNodes": 532,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/rich-details.js",
+      "bytes": 26126,
+      "lines": 229,
+      "sha256": "3cf60e24170b0d2e42a2e369a048557a8d681135a1b3c089c3eae1d79af495c5",
+      "parseStatus": "partial",
+      "astNodes": 5486,
+      "references": 0,
+      "networkObservations": 2,
+      "storageObservations": 4
+    },
+    {
+      "file": "src/modules/safe-html.js",
+      "bytes": 3496,
+      "lines": 104,
+      "sha256": "f070ed3d15fcee3af45d519133dfadc65e4ee279a868eb13d36763c01517a1ee",
+      "parseStatus": "partial",
+      "astNodes": 534,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/seasonal.js",
+      "bytes": 3131,
+      "lines": 60,
+      "sha256": "179c61a92000cda53b662fd4d775192da304545c6ff4e107e4ad496ae0323738",
+      "parseStatus": "complete",
+      "astNodes": 689,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/security.js",
+      "bytes": 858,
+      "lines": 30,
+      "sha256": "4aaaf64ec6f1f709811080488e6c1cd56fb6502ff88c5a207b94ccb787ccce78",
+      "parseStatus": "complete",
+      "astNodes": 165,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/shared-lists.js",
+      "bytes": 3838,
+      "lines": 95,
+      "sha256": "da822f26cccae6fb5cb0c9773764afc5e25b2a9284238fe249be3edf8e48f8cd",
+      "parseStatus": "partial",
+      "astNodes": 621,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/smart-airing.js",
+      "bytes": 6287,
+      "lines": 71,
+      "sha256": "9ee44b02e7bc510fe32c04a2d2cacd4f8452061a049661f0e14e3b9e4b9937e2",
+      "parseStatus": "complete",
+      "astNodes": 1058,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/social-auth.js",
+      "bytes": 3050,
+      "lines": 90,
+      "sha256": "6bea8feb3bae05967fe0569b12767889dc064b47ca4cfb3bac379ca833b94e11",
+      "parseStatus": "complete",
+      "astNodes": 443,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/storage-settings.js",
+      "bytes": 3314,
+      "lines": 78,
+      "sha256": "9c0cbd074ac2df9c3f353452bd4c57e3bdc2b838e336a6934a9817e805a6b757",
+      "parseStatus": "complete",
+      "astNodes": 365,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/storage.js",
+      "bytes": 1796,
+      "lines": 39,
+      "sha256": "b9feab421c485afb4a605540ddeff829dab7a2f991f461c485fdd4cf662e8ba6",
+      "parseStatus": "complete",
+      "astNodes": 357,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/supabase-client.js",
+      "bytes": 147,
+      "lines": 3,
+      "sha256": "3666c7a3ac27110e448d655508fb3c564255f2649b5957240acd269de73044cd",
+      "parseStatus": "complete",
+      "astNodes": 7,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/sync-presentation.js",
+      "bytes": 2067,
+      "lines": 68,
+      "sha256": "c6855e13c2777f78b59f5ecc36a62045d9df41a1e3fe02e6e26b2edf4af27787",
+      "parseStatus": "complete",
+      "astNodes": 188,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/sync.js",
+      "bytes": 2631,
+      "lines": 49,
+      "sha256": "8290bc4699e77c1a6b49dcca859d432dafab02e566221cedd2a1a832052acf7c",
+      "parseStatus": "complete",
+      "astNodes": 445,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/trakt-import-view.js",
+      "bytes": 3468,
+      "lines": 106,
+      "sha256": "f7919e844f0b448d27846820eb0a8c7db28169e6b6131bbb5d3cba9ca7b80408",
+      "parseStatus": "complete",
+      "astNodes": 507,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/tv-episodes.js",
+      "bytes": 3192,
+      "lines": 45,
+      "sha256": "85c225fb68ce087fb3415f36220bcb521c8e8256f08f2ff455eca0f6bb21f5c4",
+      "parseStatus": "complete",
+      "astNodes": 767,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/tv-unified.js",
+      "bytes": 4368,
+      "lines": 46,
+      "sha256": "db40d85ff34d9907989094aa555db9789251d0eb3707b3350ff7454562647d83",
+      "parseStatus": "complete",
+      "astNodes": 1144,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/tv.js",
+      "bytes": 23075,
+      "lines": 56,
+      "sha256": "20c12d76961230c796486a1939d01e6c256a33890a9b600cc2e37f475db3caa4",
+      "parseStatus": "partial",
+      "astNodes": 4896,
+      "references": 0,
+      "networkObservations": 6,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/unified.js",
+      "bytes": 4427,
+      "lines": 38,
+      "sha256": "6923c06d6cbc83d0cdebaaebd5e9f645c428afdd12ce59b44cff813d2253c3ca",
+      "parseStatus": "complete",
+      "astNodes": 951,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/watch-history.js",
+      "bytes": 1640,
+      "lines": 40,
+      "sha256": "6207ee9f5c0a0f8b6db4762b9b52c34270742e7bac517a74cb9de597f99e9aa0",
+      "parseStatus": "complete",
+      "astNodes": 335,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/watch.js",
+      "bytes": 19198,
+      "lines": 167,
+      "sha256": "0938d70be4065276e71368a05fb58cb6df435d4a07d57ff060762e8fe133247b",
+      "parseStatus": "partial",
+      "astNodes": 3623,
+      "references": 0,
+      "networkObservations": 2,
+      "storageObservations": 4
+    },
+    {
+      "file": "src/modules/weebcentral-catalog.js",
+      "bytes": 871,
+      "lines": 24,
+      "sha256": "fdeaf2e94c5baa6d8af3b869f8ca42d2592cc7cd688fd23a82887320c7c7e687",
+      "parseStatus": "complete",
+      "astNodes": 111,
+      "references": 1,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/welcome-artwork.js",
+      "bytes": 1995,
+      "lines": 49,
+      "sha256": "e39aaf032081c2e06f260e1a929650f98ad666caae982af19fa82da49825b179",
+      "parseStatus": "complete",
+      "astNodes": 272,
+      "references": 0,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/welcome-carousel.js",
+      "bytes": 2326,
+      "lines": 58,
+      "sha256": "064345acb7b47c0633ca62956e350f0ce6822f444351312e8c892f36c0bd64f1",
+      "parseStatus": "complete",
+      "astNodes": 394,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/welcome-preview.js",
+      "bytes": 435,
+      "lines": 12,
+      "sha256": "acb64b18353933073113f01a65a46bbdf20daef31c7a588f93c7a6dcfc164f86",
+      "parseStatus": "complete",
+      "astNodes": 53,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/wrapped.js",
+      "bytes": 19694,
+      "lines": 153,
+      "sha256": "f0d4f0eeca3f858b85f5e1e916970bbd8e36f52ed8f20bd82f858f74b169a9b5",
+      "parseStatus": "complete",
+      "astNodes": 3615,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/modules/year.js",
+      "bytes": 1880,
+      "lines": 45,
+      "sha256": "8cc88b8f3e7de5017dc8e8847618a33d2c434c92aee96a5884b11ebfa9faf0c1",
+      "parseStatus": "complete",
+      "astNodes": 345,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/account-startup.js",
+      "bytes": 472,
+      "lines": 17,
+      "sha256": "e745b83642fb37d32faa8ef901bf2141883d5180c0652fb0876260c3571e8ca0",
+      "parseStatus": "complete",
+      "astNodes": 57,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/airing-library-updates.js",
+      "bytes": 5968,
+      "lines": 157,
+      "sha256": "15915637332bd98b86ff18425092cd46a0e8e1f69645ff63703b8d642fc02bb1",
+      "parseStatus": "complete",
+      "astNodes": 1118,
+      "references": 2,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/airing-schedule.js",
+      "bytes": 11540,
+      "lines": 309,
+      "sha256": "5f6cb6c77a9419b9b6488cd56f3160336eb8bff9de20fd76caf561935bbd1898",
+      "parseStatus": "partial",
+      "astNodes": 1912,
+      "references": 0,
+      "networkObservations": 2,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/browser-storage.js",
+      "bytes": 580,
+      "lines": 17,
+      "sha256": "c5c0dead445cae1ef0759c5f99011c4b34562e063d520cdad408d3debfc37cad",
+      "parseStatus": "complete",
+      "astNodes": 98,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 4
+    },
+    {
+      "file": "src/core/browser-theme.js",
+      "bytes": 335,
+      "lines": 18,
+      "sha256": "53fa14e7e39b73e6e224d26660f4c8e2924ae5b36adf0277770b696c876c0e1c",
+      "parseStatus": "complete",
+      "astNodes": 54,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/calendar-classification.js",
+      "bytes": 827,
+      "lines": 20,
+      "sha256": "9106aa74aab39ac59d9d2ed2977c3d5e7bfa02ccf5c152609f9b9ca85ab5c406",
+      "parseStatus": "complete",
+      "astNodes": 151,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/catalog-client.js",
+      "bytes": 2458,
+      "lines": 32,
+      "sha256": "6f7f3d0cb8403c72259350928f41331dea490372b9bdf2af32cbfdce78e57a87",
+      "parseStatus": "complete",
+      "astNodes": 163,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/connected-library.js",
+      "bytes": 8145,
+      "lines": 222,
+      "sha256": "0598921e4dea54cc405c668f477e528f254a565aabc6ae25eb3c9254016ac494",
+      "parseStatus": "complete",
+      "astNodes": 1620,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/deferred-module.js",
+      "bytes": 380,
+      "lines": 16,
+      "sha256": "99d349e8419b0a4558ff533dd8b546f15f67b6715a51fe1e6b72ef12352abfa1",
+      "parseStatus": "complete",
+      "astNodes": 42,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/episode-details.js",
+      "bytes": 9418,
+      "lines": 252,
+      "sha256": "50f388635037e0c24538aeb7376fb07406679a309e6234ae83db9dbead466524",
+      "parseStatus": "partial",
+      "astNodes": 1646,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/indexed-library.js",
+      "bytes": 16594,
+      "lines": 500,
+      "sha256": "e6987baf63287a6fa83f714d3089467be6252bb91d633dda01b00513459f8e64",
+      "parseStatus": "complete",
+      "astNodes": 2630,
+      "references": 3,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/keyed-rows.js",
+      "bytes": 2127,
+      "lines": 62,
+      "sha256": "d313404b557e4433c1d6733e9db476beabcec0036988929f7049c4d32feb281f",
+      "parseStatus": "complete",
+      "astNodes": 382,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/library-airing.js",
+      "bytes": 6124,
+      "lines": 170,
+      "sha256": "b3727ca96e3ced9da82813d530faae9318f5ad766d2614f5358d4dff2a6614e4",
+      "parseStatus": "complete",
+      "astNodes": 1112,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/library-discovery.js",
+      "bytes": 1746,
+      "lines": 51,
+      "sha256": "f3de1ce8841f9184fcf875096835900b33e31f603bc37e9479d69cbb60bd6da9",
+      "parseStatus": "complete",
+      "astNodes": 288,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/library-list.js",
+      "bytes": 3177,
+      "lines": 104,
+      "sha256": "7ab8499226df49f15ed62f30bc689b7eefbe3d82aa1260a18e3ece5ac8db9c0f",
+      "parseStatus": "complete",
+      "astNodes": 585,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/library-model.js",
+      "bytes": 30675,
+      "lines": 803,
+      "sha256": "77e571b30d2304b4e6209a067fdd9300070a22e97777502edd413dd26a6c695c",
+      "parseStatus": "complete",
+      "astNodes": 5740,
+      "references": 2,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/library-schema.js",
+      "bytes": 6954,
+      "lines": 172,
+      "sha256": "0ad3d88177dd2dfc7f55b250fe09debff56a7e9938fa5779fcdc6a04350d8b04",
+      "parseStatus": "partial",
+      "astNodes": 1332,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/library-ui.js",
+      "bytes": 3836,
+      "lines": 80,
+      "sha256": "0ec5ce063087286f63e2daabd999e312109de14ad3bfbb4f0066ac2ff3e7193f",
+      "parseStatus": "complete",
+      "astNodes": 840,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/reading-calendar.js",
+      "bytes": 1008,
+      "lines": 21,
+      "sha256": "e08c8da419984f5c4a841e6c72fd522758ea2a812f87119dd139939b3f6aed77",
+      "parseStatus": "complete",
+      "astNodes": 206,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/reading-discovery.js",
+      "bytes": 4525,
+      "lines": 135,
+      "sha256": "8f2886344b019fd6ec8b800fd378e9c7798f8f31be4555046c8867e7db606a8b",
+      "parseStatus": "complete",
+      "astNodes": 930,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/reading-model.js",
+      "bytes": 9327,
+      "lines": 250,
+      "sha256": "698962c44d63f8cd9f3922d650f2da4aae8471a4f9466b6dcca3f8d84dfd6820",
+      "parseStatus": "complete",
+      "astNodes": 1594,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/release-window.js",
+      "bytes": 264,
+      "lines": 6,
+      "sha256": "552158127ca62cc173c260ccbe7c10996f31177d992b00bf8262ac48648464ef",
+      "parseStatus": "complete",
+      "astNodes": 52,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/render-pass.js",
+      "bytes": 1259,
+      "lines": 46,
+      "sha256": "1e465a58d6ea2fc3da5f847cbdd6afb06ed85368df8ec7bbceed11cd4d8dd2b1",
+      "parseStatus": "complete",
+      "astNodes": 193,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/request-cache.js",
+      "bytes": 4201,
+      "lines": 118,
+      "sha256": "a3f707fba59996af7f71492920e415d10d7604eca9a2ce422b1ccd9e95b9a8e5",
+      "parseStatus": "complete",
+      "astNodes": 693,
+      "references": 0,
+      "networkObservations": 1,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/series-progress.js",
+      "bytes": 3124,
+      "lines": 64,
+      "sha256": "ceac8b28e24fdaf097983003b029272c8d50eb2c50e7366721c2358af419dfec",
+      "parseStatus": "complete",
+      "astNodes": 525,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/storage-codec.js",
+      "bytes": 654,
+      "lines": 15,
+      "sha256": "552ca366a4a22e28ae156fac2580fb450ff19367cab8010a5df9b45fe65dc8f0",
+      "parseStatus": "complete",
+      "astNodes": 84,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/store.js",
+      "bytes": 1267,
+      "lines": 44,
+      "sha256": "55ad98e621f019bef60f21d22551933aa9dba8151f16295bb8b9f2e7378d75cc",
+      "parseStatus": "complete",
+      "astNodes": 109,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/sync-clock.js",
+      "bytes": 1108,
+      "lines": 32,
+      "sha256": "410206134fd9d1dc9f77e0a6423820e0a84152e8dcb70713533bdb660991e5e9",
+      "parseStatus": "complete",
+      "astNodes": 209,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/sync-tombstones.js",
+      "bytes": 3144,
+      "lines": 90,
+      "sha256": "a3865d52ace32da320bd38624de94c1d559cbe26cb498add6f2b246118411852",
+      "parseStatus": "complete",
+      "astNodes": 572,
+      "references": 1,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/theme.js",
+      "bytes": 2602,
+      "lines": 79,
+      "sha256": "ea6c64becac289c1be5bf9b857cb780adaeb6e0e91d9fd9f592ce8797e9bc0b9",
+      "parseStatus": "complete",
+      "astNodes": 404,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/trakt-import-groups.js",
+      "bytes": 1733,
+      "lines": 54,
+      "sha256": "630871e42a54e748ff63c9d89c03c590344b13a6fd2c65f4f4549ec74461500d",
+      "parseStatus": "complete",
+      "astNodes": 324,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/ui-events.js",
+      "bytes": 811,
+      "lines": 20,
+      "sha256": "6487cd959a76827cc9eeb4ec382019a8600ca778f003e5767d2a9d52f7989259",
+      "parseStatus": "complete",
+      "astNodes": 71,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/visible-scheduler.js",
+      "bytes": 1030,
+      "lines": 43,
+      "sha256": "ecd0829ee5d3c8e3e21f94492730a1308320fde904691c4a9f67c35401cfc977",
+      "parseStatus": "complete",
+      "astNodes": 160,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/watch-links.js",
+      "bytes": 4622,
+      "lines": 120,
+      "sha256": "0656038133a1786416307f51d9bd7ec4adc53c77def44f9f8b91232941678414",
+      "parseStatus": "complete",
+      "astNodes": 721,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    },
+    {
+      "file": "src/core/watch-progress.js",
+      "bytes": 1766,
+      "lines": 42,
+      "sha256": "ec5ff1f24cda2ddd4d8235bdf0be420a58c555eed3a21ff1139883a8d75e06c4",
+      "parseStatus": "complete",
+      "astNodes": 347,
+      "references": 0,
+      "networkObservations": 0,
+      "storageObservations": 0
+    }
+  ],
+  "codeMetrics": {
+    "css": [
+      {
+        "file": "src/styles/accessibility.css",
+        "bytes": 2692,
+        "rules": 25,
+        "important": 6,
+        "mobileRules": 2
+      },
+      {
+        "file": "src/styles/calendar-modern.css",
+        "bytes": 17225,
+        "rules": 146,
+        "important": 0,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/catalog-search.css",
+        "bytes": 1946,
+        "rules": 16,
+        "important": 0,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/details-integrations.css",
+        "bytes": 27281,
+        "rules": 298,
+        "important": 3,
+        "mobileRules": 1
+      },
+      {
+        "file": "src/styles/diary.css",
+        "bytes": 8442,
+        "rules": 99,
+        "important": 1,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/episode-presentation.css",
+        "bytes": 8102,
+        "rules": 61,
+        "important": 10,
+        "mobileRules": 7
+      },
+      {
+        "file": "src/styles/foundation.css",
+        "bytes": 145983,
+        "rules": 1708,
+        "important": 45,
+        "mobileRules": 14
+      },
+      {
+        "file": "src/styles/home-editorial.css",
+        "bytes": 21158,
+        "rules": 165,
+        "important": 5,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/index.css",
+        "bytes": 1295,
+        "rules": 2,
+        "important": 1,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/interaction-mobile.css",
+        "bytes": 79107,
+        "rules": 734,
+        "important": 54,
+        "mobileRules": 415
+      },
+      {
+        "file": "src/styles/layout-social.css",
+        "bytes": 43995,
+        "rules": 470,
+        "important": 35,
+        "mobileRules": 29
+      },
+      {
+        "file": "src/styles/media-workflow.css",
+        "bytes": 52029,
+        "rules": 487,
+        "important": 57,
+        "mobileRules": 82
+      },
+      {
+        "file": "src/styles/mobile-premium.css",
+        "bytes": 60699,
+        "rules": 471,
+        "important": 53,
+        "mobileRules": 148
+      },
+      {
+        "file": "src/styles/news.css",
+        "bytes": 18088,
+        "rules": 137,
+        "important": 4,
+        "mobileRules": 1
+      },
+      {
+        "file": "src/styles/personal-experience.css",
+        "bytes": 4090,
+        "rules": 32,
+        "important": 0,
+        "mobileRules": 1
+      },
+      {
+        "file": "src/styles/polish.css",
+        "bytes": 9420,
+        "rules": 112,
+        "important": 2,
+        "mobileRules": 5
+      },
+      {
+        "file": "src/styles/product-experience.css",
+        "bytes": 12807,
+        "rules": 116,
+        "important": 6,
+        "mobileRules": 2
+      },
+      {
+        "file": "src/styles/reading-shell.css",
+        "bytes": 1475,
+        "rules": 12,
+        "important": 3,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/reading.css",
+        "bytes": 30867,
+        "rules": 288,
+        "important": 4,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/release-experience.css",
+        "bytes": 4227,
+        "rules": 39,
+        "important": 1,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/security.css",
+        "bytes": 10483,
+        "rules": 214,
+        "important": 0,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/themes.css",
+        "bytes": 1474,
+        "rules": 12,
+        "important": 0,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/tokens.css",
+        "bytes": 2423,
+        "rules": 2,
+        "important": 0,
+        "mobileRules": 0
+      },
+      {
+        "file": "src/styles/tracking-media.css",
+        "bytes": 28592,
+        "rules": 287,
+        "important": 11,
+        "mobileRules": 14
+      },
+      {
+        "file": "src/styles/welcome.css",
+        "bytes": 13222,
+        "rules": 150,
+        "important": 6,
+        "mobileRules": 0
+      }
+    ],
+    "controllers": [
+      {
+        "file": "src/app.js",
+        "bytes": 306944,
+        "functions": 987,
+        "listeners": 98,
+        "renderReassignments": 28,
+        "nativePrompts": 11,
+        "longest": [
+          {
+            "name": "startApp",
+            "line": 39,
+            "bytes": 302369
+          },
+          {
+            "name": "renderDetail",
+            "line": 176,
+            "bytes": 9839
+          },
+          {
+            "name": "accountOpenCloud",
+            "line": 1346,
+            "bytes": 5761
+          }
+        ]
+      },
+      {
+        "file": "src/modules/connected-features.js",
+        "bytes": 30649,
+        "functions": 45,
+        "listeners": 3,
+        "renderReassignments": 0,
+        "nativePrompts": 0,
+        "longest": [
+          {
+            "name": "createConnectedFeatures",
+            "line": 13,
+            "bytes": 29995
+          },
+          {
+            "name": "anonymous",
+            "line": 593,
+            "bytes": 4155
+          },
+          {
+            "name": "anonymous",
+            "line": 727,
+            "bytes": 4133
+          }
+        ]
+      },
+      {
+        "file": "src/modules/features.js",
+        "bytes": 33225,
+        "functions": 111,
+        "listeners": 18,
+        "renderReassignments": 0,
+        "nativePrompts": 0,
+        "longest": [
+          {
+            "name": "createFeatures",
+            "line": 14,
+            "bytes": 32228
+          },
+          {
+            "name": "init",
+            "line": 138,
+            "bytes": 10683
+          },
+          {
+            "name": "handleClick",
+            "line": 278,
+            "bytes": 4993
+          }
+        ]
+      },
+      {
+        "file": "src/modules/iphone.js",
+        "bytes": 27172,
+        "functions": 68,
+        "listeners": 0,
+        "renderReassignments": 0,
+        "nativePrompts": 0,
+        "longest": [
+          {
+            "name": "ATiPhone",
+            "line": 2,
+            "bytes": 26798
+          },
+          {
+            "name": "action",
+            "line": 211,
+            "bytes": 3142
+          },
+          {
+            "name": "render",
+            "line": 190,
+            "bytes": 2672
+          }
+        ]
+      },
+      {
+        "file": "src/modules/mobile-presentation.js",
+        "bytes": 40891,
+        "functions": 76,
+        "listeners": 7,
+        "renderReassignments": 0,
+        "nativePrompts": 0,
+        "longest": [
+          {
+            "name": "createMobilePresentation",
+            "line": 7,
+            "bytes": 40392
+          },
+          {
+            "name": "home",
+            "line": 44,
+            "bytes": 12568
+          },
+          {
+            "name": "detail",
+            "line": 430,
+            "bytes": 6792
+          }
+        ]
+      },
+      {
+        "file": "src/modules/mobile.js",
+        "bytes": 7444,
+        "functions": 17,
+        "listeners": 4,
+        "renderReassignments": 0,
+        "nativePrompts": 0,
+        "longest": [
+          {
+            "name": "anonymous",
+            "line": 2,
+            "bytes": 7249
+          },
+          {
+            "name": "mountLibrary",
+            "line": 55,
+            "bytes": 1894
+          },
+          {
+            "name": "enhanceEpisode",
+            "line": 32,
+            "bytes": 1818
+          }
+        ]
+      },
+      {
+        "file": "src/modules/reading.js",
+        "bytes": 73292,
+        "functions": 177,
+        "listeners": 10,
+        "renderReassignments": 0,
+        "nativePrompts": 0,
+        "longest": [
+          {
+            "name": "createReading",
+            "line": 29,
+            "bytes": 71944
+          },
+          {
+            "name": "action",
+            "line": 805,
+            "bytes": 9681
+          },
+          {
+            "name": "detail",
+            "line": 379,
+            "bytes": 9167
+          }
+        ]
+      }
+    ]
+  },
+  "interpretation": [
+    "parse partial means static dynamic values unknown, not application failure",
+    "AST function nodes include nested and arrow functions; not standalone responsibilities",
+    "CSS rule totals include all src/styles files, including lazily loaded CSS; not unique selectors or runtime used rules",
+    "Static observations are source sites, not requests measured in browser"
+  ]
+}
