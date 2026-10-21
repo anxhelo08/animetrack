@@ -31,14 +31,20 @@ test('reading destinations retain Manga or Manhwa scope and calendar publication
     payload: { anime: [], history: [], readingLibrary: rows, preferences: {} },
   });
   await page.locator('#pro-nav-reading').click();
-  await expect(page.locator('.reading-tabs [data-reading-action="tab"]')).toHaveCount(4);
+  await expect(page.locator('.reading-tabs [data-reading-action="tab"]')).toHaveCount(2);
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
   await page.locator('.reading-scope [data-id="manhwa"]').click();
   await expect(page.locator('.reading-card')).toHaveCount(1);
   await expect(page.locator('.reading-card')).toContainText('Manhwa Story');
-  await page.locator('.reading-tabs [data-id="calendar"]').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
+  await page.locator('#reading-tools').selectOption('calendar');
   await expect(page.locator('.reading-calendar')).toContainText('Manhwa Story');
   await expect(page.locator('.reading-calendar')).toContainText('Zbuluar në katalog');
   await expect(page.locator('.reading-calendar')).not.toContainText('Manga Story');
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
   await page.locator('.reading-scope [data-id="manga"]').click();
   await expect(page.locator('.reading-calendar')).toContainText('Publikuar në burim');
   await page.locator('#reading-calendar-month').fill('2026-10');
@@ -46,9 +52,13 @@ test('reading destinations retain Manga or Manhwa scope and calendar publication
   await page.locator('[data-reading-action="calendar-today"]').click();
   await expect(page.locator('#reading-calendar-month')).toHaveValue('2026-09');
   await expect(page.locator('.reading-calendar')).toContainText('Manga Story');
-  await page.locator('.reading-tabs [data-id="releases"]').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
+  await page.locator('#reading-tools').selectOption('releases');
   await expect(page.locator('.reading-card')).toHaveCount(1);
   await expect(page.locator('.reading-card')).toContainText('Manga Story');
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
   await page.locator('#reading-tools').selectOption('collections');
   await expect(page.locator('#reading-collection-create')).toBeVisible();
   await page.locator('.reading-tabs [data-id="library"]').click();
@@ -121,6 +131,8 @@ test('fast search results remain usable while another catalog is delayed or bloc
   );
   await page.locator('#pro-nav-reading').click();
   await page.locator('.reading-tabs [data-id="discover"]').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
   await page.locator('.reading-scope [data-id="manhwa"]').click();
   await page.locator('#reading-query').fill('Reader');
   await expect(page.locator('.reading-card')).toHaveCount(2);

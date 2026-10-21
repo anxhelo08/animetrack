@@ -11,7 +11,7 @@ The light/system theme preference remains available.
   views, unfinished older titles, and upcoming episodes grouped by confirmed date.
   Upcoming rows cannot be marked before airing; episode links open their specific
   season and number. Empty states reflect the library without fabricated dates.
-- Discover shows nine browse categories before typing and filters instant catalog
+- Discover groups three media choices and six discovery categories before typing and filters instant catalog
   results by media type. People uses the existing friend search. Studios uses a
   read-only AniList catalog request with an error/retry state.
 - Library uses the shared Standard MediaCard and two always-visible destinations:
@@ -22,7 +22,8 @@ The light/system theme preference remains available.
   Overview, Timeline, Episodes, Cast & Staff and Reviews sections. Episode marking,
   bulk confirmation, pagination, ratings and metadata controls retain their existing
   handlers. Films, OVA and specials never consume a TV season number.
-- Profile presents identity, Profili/Ditari/Statistikat/Cilësimet/Miqtë navigation, favorites,
+- Activity puts dated history and undated progress before optional statistics; filters retain their open state after changes. Reading keeps Library/Search primary and puts calendar, releases, source and scope tools under More.
+- Profile brings favorites and recent history before secondary metrics and presents identity, Profili/Ditari/Statistikat/Cilësimet/Miqtë navigation, favorites,
   history, achievements, ratings and notes. Calendar, friends and notification
   screens share the same surfaces and spacing.
 

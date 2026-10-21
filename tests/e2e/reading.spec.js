@@ -87,6 +87,8 @@ test('chapters, notes and journals persist separately from watching data', async
   await page.locator('#reading-personal-form [name="rating"]').fill('9');
   await page.locator('#reading-personal-form [name="volumesRead"]').fill('2');
   await page.locator('#reading-personal-form button[type="submit"]').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
   await page.locator('#reading-tools').selectOption('activity');
   await page.locator('[data-reading-action="journal"]').filter({ hasText: 'Kapitulli 5' }).click();
   await page.locator('#reading-journal-form [name="note"]').fill('Kapitulli im i preferuar');
@@ -105,6 +107,8 @@ test('chapters, notes and journals persist separately from watching data', async
   await page.waitForFunction(() => !document.body.classList.contains('account-booting'));
   expect((await state(page)).readingLibrary[0]).toEqual(before.readingLibrary[0]);
   await page.locator('#pro-nav-reading').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
   await page.locator('#reading-tools').selectOption('activity');
   await expect(page.locator('.reading-journal')).toContainText('Kapitulli im i preferuar');
 });
@@ -166,6 +170,8 @@ test('own catalog searches, kind filters and late replies cannot alter anime sea
   expect(
     await page.locator('#reading-query').evaluate((node) => node === window.readingSearchNode),
   ).toBe(true);
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
   await page.locator('.reading-scope [data-id="manhwa"]').click();
   await expect(page.locator('.reading-grid')).toContainText('New Manhwa');
   await expect(page.locator('.reading-grid')).not.toContainText('Old result');
@@ -326,7 +332,9 @@ test('new chapter checks update metadata while retaining personal reading data',
     chaptersRead: [1, 3],
     status: 'reading',
   });
-  await page.locator('#reading-view [data-reading-action="tab"][data-id="releases"]').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
+  await page.locator('#reading-tools').selectOption('releases');
   await expect(page.locator('#reading-content')).toContainText('Berserk');
 });
 
@@ -515,7 +523,9 @@ test('mobile reading preserves chapters and notes with responsive library, detai
   expect((await state(page)).readingLibrary[0].notes).toBe('Lexim në telefon');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: info.outputPath('reading-mobile-detail.png'), fullPage: true });
-  await page.locator('#reading-view [data-reading-action="tab"][data-id="calendar"]').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
+  await page.locator('#reading-tools').selectOption('calendar');
   await expect(page.locator('.reading-calendar')).toBeVisible();
   await page.locator('[data-mobile-nav="home"]').click();
   await expect(page.locator('#home-view')).toBeVisible();

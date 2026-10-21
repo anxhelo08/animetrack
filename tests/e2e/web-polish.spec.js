@@ -126,6 +126,7 @@ test('Diary filters scroll with the page and season selection lands on the selec
   });
   await openFixture(page, { payload: detailPayload });
   await page.locator('[data-pro-page="diary"]').first().click();
+  await page.locator('#diary-filters > summary').click();
   const controls = page.locator('.at132-controls');
   await expect(controls).toBeVisible();
   await expect
@@ -168,11 +169,15 @@ test('TV and movie watch options work without asking for credentials', async ({ 
   };
   await openFixture(page, { payload: { ...payload, anime: [...payload.anime, movie] } });
   await page.locator('[data-home-action="open-anime"]').first().click();
-  await page
-    .locator('.product-secondary')
-    .filter({ has: page.locator('.at133-watch') })
-    .locator('summary')
-    .click();
+  {
+    const disclosure = page
+      .locator('.product-secondary')
+      .filter({ has: page.locator('.at133-watch') })
+      .locator('summary');
+    // Async availability can render directly after the detail has been enhanced.
+    await expect(page.locator('.at133-watch')).toBeAttached();
+    if (await disclosure.count()) await disclosure.click();
+  }
   await expect(page.locator('.at133-result a[href="https://cinehd.vc/home"]')).toHaveAttribute(
     'href',
     'https://cinehd.vc/home',
@@ -180,12 +185,17 @@ test('TV and movie watch options work without asking for credentials', async ({ 
   await expect(page.locator('.at133-result')).not.toContainText('Lidh TMDB');
   await page.locator('#detail-modal [data-close="detail-modal"]').first().click();
   await page.locator('#library-nav').click();
+  await page.locator('#library-status-strip [data-filter="planning"]').click();
   await page.locator('[data-detail="web-film"]').first().click();
-  await page
-    .locator('.product-secondary')
-    .filter({ has: page.locator('.at133-watch') })
-    .locator('summary')
-    .click();
+  {
+    const disclosure = page
+      .locator('.product-secondary')
+      .filter({ has: page.locator('.at133-watch') })
+      .locator('summary');
+    // Async availability can render directly after the detail has been enhanced.
+    await expect(page.locator('.at133-watch')).toBeAttached();
+    if (await disclosure.count()) await disclosure.click();
+  }
   await expect(page.locator('.at133-result a[href="https://cinehd.vc/home"]')).toHaveAttribute(
     'href',
     'https://cinehd.vc/home',

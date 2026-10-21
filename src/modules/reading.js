@@ -208,7 +208,7 @@ export function createReading(ctx) {
                 ? b.chaptersRead.length - a.chaptersRead.length
                 : String(b.updatedAt).localeCompare(String(a.updatedAt)),
     );
-    return `${readingQueue()}<div class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko në leximet e tua…" aria-label="Kërko në leximet e tua" maxlength="100" value="${esc(query)}"></label><label class="reading-field">Statusi<select id="reading-status"><option value="all">Të gjitha</option>${statusOptions(status)}<option value="favorites" ${status === 'favorites' ? 'selected' : ''}>Të preferuarat</option></select></label><details class="reading-library-more"><summary>Më shumë filtra</summary><div><label class="reading-field">Publikimi<select id="reading-publication">${[
+    return `${readingQueue()}<div class="reading-toolbar"><label class="reading-search">${navIcon('explore')}<input type="search" id="reading-query" placeholder="Kërko në leximet e tua…" aria-label="Kërko në leximet e tua" maxlength="100" value="${esc(query)}"></label><details class="reading-library-more"><summary>Më shumë filtra</summary><div><label class="reading-field">Statusi<select id="reading-status"><option value="all">Të gjitha</option>${statusOptions(status)}<option value="favorites" ${status === 'favorites' ? 'selected' : ''}>Të preferuarat</option></select></label><label class="reading-field">Publikimi<select id="reading-publication">${[
       ['all', 'Çdo botim'],
       ['ongoing', 'Në botim / pauzë'],
       ['finished', 'Botim i përfunduar'],
@@ -249,7 +249,7 @@ export function createReading(ctx) {
       )
       .join(
         '',
-      )}</div>${stats()}<p class="reading-result-count" role="status">${list.length} tituj${query ? ' për “' + esc(query) + '”' : ' në këtë pamje'}</p><div class="reading-library-shelves">${
+      )}</div><details class="reading-stats"><summary>Përmbledhja e leximit</summary>${stats()}</details><p class="reading-result-count" role="status">${list.length} tituj${query ? ' për “' + esc(query) + '”' : ' në këtë pamje'}</p><div class="reading-library-shelves">${
       list.length
         ? (kind === 'all' ? ['manhwa', 'manga'] : [kind])
             .map((type) => {
@@ -318,10 +318,10 @@ export function createReading(ctx) {
     const main = [
       ['library', 'Biblioteka', 'reading'],
       ['discover', 'Kërkimi', 'explore'],
-      ['calendar', 'Kalendari', 'calendar'],
-      ['releases', 'Njoftimet', 'notifications'],
     ];
     const more = [
+      ['calendar', 'Kalendari'],
+      ['releases', 'Njoftimet'],
       ['recommendations', 'Për ty'],
       ['latest', 'Publikimet në burim'],
       ['collections', 'Koleksionet'],
@@ -329,7 +329,7 @@ export function createReading(ctx) {
       ['activity', 'Ditari i leximit'],
       ['integration', 'Manga Sync'],
     ];
-    return `<nav class="reading-mobile-switch" aria-label="Lloji i bibliotekës"><button type="button" data-pro-page="library">Anime dhe seriale</button><button type="button" data-pro-page="reading" aria-current="page">Manga &amp; Manhwa</button></nav><div class="reading-navigation"><div class="reading-scope" role="group" aria-label="Biblioteka Manga ose Manhwa">${[
+    return `<nav class="reading-mobile-switch" aria-label="Lloji i bibliotekës"><button type="button" data-pro-page="library">Anime dhe seriale</button><button type="button" data-pro-page="reading" aria-current="page">Manga &amp; Manhwa</button></nav><div class="reading-navigation"><nav class="reading-tabs" aria-label="Seksionet Manga dhe Manhwa">${main.map(([id, text, icon]) => button('tab', navIcon(icon) + text, id, tab === id ? 'active' : '', `aria-current="${tab === id ? 'page' : 'false'}"`)).join('')}</nav><details class="reading-extra"><summary>Më shumë</summary><div class="reading-scope" role="group" aria-label="Biblioteka Manga ose Manhwa">${[
       ['all', 'Të gjitha'],
       ['manga', 'Manga'],
       ['manhwa', 'Manhwa'],
@@ -339,7 +339,7 @@ export function createReading(ctx) {
       )
       .join(
         '',
-      )}</div><nav class="reading-tabs" aria-label="Seksionet Manga dhe Manhwa">${main.map(([id, text, icon]) => button('tab', navIcon(icon) + text, id, tab === id ? 'active' : '', `aria-current="${tab === id ? 'page' : 'false'}"`)).join('')}<label class="reading-tools"><span class="sr-only">Mjete dhe zbulime</span><select id="reading-tools" aria-label="Mjete dhe zbulime"><option value="">Më shumë</option>${more.map(([id, text]) => `<option value="${id}" ${tab === id ? 'selected' : ''}>${text}</option>`).join('')}</select></label></nav></div>`;
+      )}</div><label class="reading-tools"><span class="sr-only">Mjete dhe zbulime</span><select id="reading-tools" aria-label="Mjete dhe zbulime"><option value="">Më shumë</option>${more.map(([id, text]) => `<option value="${id}" ${tab === id ? 'selected' : ''}>${text}</option>`).join('')}</select></label><a class="reading-source-directory" href="https://weebcentral.com/" target="_blank" rel="noopener noreferrer">WeebCentral ↗</a></details></div>`;
   }
   function activity() {
     const events = scopedRows()
@@ -518,7 +518,7 @@ export function createReading(ctx) {
     const chapterFocused = chapterInput === document.activeElement;
     const chapterCaret = chapterInput?.selectionStart;
     const container = document.createElement('div');
-    const markup = `<div class="reading-hero ${tab === 'library' || selected ? 'reading-hero-compact' : ''}"><div><h2>Historitë e tua, kapitull pas kapitulli</h2><p>Vazhdo leximin, zbulo tituj dhe mbaj çdo kapitull në vendin e vet.</p></div><a class="reading-source-directory" href="https://weebcentral.com/" target="_blank" rel="noopener noreferrer">WeebCentral ${navIcon('explore')}</a></div>${navigation()}<div id="reading-content">${removedId ? `<div class="reading-removed" role="status"><span>Titulli u hoq nga biblioteka.</span>${button('restore', 'Rikthe', removedId)}</div>` : ''}${editing ? editor(saved(selected)) : selected ? detail(find(selected)) : tab === 'library' ? library() : ['discover', 'latest', 'recommendations'].includes(tab) ? discover() : tab === 'calendar' ? calendar() : tab === 'collections' ? workspace.collections() : tab === 'statistics' ? workspace.statistics() : tab === 'integration' ? workspace.integration() : tab === 'releases' ? releases() : activity()}</div>`;
+    const markup = `<div class="reading-hero ${tab === 'library' || selected ? 'reading-hero-compact' : ''}"><div><h2>Manga &amp; Manhwa</h2></div></div>${navigation()}<div id="reading-content">${removedId ? `<div class="reading-removed" role="status"><span>Titulli u hoq nga biblioteka.</span>${button('restore', 'Rikthe', removedId)}</div>` : ''}${editing ? editor(saved(selected)) : selected ? detail(find(selected)) : tab === 'library' ? library() : ['discover', 'latest', 'recommendations'].includes(tab) ? discover() : tab === 'calendar' ? calendar() : tab === 'collections' ? workspace.collections() : tab === 'statistics' ? workspace.statistics() : tab === 'integration' ? workspace.integration() : tab === 'releases' ? releases() : activity()}</div>`;
     root.classList.toggle(
       'reading-density-compact',
       ctx.state().preferences?.readingDensity === 'compact',

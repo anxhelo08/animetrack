@@ -28,7 +28,9 @@ test('notification bulk controls persist without marking chapters as read, and o
     await page.locator('[data-mobile-nav="library"]').click();
     await page.locator('#library-view [data-pro-page="reading"]').click();
   } else await page.locator('#pro-nav-reading').click();
-  await page.locator('#reading-view [data-reading-action="tab"][data-id="releases"]').click();
+  if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+    await page.locator('.reading-extra > summary').click();
+  await page.locator('#reading-tools').selectOption('releases');
   await page.locator('[data-pro-action="notification-reading"]').click();
   await expect(page.locator('.at-notice.unread')).toHaveCount(2);
   await page.locator('[data-pro-action="notification-read-category"]').click();

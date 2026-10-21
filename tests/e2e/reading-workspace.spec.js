@@ -37,10 +37,15 @@ async function setup(page) {
   await expect(page.locator('#reading-query')).toBeVisible();
 }
 const tab = (page, name) => ({
-  click: () =>
-    ['library', 'discover', 'calendar', 'releases'].includes(name)
-      ? page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`).click()
-      : page.locator('#reading-tools').selectOption(name),
+  click: async () => {
+    if (['library', 'discover'].includes(name))
+      await page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`).click();
+    else {
+      if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+        await page.locator('.reading-extra > summary').click();
+      await page.locator('#reading-tools').selectOption(name);
+    }
+  },
 });
 test('reading collections, weekly goal, density, scoped keyboard and shared URLs work', async ({
   page,

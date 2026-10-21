@@ -258,7 +258,7 @@ export function createMobilePresentation(ctx) {
     window.ATHTML.insertHTML(
       root,
       'beforeend',
-      `<div id="mobile-browse" class="mobile-only"><h2>Çfarë të pëlqen?</h2><div class="mobile-browse-grid">${[
+      `<div id="mobile-browse" class="mobile-only"><h2>Zbulo diçka për ty</h2><h3>Zgjidh median</h3><div class="mobile-browse-grid">${[
         ['anime', 'Anime', navIcon('watch')],
         ['tv', 'Seriale', navIcon('library')],
         ['movie', 'Filma', navIcon('movies')],
@@ -270,12 +270,10 @@ export function createMobilePresentation(ctx) {
         ['upcoming', 'Së shpejti', navIcon('calendar')],
       ]
         .map(
-          ([key, label, mark]) =>
-            `<button type="button" data-mobile-browse="${key}"><span aria-hidden="true">${mark}</span><strong>${label}</strong></button>`,
+          ([key, label, mark], index) =>
+            `${index === 3 ? '<h3 class="mobile-browse-heading">Për të zbuluar</h3>' : ''}<button type="button" data-mobile-browse="${key}"><span aria-hidden="true">${mark}</span><strong>${label}</strong></button>`,
         )
-        .join(
-          '',
-        )}</div><button type="button" class="mobile-news-link" data-pro-page="news">${navIcon('news')} Lajme anime <span aria-hidden="true">${navIcon('trending')}</span></button><section id="mobile-browse-content" aria-live="polite"></section></div>`,
+        .join('')}</div><section id="mobile-browse-content" aria-live="polite"></section></div>`,
     );
     window.ATHTML.insertHTML(
       $('global-search').closest('label'),
@@ -646,6 +644,22 @@ export function createMobilePresentation(ctx) {
     if (friends) friends.textContent = 'Miqtë';
     const settings = nav.querySelector('[data-id="settings"]');
     settings?.classList.add('mobile-profile-settings');
+    if (settings) settings.textContent = 'Cilësimet';
+    const profileSettings = document.querySelector('.at-profile-settings .pro-actions');
+    const share = document.querySelector('[data-pro-action="profile-share"]');
+    if (profileSettings && share) profileSettings.append(share);
+    const favoritePanel = document.querySelector('.at-profile-favorites')?.closest('section');
+    const activityPanel = document.querySelector('.at-profile-activity');
+    if (favoritePanel && activityPanel) {
+      const main = document.createElement('div');
+      main.className = 'mobile-profile-main';
+      nav.after(main);
+      main.append(favoritePanel, activityPanel);
+      const recent = activityPanel.querySelector('.at-profile-recent');
+      const heading = recent?.previousElementSibling;
+      const row = activityPanel.querySelector('.pro-row');
+      if (recent && heading && row) row.after(heading, recent);
+    }
     const diary = document.createElement('button');
     diary.type = 'button';
     diary.dataset.mobileProfileDiary = '';

@@ -1575,3 +1575,35 @@
     gap: 14px;
   }
 }
+
+/* Keep the library and search primary; reveal supporting tools on demand. */
+.reading-navigation {
+  align-items: start;
+}
+.reading-extra {
+  margin-left: auto;
+}
+.reading-extra summary,
+.reading-stats summary {
+  min-height: 44px;
+  padding: 12px;
+  cursor: pointer;
+}
+.reading-extra[open] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.reading-extra .reading-scope {
+  margin: 8px 0;
+}
+.reading-extra .reading-tools {
+  display: block;
+  margin: 8px 0;
+}
+.reading-hero h2 {
+  font-size: 24px;
+}
+.reading-stats {
+  margin: 12px 0;
+}

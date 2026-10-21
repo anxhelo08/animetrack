@@ -29,10 +29,15 @@ async function setup(page, rows = []) {
   await page.locator('#pro-nav-reading').click();
 }
 const tab = (page, name) => ({
-  click: () =>
-    ['library', 'discover', 'calendar', 'releases'].includes(name)
-      ? page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`).click()
-      : page.locator('#reading-tools').selectOption(name),
+  click: async () => {
+    if (['library', 'discover'].includes(name))
+      await page.locator(`#reading-view [data-reading-action="tab"][data-id="${name}"]`).click();
+    else {
+      if (!(await page.locator('.reading-extra').evaluate((el) => el.open)))
+        await page.locator('.reading-extra > summary').click();
+      await page.locator('#reading-tools').selectOption(name);
+    }
+  },
 });
 test('WeebCentral discovery, chapter metadata, recommendations, publications and statistics work together', async ({
   page,
@@ -45,7 +50,7 @@ test('WeebCentral discovery, chapter metadata, recommendations, publications and
   await page.locator(`[data-reading-action="detail"][data-id="reading-wc-${id}"]`).first().click();
   await expect(page.locator('.reading-facts')).toContainText('200 kapituj');
   await expect(page.locator('.reading-facts')).toContainText('201 publikime');
-  await expect(page.getByRole('link', { name: 'Hap burimin' })).toHaveAttribute(
+  await expect(page.getByRole('link', { name: 'Lexo në WeebCentral' })).toHaveAttribute(
     'href',
     'https://weebcentral.com/series/' + id,
   );

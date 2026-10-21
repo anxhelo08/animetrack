@@ -41,3 +41,9 @@
 .at132-undated-row{display:flex;width:100%;text-align:left;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border:0;border-bottom:1px solid var(--border);background:transparent;color:var(--text);min-height:44px}
 .at132-undated-row span{color:var(--muted);font-size:12px}
 @media(max-width:600px){.at132-undated-row{align-items:flex-start;flex-direction:column;gap:6px}}
+
+.at132-heading { margin: 12px 0 20px; }
+.at132-heading h2 { margin: 0 0 8px; font-size: 26px; }
+.at132-heading p { color: var(--muted); }
+#diary-filters, #diary-stats { margin: 12px 0; }
+#diary-filters > summary, #diary-stats > summary { min-height: 44px; padding: 12px; cursor: pointer; }
