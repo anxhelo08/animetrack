@@ -96,7 +96,7 @@ export function createHomeSpotlight(ctx) {
     previewEndTimer,
     previewEnabled = true;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const phone = window.matchMedia('(max-width: 760px)');
+  const phone = window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)');
   const esc = ctx.esc;
   const image = (item, kind, active = false) => {
     const url = ctx.poster(kind === 'backdrop' ? item.backdrop : item.cover);

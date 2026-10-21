@@ -399,7 +399,7 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   #pro-content .at-calendar-modern .at-cal-hero {
     display: block;
     padding: 8px 0 18px;
@@ -529,7 +529,7 @@
 #pro-content .at-calendar-modern .at-cal-hero {
   box-shadow: none;
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   #pro-content .at-calendar-modern .at-cal-event {
     grid-template-columns: 48px minmax(0, 1fr);
   }
@@ -653,7 +653,7 @@
     transform-origin: left;
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   #pro-content .at-calendar-modern .at-cal-toolbar {
     padding: 14px 0;
     border-radius: 0;

@@ -204,7 +204,7 @@ window.ATiPhone=function ATiPhone(ctx){
   const el=document.createElement('div');el.id='at-iphone-feed';home.insertBefore(el,home.firstChild);document.body.classList.add('at-ios-enabled');
  }
  function refresh(){
-  if(window.matchMedia?.('(max-width:760px)')?.matches&&ctx.el('mobile-home'))return;
+  if(window.matchMedia?.('(max-width:760px), (max-width:960px) and (max-height:500px)')?.matches&&ctx.el('mobile-home'))return;
   const node=ctx.el('at-iphone-feed');if(!node)return;
   try{window.ATHTML.renderHTML(node,render())}catch(err){console.warn('iPhone feed failed to render',err);window.ATHTML.renderHTML(node,'<section class="at-ios-empty" role="alert"><span>✦</span><h3>Nuk u ngarkuan episodet</h3><p>Mund të ketë një problem të përkohshëm me të dhënat. Provo përsëri ose hap Bibliotekën; progresi yt ruhet.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>');}
  }

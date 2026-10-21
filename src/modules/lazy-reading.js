@@ -22,7 +22,7 @@ export function createLazyReading(
     return reading;
   });
   async function prepare() {
-    if (!host || window.matchMedia?.('(max-width:760px)').matches) return;
+    if (!host || window.matchMedia?.('(max-width:760px), (max-width:960px) and (max-height:500px)').matches) return;
     if (!(ctx.state().readingLibrary || []).some((row) => !row.deletedAt)) return;
     try {
       const reading = await load();

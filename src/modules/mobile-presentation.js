@@ -7,7 +7,9 @@ import { createKeyedRows } from '../core/keyed-rows.js';
 export function createMobilePresentation(ctx) {
   const $ = (id) => document.getElementById(id);
   const esc = ctx.esc;
-  const phone = window.matchMedia?.('(max-width: 760px)') || {
+  const phone = window.matchMedia?.(
+    '(max-width:760px), (max-width:960px) and (max-height:500px)',
+  ) || {
     matches: false,
     addEventListener() {},
   };
@@ -551,7 +553,9 @@ export function createMobilePresentation(ctx) {
     if (!panels.cast.children.length)
       window.ATHTML.renderHTML(
         panels.cast,
-        empty('Aktorët dhe krijuesit shfaqen kur të dhënat janë të disponueshme.'),
+        '<div data-mobile-cast-empty>' +
+          empty('Aktorët dhe krijuesit shfaqen kur të dhënat janë të disponueshme.') +
+          '</div>',
       );
     window.ATHTML.insertHTML(
       panels.reviews,

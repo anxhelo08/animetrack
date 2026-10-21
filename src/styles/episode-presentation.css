@@ -201,7 +201,7 @@ body.at-ios-enabled #episode-detail-modal.episode-card-modal .modal-body,
 #episode-detail-modal.episode-card-modal .at123-episode-layout {
   display: block;
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   #episode-detail-modal.episode-card-modal {
     padding: 12px !important;
   }

@@ -84,7 +84,7 @@ export function createFeatures(ctx){
  ctx.setCalendarReminder=(key,value)=>modules.smart.setReminder(key,value);
  ctx.unreadCount=()=>modules.notifications.get().filter(n=>!((ctx.state().preferences?.notificationRead)||[]).includes(n.key)&&!((ctx.state().preferences?.notificationMuted)||[]).includes(n.category)&&!((ctx.state().preferences?.notificationDismissed)||[]).includes(n.key)).length;
  ctx.respondFriend=async(id,accept)=>{await modules.friends.action(accept?'friend-accept':'friend-decline',id);await modules.notifications.refresh()};
- function renderMobileDiscover(){if($('mobile-browse')&&window.matchMedia('(max-width:760px)').matches)return;const node=$('at117-mobile-discover');if(!node)return;const recs=modules.recommendations;const markup=`<section class="at128-mobile-season-link"><div><span>✦ KATALOGU SEZONAL</span><strong>Zbulo anime sipas zhanrit</strong><small>Drama · Thriller · Isekai · Fantasy</small></div><button type="button" data-at128-open-seasons>Shiko sezonet ↗</button></section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>✦ PËR TY</span><h3>Rekomanduar për ty</h3></div><button type="button" data-pro-page="recommendations">Të gjitha ›</button></div>${recs.home()}</section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>◈ ANILIST · POPULLARITETI</span><h3>Popullore për ty</h3></div></div><p class="at117-discover-note">Tituj nga zbulimet e tua, renditur sipas ndjekësve në AniList; jo statistika të AnimeTrack.</p><div class="at117-trending-row">${recs.trending()||'<p class="at117-discover-note">Po ngarkohen titujt nga katalogu…</p>'}</div></section>`;if(homeMarkup.get(node)!==markup){window.ATHTML.renderHTML(node,markup);homeMarkup.set(node,markup)}}
+ function renderMobileDiscover(){if($('mobile-browse')&&window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches)return;const node=$('at117-mobile-discover');if(!node)return;const recs=modules.recommendations;const markup=`<section class="at128-mobile-season-link"><div><span>✦ KATALOGU SEZONAL</span><strong>Zbulo anime sipas zhanrit</strong><small>Drama · Thriller · Isekai · Fantasy</small></div><button type="button" data-at128-open-seasons>Shiko sezonet ↗</button></section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>✦ PËR TY</span><h3>Rekomanduar për ty</h3></div><button type="button" data-pro-page="recommendations">Të gjitha ›</button></div>${recs.home()}</section><section class="at117-discover-section"><div class="at117-discover-heading"><div><span>◈ ANILIST · POPULLARITETI</span><h3>Popullore për ty</h3></div></div><p class="at117-discover-note">Tituj nga zbulimet e tua, renditur sipas ndjekësve në AniList; jo statistika të AnimeTrack.</p><div class="at117-trending-row">${recs.trending()||'<p class="at117-discover-note">Po ngarkohen titujt nga katalogu…</p>'}</div></section>`;if(homeMarkup.get(node)!==markup){window.ATHTML.renderHTML(node,markup);homeMarkup.set(node,markup)}}
  function setMobileActive(name){document.querySelectorAll('[data-mobile-nav]').forEach(b=>b.classList.toggle('active',b.dataset.mobileNav===name))}
  function renderBackground(){if(!['collections','profile','friends','moderation','sync'].includes(active))render()}
  function render(force=false){if(!active)return;
@@ -109,10 +109,10 @@ export function createFeatures(ctx){
  function renderHome(){if(ctx.scheduleHome){ctx.scheduleHome();return}renderHomeNow()}
  function renderHomeNow(){
   spotlight?.refresh();
-  if(product&&window.matchMedia('(max-width: 760px)').matches){product.refresh();return}
+  if(product&&window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches){product.refresh();return}
   // Always render the phone feed first. A desktop-only dashboard error must never blank iPhone.
   try{modules.iphone.refresh()}catch(err){console.warn('iPhone feed recovery',err);const feed=$('at-iphone-feed');if(feed)window.ATHTML.renderHTML(feed,'<section class="at-ios-empty" role="alert"><h3>Nuk u ngarkua lista e episodeve</h3><p>Provo rifreskimin. Biblioteka jote nuk është fshirë.</p><button type="button" data-ios-action="retry">Riprovo ↻</button></section>')}
-  if(window.matchMedia?.('(max-width: 760px)').matches){renderMobileDiscover();product?.refresh();return;}
+  if(window.matchMedia?.('(max-width:760px), (max-width:960px) and (max-height:500px)').matches){renderMobileDiscover();product?.refresh();return;}
   if($('at-home-main'))try{
    const day=$('at115-desktop-day');if(day)window.ATHTML.renderHTML(day,modules.day.render(true));
    const parts=modules.home.render();
@@ -132,7 +132,7 @@ export function createFeatures(ctx){
   if(active==='recommendations')render();
   const node=$('pro-home-recs');
   if(node)window.ATHTML.renderHTML(node,modules.recommendations.home());
-  if(window.matchMedia?.('(max-width:760px)').matches&&active==='')renderMobileDiscover();
+  if(window.matchMedia?.('(max-width:760px), (max-width:960px) and (max-height:500px)').matches&&active==='')renderMobileDiscover();
   product?.refresh();
  };
  async function init(){
@@ -238,7 +238,7 @@ export function createFeatures(ctx){
   $('pro-view').classList.remove('hidden');document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));$('pro-nav-'+name)?.classList.add('active');
   $('page-title').textContent=({news:'Lajme anime',notifications:'Njoftimet 🔔',recommendations:'Për ty ✨',calendar:'Kalendari 📅',diary:'Ditari',watch:'Ku ta shoh ▶',sync:'MAL / AniList Sync ⇄',wrapped:'Anime Wrapped 🏆',profile:'Profili im 👤',friends:'Miqtë 👥',moderation:'Moderimi 🛡️',collections:'Listat e mia ▤',tv:'Serialet e mia ▣'})[name];setMobileActive(name);
   if(name==='diary'&&!modules.diary){window.ATHTML.renderHTML($('pro-content'),'<p role="status">Po ngarkohet ditari…</p>');void loadDiary().then(()=>{if(active==='diary')render()}).catch(()=>{if(active==='diary')window.ATHTML.renderHTML($('pro-content'),'<p role="alert">Ditari nuk u ngarkua.</p><button type="button" class="ghost" data-pro-page="diary">Provo përsëri</button>')})}
-  if(name==='collections'||name==='tv')setMobileActive('library');if(name==='sync')setMobileActive('profile');if(name==='news')setMobileActive('explore');render();if(name==='calendar')void ctx.refreshAiring?.(false);if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();if(!window.matchMedia('(max-width:760px)').matches)window.scrollTo({top:0,behavior:'smooth'});return true;
+  if(name==='collections'||name==='tv')setMobileActive('library');if(name==='sync')setMobileActive('profile');if(name==='news')setMobileActive('explore');render();if(name==='calendar')void ctx.refreshAiring?.(false);if(name==='recommendations')void modules.recommendations.refresh(false);if(name==='notifications')void modules.notifications.refresh();if(!window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches)window.scrollTo({top:0,behavior:'smooth'});return true;
  }
  function hide(){reading.hide();newsController?.setActive(false);active='';$('pro-view')?.classList.add('hidden')}
  function syncMobile(name){setMobileActive(name);if(name==='explore')requestAnimationFrame(()=>requestAnimationFrame(()=>{if(document.body.dataset.mobilePage!==name)return;renderMobileDiscover();void modules.recommendations.refresh(false)}))}
@@ -253,7 +253,7 @@ export function createFeatures(ctx){
    }));
    trackAchievements(false);render();renderHome();
    const readingId=new URLSearchParams(location.search).get('reading');
-   if(readingId&&!window.matchMedia('(max-width:760px)').matches)window.dispatchEvent(new CustomEvent('at-reading-command',{detail:{id:readingId}}));
+   if(readingId&&!window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches)window.dispatchEvent(new CustomEvent('at-reading-command',{detail:{id:readingId}}));
    void modules.push.prepare().then(()=>modules.push.scheduleSync()).catch(console.warn);
    void refreshLive(false);
    const handle=new URLSearchParams(location.search).get('profile');

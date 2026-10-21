@@ -1,6 +1,6 @@
 import { calendarMatches } from '../core/calendar-classification.js';
 window.ATCalendarWrapped=function ATCalendarWrapped(ctx){
- let weekOffset=0,period='month',mode=(typeof matchMedia==='function'&&matchMedia('(max-width:760px)').matches)?'agenda':'week',scope='all',focusDay=null,calendarQuery='',releaseFilter='all';
+ let weekOffset=0,period='month',mode=(typeof matchMedia==='function'&&matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches)?'agenda':'week',scope='all',focusDay=null,calendarQuery='',releaseFilter='all';
  const esc=ctx.esc,D=86400000;
  function monday(date){const x=new Date(date.getFullYear(),date.getMonth(),date.getDate());x.setDate(x.getDate()-(x.getDay()+6)%7);return x}
  function calendar(){

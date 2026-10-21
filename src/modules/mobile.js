@@ -1,7 +1,7 @@
 /* AnimeTrack 11.3 — mobile-only presentation enhancements. No library or account state is stored here. */
 window.ATMobile113=(function(){
  const $=id=>document.getElementById(id);
- const phone=()=>window.matchMedia('(max-width:760px)').matches;
+ const phone=()=>window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches;
  let libraryQuery='';
  let signupMode=false;
  function signupReady(){return signupMode}

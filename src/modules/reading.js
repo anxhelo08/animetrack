@@ -33,7 +33,7 @@ export function createReading(ctx) {
   const applyReadingUpdate = (row, fresh, stamp = mergeStamp()) =>
     modelApplyReadingUpdate(row, fresh, stamp);
   const esc = ctx.esc,
-    phone = window.matchMedia('(max-width:760px)');
+    phone = window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)');
   let root,
     active = false,
     owner = '',

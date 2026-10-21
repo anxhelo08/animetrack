@@ -2,7 +2,7 @@
 
 /* ===== episode-hub.css ===== */
 /* 12.7.3: normal watch card with a subtle NEW EP badge for completed titles only. */
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  body.at-ios-enabled .at127-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:20px 2px 11px;min-width:0}
  body.at-ios-enabled .at127-section-head>div{display:flex;align-items:center;gap:8px;min-width:0}
  body.at-ios-enabled .at127-section-head h2{margin:0;font-size:13px;letter-spacing:.9px;font-weight:900;color:#e9e3fa}
@@ -78,7 +78,7 @@ body.at128-storage-blocked{overflow:hidden}
 .at128-tile-genres{display:flex;gap:5px;flex-wrap:wrap;align-content:start;min-height:22px}
 .at128-tile-genre{border:1px solid #544566;background:#32283d;border-radius:6px;padding:3px 6px;font-size:10px;color:#d1bedf;line-height:1.4}
 .seasons-view .seasonal-actions button{min-height:39px;border-radius:9px}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  .seasons-view .season-view-head{padding:18px;align-items:stretch;gap:14px}
  .seasons-view .season-view-head .primary{width:100%}
  .seasons-view .season-browser-controls{padding:12px;gap:9px}
@@ -97,7 +97,7 @@ body.at128-storage-blocked{overflow:hidden}
  .seasons-view .seasonal-actions button{width:100%;font-size:10px;padding:7px;min-height:38px}
  .seasons-view .season-period-nav button{font-size:10px;padding:7px 9px}
 }
-@media(min-width:761px) and (max-width:1160px){.seasons-view .seasonal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:761px) and (min-height:501px) and (max-width:1160px),(min-width:961px) and (max-width:1160px){.seasons-view .seasonal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:360px){.seasons-view .season-period-nav strong{font-size:12px}.seasons-view .seasonal-grid{gap:7px}}
 @media(prefers-reduced-motion:reduce){.seasons-view .seasonal-tile,.seasons-view .seasonal-cover img,.at128-genre{transition:none!important}}
 
@@ -186,7 +186,7 @@ body.at128-storage-blocked{overflow:hidden}
 .at129-mini-icons span{display:grid;place-items:center;width:36px;height:36px;border-radius:10px;background:#695085;border:1px solid #9d7bbd;font-size:17px}
 .at129-profile-preview button{grid-column:1/-1;justify-self:start;min-height:40px;padding:10px 14px;border-radius:10px;border:1px solid #9e83c0;background:#51406d;color:#fff;font-size:12px;font-weight:850}
 @media(max-width:960px){.at129-badge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  .at129-wrapped{gap:13px;margin-bottom:100px;width:100%;padding:0 1px}
  .at129-hero{min-height:222px;padding:22px 20px;border-radius:18px}
  .at129-hero h2{font-size:clamp(34px,9vw,49px);letter-spacing:-1.6px;margin:14px 0}

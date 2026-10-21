@@ -49,7 +49,7 @@ export function createLibraryFilters({ el: $, html, snapshot, change }) {
       root.setAttribute('aria-label', 'Kërkimi dhe filtrat e bibliotekës');
       html.renderHTML(
         root,
-        '<div data-library-query></div><div data-library-status></div><details id="mobile-library-controls" class="library-filter-panel"><summary>Filtra dhe renditje <span data-library-filter-count></span></summary><div class="library-filter-body"><div class="library-secondary-filters" role="group" aria-label="Kategori"><button type="button" data-filter="favorites" class="ghost">Të preferuarat</button><button type="button" data-filter="waiting" class="ghost">Në pritje</button><button type="button" data-filter="genres" class="ghost">Zhanret</button></div></div></details><p id="library-results-count" role="status"></p><div id="library-active-filters" class="library-active-filters" aria-label="Filtrat aktivë"></div>',
+        '<div data-library-query></div><div data-library-status></div><details id="mobile-library-controls" class="library-filter-panel"><summary>Filtra dhe renditje <span data-library-filter-count></span></summary><div class="library-filter-body"><div class="library-secondary-filters" role="group" aria-label="Kategori"><button type="button" data-filter="favorites" class="ghost">Të preferuarat</button><button type="button" data-filter="waiting" class="ghost">Në pritje</button><button type="button" data-filter="genres" class="ghost">Zhanret</button></div></div></details><p id="library-results-count" role="status"></p><div id="library-active-filters" class="library-active-filters" role="group" aria-label="Filtrat aktivë"></div>',
       );
       strip.before(root);
       root.querySelector('[data-library-status]').append(strip);

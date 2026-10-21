@@ -4,7 +4,7 @@ export function createDetailNavigation(ctx) {
   const episodeSelector =
     '.seasons-topline,.season-scroller,.season-banner,.episode-jump,.episode-list,.episode-pages,.season-info,.at140-hidden-parts';
   function attach(root, id) {
-    if (window.matchMedia?.('(max-width:760px)').matches) return;
+    if (window.matchMedia?.('(max-width:760px), (max-width:960px) and (max-height:500px)').matches) return;
     root?.classList.add('detail-tabs-enabled');
     const row = ctx.state().anime.find((row) => row.id === id);
     if (!root || !row) return;

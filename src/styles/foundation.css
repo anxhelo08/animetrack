@@ -729,7 +729,7 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
  .at-h2-lineup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .at-h2-season-list{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  #at-home-main{gap:18px}
  .at-h2-hero{grid-template-columns:minmax(0,1fr);padding:22px}
  .at-h2-hero-aside{min-height:0}
@@ -799,7 +799,7 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
  .at-h2-top-grid{grid-template-columns:minmax(0,1fr)}
  .at-h3-feature{min-height:360px}
 }
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  body{padding-bottom:82px}
  .sidebar{display:none!important}
  .main{margin-left:0!important;width:100%!important;padding-left:12px!important;padding-right:12px!important}
@@ -852,7 +852,7 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
  .at-h2-lineup-card{flex-basis:89%}
  .at-mobile-nav{left:7px;right:7px;bottom:max(7px,env(safe-area-inset-bottom));border-radius:16px}
 }
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  /* Mobile library behaves like a media app, not a squeezed desktop grid */
  #library-view .hero,#library-view .stats,#library-view .home-section-head:first-child,#library-view .series-repair-panel{display:none!important}
  #library-view .library-status-strip{display:flex;overflow-x:auto;gap:7px;position:sticky;top:55px;z-index:20;padding:8px 0;background:#0f1019e8;backdrop-filter:blur(12px);scrollbar-width:none}
@@ -932,13 +932,13 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
 .at-h2-lineup-actions button.at-h4-details{flex:.82;background:#2b2d43;border:1px solid #514c67;color:#e5d9ff}
 .at-h2-lineup-actions button:last-child{flex:0 0 36px}
 .at-h2-lineup-actions button:focus-visible,.at-h3-feature-actions button:focus-visible{outline:2px solid #d3baff;outline-offset:2px}
-@media(max-width:1100px) and (min-width:761px){
+@media(max-width:1100px) and (min-width:761px) and (min-height:501px),(max-width:1100px) and (min-width:961px){
  .at-h3-feature{grid-template-columns:225px minmax(0,1fr);min-height:300px;max-height:360px}
  .at-h3-feature-panel{padding:20px;gap:11px}
  .at-h2-session{height:auto}
  .at-h2-lineup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  .at-h4-shortcuts{align-items:stretch}
  .at-h4-shortcut-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%;gap:5px}
  .at-h4-shortcut-list button{padding:8px 3px;font-size:9px;min-height:39px}
@@ -962,7 +962,7 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
 /* Update availability without interrupting playback or unsaved edits. */
 .at-pwa-update{position:fixed;z-index:1300;right:18px;bottom:20px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;max-width:min(480px,calc(100vw - 26px));padding:12px 14px;background:#262038;color:#f5f1ff;border:1px solid #9d83ce;box-shadow:0 18px 45px #0009;border-radius:13px;font-size:12px}
 .at-pwa-update>span{flex:1;min-width:150px;font-weight:750}.at-pwa-update button{min-height:34px;border:1px solid #836bb1;background:#684ea2;color:#fff;padding:7px 10px;border-radius:9px;font-weight:800;cursor:pointer}.at-pwa-update button:last-child{background:transparent;border-color:#504661;padding:6px 10px}
-@media(max-width:760px){.at-pwa-update{left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));max-width:none;font-size:11px}}
+@media(max-width:760px),(max-width:960px) and (max-height:500px){.at-pwa-update{left:12px;right:12px;bottom:calc(88px + env(safe-area-inset-bottom));max-width:none;font-size:11px}}
 
 /* ===== iphone-base.css ===== */
 /* AnimeTrack 10.5 — dedicated iPhone experience, no desktop dashboard on phones */
@@ -976,7 +976,7 @@ body.auth-required #account-modal .modal{box-shadow:0 20px 100px rgba(0,0,0,.75)
 .at-ios-install-mark{width:54px;height:54px;display:grid;place-items:center;border-radius:16px;background:linear-gradient(145deg,#a27bec,#614fbd);font-size:30px}
 .at-ios-install-ok{min-height:45px;width:100%;border:0;border-radius:12px;color:#fff;background:#8060d2;font-weight:850}
 .at-ios-dialog-close{float:right;border:0;background:#383047;color:#e4d9f5;border-radius:9px;width:32px;height:32px;font-size:19px}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  html{background:#10111b;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
  body{background:#10111b;padding-bottom:calc(84px + env(safe-area-inset-bottom));-webkit-tap-highlight-color:transparent}
  body.at-ios-enabled .main{padding:0 13px!important;max-width:none}

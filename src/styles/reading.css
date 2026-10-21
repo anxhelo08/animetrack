@@ -1138,7 +1138,8 @@
   height: 20px;
   flex-shrink: 0;
 }
-@media (min-width: 761px) and (max-width: 1100px) {
+@media (min-width: 761px) and (min-height: 501px) and (max-width: 1100px),
+  (min-width: 961px) and (max-width: 1100px) {
   .reading-tabs button {
     padding: 10px 12px;
     font-size: 13px;
@@ -1235,7 +1236,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   .reading-view {
     padding-bottom: calc(90px + env(safe-area-inset-bottom));
   }
@@ -1329,7 +1330,7 @@
   }
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   .reading-scope {
     width: 100%;
   }
@@ -1513,7 +1514,7 @@
 #reading-copy-status:empty {
   display: none;
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   .reading-view .reading-hero {
     display: grid;
     gap: 8px;

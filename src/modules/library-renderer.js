@@ -29,10 +29,14 @@ export function createLibraryRenderer(ctx) {
   return function render() {
     let { state, filter, search, sort, view, selectedGenre, libraryFocus, libraryProgress, owner } =
       ctx.snapshot();
-    if (window.matchMedia('(max-width:760px)').matches && view !== 'library') return;
+    if (
+      window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches &&
+      view !== 'library'
+    )
+      return;
     if (
       view === 'library' &&
-      window.matchMedia('(max-width:760px)').matches &&
+      window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches &&
       $('at113-library-search')
     ) {
       search = $('at113-library-search').value.trim().toLocaleLowerCase();
@@ -62,7 +66,9 @@ export function createLibraryRenderer(ctx) {
     document
       .querySelectorAll('[data-filter]')
       .forEach((b) => b.classList.toggle('active', b.dataset.filter === filter));
-    const phone = window.matchMedia('(max-width:760px)').matches,
+    const phone = window.matchMedia(
+        '(max-width:760px), (max-width:960px) and (max-height:500px)',
+      ).matches,
       renderOwner = owner;
     if (renderOwner !== renderedLibraryOwner) {
       renderedLibraryOwner = renderOwner;

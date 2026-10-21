@@ -2,7 +2,7 @@
 
 /* ===== desktop.css ===== */
 /* AnimeTrack 10.6 — desktop-only viewing workflow; iPhone layout remains isolated. */
-@media (min-width:761px){
+@media (min-width:761px) and (min-height:501px),(min-width:961px){
  #at-home-lineup{min-width:0}
  .at-pc-watch-tools{display:flex;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap;margin:13px 0 10px}
  .at-pc-watch-search{display:flex;align-items:center;gap:10px;flex:1;min-width:220px;max-width:460px;min-height:43px;padding:0 14px;background:#1c1f31;border:1px solid #454059;border-radius:12px;color:#bcb1da;transition:border-color .17s,box-shadow .17s}
@@ -21,12 +21,12 @@
  .at-h2-lineup-name:hover{text-decoration:underline}
  .at-h2-lineup-actions button:focus-visible,.at-pc-more:focus-visible,.at-pc-undo:focus-visible{outline:2px solid #d5baff;outline-offset:2px}
 }
-@media (min-width:761px) and (max-width:1060px){
+@media (min-width:761px) and (min-height:501px) and (max-width:1060px),(min-width:961px) and (max-width:1060px){
  .at-pc-watch-tools{align-items:stretch}
  .at-pc-watch-search{max-width:none;flex:1}
  .at-h2-lineup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media (max-width:760px){
+@media (max-width:760px),(max-width:960px) and (max-height:500px){
  .at-pc-watch-tools,.at-pc-more-wrap{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){.at-h2-lineup-card,.at-pc-watch-search{transition:none}.at-h2-lineup-card:hover{transform:none}}
@@ -51,7 +51,7 @@
 .at-pro-recovery button{min-height:39px;border:1px solid #9f81d4;border-radius:10px;background:#654b9b;color:#fff;padding:9px 14px;font-weight:800;cursor:pointer}
 @keyframes at107-sync-pulse{50%{opacity:.35;transform:scale(.82)}}
 @media(prefers-reduced-motion:reduce){.at-ios-sync-dot.busy{animation:none}}
-@media(max-width:760px){.at-ios-watch-feedback{margin-top:-4px}.at-ios-watch-feedback button{min-height:38px}}
+@media(max-width:760px),(max-width:960px) and (max-height:500px){.at-ios-watch-feedback{margin-top:-4px}.at-ios-watch-feedback button{min-height:38px}}
 
 /* ===== journey.css ===== */
 /* AnimeTrack 11.0 · Episode Hub only. Native season selector handles all seasons. */
@@ -81,7 +81,7 @@
 #episode-detail-modal .ep-detail-visual img{max-height:370px;object-fit:cover}
 #episode-detail-modal .v98-discussion{margin-top:4px}
 .at108-episode-switch button:focus-visible,.at108-episode-tabs button:focus-visible{outline:2px solid #e2d0ff;outline-offset:2px}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  #episode-detail-modal .ep-detail-dialog{width:100%;max-height:calc(100dvh - env(safe-area-inset-top) - 12px);border-radius:18px}
  #episode-detail-modal .modal-body{padding:9px 13px calc(22px + env(safe-area-inset-bottom))}
  .at108-episode-head{display:grid;gap:12px;padding:13px}
@@ -131,7 +131,7 @@
 .at109-push-state>button:disabled{opacity:.6}
 .at-cal-event .at109-reminder-choice{margin:8px 0 0}
 .at-cal-event .at109-reminder-choice select{max-width:180px}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  .at109-smart-week{padding:13px;margin:0 0 19px;border-radius:15px;gap:11px}
  .at109-week-heading h3{font-size:17px}
  .at109-week-heading p{font-size:10px}
@@ -206,7 +206,7 @@
 .at110-empty h3{margin:0;font-size:19px}.at110-empty p{margin:0}
 .at110-private-note{margin:16px 0;color:#a8a0b9;font-size:10px}
 .at110-page button:focus-visible,.at110-page input:focus-visible,.at110-library-link:focus-visible{outline:2px solid #d4baff;outline-offset:2px}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  .at110-mobile-link{display:block;width:100%;margin:0 0 12px;min-height:44px;text-align:center}
  .at110-library-link{min-height:38px;padding:8px 10px;font-size:11px}
  .at110-page{padding-top:6px;padding-bottom:calc(110px + env(safe-area-inset-bottom))}
@@ -232,7 +232,7 @@
    Keep pinch-to-zoom available for accessibility; disable accidental double-tap
    smart zoom through touch-action: manipulation, not user-scalable=no.
 */
-@media (max-width:760px), (max-height:500px) and (orientation:landscape) and (pointer:coarse) {
+@media (max-width:760px),(max-width:960px) and (max-height:500px), (max-height:500px) and (orientation:landscape) and (pointer:coarse) {
  :root {--at-mobile-safe-top:env(safe-area-inset-top,0px);--at-mobile-safe-bottom:env(safe-area-inset-bottom,0px)}
  html {width:100%;max-width:100%;overflow-x:clip;-webkit-text-size-adjust:100%}
  body {width:100%;max-width:100%;overflow-x:clip;-webkit-tap-highlight-color:transparent}
@@ -386,7 +386,7 @@
  #detail-modal .modal-header h2 {font-size:16px}
  #detail-modal .detail-back {min-width:88px;padding-inline:9px}
 }
-@media(max-width:760px) and (orientation:landscape) and (max-height:500px){
+@media(max-width:760px) and (orientation:landscape) and (max-height:500px),(max-width:960px) and (max-height:500px) and (orientation:landscape) and (max-height:500px){
  body.at-ios-enabled .at-mobile-nav button {min-height:44px;padding-block:4px}
  body.at-ios-enabled .at-mobile-nav {min-height:calc(58px + var(--at-mobile-safe-bottom));padding-top:5px}
  #detail-modal .modal-header {min-height:calc(54px + var(--at-mobile-safe-top));padding-top:calc(7px + var(--at-mobile-safe-top));padding-bottom:7px}
@@ -442,12 +442,12 @@
 .at-ios-done:focus-visible,.ep-toggle-btn:focus-visible,.at11-person button:focus-visible,.at11-profile-social button:focus-visible{outline:3px solid #f3d785;outline-offset:3px}
 .ep-article{border-radius:13px;overflow:hidden}.ep-article .ep-info-btn{min-width:0}.ep-article .ep-toggle-btn{flex:none;min-height:43px;border-radius:10px;font-weight:850}.ep-article.seen .ep-toggle-btn{background:#24493f;color:#c3fce1;border-color:#477c68}.ep-article:not(.seen) .ep-toggle-btn{background:linear-gradient(145deg,#7a59b7,#5d4598);color:#fff;border-color:#977ac9}
 .at11-head-friends{display:inline-flex;align-items:center;gap:5px;border:1px solid #544763;background:#30273e;border-radius:13px;color:#ddc5ff;min-height:43px;padding:8px 11px;font-weight:850;font-size:12px;cursor:pointer}.at11-head-friends>span{font-size:11px}
-@media (min-width:761px){
+@media (min-width:761px) and (min-height:501px),(min-width:961px){
  .at-h2-lineup-card,.at-profile-stat,.pro-panel{box-shadow:0 8px 25px #09081118}.at-h2-lineup-actions [data-home-action="advance-next"]{border-radius:12px;background:linear-gradient(125deg,#8e69d3,#6346a6);color:#fff;border-color:#937bc3;font-weight:850}.at-h2-lineup-card:hover{box-shadow:0 18px 36px #09050d60}.ep-article{border:1px solid #433950;margin-bottom:6px}.ep-article:hover{border-color:#9372c9}
  .at-profile-header{border-radius:25px}.at-profile-banner{background:radial-gradient(circle at 86% 0%,#7651b46d,transparent 44%),radial-gradient(circle at 10% 100%,#41858c49,transparent 50%),#241c34}
  .at-profile-top-actions .pro-btn.primary{background:linear-gradient(135deg,#a67beb,#6f4cb7)}
 }
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  html,body{overscroll-behavior-x:none}
  body.at-ios-enabled{background:#101017;color:#f8f6ff}
  body.at-ios-enabled .main{padding-inline:max(14px,env(safe-area-inset-left,0px))!important}

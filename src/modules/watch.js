@@ -128,12 +128,13 @@ window.ATWatch133=function ATWatch133(ctx){
  function regionOptions(selected){return regions.map(([code,name])=>'<option value="'+code+'" '+(selected===code?'selected':'')+'>'+esc(name)+' · '+code+'</option>').join('')}
  function detailShell(anime,part){
   const label=kind(anime)==='anime'?clean(part?.subtitle||part?.title||anime.title):clean(anime.title);
-  return'<section class="at133-watch" data-at133-id="'+esc(anime.id)+'"><div class="at133-head"><div><span class="eyebrow">ANIMETRACK 13.3 · WHERE TO WATCH</span><h4>Ku mund ta shoh? ▶</h4><p>'+esc(label)+'</p></div><div class="at133-tools"><label>Rajoni<select data-at133-region>'+regionOptions(region())+'</select></label><button type="button" class="ghost" data-at133-refresh>↻ Rifresko</button></div></div><div class="at133-result"><div class="at133-loading"><span></span><div><strong>Po kontrollohen providerët…</strong><small>Availability ndryshon sipas titullit dhe rajonit.</small></div></div></div></section>';
+  return'<section class="at133-watch" data-at133-id="'+esc(anime.id)+'"><div class="at133-head"><div><h4>Ku mund ta shoh? ▶</h4><p>'+esc(label)+'</p></div><div class="at133-tools"><label>Rajoni<select data-at133-region>'+regionOptions(region())+'</select></label><button type="button" class="ghost" data-at133-refresh>↻ Rifresko</button></div></div><div class="at133-result"><div class="at133-loading"><span></span><div><strong>Po kontrollohen providerët…</strong><small>Availability ndryshon sipas titullit dhe rajonit.</small></div></div></div></section>';
  }
  async function attach(root,anime,part){
   if(!root||!anime)return;root.querySelector('.at133-watch')?.remove();
   const host=document.createElement('div');window.ATHTML.renderHTML(host,detailShell(anime,part));const section=host.firstElementChild,anchor=root.querySelector('.seasons-topline')||root.querySelector('.at150-movie-stats')||root.firstElementChild;
-  if(anchor?.parentNode)anchor.parentNode.insertBefore(section,anchor);else root.append(section);
+  const panel=root.querySelector('[data-mobile-panel="overview"]');
+  if(panel)panel.append(section);else if(anchor?.parentNode)anchor.parentNode.insertBefore(section,anchor);else root.append(section);
   const body=section.querySelector('.at133-result'),select=section.querySelector('[data-at133-region]');let sequence=0;
   const paint=async force=>{
    const current=++sequence;

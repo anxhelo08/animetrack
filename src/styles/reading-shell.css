@@ -7,7 +7,7 @@
   display: none !important;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   #pro-nav-reading {
     display: none !important;
   }
@@ -38,7 +38,7 @@
   background: var(--action-bg);
   color: var(--action-text);
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   #reading-subnav {
     display: none !important;
   }
@@ -47,7 +47,7 @@
 .reading-mobile-switch {
   display: none;
 }
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   .reading-mobile-switch {
     display: flex;
     gap: 6px;

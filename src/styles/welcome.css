@@ -24,7 +24,7 @@ body.auth-required:has(.welcome-page:not([hidden])) .app,body.auth-required:has(
 .welcome-features{border-top:1px solid #ffffff14;display:grid;grid-template-columns:repeat(3,1fr);background:#0c0b11}.welcome-features>div{padding:42px max(25px,4vw);border-right:1px solid #ffffff14}.welcome-features span{font-size:10px;letter-spacing:2px;color:#c19cd4}.welcome-features h2{font-size:46px;color:white;letter-spacing:-2px;margin:12px 0}.welcome-features p{font-size:14px;color:#c1b4ca;line-height:1.7;max-width:320px}
 .welcome-page button:focus-visible,.welcome-brand:focus-visible{outline:3px solid #ecd3ff;outline-offset:5px}
 @keyframes welcome-float{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-16px) rotate(1deg)}}
-@media(max-width:760px){.welcome-header{padding:22px}.welcome-brand{font-size:22px}.welcome-hero{grid-template-columns:1fr;gap:45px;padding:35px 24px 55px;min-height:auto}.welcome-copy h1{font-size:60px;letter-spacing:-3px}.welcome-copy>p{font-size:16px}.welcome-deck{height:340px;max-width:310px}.welcome-poster{width:215px;height:320px;left:5px;border-radius:18px}.welcome-poster-back{transform:translate(65px,22px) rotate(12deg)}.welcome-poster-middle{transform:translate(35px,12px) rotate(6deg)}.welcome-poster h2{font-size:24px}.welcome-features{grid-template-columns:1fr}.welcome-features>div{padding:26px;border-right:0;border-bottom:1px solid #ffffff14}.welcome-features h2{font-size:35px}.welcome-features p{margin:0}}
+@media(max-width:760px),(max-width:960px) and (max-height:500px){.welcome-header{padding:22px}.welcome-brand{font-size:22px}.welcome-hero{grid-template-columns:1fr;gap:45px;padding:35px 24px 55px;min-height:auto}.welcome-copy h1{font-size:60px;letter-spacing:-3px}.welcome-copy>p{font-size:16px}.welcome-deck{height:340px;max-width:310px}.welcome-poster{width:215px;height:320px;left:5px;border-radius:18px}.welcome-poster-back{transform:translate(65px,22px) rotate(12deg)}.welcome-poster-middle{transform:translate(35px,12px) rotate(6deg)}.welcome-poster h2{font-size:24px}.welcome-features{grid-template-columns:1fr}.welcome-features>div{padding:26px;border-right:0;border-bottom:1px solid #ffffff14}.welcome-features h2{font-size:35px}.welcome-features p{margin:0}}
 @media(prefers-reduced-motion:reduce){.welcome-poster-front{animation:none}.welcome-start{transition:none}}
 body.auth-required:has(.welcome-page:not([hidden])) #account-modal .modal-header .x{display:flex!important}
 
@@ -50,13 +50,13 @@ body.auth-required #account-guest-user>.account-note{display:none!important}
 #account-modal .social-button:not(:disabled):hover{background:#3a2f47;transform:translateY(-1px)}#account-modal .social-button:disabled{cursor:default}.social-button svg{width:21px;height:21px;flex:none}.social-button span{text-align:left}.social-availability{margin-left:auto;border-radius:20px;background:#46314e;color:#eac7fc;font-size:10px;padding:4px 8px;font-weight:600}.social-availability:empty{display:none}
 #account-modal .social-status{font-size:11px;color:#d6c2e0;line-height:1.6;margin:3px 0 0}.social-retry{border:0;background:transparent;color:#dbc6ed;min-height:44px;font-size:11px;padding:3px;justify-self:start;cursor:pointer}
 .social-divider{display:flex;align-items:center;gap:12px;color:#bda9cb;font-size:10px;letter-spacing:1px;margin:6px 0 0}.social-divider:before,.social-divider:after{content:"";height:1px;background:#ffffff18;flex:1}
-@media(max-width:760px){.welcome-poster[data-slot="1"]{transform:translate3d(35px,12px,0) rotate(6deg)}.welcome-poster[data-slot="2"]{transform:translate3d(65px,22px,-35px) rotate(12deg)}.account-scene img{width:145px;height:215px}.account-scene img:nth-child(1){left:-35px;top:2%}.account-scene img:nth-child(2){right:-35px;top:60%}.account-scene img:nth-child(3){display:none}}
+@media(max-width:760px),(max-width:960px) and (max-height:500px){.welcome-poster[data-slot="1"]{transform:translate3d(35px,12px,0) rotate(6deg)}.welcome-poster[data-slot="2"]{transform:translate3d(65px,22px,-35px) rotate(12deg)}.account-scene img{width:145px;height:215px}.account-scene img:nth-child(1){left:-35px;top:2%}.account-scene img:nth-child(2){right:-35px;top:60%}.account-scene img:nth-child(3){display:none}}
 @media(max-width:380px){.welcome-poster[data-slot="1"]{transform:translate3d(25px,12px,0) rotate(6deg)}.welcome-poster[data-slot="2"]{transform:translate3d(45px,22px,-35px) rotate(12deg)}}
 @media(prefers-reduced-motion:reduce){.welcome-poster,.social-button{transition:none!important}}
 
 /* Mobile welcome: a cinematic poster wall and one clear start action. */
 .welcome-mosaic{display:none}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  .welcome-page{background:radial-gradient(ellipse at 50% 80%,#532252,transparent 70%),#100d17}
  .welcome-header{padding:calc(16px + env(safe-area-inset-top)) 20px 18px;position:relative;z-index:2}
  .welcome-brand{font-size:21px;letter-spacing:-.7px;gap:8px}.welcome-brand img{width:30px;height:30px}
@@ -81,7 +81,7 @@ body.auth-required #account-guest-user>.account-note{display:none!important}
 /* Nine distinct titles; only the three foreground cards occupy the deck. */
 .welcome-poster:not([data-slot="0"]):not([data-slot="1"]):not([data-slot="2"]){visibility:hidden;opacity:0;pointer-events:none}
 .welcome-dots{gap:0;flex-wrap:wrap}.welcome-dots button{width:22px}
-@media(max-width:760px){
+@media(max-width:760px),(max-width:960px) and (max-height:500px){
  .welcome-showcase{height:min(680px,calc(100svh - 80px))}
  .welcome-showcase:after{background:linear-gradient(180deg,#100d1700 18%,#100d1770 36%,#100d17ee 68%,#100d17 100%)}
  .welcome-mosaic{gap:7px;transform:rotate(-6deg) scale(1.12);animation:none;padding:8px}
@@ -89,7 +89,7 @@ body.auth-required #account-guest-user>.account-note{display:none!important}
  .welcome-mosaic img:nth-child(3n+2){transform:translateY(18px)}
  .welcome-hero{padding-top:clamp(235px,calc(100svh - 440px),375px)}
 }
-@media(max-height:700px) and (max-width:760px){.welcome-hero{padding-top:180px}}
+@media(max-height:700px) and (max-width:760px),(max-height:700px) and (max-width:960px) and (max-height:500px){.welcome-hero{padding-top:180px}}
 .welcome-artwork-unavailable{visibility:hidden}.welcome-mosaic{background:linear-gradient(135deg,#332544,#171021)}
 
 .welcome-public-links{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:16px 28px}

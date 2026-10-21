@@ -189,7 +189,7 @@
   color: var(--text);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
   body.at-ios-enabled .at-mobile-nav {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }

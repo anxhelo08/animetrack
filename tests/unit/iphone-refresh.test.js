@@ -24,7 +24,7 @@ function fixture({ phone = true, replacement = true } = {}) {
   let mobile = phone,
     owner = 'first';
   window.matchMedia = (query) => ({
-    matches: query === '(max-width:760px)' && mobile,
+    matches: query.startsWith('(max-width:760px)') && mobile,
   });
   if (replacement) {
     const home = document.createElement('div');

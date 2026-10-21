@@ -5,7 +5,7 @@ window.ATCommand124=function ATCommand124(ctx){
  let root=null,input=null,list=null,items=[],selected=0,returnTo=null,open=false;
  const activeModals=()=>[...document.querySelectorAll('.modal-backdrop.show')].length;
  function index(value){const q=normalize(value),found=[];
- if(typeof document!=='undefined'&&document.body.classList.contains('reading-active')&&!window.matchMedia('(max-width:760px)').matches){
+ if(typeof document!=='undefined'&&document.body.classList.contains('reading-active')&&!window.matchMedia('(max-width:760px), (max-width:960px) and (max-height:500px)').matches){
   for(const row of ctx.state().readingLibrary||[])if(!row.deletedAt&&(!q||normalize(row.title+' '+row.genres).includes(q)))found.push({kind:'reading',id:row.id,icon:'▤',label:row.title,desc:row.kind==='manhwa'?'Manhwa · Hap kapitujt':'Manga · Hap kapitujt'});
   if(q.length>=2)found.push({kind:'reading-online',id:String(value).trim().slice(0,100),icon:'↗',label:'Kërko “'+String(value).trim().slice(0,100)+'” në lexim',desc:'Vetëm Manga / Manhwa'});
   return found.slice(0,22);

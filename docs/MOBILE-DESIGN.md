@@ -38,7 +38,9 @@ validated by the existing poster helper.
 
 `src/modules/mobile-presentation.js` composes existing data and controls without
 writing account or library state. `src/styles/mobile-premium.css` scopes the new
-layout to phones up to 760px; tests exercise the intended 320–430px range.
+layout to portrait widths up to 760px and compact landscape viewports up to
+960px wide and 500px high; CSS and controller queries use the same rule.
+Tests exercise 320–430px portrait and 844px landscape.
 Supabase, account credentials, tracking transactions and sync transport are unchanged.
 
 ## Validation
@@ -63,7 +65,6 @@ system Chromium. This avoids the repository's single-process browser flags.
 WebKit downloads remain blocked by network policy; real-device Safari and live
 authenticated provider behavior were not validated by these fixture tests.
 
-
 The mobile home now separates last-watched history (green check indicators),
 currently watching (mark-next actions without checks), and titles untouched for
 more than seven days. Confirmed future releases use neutral clock indicators.
@@ -77,7 +78,6 @@ unchanged home markup is retained, and hidden legacy home rendering is skipped o
 phones. Chromium tests cover repeated taps, viewport scale, activity overflow,
 section movement after tracking, and mark/undo; actual iOS hardware remains untested.
 
-
 Newly released episodes with a confirmed timestamp appear at the top of Watching
 with an “Episod i ri” badge, even if the series was completed or last watched over
 a week ago. A local timer updates the view at the next known release boundary;
@@ -88,7 +88,6 @@ Discover and library tools wrap within the safe area; filter chips are all visib
 Navigation uses a 120ms entrance and 240ms press feedback, disabled by
 reduced-motion preferences. Tests exercise the six-watched → seventh-released
 scenario using the browser clock, including marking and preservation of progress.
-
 
 Entering Home returns to the Watching tab and scrolls toward its next episodes.
 Last-watched rows appear dimmer above it; their green check removes that exact
@@ -107,7 +106,6 @@ Offline states, conflicts and errors remain visible. Navigation does not initiat
 or upload. A fixture test counts library queries across all five destinations and
 confirms that an episode transaction still uploads. Background sync remains active.
 
-
 Mobile tracking no longer rebuilds a hidden library grid or the retired home panels. Entering Library renders
 the latest progress; repeated navigation reuses unchanged cards, including the
 empty-state handler. The owner boundary clears retained cards before another
@@ -122,3 +120,16 @@ startup stylesheet and native hidden attribute keep the legacy page invisible if
 a release stylesheet fails, and offer a retry without deleting local progress.
 Fault-injection tests cover a deployment mismatch, missing CSS, offline startup
 and navigation without waiting for the network.
+
+## First mobile correctness update (21 October 2026)
+
+Late detail providers mount directly into their assigned panels: rich people data
+in Cast, availability in Overview. Cold module download, retry, season switching
+and warm reopening retain the panel placement. Existing desktop anchors remain.
+The profile heatmap has one named graphic with total episodes/active days, a
+screen-reader list with all 84 dates, and a keyboard-focusable scroll region.
+Active library filters are a named group; count text inherits the active chip's
+foreground so its background and text cannot use conflicting theme states.
+The landscape rule keeps the phone navigation and episode feed on short viewports;
+portrait tablet widths above 760px and desktop widths above 960px retain their
+existing layout. No library schema, account transport or tracking change is made.
