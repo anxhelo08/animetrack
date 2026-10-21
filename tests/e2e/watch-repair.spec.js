@@ -70,7 +70,7 @@ test('manual progress appears in Diary, sorts first, persists and planned titles
   await expect(page.locator('#anime-grid [data-detail="planned"]')).toHaveCount(0);
   await page.locator('#anime-grid [data-detail="clover"]').first().click();
   if (info.project.name.startsWith('iphone'))
-    await page.getByRole('button', { name: 'Shënimet', exact: true }).click();
+    await page.getByRole('button', { name: 'Përmbledhja', exact: true }).click();
   await page.locator('#detail-body [data-edit="clover"]:visible').first().click();
   await page.locator('#anime-current').fill('2');
   await page.locator('#anime-form button[type="submit"]').click();

@@ -16,6 +16,7 @@ export function createMobilePresentation(ctx) {
   let page = 'home',
     filter = 'all',
     detailTab = 'episodes',
+    detailCompact = false,
     detailId = '',
     owner = '';
   let observer,
@@ -434,10 +435,14 @@ export function createMobilePresentation(ctx) {
     const root = $('detail-body'),
       a = ctx.state().anime.find((a) => a.id === id);
     if (!root || !a) return;
-    if (detailId !== id) detailTab = 'episodes';
+    if (detailId !== id) {
+      detailTab = 'episodes';
+      detailCompact = false;
+    }
     detailId = id;
     root.classList.add('mobile-detail');
-    const top = root.querySelector('.detail-top');
+    root.classList.toggle('mobile-detail-compact', detailCompact);
+    const top = root.querySelector(':scope > .at150-movie-hero,:scope > .detail-top');
     if (top) {
       top.classList.add('mobile-detail-hero');
       const art = ctx.poster(a.backdrop || a.cover || '');
@@ -447,6 +452,15 @@ export function createMobilePresentation(ctx) {
           'afterbegin',
           `<img class="mobile-detail-backdrop" src="${esc(art)}" alt="" referrerpolicy="no-referrer">`,
         );
+    }
+    if (top) {
+      const coverToggle = document.createElement('button');
+      coverToggle.type = 'button';
+      coverToggle.className = 'ghost mobile-detail-cover';
+      coverToggle.dataset.mobileDetailCover = '1';
+      coverToggle.setAttribute('aria-expanded', String(!detailCompact));
+      coverToggle.textContent = detailCompact ? 'Shfaq kopertinën' : 'Zvogëlo kopertinën';
+      top.append(coverToggle);
     }
     const nx = ctx.nextEpisode(a);
     const summary = root.querySelector('.product-progress');
@@ -532,7 +546,7 @@ export function createMobilePresentation(ctx) {
       else if (node.matches('.at134-rich') || node.querySelector('.at134-rich'))
         panels.cast.append(node);
       else if (node.matches('.pro-rewatch') || node.querySelector('.pro-rewatch'))
-        panels.reviews.append(node);
+        panels.episodes.append(node);
       else panels.overview.append(node);
     }
     if (summary) panels.episodes.prepend(summary);
@@ -544,6 +558,19 @@ export function createMobilePresentation(ctx) {
     }
     const ratings = top?.querySelector('.rating-deck');
     if (ratings) panels.reviews.prepend(ratings);
+    if (top?.matches('.at150-movie-hero')) {
+      const tracking = document.createElement('section');
+      tracking.className = 'mobile-film-tracking';
+      const heading = document.createElement('h3');
+      heading.textContent = 'Shikimi i filmit';
+      tracking.append(heading);
+      top
+        .querySelectorAll('[data-movie-seen],[data-movie-rewatch],[data-movie-unwatch]')
+        .forEach((button) => tracking.append(button));
+      const stats = top.querySelector('.at150-watch-stat');
+      if (stats) tracking.append(stats);
+      panels.episodes.prepend(tracking);
+    }
     for (const selector of ['.detail-actions', '.imdb-tools']) {
       const node = top?.querySelector(selector);
       if (node) panels.overview.append(node);
@@ -557,11 +584,15 @@ export function createMobilePresentation(ctx) {
           empty('Aktorët dhe krijuesit shfaqen kur të dhënat janë të disponueshme.') +
           '</div>',
       );
-    window.ATHTML.insertHTML(
-      panels.reviews,
-      'beforeend',
-      `<h3>Vlerësimet dhe shënimet e tua</h3><p class="mobile-empty">${a.notes ? esc(a.notes) : 'Nuk ke shkruar ende një shënim për këtë titull.'}</p><button type="button" class="ghost" data-edit="${esc(id)}">Shkruaj një shënim</button>`,
-    );
+    const movieNotes = panels.overview
+      .querySelector('[data-movie-notes]')
+      ?.closest('.details-section');
+    if (movieNotes) {
+      movieNotes
+        .querySelector('textarea')
+        .setAttribute('aria-label', 'Shënimet e mia për ' + a.title);
+      panels.reviews.prepend(movieNotes);
+    }
     for (const node of Object.values(panels)) root.append(node);
     root.dataset.mobileTab = detailTab;
     // Keep the primary CTA available above the section tabs.
@@ -860,12 +891,28 @@ export function createMobilePresentation(ctx) {
         );
         if (media) ctx.previewItem(ctx.mapAniList(media));
       }
-      if (b.dataset.mobileDetailTab) {
-        detailTab = b.dataset.mobileDetailTab;
-        $('detail-body').dataset.mobileTab = detailTab;
-        document
+      if (b.dataset.mobileDetailTab || b.dataset.mobileDetailCover) {
+        const root = $('detail-body');
+        if (b.dataset.mobileDetailTab) detailTab = b.dataset.mobileDetailTab;
+        detailCompact = b.dataset.mobileDetailTab ? true : !detailCompact;
+        root.classList.toggle('mobile-detail-compact', detailCompact);
+        root.dataset.mobileTab = detailTab;
+        const cover = root.querySelector('[data-mobile-detail-cover]');
+        if (cover) {
+          cover.textContent = detailCompact ? 'Shfaq kopertinën' : 'Zvogëlo kopertinën';
+          cover.setAttribute('aria-expanded', String(!detailCompact));
+        }
+        root
           .querySelectorAll('[data-mobile-detail-tab]')
-          .forEach((node) => node.setAttribute('aria-pressed', String(node === b)));
+          .forEach((node) =>
+            node.setAttribute('aria-pressed', String(node.dataset.mobileDetailTab === detailTab)),
+          );
+        const anchor = b.dataset.mobileDetailTab
+          ? root.querySelector('.mobile-detail-tabs')
+          : root.querySelector('.mobile-detail-hero');
+        requestAnimationFrame(() => {
+          if (anchor?.isConnected) anchor.scrollIntoView({ block: 'start', behavior: 'instant' });
+        });
       }
     });
     phone.addEventListener('change', () => {

@@ -635,3 +635,67 @@ body #library-view .at117-library-tools.hidden {
   max-width: 100%;
   min-width: 0;
 }
+
+/* The two library destinations stay visible; detailed states live with filters. */
+#library-view .library-filter-toolbar #library-status-strip.library-status-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  overflow: visible;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+#library-view .library-filter-toolbar #library-status-strip.library-status-strip > button {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  border-radius: 12px;
+  white-space: normal;
+}
+.library-status-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.library-status-options button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+.library-status-options button.active {
+  color: var(--bg);
+  background: var(--purple);
+}
+.library-status-options svg {
+  width: 16px;
+  height: 16px;
+}
+.library-tools-body {
+  display: grid;
+  gap: 16px;
+  padding-block: 12px;
+  min-width: 0;
+}
+
+/* Personal notes are also used before the optional reading stylesheet loads. */
+.detail-personal-notes .reading-field {
+  display: grid;
+  gap: 8px;
+  margin-block: 16px;
+}
+.detail-personal-notes textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-height: 160px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+  resize: vertical;
+}

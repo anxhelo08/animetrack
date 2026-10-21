@@ -4,8 +4,6 @@ export function createDetailNavigation(ctx) {
   const episodeSelector =
     '.seasons-topline,.season-scroller,.season-banner,.episode-jump,.episode-list,.episode-pages,.season-info,.at140-hidden-parts';
   function attach(root, id) {
-    if (window.matchMedia?.('(max-width:760px), (max-width:960px) and (max-height:500px)').matches) return;
-    root?.classList.add('detail-tabs-enabled');
     const row = ctx.state().anime.find((row) => row.id === id);
     if (!root || !row) return;
     const owner = ctx.user()?.id || 'guest';
@@ -15,6 +13,72 @@ export function createDetailNavigation(ctx) {
       view = { id, owner, tab: 'overview', draft: null, observer: null };
       views.set(root, view);
     }
+    function notes(host) {
+      if (!host || host.querySelector('[data-movie-notes],.detail-personal-notes')) return;
+      if (view.draft === null) view.base = row.notes || '';
+      const form = document.createElement('form');
+      form.className = 'detail-personal-notes reading-panel';
+      window.ATHTML.renderHTML(
+        form,
+        `<h4>Shënimet e mia</h4><label class="reading-field">Mendimet për ${ctx.esc(row.title)}<textarea name="personalNotes" rows="5" maxlength="2500">${ctx.esc(view.draft ?? row.notes ?? '')}</textarea></label><button type="submit" class="primary">Ruaj shënimet</button><button type="button" class="ghost" data-notes-reload hidden>Ngarko shënimin e ruajtur</button><p role="status" data-notes-status></p>`,
+      );
+      if (host === root) host.append(form);
+      else host.prepend(form);
+      const input = form.querySelector('textarea'),
+        status = form.querySelector('[data-notes-status]'),
+        reload = form.querySelector('[data-notes-reload]');
+      const current = () =>
+        views.get(root) === view &&
+        root.contains(form) &&
+        (ctx.user()?.id || 'guest') === owner &&
+        ctx.state().anime.find((item) => item.id === id);
+      form.addEventListener('input', () => {
+        view.draft = input.value;
+      });
+      reload.addEventListener('click', () => {
+        const item = current();
+        if (!item) return;
+        view.base = item.notes || '';
+        view.draft = null;
+        input.value = view.base;
+        reload.hidden = true;
+        status.textContent = '';
+        input.focus();
+      });
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const item = current();
+        if (!item) return;
+        view.draft = input.value.slice(0, 2500);
+        if ((item.notes || '') !== view.base) {
+          status.textContent =
+            'Shënimi ka ndryshuar ndërkohë. Ngarko versionin e ruajtur përpara redaktimit.';
+          reload.hidden = false;
+          return;
+        }
+        const before = { notes: item.notes, updatedAt: item.updatedAt };
+        item.notes = view.draft;
+        item.updatedAt = new Date().toISOString();
+        if (!ctx.save()) {
+          Object.assign(item, before);
+          status.textContent = 'Shënimi nuk u ruajt. Provo përsëri.';
+          return;
+        }
+        view.base = item.notes;
+        view.draft = null;
+        status.textContent = 'Shënimet u ruajtën.';
+        ctx.toast('Shënimet u ruajtën ✓');
+      });
+    }
+    if (
+      window.matchMedia?.('(max-width:760px), (max-width:960px) and (max-height:500px)').matches
+    ) {
+      view.observer?.disconnect();
+      view.observer = null;
+      notes(root.querySelector('[data-mobile-panel="reviews"]'));
+      return;
+    }
+    root.classList.add('detail-tabs-enabled');
     function paint() {
       for (const child of root.children) {
         if (
@@ -75,33 +139,7 @@ export function createDetailNavigation(ctx) {
         }
       });
     }
-    if (!root.querySelector('[data-movie-notes],.detail-personal-notes')) {
-      const form = document.createElement('form');
-      form.className = 'detail-personal-notes reading-panel';
-      window.ATHTML.renderHTML(
-        form,
-        `<h4>Shënimet e mia</h4><label class="reading-field">Mendimet për ${ctx.esc(row.title)}<textarea name="personalNotes" rows="5" maxlength="2500">${ctx.esc(view.draft ?? row.notes ?? '')}</textarea></label><button type="submit" class="primary">Ruaj shënimet</button>`,
-      );
-      root.append(form);
-      form.addEventListener('input', () => {
-        view.draft = form.querySelector('textarea').value;
-      });
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if ((ctx.user()?.id || 'guest') !== owner) return;
-        const current = ctx.state().anime.find((row) => row.id === id);
-        if (!current) return;
-        const before = { notes: current.notes, updatedAt: current.updatedAt };
-        current.notes = String(new FormData(form).get('personalNotes') || '').slice(0, 2500);
-        current.updatedAt = new Date().toISOString();
-        if (!ctx.save()) {
-          Object.assign(current, before);
-          return;
-        }
-        view.draft = null;
-        ctx.toast('Shënimet u ruajtën ✓');
-      });
-    }
+    notes(root);
     if (!view.observer) {
       view.observer = new MutationObserver(paint);
       view.observer.observe(root, { childList: true });

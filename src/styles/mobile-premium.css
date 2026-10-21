@@ -2635,3 +2635,50 @@
 .library-load-more[hidden] {
   display: none;
 }
+
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
+  body.at-ios-enabled #detail-modal .mobile-detail.mobile-detail-compact .mobile-detail-hero {
+    padding: 16px 20px;
+  }
+  .mobile-detail-compact .detail-content h3 {
+    font-size: 22px;
+    margin-block: 0 8px;
+  }
+  .mobile-detail-compact .detail-content > :not(h3) {
+    display: none;
+  }
+  .mobile-detail-cover {
+    min-height: 44px;
+    margin-top: 8px;
+    color: var(--text);
+    background: var(--surface);
+  }
+  body.at-ios-enabled #detail-modal .mobile-detail-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: var(--bg);
+  }
+  .mobile-detail .detail-personal-notes {
+    margin-top: 12px;
+  }
+  .mobile-detail .detail-personal-notes textarea,
+  .mobile-detail [data-movie-notes] {
+    font-size: 16px;
+    min-height: 140px;
+  }
+}
+
+@media (max-width: 760px), (max-width: 960px) and (max-height: 500px) {
+  .mobile-film-tracking {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-block: 16px;
+  }
+  .mobile-film-tracking h3,
+  .mobile-film-tracking .at150-watch-stat {
+    width: 100%;
+  }
+}

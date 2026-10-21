@@ -14,9 +14,10 @@ The light/system theme preference remains available.
 - Discover shows nine browse categories before typing and filters instant catalog
   results by media type. People uses the existing friend search. Studios uses a
   read-only AniList catalog request with an error/retry state.
-- Library uses the shared Standard MediaCard, sticky status chips and a collapsed
-  Filter + Sort control. Existing extra filters, imports, manual editing and repair
-  tools remain accessible.
+- Library uses the shared Standard MediaCard and two always-visible destinations:
+  Active and Planned. Personal statuses and other filters are in Filter + Sort;
+  imports and repair controls are in a separate Library Tools disclosure. Existing
+  search, sorting, imports and repair handlers remain accessible.
 - Library details have a backdrop, primary Start/Continue/Rewatch action, and
   Overview, Timeline, Episodes, Cast & Staff and Reviews sections. Episode marking,
   bulk confirmation, pagination, ratings and metadata controls retain their existing
@@ -133,3 +134,18 @@ foreground so its background and text cannot use conflicting theme states.
 The landscape rule keeps the phone navigation and episode feed on short viewports;
 portrait tablet widths above 760px and desktop widths above 960px retain their
 existing layout. No library schema, account transport or tracking change is made.
+
+## Library and detail update (22 October 2026)
+
+Active remains the library default. Planned is adjacent and visible at 320px;
+secondary status filters keep their existing meanings and result chips explain
+active constraints. Filter and Tools disclosures open independently.
+On phones, selecting a detail section compacts the artwork header and keeps the
+section strip available; users can explicitly expand the cover again. Returning
+to another season retains the compactness and note draft for that title.
+Personal notes use the same guarded controller on desktop and mobile, with an
+explicit save, failed-save rollback, owner/title checks and detection of changed
+saved notes. Drafts are in memory for the current title; only a successful save
+persists them. Notes precede ratings in their tab, while rewatch belongs with
+episodes. Existing film notes and watch actions keep their handlers and their
+respective Notes and Episodes sections.

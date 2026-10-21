@@ -205,7 +205,7 @@ for (const width of [320, 375, 390, 430]) {
       await page.locator('#library-status-strip').evaluate((node) => {
         const bounds = node.getBoundingClientRect();
         return (
-          bounds.height <= 60 && bounds.right <= innerWidth && node.scrollWidth > node.clientWidth
+          bounds.height <= 60 && bounds.right <= innerWidth && node.scrollWidth <= node.clientWidth
         );
       }),
     ).toBe(true);
@@ -213,16 +213,18 @@ for (const width of [320, 375, 390, 430]) {
     await planned.focus();
     await planned.press('Enter');
     await expect(planned).toHaveClass(/active/);
-    expect(
-      await page.locator('#library-status-strip').evaluate((node) => node.scrollLeft),
-    ).toBeGreaterThan(0);
+    expect(await page.locator('#library-status-strip').evaluate((node) => node.scrollLeft)).toBe(0);
     await page.locator('#library-status-strip [data-filter="all"]').click();
     await expect(page.locator('#mobile-library-controls')).not.toHaveAttribute('open', '');
     await page.locator('#mobile-library-controls summary').click();
     await expect(page.locator('#sort')).toBeVisible();
+    await expect(page.locator('#at116-import-file')).not.toBeVisible();
+    await page.locator('#library-tools summary').click();
     await expect(page.locator('#at116-import-file')).toBeVisible();
     await page.locator('#sort').selectOption('title');
     await page.locator('#mobile-library-controls summary').click();
+    await expect(page.locator('#at116-import-file')).toBeVisible();
+    await page.locator('#library-tools summary').click();
     await expect(page.locator('#at116-import-file')).not.toBeVisible();
     await page.screenshot({ path: info.outputPath(`library-${width}.png`) });
     await page.locator('#anime-grid [data-detail]').first().click();

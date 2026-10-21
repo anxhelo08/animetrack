@@ -1,7 +1,7 @@
 const statuses = {
   watching: 'Po shikoj',
   completed: 'Përfunduar',
-  planning: 'Në listë',
+  planning: 'Në plan',
   paused: 'Në pauzë',
   dropped: 'E lënë',
   favorites: 'Të preferuarat',
@@ -49,7 +49,7 @@ export function createLibraryFilters({ el: $, html, snapshot, change }) {
       root.setAttribute('aria-label', 'Kërkimi dhe filtrat e bibliotekës');
       html.renderHTML(
         root,
-        '<div data-library-query></div><div data-library-status></div><details id="mobile-library-controls" class="library-filter-panel"><summary>Filtra dhe renditje <span data-library-filter-count></span></summary><div class="library-filter-body"><div class="library-secondary-filters" role="group" aria-label="Kategori"><button type="button" data-filter="favorites" class="ghost">Të preferuarat</button><button type="button" data-filter="waiting" class="ghost">Në pritje</button><button type="button" data-filter="genres" class="ghost">Zhanret</button></div></div></details><p id="library-results-count" role="status"></p><div id="library-active-filters" class="library-active-filters" role="group" aria-label="Filtrat aktivë"></div>',
+        '<div data-library-query></div><div data-library-status></div><details id="mobile-library-controls" class="library-filter-panel"><summary>Filtra dhe renditje <span data-library-filter-count></span></summary><div class="library-filter-body"><div class="library-secondary-filters" role="group" aria-label="Kategori"><button type="button" data-filter="favorites" class="ghost">Të preferuarat</button><button type="button" data-filter="waiting" class="ghost">Në pritje</button><button type="button" data-filter="genres" class="ghost">Zhanret</button></div></div></details><details id="library-tools" class="library-filter-panel"><summary>Mjetet e bibliotekës</summary><div class="library-tools-body"></div></details><p id="library-results-count" role="status"></p><div id="library-active-filters" class="library-active-filters" role="group" aria-label="Filtrat aktivë"></div>',
       );
       strip.before(root);
       root.querySelector('[data-library-status]').append(strip);
@@ -72,10 +72,19 @@ export function createLibraryFilters({ el: $, html, snapshot, change }) {
       document.querySelector('#library-view .library-progress-controls'),
       $('genre-controls'),
       document.querySelector('#library-view .toolrow'),
+    ])
+      if (node && !body.contains(node)) body.append(node);
+    const statuses = strip.querySelector('.library-status-options');
+    if (statuses) {
+      body.querySelector('.library-status-options')?.remove();
+      body.prepend(statuses);
+    }
+    const tools = root.querySelector('.library-tools-body');
+    for (const node of [
       document.querySelector('#library-view .series-repair-panel'),
       $('at116-import'),
     ])
-      if (node && !body.contains(node)) body.append(node);
+      if (node && !tools.contains(node)) tools.append(node);
     $('filters')?.classList.add('hidden');
     // One sort control and one media control serve phone and desktop.
     document.querySelector('#at113-library-head .at117-library-tools')?.classList.add('hidden');
@@ -89,7 +98,7 @@ export function createLibraryFilters({ el: $, html, snapshot, change }) {
       ? `(${chips.length})`
       : '';
     $('library-results-count').textContent =
-      `${s.total} tituj` + (s.filter === 'all' ? ' · Titujt në plan i gjen te «Në listë».' : '');
+      `${s.total} tituj · ${s.filter === 'all' ? 'Aktive' : statuses[s.filter] || 'Biblioteka'}`;
     const markup =
       chips
         .map(

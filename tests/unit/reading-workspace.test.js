@@ -182,3 +182,82 @@ test('watch notes survive an asynchronous replacement of detail markup', () => {
     .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   expect(state.anime[0].notes).toBe('Draft');
 });
+
+test('mobile notes retain drafts across detail replacement, roll back failed saves and reject another owner', () => {
+  const original = window.matchMedia;
+  window.matchMedia = () => ({ matches: true });
+  try {
+    const root = document.getElementById('root');
+    let owner = 'first';
+    const item = { id: 'a', title: 'Historia', notes: 'Ruajtur', updatedAt: 'before' };
+    const save = vi.fn(() => false);
+    const details = createDetailNavigation({
+      state: () => ({ anime: [item] }),
+      user: () => ({ id: owner }),
+      esc: window.ATHTML.escapeHTML,
+      save,
+      toast: vi.fn(),
+    });
+    const render = () => {
+      root.innerHTML = '<section data-mobile-panel="reviews"></section>';
+      details.attach(root, 'a');
+    };
+    render();
+    root.querySelector('textarea').value = 'Draft <privat>';
+    root.querySelector('textarea').dispatchEvent(new Event('input', { bubbles: true }));
+    render();
+    expect(root.querySelector('textarea').value).toBe('Draft <privat>');
+    root
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(item.notes).toBe('Ruajtur');
+    expect(item.updatedAt).toBe('before');
+    expect(root.querySelector('[data-notes-status]').textContent).toContain('nuk u ruajt');
+    save.mockReturnValue(true);
+    root
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(item.notes).toBe('Draft <privat>');
+    owner = 'second';
+    root.querySelector('textarea').value = 'wrong owner';
+    root
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(save).toHaveBeenCalledTimes(2);
+    expect(item.notes).toBe('Draft <privat>');
+  } finally {
+    window.matchMedia = original;
+  }
+});
+
+test('notes refuse to overwrite a changed saved version and offer explicit reload', () => {
+  const original = window.matchMedia;
+  window.matchMedia = () => ({ matches: true });
+  try {
+    const root = document.getElementById('root');
+    root.innerHTML = '<section data-mobile-panel="reviews"></section>';
+    const item = { id: 'a', title: 'Historia', notes: 'Original' },
+      save = vi.fn(() => true);
+    createDetailNavigation({
+      state: () => ({ anime: [item] }),
+      user: () => ({ id: 'owner' }),
+      esc: window.ATHTML.escapeHTML,
+      save,
+      toast: vi.fn(),
+    }).attach(root, 'a');
+    root.querySelector('textarea').value = 'Draft';
+    item.notes = 'Ndryshim tjetër';
+    root
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(save).not.toHaveBeenCalled();
+    expect(item.notes).toBe('Ndryshim tjetër');
+    const reload = root.querySelector('[data-notes-reload]');
+    expect(reload.hidden).toBe(false);
+    reload.click();
+    expect(root.querySelector('textarea').value).toBe('Ndryshim tjetër');
+    expect(reload.hidden).toBe(true);
+  } finally {
+    window.matchMedia = original;
+  }
+});
