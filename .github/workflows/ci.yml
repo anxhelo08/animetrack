@@ -17,7 +17,7 @@ jobs:
     name: Build + unit tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -70,7 +70,7 @@ jobs:
     env:
       DATABASE_URL: postgres://postgres:disposable-ci-password@127.0.0.1:5432/animetrack_security_test?sslmode=disable
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -101,7 +101,7 @@ jobs:
           - project: iphone-webkit
             browser: webkit
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
@@ -127,7 +127,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-unit
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version-file: '.nvmrc'
